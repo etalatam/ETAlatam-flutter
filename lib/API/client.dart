@@ -253,24 +253,30 @@ class HttpService {
   requestAccess() async {
       debugPrint('requestAccess');
       final data = jsonEncode({
-        '_client_id': 123, 
-        '_access_token': 'test-token'
+        '_client_id': 8158677453437, 
+        '_access_token': 'a9b44b37-b305-42e8-af90-8e0238bd3724'
       });
       
       final http.Response res = await postQuery('/rpc/request_access', data,useToken: false);
 
       if (res.statusCode == 200) {
         var body = jsonDecode(res.body);
-        if (body['error'] != null) {
-          return body['error'];
-        }
         await storage.setItem(
           'token', body['token'].isEmpty ? '' : body['token']
         );
         return '1';
       }else{
-        debugPrint(res.body.toString());
-        return '0';
+        try {
+          debugPrint(res.body.toString());
+          var body = jsonDecode(res.body);
+          if("${body['message']}".isEmpty == false){
+            return body['message'];
+          }
+        } catch (e) {
+          debugPrint(e.toString());
+        }
+
+        return 'Unable to request access';
       }
   }
 
@@ -278,32 +284,36 @@ class HttpService {
   login(String email, String password) async {
     debugPrint('login');
     final data = jsonEncode({
-      "email": email,
-      "password": password,
+      "_email": email,
+      "_pass": password,
     });
 
-    await requestAccess();    
-    http.Response res = await postQuery('/rpc/login', data);
+    var requestAccessRes = await requestAccess();
+    if( requestAccessRes == '0') {
+      return requestAccessRes;
+    }else{
+      http.Response res = await postQuery('/rpc/login', data);
 
-    if (res.statusCode == 200) {
-      var body = jsonDecode(res.body);
-      await storage.setItem(
-          'token', body['token'].isEmpty ? '' : body['token']);
-      await storage.setItem(
-          'driver_id', body['user_id'] ?? body['user_id']);
-      return '1';
-    } else {
-      try {
-        debugPrint(res.body.toString());
+      if (res.statusCode == 200) {
         var body = jsonDecode(res.body);
-        if("${body['message']}".isEmpty == false){
-          return body['message'];
+        await storage.setItem(
+            'token', body['token'].isEmpty ? '' : body['token']);
+        await storage.setItem(
+            'driver_id', body['user_id'] ?? body['user_id']);
+        return '1';
+      } else {
+        try {
+          debugPrint(res.body.toString());
+          var body = jsonDecode(res.body);
+          if("${body['message']}".isEmpty == false){
+            return body['message'];
+          }
+        } catch (e) {
+          debugPrint(e.toString());
         }
-      } catch (e) {
-        debugPrint(e.toString());
-      }
 
-      return 'Unable to login';
+        return 'Unable to login';
+      }
     }
   }
 
