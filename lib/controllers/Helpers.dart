@@ -10,7 +10,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 
 /// Main API configuration options
-const String apiURL = "https://trips.medianssolutions.com/";
+// const String apiURL = "https://trips.medianssolutions.com/";
+const String apiURL = "https://api.etalatam.com";
 
 /// Google Client API
 const String googleClientId = "815917645468-uclp0ar0v8vu84s81bcqe1fo3oiljioh.apps.googleusercontent.com"; // For Map API

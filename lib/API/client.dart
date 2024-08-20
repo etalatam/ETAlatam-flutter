@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:MediansSchoolDriver/Models/PickupLocationModel.dart';
 import 'package:MediansSchoolDriver/methods.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
@@ -35,22 +36,22 @@ class HttpService {
   }
 
   /// Run API GET query
-  getQuery(String path) async {
+  getQuery(String path, {useToken = true}) async {
     var token = storage.getItem('token');
     return await http.get(Uri.parse(apiURL + path),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
+          'Authorization': useToken ? 'Bearer $token': '',
     });
   }
 
   /// Run API POST query
-  postQuery(String path, body) async {
+  postQuery(String path, body, {useToken=false}) async {
     var token = storage.getItem('token');
     return await http.post(Uri.parse(apiURL + path),
         body: body, headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
+          'Authorization': useToken ? 'Bearer $token' : '',
         });
   }
 
@@ -251,12 +252,12 @@ class HttpService {
   // request access to api
   requestAccess() async {
       debugPrint('requestAccess');
-      final Map data = {
+      final data = jsonEncode({
         '_client_id': 123, 
         '_access_token': 'test-token'
-      };
+      });
       
-      final http.Response res = await postQuery('/rpc/request_access', data);
+      final http.Response res = await postQuery('/rpc/request_access', data,useToken: false);
 
       if (res.statusCode == 200) {
         var body = jsonDecode(res.body);
@@ -266,32 +267,43 @@ class HttpService {
         await storage.setItem(
           'token', body['token'].isEmpty ? '' : body['token']
         );
+        return '1';
+      }else{
+        debugPrint(res.body.toString());
+        return '0';
       }
   }
 
   /// Login with email & password
   login(String email, String password) async {
     debugPrint('login');
-    Map data = {
+    final data = jsonEncode({
       "email": email,
       "password": password,
-    };
+    });
 
+    await requestAccess();    
     http.Response res = await postQuery('/rpc/login', data);
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
-      if (body['error'] != null) {
-        return body['error'];
-      }
-
       await storage.setItem(
           'token', body['token'].isEmpty ? '' : body['token']);
       await storage.setItem(
           'driver_id', body['user_id'] ?? body['user_id']);
       return '1';
     } else {
-      throw "Unable to retrieve data.";
+      try {
+        debugPrint(res.body.toString());
+        var body = jsonDecode(res.body);
+        if("${body['message']}".isEmpty == false){
+          return body['message'];
+        }
+      } catch (e) {
+        debugPrint(e.toString());
+      }
+
+      return 'Unable to login';
     }
   }
 
