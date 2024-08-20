@@ -14,14 +14,15 @@ import 'package:MediansSchoolDriver/Models/RouteModel.dart';
 import 'package:MediansSchoolDriver/Models/TripModel.dart';
 import 'package:MediansSchoolDriver/Models/NotificationModel.dart';
 import 'package:location/location.dart';
+import 'package:flutter/foundation.dart';
+
 
 class HttpService {
   final LocalStorage storage = LocalStorage('tokens.json');
 
   String token = '';
 
-  // List<DeviceModel> devices = [];
-  String response_text = "";
+  // String response_text = "";
 
   Map? headers;
 
@@ -34,17 +35,23 @@ class HttpService {
   }
 
   /// Run API GET query
-  getQuery(String model) async {
-    var accessToken = storage.getItem('token');
-    return await http.get(Uri.parse(apiURL + model),
-        headers: {"token": "$accessToken", "userType": "Driver"});
+  getQuery(String path) async {
+    var token = storage.getItem('token');
+    return await http.get(Uri.parse(apiURL + path),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+    });
   }
 
-  /// Run API GET query
+  /// Run API POST query
   postQuery(String path, body) async {
-    var accessToken = storage.getItem('token');
+    var token = storage.getItem('token');
     return await http.post(Uri.parse(apiURL + path),
-        body: body, headers: {"token": "$accessToken", "userType": "Driver"});
+        body: body, headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        });
   }
 
   /// Load Trips
@@ -241,15 +248,36 @@ class HttpService {
     }
   }
 
+  // request access to api
+  requestAccess() async {
+      debugPrint('requestAccess');
+      final Map data = {
+        '_client_id': 123, 
+        '_access_token': 'test-token'
+      };
+      
+      final http.Response res = await postQuery('/rpc/request_access', data);
+
+      if (res.statusCode == 200) {
+        var body = jsonDecode(res.body);
+        if (body['error'] != null) {
+          return body['error'];
+        }
+        await storage.setItem(
+          'token', body['token'].isEmpty ? '' : body['token']
+        );
+      }
+  }
+
   /// Login with email & password
   login(String email, String password) async {
+    debugPrint('login');
     Map data = {
       "email": email,
       "password": password,
     };
 
-    http.Response res = await postQuery(
-        'mobile_api', {"model": "Driver.login", "params": jsonEncode(data)});
+    http.Response res = await postQuery('/rpc/login', data);
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
@@ -257,13 +285,11 @@ class HttpService {
         return body['error'];
       }
 
-      if (body['token'] != null && storage.getItem('token') == null) {
-        await storage.setItem(
-            'token', body['token'].isEmpty ? '' : body['token']);
-        await storage.setItem(
-            'driver_id', body['driver_id'] ?? body['driver_id']);
-        return '1';
-      }
+      await storage.setItem(
+          'token', body['token'].isEmpty ? '' : body['token']);
+      await storage.setItem(
+          'driver_id', body['user_id'] ?? body['user_id']);
+      return '1';
     } else {
       throw "Unable to retrieve data.";
     }
