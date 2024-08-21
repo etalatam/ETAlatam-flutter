@@ -67,50 +67,65 @@ class HttpService {
 
   /// Load Latest Notifications
   Future<List<NotificationModel>?> getNotifications() async {
-    var res = await getQuery("/mobile_api/notifications");
-    dynamic resObject = jsonDecode(res.body);
-    List<dynamic> body = jsonDecode(jsonEncode(resObject['items']));
-    return body
-        .map((dynamic item) => NotificationModel.fromJson(item))
-        .toList();
+    http.Response res = await getQuery("/mobile_api/notifications");
+
+    if(res.statusCode == 200){
+      dynamic resObject = jsonDecode(res.body);
+      List<dynamic> body = jsonDecode(jsonEncode(resObject['items']));
+      return body
+          .map((dynamic item) => NotificationModel.fromJson(item))
+          .toList();
+    }
+    return [];
   }
 
   /// Load Help Messages
   Future<List<HelpMessageModel>?> getHelpMessages() async {
-    var res = await getQuery("/mobile_api/help_messages");
-    List<dynamic> body = jsonDecode(res.body);
-    return body.map((dynamic item) => HelpMessageModel.fromJson(item)).toList();
+    http.Response res = await getQuery("/mobile_api/help_messages");
+    if(res.statusCode == 200){
+      List<dynamic> body = jsonDecode(res.body);
+      return body.map((dynamic item) => HelpMessageModel.fromJson(item)).toList();
+    }
+
+    return [];
   }
 
   /// Load Route
   Future<List<RouteModel>> getRoute(String model) async {
-    var res = await getQuery(model);
-    List<dynamic> body = jsonDecode(res.body);
-    return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
+    http.Response res = await getQuery(model);
+
+    if(res.statusCode == 200){
+      List<dynamic> body = jsonDecode(res.body);
+      return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
+    }
+    return [];
   }
 
   /// Load Route info
   Future<RouteModel> getRouteInfo(id) async {
-    var res = await getQuery("/route/$id");
-    var body = jsonDecode(res.body);
-    return body == null
-        ? RouteModel(route_id: 0, route_name: '', pickup_locations: [])
-        : RouteModel.fromJson(body);
+    http.Response res = await getQuery("/route/$id");
+
+    if(res.statusCode == 200){
+      var body = jsonDecode(res.body);
+      return RouteModel.fromJson(body);
+    }
+    return RouteModel(route_id: 0, route_name: '', pickup_locations: []);
   }
 
   /// Load Driver
   Future<DriverModel> getDriver(id) async {
-  //   var res = await getQuery("/driver/$id");
-  //   var body = jsonDecode(res.body);
-  //   return body == null
-  //       ? DriverModel(driver_id: 0, first_name: '')
-  //       : DriverModel.fromJson(body);
+    http.Response res = await getQuery("/driver/$id");
+
+    if(res.statusCode == 200){
+      var body = jsonDecode(res.body);
+      return DriverModel.fromJson(body);
+    }
     return DriverModel(driver_id: 0, first_name: '');
   }
 
   /// Load Parent
   Future<ParentModel> getParent(id) async {
-    var res = await getQuery("/parent/$id");
+    http.Response res = await getQuery("/parent/$id");
     var body = jsonDecode(res.body);
     return body == null
         ? ParentModel(parent_id: 0, students: [])
@@ -119,26 +134,32 @@ class HttpService {
 
   /// Load Student pickup
   Future<PickupLocationModel> getPickup(int? id) async {
-    var res = await getQuery("/mobile_api/student_pickup?student_id=$id");
-    var body = jsonDecode(res.body);
-    return body == null
-        ? PickupLocationModel()
-        : PickupLocationModel.fromJson(body);
+    http.Response res = await getQuery("/mobile_api/student_pickup?student_id=$id");
+
+    if(res.statusCode == 200){
+      var body = jsonDecode(res.body);
+      return PickupLocationModel.fromJson(body);
+    }
+
+    return PickupLocationModel();
   }
 
   /// Load Events
   Future<List<EventModel>> getEvents() async {
-    // var res = await getQuery("/events?load=json");
-    // var jsonResponse = jsonDecode(res.body);
-    // List<dynamic> body = jsonResponse['items'] ?? [];
-    // return body.map((dynamic item) => EventModel.fromJson(item)).toList();
+    http.Response res = await getQuery("/events?load=json");
+    if(res.statusCode == 200){
+      var jsonResponse = jsonDecode(res.body);
+      List<dynamic> body = jsonResponse['items'] ?? [];
+      return body.map((dynamic item) => EventModel.fromJson(item)).toList();
+    }
+
     return [];
+
   }
 
   /// Load Routes
   Future<List<RouteModel>> getRoutes() async {
     http.Response res = await getQuery("/driver_routes");
-
     if(res.statusCode == 200){
       List<dynamic> body = jsonDecode(res.body);
       return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
@@ -146,7 +167,6 @@ class HttpService {
 
     debugPrint(res.body.toString());
     return [];
-
   }
 
   /// Load Trip
