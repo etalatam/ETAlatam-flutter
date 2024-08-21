@@ -244,11 +244,11 @@ class _SettingsPageState extends State<SettingsPage>
   DriverModel? driver;
 
   loadDriver() async {
-    final driverModel =
-        await httpService.getDriver(storage.getItem('driver_id'));
+    // final driverModel =
+    //     await httpService.getDriver(storage.getItem('driver_id'));
 
     setState(() {
-      driver = driverModel;
+      // driver = driverModel;
       subject = storage.getItem('lang');
       darkMode = storage.getItem('darkmode') ?? false;
       showLoader = false;

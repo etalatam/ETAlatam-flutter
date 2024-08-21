@@ -163,7 +163,7 @@ class _LoginState extends State<Login> {
                                                   233, 235, 235, 1)),
                                           onChanged: (val) => setState(() {
                                             password = val;
-                                            goHome();
+                                            // goHome();
                                           }),
                                         ),
                                       ],
@@ -198,7 +198,7 @@ class _LoginState extends State<Login> {
                                                   : loginResponse,
                                               callback);
                                           showLoader = false;
-                                          goHome();
+                                          // goHome();
                                         });
                                       },
                                       child: Text(
@@ -253,19 +253,19 @@ class _LoginState extends State<Login> {
   /// Check if already logged in
   ///
   checkSession() async {
-    Timer(const Duration(seconds: 1), () async {
-      setState(() {
-        showLoader = false;
-      });
-
-      dynamic driverId = await storage.getItem('driver_id');
-      setState(() {
-        driverId = storage.getItem('driver_id');
-        if (driverId != null) {
-          goHome();
-        }
-      });
+    setState(() {
+      showLoader = false;
     });
+
+    // Timer(const Duration(seconds: 1), () async {
+    //   dynamic driverId = await storage.getItem('driver_id');
+    //   setState(() {
+    //     driverId = storage.getItem('driver_id');
+    //     if (driverId != null) {
+    //       goHome();
+    //     }
+    //   });
+    // });
   }
 
   ///
@@ -273,22 +273,22 @@ class _LoginState extends State<Login> {
   /// if already logged in
   ///
   goHome() async {
-    final token_ = await storage.getItem('token');
-    final driverId_ = storage.getItem('driver_id');
+    // final token_ = await storage.getItem('token');
+    // final driverId_ = storage.getItem('driver_id');
 
-    if (token_ != null && driverId_ != null) {
-      Timer(const Duration(seconds: 1), () {
-        Get.offAll(HomePage());
-      });
-    } else {
-      Timer(const Duration(seconds: 1), () {
-        if (storage.getItem('token') == null) {
-          showLoader = false;
-        } else {
-          Get.offAll(HomePage());
-        }
-      });
-    }
+    // if (token_ != null && driverId_ != null) {
+    //   Timer(const Duration(seconds: 1), () {
+    //     Get.offAll(HomePage());
+    //   });
+    // } else {
+    //   Timer(const Duration(seconds: 1), () {
+    //     if (storage.getItem('token') == null) {
+    //       showLoader = false;
+    //     } else {
+    //       Get.offAll(HomePage());
+    //     }
+    //   });
+    // }
   }
 
   @override

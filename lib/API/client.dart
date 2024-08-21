@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:MediansSchoolDriver/Models/PickupLocationModel.dart';
 import 'package:MediansSchoolDriver/methods.dart';
-import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
@@ -46,11 +45,11 @@ class HttpService {
   }
 
   /// Run API POST query
-  postQuery(String path, body, {useToken=false}) async {
+  postQuery(String path, body, {useToken=true}) async {
     var token = storage.getItem('token');
     return await http.post(Uri.parse(apiURL + path),
         body: body, headers: {
-          'Content-Type': 'application/json',
+          // 'Content-Type': 'application/json',
           'Authorization': useToken ? 'Bearer $token' : '',
         });
   }
@@ -97,11 +96,12 @@ class HttpService {
 
   /// Load Driver
   Future<DriverModel> getDriver(id) async {
-    var res = await getQuery("driver/$id");
-    var body = jsonDecode(res.body);
-    return body == null
-        ? DriverModel(driver_id: 0, first_name: '')
-        : DriverModel.fromJson(body);
+  //   var res = await getQuery("driver/$id");
+  //   var body = jsonDecode(res.body);
+  //   return body == null
+  //       ? DriverModel(driver_id: 0, first_name: '')
+  //       : DriverModel.fromJson(body);
+    return DriverModel(driver_id: 0, first_name: '');
   }
 
   /// Load Driver
@@ -124,10 +124,11 @@ class HttpService {
 
   /// Load Events
   Future<List<EventModel>> getEvents() async {
-    var res = await getQuery("events?load=json");
-    var jsonResponse = jsonDecode(res.body);
-    List<dynamic> body = jsonResponse['items'] ?? [];
-    return body.map((dynamic item) => EventModel.fromJson(item)).toList();
+    // var res = await getQuery("events?load=json");
+    // var jsonResponse = jsonDecode(res.body);
+    // List<dynamic> body = jsonResponse['items'] ?? [];
+    // return body.map((dynamic item) => EventModel.fromJson(item)).toList();
+    return [];
   }
 
   /// Load Routes
@@ -252,15 +253,16 @@ class HttpService {
   // request access to api
   requestAccess() async {
       debugPrint('requestAccess');
-      final data = jsonEncode({
-        '_client_id': 8158677453437, 
+      final data = {
+        '_client_id': '8158677453437', 
         '_access_token': 'a9b44b37-b305-42e8-af90-8e0238bd3724'
-      });
+      };
       
       final http.Response res = await postQuery('/rpc/request_access', data,useToken: false);
 
       if (res.statusCode == 200) {
         var body = jsonDecode(res.body);
+        debugPrint(body.toString());
         await storage.setItem(
           'token', body['token'].isEmpty ? '' : body['token']
         );
@@ -269,7 +271,10 @@ class HttpService {
         try {
           debugPrint(res.body.toString());
           var body = jsonDecode(res.body);
-          if("${body['message']}".isEmpty == false){
+
+          if("${body['hint']}".isEmpty == false){
+            return body['hint'];
+          }else if("${body['message']}".isEmpty == false){
             return body['message'];
           }
         } catch (e) {
@@ -283,10 +288,10 @@ class HttpService {
   /// Login with email & password
   login(String email, String password) async {
     debugPrint('login');
-    final data = jsonEncode({
+    final data = {
       "_email": email,
       "_pass": password,
-    });
+    };
 
     var requestAccessRes = await requestAccess();
     if( requestAccessRes == '1') {
@@ -294,6 +299,7 @@ class HttpService {
 
       if (res.statusCode == 200) {
         var body = jsonDecode(res.body);
+        debugPrint(body.toString());
         await storage.setItem(
             'token', body['token'].isEmpty ? '' : body['token']);
         await storage.setItem(
@@ -303,7 +309,9 @@ class HttpService {
         try {
           debugPrint(res.body.toString());
           var body = jsonDecode(res.body);
-          if("${body['message']}".isEmpty == false){
+          if("${body['hint']}".isEmpty == false){
+            return body['hint'];
+          }else if("${body['message']}".isEmpty == false){
             return body['message'];
           }
         } catch (e) {
