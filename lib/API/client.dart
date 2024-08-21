@@ -393,7 +393,7 @@ class HttpService {
     try {
       debugPrint(res.body.toString());
       var body = jsonDecode(res.body);
-      if ("${body['hint']}".isEmpty == false) {
+      if (body['hint'] != null) {
         return body['hint'];
       } else if ("${body['message']}".isEmpty == false) {
         return body['message'];
