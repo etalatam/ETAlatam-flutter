@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:MediansSchoolDriver/API/client.dart';
 import 'package:MediansSchoolDriver/Pages/ResetPasswordPage.dart';
 import 'package:MediansSchoolDriver/components/loader.dart';

@@ -9,12 +9,11 @@ import 'package:http/http.dart' as http;
 
 class StaticMap extends StatefulWidget {
   const StaticMap(
-      {Key? key,
+      {super.key,
       required this.origin,
       required this.destination,
       this.pickup_locations,
-      this.destinations})
-      : super(key: key);
+      this.destinations});
 
   final LatLng origin;
   final LatLng destination;

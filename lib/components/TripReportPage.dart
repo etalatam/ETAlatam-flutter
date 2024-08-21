@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class TripReport extends StatefulWidget {
-  const TripReport({Key? key, required this.trip}) : super(key: key);
+  const TripReport({super.key, required this.trip});
 
   final TripModel? trip;
   @override
