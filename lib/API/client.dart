@@ -56,14 +56,18 @@ class HttpService {
 
   /// Load Trips
   Future<List<TripModel>> getTrips(int lastId) async {
-    var res = await getQuery("mobile_api/trips?lastId=$lastId");
-    List<dynamic> body = jsonDecode(res.body);
-    return body.map((dynamic item) => TripModel.fromJson(item)).toList();
+    http.Response res = await getQuery("/mobile_api/trips?lastId=$lastId");
+    if(res.statusCode == 200){
+      List<dynamic> body = jsonDecode(res.body);
+      return body.map((dynamic item) => TripModel.fromJson(item)).toList();
+    }
+    debugPrint(res.body.toString());
+    return [];
   }
 
   /// Load Latest Notifications
   Future<List<NotificationModel>?> getNotifications() async {
-    var res = await getQuery("mobile_api/notifications");
+    var res = await getQuery("/mobile_api/notifications");
     dynamic resObject = jsonDecode(res.body);
     List<dynamic> body = jsonDecode(jsonEncode(resObject['items']));
     return body
@@ -73,7 +77,7 @@ class HttpService {
 
   /// Load Help Messages
   Future<List<HelpMessageModel>?> getHelpMessages() async {
-    var res = await getQuery("mobile_api/help_messages");
+    var res = await getQuery("/mobile_api/help_messages");
     List<dynamic> body = jsonDecode(res.body);
     return body.map((dynamic item) => HelpMessageModel.fromJson(item)).toList();
   }
@@ -87,7 +91,7 @@ class HttpService {
 
   /// Load Route info
   Future<RouteModel> getRouteInfo(id) async {
-    var res = await getQuery("route/$id");
+    var res = await getQuery("/route/$id");
     var body = jsonDecode(res.body);
     return body == null
         ? RouteModel(route_id: 0, route_name: '', pickup_locations: [])
@@ -96,7 +100,7 @@ class HttpService {
 
   /// Load Driver
   Future<DriverModel> getDriver(id) async {
-  //   var res = await getQuery("driver/$id");
+  //   var res = await getQuery("/driver/$id");
   //   var body = jsonDecode(res.body);
   //   return body == null
   //       ? DriverModel(driver_id: 0, first_name: '')
@@ -104,9 +108,9 @@ class HttpService {
     return DriverModel(driver_id: 0, first_name: '');
   }
 
-  /// Load Driver
+  /// Load Parent
   Future<ParentModel> getParent(id) async {
-    var res = await getQuery("parent/$id");
+    var res = await getQuery("/parent/$id");
     var body = jsonDecode(res.body);
     return body == null
         ? ParentModel(parent_id: 0, students: [])
@@ -115,7 +119,7 @@ class HttpService {
 
   /// Load Student pickup
   Future<PickupLocationModel> getPickup(int? id) async {
-    var res = await getQuery("mobile_api/student_pickup?student_id=$id");
+    var res = await getQuery("/mobile_api/student_pickup?student_id=$id");
     var body = jsonDecode(res.body);
     return body == null
         ? PickupLocationModel()
@@ -124,7 +128,7 @@ class HttpService {
 
   /// Load Events
   Future<List<EventModel>> getEvents() async {
-    // var res = await getQuery("events?load=json");
+    // var res = await getQuery("/events?load=json");
     // var jsonResponse = jsonDecode(res.body);
     // List<dynamic> body = jsonResponse['items'] ?? [];
     // return body.map((dynamic item) => EventModel.fromJson(item)).toList();
@@ -133,23 +137,33 @@ class HttpService {
 
   /// Load Routes
   Future<List<RouteModel>> getRoutes() async {
-    var res = await getQuery("driver_routes");
-    List<dynamic> body = jsonDecode(res.body);
-    return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
+    http.Response res = await getQuery("/driver_routes");
+
+    if(res.statusCode == 200){
+      List<dynamic> body = jsonDecode(res.body);
+      return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
+    }
+
+    debugPrint(res.body.toString());
+    return [];
+
   }
 
   /// Load Trip
   Future<TripModel> getTrip(id) async {
-    var res = await getQuery("trip/$id");
-    var body = jsonDecode(res.body);
+    http.Response res = await getQuery("/trip/$id");
 
-    return body == null ? TripModel(trip_id: 0) : TripModel.fromJson(body);
+    if(res.statusCode == 200){
+      var body = jsonDecode(res.body);
+      return body == null ? TripModel(trip_id: 0) : TripModel.fromJson(body);
+    }
+    return TripModel(trip_id: 0);
   }
 
   /// Load Trip
   Future<TripModel> getActiveTrip() async {
     http.Response res =
-        await postQuery('mobile_api', {"model": "Driver.getActiveDriverTrip"});
+        await postQuery('/mobile_api', {"model": "Driver.getActiveDriverTrip"});
     var body = jsonDecode(res.body);
     return (body == null || body.toString() == '[]')
         ? TripModel(trip_id: 0)
@@ -167,7 +181,7 @@ class HttpService {
     };
 
     Map? body = {"model": 'create_trip', "params": jsonEncode(data)};
-    http.Response res = await postQuery('mobile_api', body);
+    http.Response res = await postQuery('/mobile_api', body);
 
     if (res.statusCode == 200) {
       return TripModel.fromJson(jsonDecode(res.body));
@@ -184,7 +198,7 @@ class HttpService {
     };
 
     http.Response res = await postQuery(
-        'mobile_api', {"model": 'end_trip', "params": jsonEncode(data)});
+        '/mobile_api', {"model": 'end_trip', "params": jsonEncode(data)});
 
     if (res.statusCode == 200) {
       return res.body;
@@ -202,7 +216,7 @@ class HttpService {
     };
 
     http.Response res = await postQuery(
-        'mobile_api', {"model": 'update_pickup', "params": jsonEncode(data)});
+        '/mobile_api', {"model": 'update_pickup', "params": jsonEncode(data)});
 
     if (res.statusCode == 200) {
     } else {
@@ -219,7 +233,7 @@ class HttpService {
       "status": 'done',
     };
 
-    http.Response res = await postQuery('mobile_api',
+    http.Response res = await postQuery('/mobile_api',
         {"model": 'update_destination', "params": jsonEncode(data)});
 
     if (res.statusCode == 200) {
@@ -240,7 +254,7 @@ class HttpService {
     };
 
     http.Response res = await postQuery(
-        'mobile_api', {"model": "Driver.signup", "params": jsonEncode(data)});
+        '/mobile_api', {"model": "Driver.signup", "params": jsonEncode(data)});
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
@@ -303,7 +317,7 @@ class HttpService {
         await storage.setItem(
             'token', body['token'].isEmpty ? '' : body['token']);
         await storage.setItem(
-            'user_id', body['user_id'] ?? body['user_id']);
+            'driver_id', body['id_usu'] ?? body['id_usu']);
         return '1';
       } else {
         try {
@@ -334,7 +348,7 @@ class HttpService {
       "status": 'new',
     };
 
-    http.Response res = await postQuery('mobile_api',
+    http.Response res = await postQuery('/mobile_api',
         {"model": "driver_help_message", "params": jsonEncode(data)});
 
     if (res.statusCode == 200) {
@@ -353,7 +367,7 @@ class HttpService {
       "comment": comment,
     };
 
-    http.Response res = await postQuery('mobile_api/create',
+    http.Response res = await postQuery('/mobile_api/create',
         {"model": "HelpMessageComment.create", "params": jsonEncode(data)});
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
@@ -370,7 +384,7 @@ class HttpService {
       "email": email,
     };
 
-    http.Response res = await postQuery('mobile_api',
+    http.Response res = await postQuery('/mobile_api',
         {"model": "Drivers.resetPassword", "params": jsonEncode(data)});
 
     if (res.statusCode == 200) {
@@ -388,7 +402,7 @@ class HttpService {
       "password": password,
     };
 
-    http.Response res = await postQuery('mobile_api',
+    http.Response res = await postQuery('/mobile_api',
         {"model": "Drivers.resetChangePassword", "params": jsonEncode(data)});
 
     if (res.statusCode == 200) {
@@ -408,7 +422,7 @@ class HttpService {
       "confirmed_password": confirmedPassword,
     };
 
-    http.Response res = await postQuery('mobile_api',
+    http.Response res = await postQuery('/mobile_api',
         {"model": "Driver.changePassword", "params": jsonEncode(data)});
 
     if (res.statusCode == 200) {
@@ -430,7 +444,7 @@ class HttpService {
     };
 
     http.Response res = await postQuery(
-        'mobile_api', {"model": "Vehicle.update", "params": jsonEncode(data)});
+        '/mobile_api', {"model": "Vehicle.update", "params": jsonEncode(data)});
 
     if (res.statusCode == 200) {
       return jsonDecode(res.body);
@@ -441,7 +455,7 @@ class HttpService {
 
   /// Send Car Location
   addStudent(Map data) async {
-    http.Response res = await postQuery('mobile_api/create',
+    http.Response res = await postQuery('/mobile_api/create',
         {"model": "Student.create", "params": jsonEncode(data)});
 
     if (res.statusCode == 200) {
@@ -460,7 +474,7 @@ class HttpService {
 
   /// Update student info
   updateStudentInfo(Map data) async {
-    http.Response res = await postQuery('mobile_api/update',
+    http.Response res = await postQuery('/mobile_api/update',
         {"model": "Student.updateStudentInfo", "params": jsonEncode(data)});
 
     if (res.statusCode == 200) {
@@ -478,7 +492,7 @@ class HttpService {
 
   /// Update student info
   Future<bool> saveWorkingDays(Map data) async {
-    http.Response res = await postQuery('mobile_api/update',
+    http.Response res = await postQuery('/mobile_api/update',
         {"model": "PickupLocation.update", "params": jsonEncode(data)});
 
     if (res.statusCode == 200) {
@@ -502,7 +516,7 @@ class HttpService {
       "field": {"onesignal_id": oneSignalId, "onesignal_token": oneSignalToken},
     };
 
-    await postQuery('mobile_api/update',
+    await postQuery('/mobile_api/update',
         {"type": "Driver.update", "params": jsonEncode(data)});
   }
 
@@ -514,7 +528,7 @@ class HttpService {
 
     Map data = {"driver_id": driverId, "id": notificationId, "status": 'read'};
 
-    await postQuery('mobile_api/update',
+    await postQuery('/mobile_api/update',
         {"type": "Notification.update", "params": jsonEncode(data)});
   }
 

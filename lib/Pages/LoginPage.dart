@@ -184,21 +184,20 @@ class _LoginState extends State<Login> {
                                         setState(() {
                                           showLoader = true;
                                         });
+                                        
                                         loginResponse = await httpService.login(
                                             email, password);
+                                        
                                         setState(() {
-                                          showSuccessDialog(
-                                              context,
-                                              loginResponse == '1'
-                                                  ? lang.translate('Success')
-                                                  : lang.translate('Error'),
-                                              loginResponse == '1'
-                                                  ? lang.translate(
-                                                      'Logged in successfully')
-                                                  : loginResponse,
-                                              callback);
                                           showLoader = false;
-                                          // goHome();
+                                          if(loginResponse == '1'){
+                                            goHome();
+                                          }else{
+                                            showSuccessDialog(
+                                              context, lang.translate('Error'),
+                                              loginResponse,
+                                              callback);
+                                          }
                                         });
                                       },
                                       child: Text(
@@ -273,22 +272,20 @@ class _LoginState extends State<Login> {
   /// if already logged in
   ///
   goHome() async {
-    // final token_ = await storage.getItem('token');
-    // final driverId_ = storage.getItem('driver_id');
+    final token_ = await storage.getItem('token');
+    final driverId_ = storage.getItem('driver_id');
 
-    // if (token_ != null && driverId_ != null) {
-    //   Timer(const Duration(seconds: 1), () {
-    //     Get.offAll(HomePage());
-    //   });
-    // } else {
-    //   Timer(const Duration(seconds: 1), () {
-    //     if (storage.getItem('token') == null) {
-    //       showLoader = false;
-    //     } else {
-    //       Get.offAll(HomePage());
-    //     }
-    //   });
-    // }
+    if (token_ != null && driverId_ != null) {
+      Get.offAll(HomePage());
+    } else {
+      // Timer(const Duration(seconds: 1), () {
+      //   if (storage.getItem('token') == null) {
+      //     showLoader = false;
+      //   } else {
+      //     Get.offAll(HomePage());
+      //   }
+      // });
+    }
   }
 
   @override
