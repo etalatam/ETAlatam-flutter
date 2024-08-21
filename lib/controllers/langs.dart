@@ -224,11 +224,13 @@ class Lang {
       'app_preferences' : 'Preferencias',
       'set_your_custom_configuration' : 'Establece tu configuración personalizada',
       'get_permissions': 'Permisos',
+      'get_permission': 'Obtener permisos',
       'some_permissions_are_required_to_use_the_app':'Se requieren algunos permisos para utilizar la aplicación.',
       'start_now': 'Comenzar',
       'start_with_your_account': 'Comience con su cuenta',
       'dark_mode': 'Modo oscuro',
-      'show_template_in_darkmode': 'Usar el modo oscuro'
+      'show_template_in_darkmode': 'Usar el modo oscuro',
+      'next': 'Continuar'
 
 
   };
