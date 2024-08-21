@@ -14,12 +14,11 @@ class MapWithRoute extends StatefulWidget {
   final TripModel trip;
 
   const MapWithRoute(
-      {Key? key,
+      {super.key,
       required this.origin,
       required this.destination,
       required this.trip,
-      this.pickup_locations})
-      : super(key: key);
+      this.pickup_locations});
 
   @override
   _MapWithRouteState createState() => _MapWithRouteState();

@@ -13,11 +13,10 @@ class CustomRouteMap extends StatefulWidget {
   final List<TripPickupLocation>? pickup_locations;
 
   const CustomRouteMap(
-      {Key? key,
+      {super.key,
       required this.origin,
       required this.destination,
-      this.pickup_locations})
-      : super(key: key);
+      this.pickup_locations});
 
   @override
   _CustomRouteMapState createState() => _CustomRouteMapState();

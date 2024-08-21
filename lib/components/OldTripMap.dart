@@ -14,12 +14,11 @@ class OldTripMap extends StatefulWidget {
   final TripModel trip;
 
   const OldTripMap(
-      {Key? key,
+      {super.key,
       required this.origin,
       required this.destination,
       required this.trip,
-      this.pickup_locations})
-      : super(key: key);
+      this.pickup_locations});
 
   @override
   _OldTripMapState createState() => _OldTripMapState();

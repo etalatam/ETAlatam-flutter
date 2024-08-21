@@ -56,7 +56,7 @@ locationService(title, subtitle) async {
 }
 
 Future<LocationData> getCurrentLocation() async {
-  var pos;
+  Location pos;
 
   pos = Location();
 
