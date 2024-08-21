@@ -289,9 +289,7 @@ class HttpService {
     });
 
     var requestAccessRes = await requestAccess();
-    if( requestAccessRes == '0') {
-      return requestAccessRes;
-    }else{
+    if( requestAccessRes == '1') {
       http.Response res = await postQuery('/rpc/login', data);
 
       if (res.statusCode == 200) {
@@ -299,7 +297,7 @@ class HttpService {
         await storage.setItem(
             'token', body['token'].isEmpty ? '' : body['token']);
         await storage.setItem(
-            'driver_id', body['user_id'] ?? body['user_id']);
+            'user_id', body['user_id'] ?? body['user_id']);
         return '1';
       } else {
         try {
@@ -314,6 +312,8 @@ class HttpService {
 
         return 'Unable to login';
       }
+    }else{
+      return requestAccessRes;
     }
   }
 

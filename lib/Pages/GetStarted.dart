@@ -13,8 +13,8 @@ import 'package:location/location.dart';
 bool darkmode = false;
 bool showLoader = true;
 
-List<String> list = <String>['Arabic', 'English'];
-String selectedLang = 'English';
+List<String> list = <String>['Arabic', 'English', 'Español'];
+String selectedLang = 'Español';
 
 LocationData? _location;
 
@@ -186,9 +186,9 @@ class SlidePage extends StatelessWidget {
       child: Center(
           child: Column(children: [
         Container(
-          margin: const EdgeInsets.only(top: 150),
-          width: 250,
-          height: 250,
+          margin: const EdgeInsets.only(top: 120),
+          width: 180,
+          height: 180,
           clipBehavior: Clip.antiAlias,
           decoration: ShapeDecoration(
             image: DecorationImage(

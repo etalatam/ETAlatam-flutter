@@ -5,13 +5,15 @@ class Lang {
   String? key;
   String? value;
   String? locale;
+  List<Map> langList = [];
 
   Lang({
     required this.key,
     required this.value,
     required this.locale,
-
-  });
+  }){
+    langList.addAll([esLangs, arLangs, enLangs]);
+  }
   
   factory Lang.fromJson(Map<String, dynamic> json) {
     return Lang(
@@ -26,8 +28,19 @@ class Lang {
   
     final LocalStorage storage = LocalStorage('tokens.json');
     String lang = storage.getItem('lang').toString();
+    Map data;
 
-    Map data = (lang == 'Arabic')  ? arLangs : enLangs;
+    switch (lang) {
+      case 'Arabic':
+        data = arLangs;
+        break;
+      case 'English':
+        data = enLangs;
+        break;  
+      default:
+        data = esLangs;
+        break;
+    }
     
     var item = key.replaceAll(' ', '_').toLowerCase();
 
@@ -166,12 +179,10 @@ class Lang {
      '' : '',
 
 
-     'login_copyrights': 'Medians Solutions © 2023 ALL RIGHTS RESERVED',
+     'login_copyrights': '',
 
   };
 
-
-  
   Map<String, dynamic> enLangs = {
       'sitename':'Medians Trips',
       'trips_history':'Trips log history',
@@ -180,7 +191,7 @@ class Lang {
       'send_your_message_below':'If you have any issue or need any help. \nSend your message below.',
       'your_message_here': 'Type your message ...',
       'you_have_no_route_yet': "You don't have any route yet",
-      'login_copyrights': 'Medians Solutions © 2023 ALL RIGHTS RESERVED',
+      'login_copyrights': '',
       'forgot_password': 'Forgot your password ?',
       'student_info_updated' : "We'll review your information, and we'll contact you ASAP",
       'vacations_days_subtitle' : 'Vacations & absense days',
@@ -189,6 +200,36 @@ class Lang {
       'forgot_password_message' : 'Add your email and we will send you reset password code through email',
       'change_password_message' : 'You can find your token at your email, and change your password and confirmation',
       '' : '',
+  };
+
+  Map<String, dynamic> esLangs = {
+      'sitename':'ETA Latam',
+      'trips_history':'Historial de viajes',
+      'show_map': 'Mostrar ruta en el mapa',
+      'login_intro_message' : 'Por favor cree su cuenta con su información válida. \nInicie sesión para administrar su cuenta.',
+      'send_your_message_below':'Si tiene algún problema o necesita ayuda. \nEnvíe su mensaje a continuación.',
+      'your_message_here': 'Escribe tu mensaje...',
+      'you_have_no_route_yet': "Aún no tienes ninguna ruta",
+      'login_copyrights': '',
+      'forgot_password': 'Olvidaste tu contraseña ?',
+      'student_info_updated' : "Revisaremos su información y nos comunicaremos con usted lo antes posible.",
+      'vacations_days_subtitle' : 'Vacaciones y días de ausencia',
+      'pickup_and_destinations' : 'Lugares de recogida y destino',
+      'you_need_to_complete_some_required_information' : 'Necesitas completar alguna información requerida',
+      'forgot_password_message' : 'Agregue su correo electrónico y le enviaremos el código de restablecimiento de contraseña por correo electrónico',
+      'change_password_message' : 'Puede encontrar su token en su correo electrónico y cambiar su contraseña y confirmación.',
+      'select_your_language' : 'Selecciona tu idioma',
+      'Language': 'Idioma',
+      'notifications': 'Notificaciones',
+      'app_preferences' : 'Preferencias',
+      'set_your_custom_configuration' : 'Establece tu configuración personalizada',
+      'get_permissions': 'Permisos',
+      'some_permissions_are_required_to_use_the_app':'Se requieren algunos permisos para utilizar la aplicación.',
+      'start_now': 'Comenzar',
+      'start_with_your_account': 'Comience con su cuenta',
+      'dark_mode': 'Modo oscuro',
+      'show_template_in_darkmode': 'Usar el modo oscuro'
+
 
   };
 
