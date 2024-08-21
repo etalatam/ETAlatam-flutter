@@ -16,7 +16,6 @@ import 'package:MediansSchoolDriver/Models/NotificationModel.dart';
 import 'package:location/location.dart';
 import 'package:flutter/foundation.dart';
 
-
 class HttpService {
   final LocalStorage storage = LocalStorage('tokens.json');
 
@@ -37,27 +36,25 @@ class HttpService {
   /// Run API GET query
   getQuery(String path, {useToken = true}) async {
     var token = storage.getItem('token');
-    return await http.get(Uri.parse(apiURL + path),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': useToken ? 'Bearer $token': '',
+    return await http.get(Uri.parse(apiURL + path), headers: {
+      'Content-Type': 'application/json',
+      'Authorization': useToken ? 'Bearer $token' : '',
     });
   }
 
   /// Run API POST query
-  postQuery(String path, body, {useToken=true}) async {
+  postQuery(String path, body, {useToken = true}) async {
     var token = storage.getItem('token');
-    return await http.post(Uri.parse(apiURL + path),
-        body: body, headers: {
-          // 'Content-Type': 'application/json',
-          'Authorization': useToken ? 'Bearer $token' : '',
-        });
+    return await http.post(Uri.parse(apiURL + path), body: body, headers: {
+      // 'Content-Type': 'application/json',
+      'Authorization': useToken ? 'Bearer $token' : '',
+    });
   }
 
   /// Load Trips
   Future<List<TripModel>> getTrips(int lastId) async {
     http.Response res = await getQuery("/mobile_api/trips?lastId=$lastId");
-    if(res.statusCode == 200){
+    if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
       return body.map((dynamic item) => TripModel.fromJson(item)).toList();
     }
@@ -69,7 +66,7 @@ class HttpService {
   Future<List<NotificationModel>?> getNotifications() async {
     http.Response res = await getQuery("/mobile_api/notifications");
 
-    if(res.statusCode == 200){
+    if (res.statusCode == 200) {
       dynamic resObject = jsonDecode(res.body);
       List<dynamic> body = jsonDecode(jsonEncode(resObject['items']));
       return body
@@ -82,9 +79,11 @@ class HttpService {
   /// Load Help Messages
   Future<List<HelpMessageModel>?> getHelpMessages() async {
     http.Response res = await getQuery("/mobile_api/help_messages");
-    if(res.statusCode == 200){
+    if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
-      return body.map((dynamic item) => HelpMessageModel.fromJson(item)).toList();
+      return body
+          .map((dynamic item) => HelpMessageModel.fromJson(item))
+          .toList();
     }
 
     return [];
@@ -94,7 +93,7 @@ class HttpService {
   Future<List<RouteModel>> getRoute(String model) async {
     http.Response res = await getQuery(model);
 
-    if(res.statusCode == 200){
+    if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
       return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
     }
@@ -105,7 +104,7 @@ class HttpService {
   Future<RouteModel> getRouteInfo(id) async {
     http.Response res = await getQuery("/route/$id");
 
-    if(res.statusCode == 200){
+    if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
       return RouteModel.fromJson(body);
     }
@@ -116,7 +115,7 @@ class HttpService {
   Future<DriverModel> getDriver(id) async {
     http.Response res = await getQuery("/driver/$id");
 
-    if(res.statusCode == 200){
+    if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
       return DriverModel.fromJson(body);
     }
@@ -134,9 +133,10 @@ class HttpService {
 
   /// Load Student pickup
   Future<PickupLocationModel> getPickup(int? id) async {
-    http.Response res = await getQuery("/mobile_api/student_pickup?student_id=$id");
+    http.Response res =
+        await getQuery("/mobile_api/student_pickup?student_id=$id");
 
-    if(res.statusCode == 200){
+    if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
       return PickupLocationModel.fromJson(body);
     }
@@ -147,20 +147,19 @@ class HttpService {
   /// Load Events
   Future<List<EventModel>> getEvents() async {
     http.Response res = await getQuery("/events?load=json");
-    if(res.statusCode == 200){
+    if (res.statusCode == 200) {
       var jsonResponse = jsonDecode(res.body);
       List<dynamic> body = jsonResponse['items'] ?? [];
       return body.map((dynamic item) => EventModel.fromJson(item)).toList();
     }
 
     return [];
-
   }
 
   /// Load Routes
   Future<List<RouteModel>> getRoutes() async {
     http.Response res = await getQuery("/driver_routes");
-    if(res.statusCode == 200){
+    if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
       return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
     }
@@ -173,7 +172,7 @@ class HttpService {
   Future<TripModel> getTrip(id) async {
     http.Response res = await getQuery("/trip/$id");
 
-    if(res.statusCode == 200){
+    if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
       return body == null ? TripModel(trip_id: 0) : TripModel.fromJson(body);
     }
@@ -184,10 +183,11 @@ class HttpService {
   Future<TripModel> getActiveTrip() async {
     http.Response res =
         await postQuery('/mobile_api', {"model": "Driver.getActiveDriverTrip"});
-    var body = jsonDecode(res.body);
-    return (body == null || body.toString() == '[]')
-        ? TripModel(trip_id: 0)
-        : TripModel.fromJson(body);
+    if (res.statusCode == 200) {
+      var body = jsonDecode(res.body);
+      return TripModel.fromJson(body);
+    }
+    return TripModel(trip_id: 0);
   }
 
   /// Submit form to update data through API
@@ -286,37 +286,37 @@ class HttpService {
 
   // request access to api
   requestAccess() async {
-      debugPrint('requestAccess');
-      final data = {
-        '_client_id': '8158677453437', 
-        '_access_token': 'a9b44b37-b305-42e8-af90-8e0238bd3724'
-      };
-      
-      final http.Response res = await postQuery('/rpc/request_access', data,useToken: false);
+    debugPrint('requestAccess');
+    final data = {
+      '_client_id': '8158677453437',
+      '_access_token': 'a9b44b37-b305-42e8-af90-8e0238bd3724'
+    };
 
-      if (res.statusCode == 200) {
+    final http.Response res =
+        await postQuery('/rpc/request_access', data, useToken: false);
+
+    if (res.statusCode == 200) {
+      var body = jsonDecode(res.body);
+      debugPrint(body.toString());
+      await storage.setItem(
+          'token', body['token'].isEmpty ? '' : body['token']);
+      return '1';
+    } else {
+      try {
+        debugPrint(res.body.toString());
         var body = jsonDecode(res.body);
-        debugPrint(body.toString());
-        await storage.setItem(
-          'token', body['token'].isEmpty ? '' : body['token']
-        );
-        return '1';
-      }else{
-        try {
-          debugPrint(res.body.toString());
-          var body = jsonDecode(res.body);
 
-          if("${body['hint']}".isEmpty == false){
-            return body['hint'];
-          }else if("${body['message']}".isEmpty == false){
-            return body['message'];
-          }
-        } catch (e) {
-          debugPrint(e.toString());
+        if ("${body['hint']}".isEmpty == false) {
+          return body['hint'];
+        } else if ("${body['message']}".isEmpty == false) {
+          return body['message'];
         }
-
-        return 'Unable to request access';
+      } catch (e) {
+        debugPrint(e.toString());
       }
+
+      return 'Unable to request access';
+    }
   }
 
   /// Login with email & password
@@ -328,7 +328,7 @@ class HttpService {
     };
 
     var requestAccessRes = await requestAccess();
-    if( requestAccessRes == '1') {
+    if (requestAccessRes == '1') {
       http.Response res = await postQuery('/rpc/login', data);
 
       if (res.statusCode == 200) {
@@ -336,16 +336,15 @@ class HttpService {
         debugPrint(body.toString());
         await storage.setItem(
             'token', body['token'].isEmpty ? '' : body['token']);
-        await storage.setItem(
-            'driver_id', body['id_usu'] ?? body['id_usu']);
+        await storage.setItem('driver_id', body['id_usu'] ?? body['id_usu']);
         return '1';
       } else {
         try {
           debugPrint(res.body.toString());
           var body = jsonDecode(res.body);
-          if("${body['hint']}".isEmpty == false){
+          if ("${body['hint']}".isEmpty == false) {
             return body['hint'];
-          }else if("${body['message']}".isEmpty == false){
+          } else if ("${body['message']}".isEmpty == false) {
             return body['message'];
           }
         } catch (e) {
@@ -354,7 +353,7 @@ class HttpService {
 
         return 'Unable to login';
       }
-    }else{
+    } else {
       return requestAccessRes;
     }
   }
