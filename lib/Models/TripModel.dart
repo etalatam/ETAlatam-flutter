@@ -51,7 +51,7 @@ class TripModel {
 
   factory TripModel.fromJson(Map<String, dynamic> json) {
 
-    Iterable l = json["pickup_locations"] != '[]' ? json["pickup_locations"] : null;
+    Iterable l = json["pickup_locations"] ? json["pickup_locations"] : [];
     List<TripPickupLocation> pickupLocations = List<TripPickupLocation>.from(l.map((model)=> TripPickupLocation.fromJson(model)));
 
     Iterable? o = (json["destinations"] != null ) ? json["destinations"] : null;

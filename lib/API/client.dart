@@ -27,11 +27,11 @@ class HttpService {
   Map? headers;
 
   String getImageUrl() {
-    return "${apiURL}app/image.php?src=";
+    return "$apiURL/app/image.php?src=";
   }
 
   String croppedImage(path, int? width, int? height) {
-    return "${apiURL}app/image.php?w=$width&h=$height&src=$path";
+    return "$apiURL/app/image.php?w=$width&h=$height&src=$path";
   }
 
   /// Run API GET query
@@ -180,7 +180,7 @@ class HttpService {
     return TripModel(trip_id: 0);
   }
 
-  /// Load Trip
+  /// Load Tripd
   Future<TripModel> getActiveTrip() async {
     http.Response res =
         await postQuery('/mobile_api', {"model": "Driver.getActiveDriverTrip"});
