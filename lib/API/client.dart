@@ -288,8 +288,8 @@ class HttpService {
   requestAccess() async {
     debugPrint('requestAccess');
     final data = {
-      '_client_id': '8158677453437',
-      '_access_token': 'a9b44b37-b305-42e8-af90-8e0238bd3724'
+      '_client_id': '4926212245183',
+      '_access_token': '8725ca59-71be-46c6-a364-eaac57f1786d'
     };
 
     final http.Response res =
@@ -301,22 +301,9 @@ class HttpService {
       await storage.setItem(
           'token', body['token'].isEmpty ? '' : body['token']);
       return '1';
-    } else {
-      try {
-        debugPrint(res.body.toString());
-        var body = jsonDecode(res.body);
-
-        if ("${body['hint']}".isEmpty == false) {
-          return body['hint'];
-        } else if ("${body['message']}".isEmpty == false) {
-          return body['message'];
-        }
-      } catch (e) {
-        debugPrint(e.toString());
-      }
-
-      return 'Unable to request access';
     }
+
+    return parseResponseMessage(res);
   }
 
   /// Login with email & password
@@ -339,23 +326,11 @@ class HttpService {
         await storage.setItem('driver_id', body['id_usu'] ?? body['id_usu']);
         return '1';
       } else {
-        try {
-          debugPrint(res.body.toString());
-          var body = jsonDecode(res.body);
-          if ("${body['hint']}".isEmpty == false) {
-            return body['hint'];
-          } else if ("${body['message']}".isEmpty == false) {
-            return body['message'];
-          }
-        } catch (e) {
-          debugPrint(e.toString());
-        }
-
-        return 'Unable to login';
+        return parseResponseMessage(res);
       }
-    } else {
-      return requestAccessRes;
     }
+
+    return requestAccessRes;
   }
 
   /// Send message
@@ -403,14 +378,28 @@ class HttpService {
       "email": email,
     };
 
-    http.Response res = await postQuery('/mobile_api',
-        {"model": "Drivers.resetPassword", "params": jsonEncode(data)});
+    http.Response res = await postQuery('/rpc/update_password_request', data);
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
       return body['success'] != null ? body['result'] : body['error'];
     } else {
-      throw "Unable to retrieve data.";
+      return parseResponseMessage(res);
+    }
+  }
+
+  // get message error from request response
+  parseResponseMessage(http.Response res) {
+    try {
+      debugPrint(res.body.toString());
+      var body = jsonDecode(res.body);
+      if (body['hint'] != null) {
+        return body['hint'];
+      } else if ("${body['message']}".isEmpty == false) {
+        return body['message'];
+      }
+    } catch (e) {
+      debugPrint(e.toString());
     }
   }
 
