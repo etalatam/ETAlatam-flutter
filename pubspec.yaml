@@ -3,10 +3,10 @@ description: Parent APP for Medians School Routes system.
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.0+1
+version: 1.0.0
 
 environment:
-  sdk: '>=3.2.0 <4.0.0'
+  sdk: '>=3.19.2 <4.0.0'
 
 
 dependencies:
