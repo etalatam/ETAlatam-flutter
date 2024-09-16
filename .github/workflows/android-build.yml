@@ -15,7 +15,7 @@ jobs:
         with:
           channel: stable
           flutter-version: 3.19.2
-          #cache: true
+          cache: true
 
       - name: Get version
         id: get_version
