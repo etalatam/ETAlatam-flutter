@@ -3,11 +3,11 @@ description: Parent APP for Medians School Routes system.
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 1.1.0+2
+version: 1.1.0
 
 environment:
   sdk: ">=3.2.0 <4.0.0"
-
+  flutter: ">= 3.19.0 <4.0.0"
 dependencies:
   background_locator_2: ^2.0.6
   cached_network_image: ^3.2.3
