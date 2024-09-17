@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:MediansSchoolDriver/Pages/HomePage.dart';
 import 'package:MediansSchoolDriver/Pages/LoginPage.dart';
 import 'package:MediansSchoolDriver/Pages/GetStarted.dart';
+import 'package:MediansSchoolDriver/Pages/map/map_view.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+import 'package:MediansSchoolDriver/shared/location/view_location.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -25,6 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
     final check = await storage.getItem('token');
     if (check != null) {
       Get.offAll(() => HomePage());
+      // Get.offAll(() => LocatorView());
     } else {
       final started = await preferences.getBool('started');
       Get.off(() => started != null ? Login() : GetStartedApp());

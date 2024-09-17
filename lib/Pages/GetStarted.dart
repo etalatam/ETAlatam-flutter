@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:MediansSchoolDriver/Pages/HomePage.dart';
+import 'package:MediansSchoolDriver/Pages/map/map_view.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,7 @@ import 'package:MediansSchoolDriver/controllers/locale.dart';
 import 'package:MediansSchoolDriver/controllers/preferences.dart';
 import 'package:MediansSchoolDriver/Pages/LoginPage.dart';
 import 'package:MediansSchoolDriver/components/loader.dart';
-import 'package:location/location.dart';
+import 'package:permission_handler/permission_handler.dart' as permissions;
 
 bool darkmode = false;
 bool showLoader = true;
@@ -16,7 +17,7 @@ bool showLoader = true;
 List<String> list = <String>['Arabic', 'English', 'Español'];
 String selectedLang = 'Español';
 
-LocationData? _location;
+bool _havePermissions = false;
 
 final PageController _controller = PageController();
 
@@ -113,12 +114,12 @@ class _GetStartedAppState extends State<GetStartedApp> {
       token = storage.getItem('token');
 
       if (token != null) {
-        Get.offAll(() => HomePage());
+        Get.offAll(() => MapView());
       } else if (sessionLang != null) {
         Get.offAll(() => Login());
       }
 
-      if (_location != null) {
+      if (_havePermissions) {
         _controller.nextPage(
           duration: const Duration(
               milliseconds: 500), // You can specify the animation duration
@@ -259,15 +260,24 @@ class SlidePage extends StatelessWidget {
       ),
     );
   }
+  Future<bool> _checkLocationPermission() async {
+    await permissions.Permission.location.request();
+    final permission = await permissions.Permission.locationAlways.request();
+    await permissions.Permission.notification.request();
 
+    if (permission == permissions.PermissionStatus.granted) {
+      return true;
+    } else {
+      return false;
+    }
+  }
   Widget permissionsSlide(context) {
     return Container(
         color: color,
         child: Center(
             child: GestureDetector(
           onTap: (() async {
-            Location location = Location();
-            _location = await location.getLocation();
+            _havePermissions = await _checkLocationPermission();
             _controller.nextPage(
               duration: const Duration(
                   milliseconds: 500), // You can specify the animation duration

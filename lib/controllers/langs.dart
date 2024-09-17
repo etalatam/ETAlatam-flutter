@@ -225,7 +225,7 @@ class Lang {
       'set_your_custom_configuration' : 'Establece tu configuración personalizada',
       'get_permissions': 'Permisos',
       'get_permission': 'Obtener permisos',
-      'some_permissions_are_required_to_use_the_app':'Se requieren algunos permisos para utilizar la aplicación.',
+      'some_permissions_are_required_to_use_the_app':'Para ofrecerte la mejor experiencia, necesitamos acceder a tu ubicación y enviarte notificaciones mientras realizas tu ruta escolar. ¡Con tu permiso, haremos un seguimiento seguro y confiable!.',
       'start_now': 'Comenzar',
       'start_with_your_account': 'Comience con su cuenta',
       'dark_mode': 'Modo oscuro',

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:MediansSchoolDriver/Models/PickupLocationModel.dart';
+import 'package:MediansSchoolDriver/domain/entities/background_locator/background_position.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
@@ -43,10 +44,12 @@ class HttpService {
   }
 
   /// Run API POST query
-  postQuery(String path, body, {useToken = true}) async {
-    var token = storage.getItem('token');
+  postQuery(String path, body,
+      {useToken = true,
+      contentType = 'application/x-www-form-urlencoded'}) async {
+    final token = storage.getItem('token');
     return await http.post(Uri.parse(apiURL + path), body: body, headers: {
-      // 'Content-Type': 'application/json',
+      'Content-Type': contentType,
       'Authorization': useToken ? 'Bearer $token' : '',
     });
   }
@@ -567,5 +570,41 @@ class HttpService {
         '$baseURL$input?fields=id,location,formattedAddress,photos&key=$googleApiKey';
     var response = await http.get(Uri.parse(request));
     return json.decode(response.body);
+  }
+
+  Future<dynamic> sendTracking(
+      {required BackgroundPosition position, int driver = 18}) async {
+    debugPrint('sendTracking');
+    final driverID = await storage.getItem('driver_id');
+    final data = {
+      'driver_id': driverID ??
+          driver, //TODO al momento de tener el coductor cambiar dinamicamente
+      'latitude': position.latitude,
+      'longitude': position.longitude,
+      'speed': position.speed,
+      'heading': position.heading,
+      'time': position.time,
+      'accuracy': position.accuracy,
+      'altitude': position.altitude,
+      'speedAccuracy': position.speedAccuracy,
+      'isMocked': position.isMocked
+    };
+    final jsonData = jsonEncode(data);
+    try {
+      // var requestAccessRes = await requestAccess();
+      http.Response res = await postQuery('/rpc/user_tracking', jsonData,
+          contentType: 'application/json');
+      print('sendTragkind 2.5---------------respondeio: $res');
+      if (res.statusCode == 200) {
+        print("sendTracking 3----respuesta---------------------: ${res.body}");
+        return res.body;
+      } else {
+        print("sendTracking 4-------fallo---------------------: ${res.body}");
+        return res;
+      }
+    } catch (e) {
+      print("sendTracking error:---------${e.toString()}");
+      return null;
+    }
   }
 }
