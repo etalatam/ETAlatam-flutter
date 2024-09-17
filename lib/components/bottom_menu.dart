@@ -1,8 +1,6 @@
-import 'package:MediansSchoolDriver/Pages/ProfilePage.dart';
 import 'package:MediansSchoolDriver/Pages/SettingsPage.dart';
-import 'package:MediansSchoolDriver/Pages/HomePage.dart';
-import 'package:MediansSchoolDriver/Pages/NotificationsPage.dart';
 import 'package:MediansSchoolDriver/Pages/HelpPage.dart';
+import 'package:MediansSchoolDriver/Pages/map/map_view.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:flutter/material.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
@@ -25,16 +23,20 @@ class BottomMenu extends StatelessWidget {
           iconData: Icons.settings_outlined,
           active: checkTrue('settings'),
           page: SettingsPage()),
+      // MenuModel(
+      //     iconData: Icons.face_sharp,
+      //     active: checkTrue('profile'),
+      //     page: ProfilePage()),
+      // MenuModel(
+      //     iconData: Icons.home, active: checkTrue('home'), page: HomePage()),
       MenuModel(
-          iconData: Icons.face_sharp,
-          active: checkTrue('profile'),
-          page: ProfilePage()),
-      MenuModel(
-          iconData: Icons.home, active: checkTrue('home'), page: HomePage()),
-      MenuModel(
-          iconData: Icons.notifications_on_outlined,
-          active: checkTrue('notifications'),
-          page: NotificationsPage()),
+          iconData: Icons.map_rounded,
+          active: checkTrue('home'),
+          page: MapView()),
+      // MenuModel(
+      //     iconData: Icons.notifications_on_outlined,
+      //     active: checkTrue('notifications'),
+      //     page: NotificationsPage()),
       MenuModel(
           iconData: Icons.help_outline,
           active: checkTrue('help'),
@@ -43,7 +45,6 @@ class BottomMenu extends StatelessWidget {
 
     activeTheme =
         storage.getItem('darkmode') == true ? DarkTheme() : LightTheme();
-
     return Center(
         child: Container(
       padding: const EdgeInsets.all(10),

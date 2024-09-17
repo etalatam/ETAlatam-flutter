@@ -10,6 +10,7 @@ import 'package:MediansSchoolDriver/Models/EventModel.dart';
 import 'package:MediansSchoolDriver/Models/StudentModel.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+
 import 'package:flutter_svg/flutter_svg.dart';
 
 Widget buttonText(callback, index, text) {
