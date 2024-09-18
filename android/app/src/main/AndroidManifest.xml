@@ -15,7 +15,7 @@
 
 
     <application
-        android:label="Medians Driver"
+        android:label="ETA"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         
