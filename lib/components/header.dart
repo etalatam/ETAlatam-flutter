@@ -79,12 +79,11 @@ class Header extends StatelessWidget {
         child: Container(
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            // color: activeTheme.main_bg,
+            color: activeTheme.main_bg,
             borderRadius: BorderRadius.circular(15),
             boxShadow: [
               BoxShadow(
-                // color: shadowColor,
-                color: Colors.white24,
+                color: shadowColor,
                 blurRadius: 10,
                 offset: const Offset(0, 5),
                 spreadRadius: 0,
@@ -96,7 +95,7 @@ class Header extends StatelessWidget {
           child: Row(
             children: [
               const Image(
-                image: AssetImage("assets/logo.png"),
+                image: AssetImage("assets/logo-white.png"),
                 width: 60,
                 height: 60,
               ),
