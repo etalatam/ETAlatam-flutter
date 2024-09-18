@@ -158,7 +158,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                     response=value;
                                     showSuccessDialog(
                                         context,
-                                        lang.translate('Alert'),
+                                        lang.translate('Error'),
                                         response == '1' ? lang.translate('Recovery password mail sended') : response,
                                         callback);
                                     showLoader = false;

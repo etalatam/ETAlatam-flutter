@@ -235,8 +235,7 @@ class Lang {
       'welcome_back': 'Bienvenido',
       'email': 'Correo electrónico',
       'password': 'Contraseña',
-      'Confirm': 'Confirmar',
-      'alert': 'Alerta',
+      'confirm': 'Confirmar',
       'recovery_password_mail_sended': '¡Correo de recuperación de contraseña enviado!'
 
 
