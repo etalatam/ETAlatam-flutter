@@ -79,7 +79,7 @@ class Header extends StatelessWidget {
         child: Container(
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: activeTheme.main_bg,
+            color: activeTheme.main_color,
             borderRadius: BorderRadius.circular(15),
             boxShadow: [
               BoxShadow(
