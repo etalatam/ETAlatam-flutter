@@ -381,14 +381,18 @@ class HttpService {
       "email": email,
     };
 
-    http.Response res = await postQuery('/rpc/update_password_request', data);
+    var requestAccessRes = await requestAccess();
+    if (requestAccessRes == '1') {
+      http.Response res = await postQuery('/rpc/update_password_request', data);
 
-    if (res.statusCode == 200) {
-      var body = jsonDecode(res.body);
-      return body['success'] != null ? body['result'] : body['error'];
-    } else {
-      return parseResponseMessage(res);
+      if (res.statusCode == 200) {
+        return '1';
+      } else {
+        return parseResponseMessage(res);
+      }
     }
+
+    return requestAccessRes;
   }
 
   // get message error from request response
@@ -396,7 +400,9 @@ class HttpService {
     try {
       debugPrint(res.body.toString());
       var body = jsonDecode(res.body);
-      if (body['hint'] != null) {
+      if (body['details'] != null) {
+        return body['details'];
+      } else if (body['hint'] != null) {
         return body['hint'];
       } else if ("${body['message']}".isEmpty == false) {
         return body['message'];

@@ -39,7 +39,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
             color: Colors.white,
             type: MaterialType.transparency,
             child: Stack(children: [
-              !activeResetPassword ? resetPassword() : changePassword(),
+              // !activeResetPassword ? resetPassword() : changePassword(),
+              resetPassword(),
               Positioned(
                   left: 0,
                   right: 0,
@@ -120,13 +121,13 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                     filled: true,
                                     hintStyle:
                                         TextStyle(color: Colors.grey[800]),
-                                    hintText: "Example@email.com",
+                                    hintText: "",
                                     fillColor:
                                         const Color.fromRGBO(233, 235, 235, 1)),
                                 onChanged: (val) {
                                   setState(() {
                                     email = val;
-                                    // _emailController.text = email;
+                                    _emailController.text = email;
                                   });
                                 },
                               ),
@@ -144,20 +145,29 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                             vertical: 16,
                           ),
                           child: GestureDetector(
-                            onTap: () async {
-                              if(email.isEmpty) return;
+                            onTap: () {
+                              if(email.isEmpty){
+                                return;
+                              }
                               setState(() {
                                 showLoader = true;
                               });
-                              response = await httpService.resetPassword(email);
-                              setState(() {
-                                showSuccessDialog(
-                                    context,
-                                    lang.translate('Response'),
-                                    response,
-                                    callback);
-                                showLoader = false;
-                                activeResetPassword = true;
+
+                              httpService.resetPassword(email).then((value)  {
+                                setState(() {
+                                    response=value;
+                                    showSuccessDialog(
+                                        context,
+                                        lang.translate('Alert'),
+                                        response == '1' ? lang.translate('Recovery password mail sended') : response,
+                                        callback);
+                                    showLoader = false;
+                                    activeResetPassword = true;
+                                });
+
+                                if(response == '1'){
+                                  Navigator.pop(context);
+                                }
                               });
                             },
                             child: Text(
@@ -174,19 +184,19 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 48),
-                  SizedBox(
-                    width: double.infinity,
-                    child: Text(
-                      lang.translate('login_copyrights'),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Color(0xff959cb5),
-                        fontSize: 16,
-                        letterSpacing: 0.16,
-                      ),
-                    ),
-                  ),
+                  // const SizedBox(height: 48),
+                  // SizedBox(
+                  //   width: double.infinity,
+                  //   child: Text(
+                  //     lang.translate('login_copyrights'),
+                  //     textAlign: TextAlign.center,
+                  //     style: const TextStyle(
+                  //       color: Color(0xff959cb5),
+                  //       fontSize: 16,
+                  //       letterSpacing: 0.16,
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               )),
         ));
@@ -247,175 +257,175 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               // response == null ? Center() : Text("${response}", style: TextStyle(color: activeTheme.main_color),),
-                              Text(
-                                lang.translate('Reset token'),
-                                style: TextStyle(
-                                  color: darkBlueColor,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextField(
-                                controller: currentPasswordController,
-                                decoration: InputDecoration(
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                    ),
-                                    filled: true,
-                                    hintStyle:
-                                        TextStyle(color: Colors.grey[800]),
-                                    hintText: "********",
-                                    fillColor:
-                                        const Color.fromRGBO(233, 235, 235, 1)),
-                                onChanged: (val) {
-                                  setState(() {
-                                    reset_token = val;
-                                  });
-                                },
-                              ),
+                              // Text(
+                              //   lang.translate('Reset token'),
+                              //   style: TextStyle(
+                              //     color: darkBlueColor,
+                              //     fontSize: 16,
+                              //   ),
+                              // ),
+                              // const SizedBox(height: 8),
+                              // TextField(
+                              //   controller: currentPasswordController,
+                              //   decoration: InputDecoration(
+                              //       border: OutlineInputBorder(
+                              //         borderRadius: BorderRadius.circular(10.0),
+                              //       ),
+                              //       filled: true,
+                              //       hintStyle:
+                              //           TextStyle(color: Colors.grey[800]),
+                              //       hintText: "",
+                              //       fillColor:
+                              //           const Color.fromRGBO(233, 235, 235, 1)),
+                              //   onChanged: (val) {
+                              //     setState(() {
+                              //       reset_token = val;
+                              //     });
+                              //   },
+                              // ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // response == null ? Center() : Text("${response}", style: TextStyle(color: activeTheme.main_color),),
-                              Text(
-                                lang.translate('New password'),
-                                style: TextStyle(
-                                  color: darkBlueColor,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextField(
-                                controller: passwordController,
-                                decoration: InputDecoration(
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                    ),
-                                    filled: true,
-                                    hintStyle:
-                                        TextStyle(color: Colors.grey[800]),
-                                    hintText: "******",
-                                    fillColor:
-                                        const Color.fromRGBO(233, 235, 235, 1)),
-                                onChanged: (val) {
-                                  setState(() {
-                                    password = val;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // response == null ? Center() : Text("${response}", style: TextStyle(color: activeTheme.main_color),),
-                              Text(
-                                lang.translate('Confirm password'),
-                                style: TextStyle(
-                                  color: darkBlueColor,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextField(
-                                controller: confirmedPasswordController,
-                                decoration: InputDecoration(
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                    ),
-                                    filled: true,
-                                    alignLabelWithHint: true,
-                                    hintStyle:
-                                        TextStyle(color: Colors.grey[800]),
-                                    hintText: "******",
-                                    fillColor:
-                                        const Color.fromRGBO(233, 235, 235, 1)),
-                                onChanged: (val) {
-                                  setState(() {
-                                    confirm_password = val;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            color: const Color(0xff1e3050),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 16,
-                          ),
-                          child: GestureDetector(
-                            onTap: () async {
-                              if (password != confirm_password) {
-                                showSuccessDialog(
-                                    context,
-                                    lang.translate('Error'),
-                                    lang.translate(
-                                        'New Password and confirm not matched'),
-                                    callback);
-                                return;
-                              }
+                        // const SizedBox(height: 24),
+                        // SizedBox(
+                        //   width: double.infinity,
+                        //   child: Column(
+                        //     mainAxisSize: MainAxisSize.min,
+                        //     mainAxisAlignment: MainAxisAlignment.start,
+                        //     crossAxisAlignment: CrossAxisAlignment.start,
+                        //     children: [
+                        //       // response == null ? Center() : Text("${response}", style: TextStyle(color: activeTheme.main_color),),
+                        //       Text(
+                        //         lang.translate('New password'),
+                        //         style: TextStyle(
+                        //           color: darkBlueColor,
+                        //           fontSize: 16,
+                        //         ),
+                        //       ),
+                        //       const SizedBox(height: 8),
+                        //       TextField(
+                        //         controller: passwordController,
+                        //         decoration: InputDecoration(
+                        //             border: OutlineInputBorder(
+                        //               borderRadius: BorderRadius.circular(10.0),
+                        //             ),
+                        //             filled: true,
+                        //             hintStyle:
+                        //                 TextStyle(color: Colors.grey[800]),
+                        //             hintText: "",
+                        //             fillColor:
+                        //                 const Color.fromRGBO(233, 235, 235, 1)),
+                        //         onChanged: (val) {
+                        //           setState(() {
+                        //             password = val;
+                        //           });
+                        //         },
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
+                        // const SizedBox(height: 24),
+                        // SizedBox(
+                        //   width: double.infinity,
+                        //   child: Column(
+                        //     mainAxisSize: MainAxisSize.min,
+                        //     mainAxisAlignment: MainAxisAlignment.start,
+                        //     crossAxisAlignment: CrossAxisAlignment.start,
+                        //     children: [
+                        //       // response == null ? Center() : Text("${response}", style: TextStyle(color: activeTheme.main_color),),
+                        //       Text(
+                        //         lang.translate('Confirm password'),
+                        //         style: TextStyle(
+                        //           color: darkBlueColor,
+                        //           fontSize: 16,
+                        //         ),
+                        //       ),
+                        //       const SizedBox(height: 8),
+                        //       TextField(
+                        //         controller: confirmedPasswordController,
+                        //         decoration: InputDecoration(
+                        //             border: OutlineInputBorder(
+                        //               borderRadius: BorderRadius.circular(10.0),
+                        //             ),
+                        //             filled: true,
+                        //             alignLabelWithHint: true,
+                        //             hintStyle:
+                        //                 TextStyle(color: Colors.grey[800]),
+                        //             hintText: "******",
+                        //             fillColor:
+                        //                 const Color.fromRGBO(233, 235, 235, 1)),
+                        //         onChanged: (val) {
+                        //           setState(() {
+                        //             confirm_password = val;
+                        //           });
+                        //         },
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
+                        // const SizedBox(height: 24),
+                        // Container(
+                        //   width: double.infinity,
+                        //   decoration: BoxDecoration(
+                        //     borderRadius: BorderRadius.circular(12),
+                        //     color: const Color(0xff1e3050),
+                        //   ),
+                        //   padding: const EdgeInsets.symmetric(
+                        //     vertical: 16,
+                        //   ),
+                        //   child: GestureDetector(
+                        //     onTap: () async {
+                        //       if (password != confirm_password) {
+                        //         showSuccessDialog(
+                        //             context,
+                        //             lang.translate('Error'),
+                        //             lang.translate(
+                        //                 'New Password and confirm not matched'),
+                        //             callback);
+                        //         return;
+                        //       }
 
-                              setState(() {
-                                showLoader = true;
-                              });
-                              response = await httpService.resetChangePassword(
-                                  reset_token, password);
-                              setState(() {
-                                showSuccessDialog(context,
-                                    lang.translate('Response'), response, () {
-                                  Get.to(Login());
-                                });
-                                showLoader = false;
-                                activeResetPassword = true;
-                              });
-                            },
-                            child: Text(
-                              lang.translate('Confirm'),
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                letterSpacing: 0.20,
-                              ),
-                            ),
-                          ),
-                        ),
+                        //       setState(() {
+                        //         showLoader = true;
+                        //       });
+                        //       response = await httpService.resetChangePassword(
+                        //           reset_token, password);
+                        //       setState(() {
+                        //         showSuccessDialog(context,
+                        //             lang.translate('Response'), response, () {
+                        //           Get.to(Login());
+                        //         });
+                        //         showLoader = false;
+                        //         activeResetPassword = true;
+                        //       });
+                        //     },
+                        //     child: Text(
+                        //       lang.translate('Confirm'),
+                        //       textAlign: TextAlign.center,
+                        //       style: const TextStyle(
+                        //         color: Colors.white,
+                        //         fontSize: 20,
+                        //         letterSpacing: 0.20,
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 48),
-                  SizedBox(
-                    width: double.infinity,
-                    child: Text(
-                      lang.translate('login_copyrights'),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Color(0xff959cb5),
-                        fontSize: 16,
-                        letterSpacing: 0.16,
-                      ),
-                    ),
-                  ),
+                  // const SizedBox(height: 48),
+                  // SizedBox(
+                  //   width: double.infinity,
+                  //   child: Text(
+                  //     lang.translate('login_copyrights'),
+                  //     textAlign: TextAlign.center,
+                  //     style: const TextStyle(
+                  //       color: Color(0xff959cb5),
+                  //       fontSize: 16,
+                  //       letterSpacing: 0.16,
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               )),
         ));
