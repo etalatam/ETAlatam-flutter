@@ -1,7 +1,7 @@
-import 'package:MediansSchoolDriver/Pages/NotificationsPage.dart';
+// import 'package:MediansSchoolDriver/Pages/NotificationsPage.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+// import 'package:get/get.dart';
 
 class Header extends StatelessWidget {
   const Header(this.title, {super.key});
@@ -10,7 +10,7 @@ class Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return header_1();
+    return header_2();
   }
 
   // Basic header
@@ -41,25 +41,31 @@ class Header extends StatelessWidget {
             Expanded(
               flex: 1,
               child: Text(
-                "$title",
+                "",
                 style: TextStyle(
                     fontFamily: activeTheme.h4.fontFamily,
                     color: activeTheme.main_bg,
                     fontSize: activeTheme.h4.fontSize),
               ),
             ),
-            TextButton(
-              style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 55)),
-              onPressed: () {
-                Get.to(NotificationsPage());
-              },
-              child: Icon(
-                Icons.notifications_active,
-                color: activeTheme.main_bg,
-                size: 30,
-              ),
+            const SizedBox(height: 80),
+            const Image(
+                image: AssetImage("assets/logo.png"),
+                width: 120,
+                height: 120,
             )
+            // TextButton(
+            //   style: TextButton.styleFrom(
+            //       padding: const EdgeInsets.symmetric(horizontal: 55)),
+            //   onPressed: () {
+            //     Get.to(NotificationsPage());
+            //   },
+            //   child: Icon(
+            //     Icons.notifications_active,
+            //     color: activeTheme.main_bg,
+            //     size: 30,
+            //   ),
+            // )
           ],
         ),
       ),
@@ -73,11 +79,12 @@ class Header extends StatelessWidget {
         child: Container(
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: activeTheme.main_bg,
+            // color: activeTheme.main_bg,
             borderRadius: BorderRadius.circular(15),
             boxShadow: [
               BoxShadow(
-                color: shadowColor,
+                // color: shadowColor,
+                color: Colors.white24,
                 blurRadius: 10,
                 offset: const Offset(0, 5),
                 spreadRadius: 0,
@@ -99,19 +106,20 @@ class Header extends StatelessWidget {
               Expanded(
                 flex: 1,
                 child: Text(
-                  "$title",
+                  // "$title",
+                  "",
                   style: activeTheme.h4,
                 ),
               ),
-              TextButton(
-                onPressed: () {
-                  Get.to(NotificationsPage());
-                },
-                child: Icon(
-                  Icons.notifications_active,
-                  color: activeTheme.main_color,
-                ),
-              )
+              // TextButton(
+              //   onPressed: () {
+              //     Get.to(NotificationsPage());
+              //   },
+              //   child: Icon(
+              //     Icons.notifications_active,
+              //     color: activeTheme.main_color,
+              //   ),
+              // )
             ],
           ),
         ));
@@ -158,15 +166,15 @@ class Header extends StatelessWidget {
                       fontWeight: activeTheme.h4.fontWeight),
                 ),
               ),
-              TextButton(
-                onPressed: () {
-                  Get.to(NotificationsPage());
-                },
-                child: Icon(
-                  Icons.notifications_active,
-                  color: activeTheme.main_bg,
-                ),
-              )
+              // TextButton(
+              //   onPressed: () {
+              //     Get.to(NotificationsPage());
+              //   },
+              //   child: Icon(
+              //     Icons.notifications_active,
+              //     color: activeTheme.main_bg,
+              //   ),
+              // )
             ],
           ),
         ));
