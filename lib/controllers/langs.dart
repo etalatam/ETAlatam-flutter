@@ -216,10 +216,10 @@ class Lang {
       'vacations_days_subtitle' : 'Vacaciones y días de ausencia',
       'pickup_and_destinations' : 'Lugares de recogida y destino',
       'you_need_to_complete_some_required_information' : 'Necesitas completar alguna información requerida',
-      'forgot_password_message' : 'Agregue su correo electrónico y le enviaremos el código de restablecimiento de contraseña por correo electrónico',
+      'forgot_password_message' : 'Indique su correo electrónico y le enviaremos un enlace de restablecimiento de contraseña.',
       'change_password_message' : 'Puede encontrar su token en su correo electrónico y cambiar su contraseña y confirmación.',
       'select_your_language' : 'Selecciona tu idioma',
-      'Language': 'Idioma',
+      'language': 'Idioma',
       'notifications': 'Notificaciones',
       'app_preferences' : 'Preferencias',
       'set_your_custom_configuration' : 'Establece tu configuración personalizada',
@@ -230,7 +230,11 @@ class Lang {
       'start_with_your_account': 'Comience con su cuenta',
       'dark_mode': 'Modo oscuro',
       'show_template_in_darkmode': 'Usar el modo oscuro',
-      'next': 'Continuar'
+      'next': 'Continuar',
+      'sign_in': 'Ingresar',
+      'welcome_back': 'Bienvenido',
+      'email': 'Correo electrónico',
+      'password': 'Contraseña'
 
 
   };

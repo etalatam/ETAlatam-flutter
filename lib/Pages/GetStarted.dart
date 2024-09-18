@@ -362,42 +362,42 @@ class SlidePage extends StatelessWidget {
               indent: 15,
               endIndent: 10,
             ),
-            Row(
-              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Expanded(
-                    flex: 1,
-                    child: Container(
-                      margin: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            lang.translate('Dark mode'),
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 24),
-                          ),
-                          Text(
-                            lang.translate('Show template in darkmode'),
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 18),
-                          ),
-                        ],
-                      ),
-                    )),
-                Switch(
-                    activeColor: activeTheme.main_color,
-                    activeTrackColor: activeTheme.main_color.withOpacity(.5),
-                    inactiveThumbColor: Colors.blueGrey.shade500,
-                    inactiveTrackColor: Colors.grey.shade300,
-                    splashRadius: 50.0,
-                    value: darkmode,
-                    onChanged: (value) {
-                      setMode(value);
-                    }),
-              ],
-            ),
+            // Row(
+            //   // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //   mainAxisSize: MainAxisSize.max,
+            //   children: [
+            //     Expanded(
+            //         flex: 1,
+            //         child: Container(
+            //           margin: const EdgeInsets.all(20),
+            //           child: Column(
+            //             crossAxisAlignment: CrossAxisAlignment.start,
+            //             children: [
+            //               Text(
+            //                 lang.translate('Dark mode'),
+            //                 style: const TextStyle(
+            //                     color: Colors.white, fontSize: 24),
+            //               ),
+            //               Text(
+            //                 lang.translate('Show template in darkmode'),
+            //                 style: const TextStyle(
+            //                     color: Colors.white, fontSize: 18),
+            //               ),
+            //             ],
+            //           ),
+            //         )),
+            //     Switch(
+            //         activeColor: activeTheme.main_color,
+            //         activeTrackColor: activeTheme.main_color.withOpacity(.5),
+            //         inactiveThumbColor: Colors.blueGrey.shade500,
+            //         inactiveTrackColor: Colors.grey.shade300,
+            //         splashRadius: 50.0,
+            //         value: darkmode,
+            //         onChanged: (value) {
+            //           setMode(value);
+            //         }),
+            //   ],
+            // ),
             Container(
                 padding: const EdgeInsets.only(top: 40),
                 child: Center(

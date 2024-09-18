@@ -145,6 +145,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                           ),
                           child: GestureDetector(
                             onTap: () async {
+                              if(email.isEmpty) return;
                               setState(() {
                                 showLoader = true;
                               });
