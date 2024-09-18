@@ -1,8 +1,8 @@
 name: Build Flutter App and Generate Split APKs
 
 on:
-  push:
-    branches: ['*']
+  # push:
+  #   branches: ['*']
   pull_request:
       branches: [ "master" ]
 jobs:

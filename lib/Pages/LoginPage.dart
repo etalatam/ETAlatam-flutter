@@ -108,7 +108,7 @@ class _LoginState extends State<Login> {
                                               filled: true,
                                               hintStyle: TextStyle(
                                                   color: Colors.grey[800]),
-                                              hintText: "Example@email.com",
+                                              hintText: "",
                                               fillColor: const Color.fromRGBO(
                                                   233, 235, 235, 1)),
                                           onChanged: (val) {
@@ -157,7 +157,7 @@ class _LoginState extends State<Login> {
                                               filled: true,
                                               hintStyle: TextStyle(
                                                   color: Colors.grey[800]),
-                                              hintText: "********",
+                                              hintText: "",
                                               fillColor: const Color.fromRGBO(
                                                   233, 235, 235, 1)),
                                           onChanged: (val) => setState(() {

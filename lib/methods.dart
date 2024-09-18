@@ -115,16 +115,28 @@ openNewPage(context, page) {
 PageRouteBuilder _createRoute(page) {
   return PageRouteBuilder(
     pageBuilder: (context, animation, secondaryAnimation) => page,
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      const begin = Offset(1.0, 0.0);
-      const end = Offset(0.0, 0.0);
-      const curve = Curves.easeInOut;
-      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-      var offsetAnimation = animation.drive(tween);
-      return SlideTransition(
-        position: offsetAnimation,
-        child: child,
-      );
+    transitionDuration: const Duration(milliseconds: 100),
+    transitionsBuilder: (BuildContext context,
+              Animation<double> animation,
+              Animation<double> secondaryAnimation,
+              Widget child) {
+            return FadeTransition(
+              opacity: CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOut,
+              ),
+              child: child,
+            );
+    // transitionsBuilder: (context, animation, secondaryAnimation, child) {
+    //   const begin = Offset(1.0, 0.0);
+    //   const end = Offset(0.0, 0.0);
+    //   const curve = Curves.easeInOut;
+    //   var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+    //   var offsetAnimation = animation.drive(tween);
+    //   return SlideTransition(
+    //     position: offsetAnimation,
+    //     child: child,
+    //   );
     },
   );
 }
