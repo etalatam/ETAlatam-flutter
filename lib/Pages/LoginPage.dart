@@ -1,5 +1,6 @@
 import 'package:MediansSchoolDriver/API/client.dart';
 import 'package:MediansSchoolDriver/Pages/ResetPasswordPage.dart';
+import 'package:MediansSchoolDriver/Pages/home_screen.dart';
 import 'package:MediansSchoolDriver/components/loader.dart';
 import 'package:MediansSchoolDriver/components/header.dart';
 import 'package:MediansSchoolDriver/methods.dart';
@@ -275,7 +276,7 @@ class _LoginState extends State<Login> {
     final driverId_ = storage.getItem('driver_id');
 
     if (token_ != null && driverId_ != null) {
-      Get.offAll(HomePage());
+      Get.offAll(HomeScreen());
     } else {
       // Timer(const Duration(seconds: 1), () {
       //   if (storage.getItem('token') == null) {
