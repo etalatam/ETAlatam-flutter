@@ -41,7 +41,8 @@ class _SplashScreenState extends State<SplashScreen> {
         children: [
           Center(
             child: Image(
-              image: AssetImage("assets/slides/slide3.png"),
+              // image: AssetImage("assets/slides/slide3.png"),
+              image: AssetImage("assets/logo.png"),
             ),
           ),
         ],
