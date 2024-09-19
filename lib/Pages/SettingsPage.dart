@@ -233,11 +233,11 @@ class _SettingsPageState extends State<SettingsPage>
                       right: 0,
                       top: 0,
                       child: Header(lang.translate('sitename'))),
-                  Positioned(
-                      bottom: 20,
-                      left: 20,
-                      right: 20,
-                      child: BottomMenu('settings', openNewPage))
+                  // Positioned(
+                  //     bottom: 20,
+                  //     left: 20,
+                  //     right: 20,
+                  //     child: BottomMenu('settings', openNewPage))
                 ])));
   }
 
