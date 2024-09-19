@@ -212,7 +212,7 @@ mixin MediansWidgets {
 
   static Widget settingRow(
       context, Function setLang, Function setMode, Function setNotifications) {
-    List<String> list = <String>['Arabic', 'English'];
+    List<String> list = <String>['Español', 'English'];
     String? subject;
     bool allowNotifications = storage.getItem('allowNotifications');
 

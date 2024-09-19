@@ -141,7 +141,7 @@ class _RouteMapState extends State<RouteMap> {
                                           .getItem('lang')
                                           .toString()
                                           .toLowerCase() ==
-                                      'arabic'
+                                      'español'
                                   ? CrossAxisAlignment.end
                                   : CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.max,

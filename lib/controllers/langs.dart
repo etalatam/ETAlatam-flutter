@@ -29,9 +29,6 @@ class Lang {
     Map data;
 
     switch (lang) {
-      // case 'Arabic':
-      //   data = arLangs;
-      //   break;
       case 'English':
         data = enLangs;
         break;

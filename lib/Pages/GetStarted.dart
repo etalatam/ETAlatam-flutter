@@ -14,7 +14,7 @@ import 'package:permission_handler/permission_handler.dart' as permissions;
 bool darkmode = false;
 bool showLoader = true;
 
-List<String> list = <String>['Arabic', 'English', 'Español'];
+List<String> list = <String>['Español', 'English'];
 String selectedLang = 'Español';
 
 bool _havePermissions = false;
@@ -137,7 +137,7 @@ class _GetStartedAppState extends State<GetStartedApp> {
   setLang(value) async {
     selectedLang = value!;
     localeController
-        .changeLocale(Locale(selectedLang == 'Arabic' ? 'ar' : 'en'));
+        .changeLocale(Locale(selectedLang == 'Español' ? 'es' : 'en'));
     await storage.setItem('lang', selectedLang);
   }
 
@@ -260,6 +260,7 @@ class SlidePage extends StatelessWidget {
       ),
     );
   }
+
   Future<bool> _checkLocationPermission() async {
     await permissions.Permission.location.request();
     final permission = await permissions.Permission.locationAlways.request();
@@ -271,6 +272,7 @@ class SlidePage extends StatelessWidget {
       return false;
     }
   }
+
   Widget permissionsSlide(context) {
     return Container(
         color: color,

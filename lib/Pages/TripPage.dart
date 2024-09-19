@@ -127,7 +127,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                                           .getItem('lang')
                                           .toString()
                                           .toLowerCase() ==
-                                      'arabic'
+                                      'español'
                                   ? CrossAxisAlignment.end
                                   : CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.max,

@@ -198,7 +198,7 @@ class _DriverPageState extends State<DriverPage> {
                                           .getItem('lang')
                                           .toString()
                                           .toLowerCase() ==
-                                      'arabic'
+                                      'español'
                                   ? CrossAxisAlignment.end
                                   : CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.max,
