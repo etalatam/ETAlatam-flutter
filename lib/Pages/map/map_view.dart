@@ -15,7 +15,7 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 const TAG = "MapView";
 
 class MapView extends ConsumerStatefulWidget {
-  const MapView({super.key});
+  const MapView();
 
   @override
   ConsumerState<MapView> createState() => _MapBoxWidgetState();
@@ -40,8 +40,8 @@ class _MapBoxWidgetState extends ConsumerState<MapView> {
   @override
   void initState() {
     super.initState();
+    ref.read(locationNotifierProvider.notifier).init();
   }
-
   @override
   void dispose() {
     super.dispose();
@@ -74,11 +74,6 @@ class _MapBoxWidgetState extends ConsumerState<MapView> {
             onMapCreated: _mapCreated,
           ),
           _positionedCenterBtn(),
-          Positioned(
-              bottom: 20,
-              left: 20,
-              right: 20,
-              child: BottomMenu('home', openNewPage))
         ],
       );
     } catch (e) {
@@ -140,7 +135,6 @@ class _MapBoxWidgetState extends ConsumerState<MapView> {
   //* seguimiento del usuario
   void tracking() async {
     const func = "tracking";
-    await ref.read(locationNotifierProvider.notifier).init();
     final locationState = ref.watch(locationNotifierProvider.notifier);
     locationState.addListener((allPosition) {
       final position = allPosition.location;

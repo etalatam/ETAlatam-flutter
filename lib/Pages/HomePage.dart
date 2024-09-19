@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'package:MediansSchoolDriver/Models/RouteModel.dart';
+import 'package:MediansSchoolDriver/Pages/HelpPage.dart';
 import 'package:MediansSchoolDriver/Pages/LoginPage.dart';
-import 'package:MediansSchoolDriver/Pages/ProfilePage.dart';
 import 'package:MediansSchoolDriver/Pages/TripPage.dart';
 import 'package:MediansSchoolDriver/Pages/map/map_view.dart';
-import 'package:MediansSchoolDriver/components/ActiveTrip.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -15,9 +14,6 @@ import 'package:MediansSchoolDriver/Models/TripModel.dart';
 import 'package:MediansSchoolDriver/components/loader.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 import 'package:MediansSchoolDriver/components/Widgets.dart';
-import 'package:MediansSchoolDriver/components/header.dart';
-import 'package:MediansSchoolDriver/components/bottom_menu.dart';
-import 'package:MediansSchoolDriver/components/HomeRouteBlock.dart';
 import 'package:MediansSchoolDriver/Models/EventModel.dart';
 
 class HomePage extends StatefulWidget {
@@ -56,7 +52,7 @@ class _HomePageState extends State<HomePage>
         : Material(
             type: MaterialType.transparency,
             child: Scaffold(
-                body: MapView()));
+              body: Container()));
   }
 
   /// Create trip

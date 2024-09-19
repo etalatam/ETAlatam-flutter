@@ -594,16 +594,13 @@ class HttpService {
       // var requestAccessRes = await requestAccess();
       http.Response res = await postQuery('/rpc/user_tracking', jsonData,
           contentType: 'application/json');
-      print('sendTragkind 2.5---------------respondeio: $res');
       if (res.statusCode == 200) {
-        print("sendTracking 3----respuesta---------------------: ${res.body}");
         return res.body;
       } else {
-        print("sendTracking 4-------fallo---------------------: ${res.body}");
         return res;
       }
     } catch (e) {
-      print("sendTracking error:---------${e.toString()}");
+      print("sendTracking error: ${e.toString()}");
       return null;
     }
   }

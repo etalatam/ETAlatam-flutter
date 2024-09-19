@@ -20,7 +20,10 @@ class LocationService {
   Stream<LocationDto> get locationStream => _locationStreamController.stream;
 
   Future<void> init() async {
-    if(await BackgroundLocator.isServiceRunning()) return;
+    if (IsolateNameServer.lookupPortByName(isolateName) != null) {
+      IsolateNameServer.removePortNameMapping(isolateName);
+    }
+
     IsolateNameServer.registerPortWithName(port.sendPort, isolateName);
     port.listen((dynamic data) {
       if (data != null) {
@@ -29,7 +32,8 @@ class LocationService {
         _locationStreamController.add(location);
       }
     });
-    initPlatformState();
+
+    await initPlatformState();
   }
 
   Future<bool> _checkLocationPermission() async {
@@ -46,7 +50,6 @@ class LocationService {
 
   Future<void> initPlatformState() async {
     await BackgroundLocator.initialize();
-    
   }
 
   Future<void> startLocationService() async {
@@ -72,26 +75,29 @@ class LocationService {
     );
   }
 
-  void stopLocationService() {
-    BackgroundLocator.unRegisterLocationUpdate();
-    _locationStreamController.close();
+  void stopLocationService() async {
+    await BackgroundLocator.unRegisterLocationUpdate();
   }
 
   @pragma('vm:entry-point')
   static void callback(LocationDto locationDto) {
+    print('location in dart callback LocationDto: $locationDto');
     final SendPort? send = IsolateNameServer.lookupPortByName(isolateName);
+
     send?.send(locationDto.toJson());
   }
 
   @pragma('vm:entry-point')
   static void initCallback(Map<dynamic, dynamic> params) {
-    //TODO: funcion que se ejecuta despues de iniciar, agregar logica de ser requerida
+    final SendPort? send = IsolateNameServer.lookupPortByName(isolateName);
+    send?.send(null);
     print('Servicio de ubicación inicializado.');
   }
 
   @pragma('vm:entry-point')
   static void disposeCallback() {
-    //TODO: funcion que se ejecuta despues de detener, agregar logica de ser requerida
+    final SendPort? send = IsolateNameServer.lookupPortByName(isolateName);
+    send?.send(null);
     print('Servicio de ubicación detenido.');
   }
 }

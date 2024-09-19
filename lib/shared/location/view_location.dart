@@ -12,8 +12,16 @@ class LocatorView extends ConsumerStatefulWidget {
 class _LocatorViewState extends ConsumerState<LocatorView> {
   @override
   void initState() {
-    ref.read(locationNotifierProvider.notifier).init();
     super.initState();
+    ref.read(locationNotifierProvider.notifier).init();
+  }
+
+  @override
+  void dispose() {
+    ref
+        .read(locationNotifierProvider.notifier)
+        .stopTracking(); // Asegúrate de detener el seguimiento al salir
+    super.dispose();
   }
 
   @override
@@ -26,7 +34,8 @@ class _LocatorViewState extends ConsumerState<LocatorView> {
       body: Center(
         child: locationState.isTracking
             ? locationState.location != null
-                ? Text('Ubicación actual: ${locationState.location!.latitude}, ${locationState.location!.longitude}')
+                ? Text(
+                    'Ubicación actual: ${locationState.location!.latitude}, ${locationState.location!.longitude}')
                 : Text('Iniciando rastreo...')
             : Text('Rastreo detenido'),
       ),
@@ -41,6 +50,5 @@ class _LocatorViewState extends ConsumerState<LocatorView> {
         child: Icon(locationState.isTracking ? Icons.stop : Icons.play_arrow),
       ),
     );
-
   }
 }

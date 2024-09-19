@@ -100,11 +100,11 @@ class _SentMessageState extends State<SendMessagePage> {
                   left: 0,
                   right: 0,
                   child: Header(lang.translate('Help page'))),
-              Positioned(
-                  bottom: 20,
-                  left: 20,
-                  right: 20,
-                  child: BottomMenu('help', openPage))
+              // Positioned(
+              //     bottom: 20,
+              //     left: 20,
+              //     right: 20,
+              //     child: BottomMenu('help', openPage))
             ],
           ));
   }
