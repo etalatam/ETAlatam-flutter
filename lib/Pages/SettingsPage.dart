@@ -91,7 +91,9 @@ class _SettingsPageState extends State<SettingsPage>
                                           () {
                                         setState(() {
                                           localeController.changeLocale(Locale(
-                                              value == 'Arabic' ? 'ar' : 'en'));
+                                              value == 'Español'
+                                                  ? 'es'
+                                                  : 'en'));
                                           subject = value;
                                           storage.setItem('lang', value);
                                           showLoader = false;
@@ -171,60 +173,60 @@ class _SettingsPageState extends State<SettingsPage>
                               indent: 15,
                               endIndent: 10,
                             ),
-                            Row(
-                              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Expanded(
-                                    flex: 1,
-                                    child: Container(
-                                      margin: const EdgeInsets.all(20),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            lang.translate('Dark mode'),
-                                            style: activeTheme.h5,
-                                          ),
-                                          Text(
-                                              lang.translate(
-                                                  'Show template in darkmode'),
-                                              style: activeTheme.normalText)
-                                        ],
-                                      ),
-                                    )),
-                                Switch(
-                                    activeColor: activeTheme.main_color,
-                                    activeTrackColor:
-                                        activeTheme.main_color.withOpacity(.5),
-                                    inactiveThumbColor:
-                                        Colors.blueGrey.shade500,
-                                    inactiveTrackColor: Colors.grey.shade300,
-                                    splashRadius: 50.0,
-                                    value: darkMode,
-                                    onChanged: (value) {
-                                      // This is called when the user selects an item.
-                                      setState(() {
-                                        showLoader = true;
-                                      });
+                            // Row(
+                            //   // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            //   mainAxisSize: MainAxisSize.max,
+                            //   children: [
+                            //     Expanded(
+                            //         flex: 1,
+                            //         child: Container(
+                            //           margin: const EdgeInsets.all(20),
+                            //           child: Column(
+                            //             crossAxisAlignment:
+                            //                 CrossAxisAlignment.start,
+                            //             children: [
+                            //               Text(
+                            //                 lang.translate('Dark mode'),
+                            //                 style: activeTheme.h5,
+                            //               ),
+                            //               Text(
+                            //                   lang.translate(
+                            //                       'Show template in darkmode'),
+                            //                   style: activeTheme.normalText)
+                            //             ],
+                            //           ),
+                            //         )),
+                            //     Switch(
+                            //         activeColor: activeTheme.main_color,
+                            //         activeTrackColor:
+                            //             activeTheme.main_color.withOpacity(.5),
+                            //         inactiveThumbColor:
+                            //             Colors.blueGrey.shade500,
+                            //         inactiveTrackColor: Colors.grey.shade300,
+                            //         splashRadius: 50.0,
+                            //         value: darkMode,
+                            //         onChanged: (value) {
+                            //           // This is called when the user selects an item.
+                            //           setState(() {
+                            //             showLoader = true;
+                            //           });
 
-                                      Future.delayed(const Duration(seconds: 1),
-                                          () {
-                                        setState(() {
-                                          storage.setItem('darkmode', value);
-                                          preferences.setBool(
-                                              'darkmode', value);
-                                          darkMode = value;
-                                          showLoader = false;
-                                          activeTheme = value
-                                              ? DarkTheme()
-                                              : LightTheme();
-                                        });
-                                      });
-                                    }),
-                              ],
-                            ),
+                            //           Future.delayed(const Duration(seconds: 1),
+                            //               () {
+                            //             setState(() {
+                            //               storage.setItem('darkmode', value);
+                            //               preferences.setBool(
+                            //                   'darkmode', value);
+                            //               darkMode = value;
+                            //               showLoader = false;
+                            //               activeTheme = value
+                            //                   ? DarkTheme()
+                            //                   : LightTheme();
+                            //             });
+                            //           });
+                            //         }),
+                            //   ],
+                            // ),
                           ],
                         )),
                   ])),
