@@ -30,7 +30,7 @@ class _SettingsPageState extends State<SettingsPage>
 
   bool showLoader = true;
 
-  List<String> list = <String>['Arabic', 'English'];
+  List<String> list = <String>['Español', 'English'];
   String? subject;
 
   LocaleController localeController = Get.find<LocaleController>();
