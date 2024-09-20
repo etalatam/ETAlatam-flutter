@@ -1,14 +1,12 @@
 import 'dart:typed_data';
 
-import 'package:MediansSchoolDriver/components/bottom_menu.dart';
-import 'package:MediansSchoolDriver/methods.dart';
 import 'package:MediansSchoolDriver/shared/location/provider/location_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
+import 'package:location/location.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 // ignore: constant_identifier_names
@@ -28,10 +26,8 @@ class _MapBoxWidgetState extends ConsumerState<MapView> {
   PointAnnotation? pointAnnotation; // instancia del punto  en el mapa (sin uso)
 
   /// nombre de la key que almacena la data del mapa en la db de isar
-  Position markerLocation = Position(
-    -66,
-    10.0,
-  ); //  datos de la posición actual del marcador// subscripcion de la conectividad del gps
+  late Position
+      markerLocation; //  datos de la posición actual del marcador// subscripcion de la conectividad del gps
 
   double lat = 0.0; // coordenada de la camara
   double lon = 0.0; // coordenada de la camara
@@ -41,7 +37,11 @@ class _MapBoxWidgetState extends ConsumerState<MapView> {
   void initState() {
     super.initState();
     ref.read(locationNotifierProvider.notifier).init();
+    final Location location = Location();
+    location.serviceEnabled().then(
+        (value) => {if (!value) location.getLocation().then((gps) => ())});
   }
+
   @override
   void dispose() {
     super.dispose();
