@@ -22,7 +22,7 @@ class MapView extends ConsumerStatefulWidget {
 }
 
 class _MapBoxWidgetState extends ConsumerState<MapView> {
-  MapboxMap? mapboxMap; // instancia del mapa de mapbox
+  MapboxMap? mapboxMap; // instancia del mapa   de mapbox
   PointAnnotationManager?
       pointAnnotationManager; // instancia del manejador de la anotación del mapa (sin uso)
   PointAnnotation? pointAnnotation; // instancia del punto  en el mapa (sin uso)
@@ -185,9 +185,9 @@ class _MapBoxWidgetState extends ConsumerState<MapView> {
               -66.001,
             )),
             infiniteBounds: true),
-        maxZoom: 24,
+        // maxZoom: 24,
         minZoom: 3,
-        maxPitch: 10,
+        // maxPitch: 10, // maneja la inclinación del mapa
         minPitch: 0));
 
     controller.logo
