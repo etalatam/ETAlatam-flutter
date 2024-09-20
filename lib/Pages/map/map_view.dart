@@ -1,14 +1,12 @@
 import 'dart:typed_data';
 
-import 'package:MediansSchoolDriver/components/bottom_menu.dart';
-import 'package:MediansSchoolDriver/methods.dart';
 import 'package:MediansSchoolDriver/shared/location/provider/location_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
+import 'package:location/location.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 // ignore: constant_identifier_names
@@ -22,16 +20,14 @@ class MapView extends ConsumerStatefulWidget {
 }
 
 class _MapBoxWidgetState extends ConsumerState<MapView> {
-  MapboxMap? mapboxMap; // instancia del mapa de mapbox
+  MapboxMap? mapboxMap; // instancia del mapa   de mapbox
   PointAnnotationManager?
       pointAnnotationManager; // instancia del manejador de la anotación del mapa (sin uso)
   PointAnnotation? pointAnnotation; // instancia del punto  en el mapa (sin uso)
 
   /// nombre de la key que almacena la data del mapa en la db de isar
-  Position markerLocation = Position(
-    -66,
-    10.0,
-  ); //  datos de la posición actual del marcador// subscripcion de la conectividad del gps
+  late Position
+      markerLocation; //  datos de la posición actual del marcador// subscripcion de la conectividad del gps
 
   double lat = 0.0; // coordenada de la camara
   double lon = 0.0; // coordenada de la camara
@@ -41,7 +37,11 @@ class _MapBoxWidgetState extends ConsumerState<MapView> {
   void initState() {
     super.initState();
     ref.read(locationNotifierProvider.notifier).init();
+    final Location location = Location();
+    location.serviceEnabled().then(
+        (value) => {if (!value) location.getLocation().then((gps) => ())});
   }
+
   @override
   void dispose() {
     super.dispose();
@@ -185,9 +185,9 @@ class _MapBoxWidgetState extends ConsumerState<MapView> {
               -66.001,
             )),
             infiniteBounds: true),
-        maxZoom: 24,
+        // maxZoom: 24,
         minZoom: 3,
-        maxPitch: 10,
+        // maxPitch: 10, // maneja la inclinación del mapa
         minPitch: 0));
 
     controller.logo
