@@ -148,9 +148,8 @@ mixin MediansWidgets {
                                                   image: NetworkImage((parentModel
                                                               .picture !=
                                                           null)
-                                                      ? (httpService
-                                                              .getImageUrl() +
-                                                          parentModel.picture!)
+                                                      ? ('${httpService
+                                                              .getImageUrl()}${parentModel.picture}')
                                                       : httpService.croppedImage(
                                                           "/uploads/images/60x60.png",
                                                           200,
