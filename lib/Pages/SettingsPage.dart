@@ -40,6 +40,7 @@ class _SettingsPageState extends State<SettingsPage>
 
   @override
   Widget build(BuildContext context) {
+    darkMode = storage.getItem('darkmode') == true ? true : false;
     activeTheme = darkMode == true ? DarkTheme() : LightTheme();
 
     return showLoader
@@ -52,7 +53,8 @@ class _SettingsPageState extends State<SettingsPage>
                   SingleChildScrollView(
                       child: Stack(children: <Widget>[
                     Container(
-                        margin: const EdgeInsets.only(top: 100),
+                        // color: darkMode ?  activeTheme.main_color : activeTheme.main_bg,
+                        margin: const EdgeInsets.only(top: 150),
                         child: Column(
                           children: [
                             Row(
@@ -173,60 +175,59 @@ class _SettingsPageState extends State<SettingsPage>
                               indent: 15,
                               endIndent: 10,
                             ),
-                            // Row(
-                            //   // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            //   mainAxisSize: MainAxisSize.max,
-                            //   children: [
-                            //     Expanded(
-                            //         flex: 1,
-                            //         child: Container(
-                            //           margin: const EdgeInsets.all(20),
-                            //           child: Column(
-                            //             crossAxisAlignment:
-                            //                 CrossAxisAlignment.start,
-                            //             children: [
-                            //               Text(
-                            //                 lang.translate('Dark mode'),
-                            //                 style: activeTheme.h5,
-                            //               ),
-                            //               Text(
-                            //                   lang.translate(
-                            //                       'Show template in darkmode'),
-                            //                   style: activeTheme.normalText)
-                            //             ],
-                            //           ),
-                            //         )),
-                            //     Switch(
-                            //         activeColor: activeTheme.main_color,
-                            //         activeTrackColor:
-                            //             activeTheme.main_color.withOpacity(.5),
-                            //         inactiveThumbColor:
-                            //             Colors.blueGrey.shade500,
-                            //         inactiveTrackColor: Colors.grey.shade300,
-                            //         splashRadius: 50.0,
-                            //         value: darkMode,
-                            //         onChanged: (value) {
-                            //           // This is called when the user selects an item.
-                            //           setState(() {
-                            //             showLoader = true;
-                            //           });
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisSize: MainAxisSize.max,
+                              children: [
+                                Expanded(
+                                    flex: 1,
+                                    child: Container(
+                                      margin: const EdgeInsets.all(20),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            lang.translate('Dark mode'),
+                                            style: activeTheme.h5,
+                                          ),
+                                          Text(
+                                              lang.translate(
+                                                  'Show template in darkmode'),
+                                              style: activeTheme.normalText)
+                                        ],
+                                      ),
+                                    )),
+                                Switch(
+                                    activeColor: activeTheme.main_color,
+                                    activeTrackColor:
+                                        activeTheme.main_color.withOpacity(.5),
+                                    inactiveThumbColor:
+                                        Colors.blueGrey.shade500,
+                                    inactiveTrackColor: Colors.grey.shade300,
+                                    splashRadius: 50.0,
+                                    value: darkMode,
+                                    onChanged: (value) {
+                                      // This is called when the user selects an item.
+                                      setState(() {
+                                        showLoader = true;
+                                      });
 
-                            //           Future.delayed(const Duration(seconds: 1),
-                            //               () {
-                            //             setState(() {
-                            //               storage.setItem('darkmode', value);
-                            //               preferences.setBool(
-                            //                   'darkmode', value);
-                            //               darkMode = value;
-                            //               showLoader = false;
-                            //               activeTheme = value
-                            //                   ? DarkTheme()
-                            //                   : LightTheme();
-                            //             });
-                            //           });
-                            //         }),
-                            //   ],
-                            // ),
+                                      // Future.delayed(const Duration(seconds: 1), () {
+                                        setState(() {
+                                          storage.setItem('darkmode', value);
+                                          preferences.setBool(
+                                              'darkmode', value);
+                                          darkMode = value;
+                                          showLoader = false;
+                                          activeTheme = value
+                                              ? DarkTheme()
+                                              : LightTheme();
+                                        });
+                                      // });
+                                    }),
+                              ],
+                            ),
                           ],
                         )),
                   ])),
@@ -246,11 +247,11 @@ class _SettingsPageState extends State<SettingsPage>
   DriverModel? driver;
 
   loadDriver() async {
-    // final driverModel =
-    //     await httpService.getDriver(storage.getItem('driver_id'));
+    final driverModel =
+        await httpService.getDriver(storage.getItem('driver_id'));
 
     setState(() {
-      // driver = driverModel;
+      driver = driverModel;
       subject = storage.getItem('lang');
       darkMode = storage.getItem('darkmode') ?? false;
       showLoader = false;
@@ -260,6 +261,7 @@ class _SettingsPageState extends State<SettingsPage>
   @override
   void initState() {
     super.initState();
+    subject = storage.getItem('lang');
     loadDriver();
   }
 }

@@ -5,7 +5,7 @@ import 'package:MediansSchoolDriver/Models/DriverModel.dart';
 import 'package:MediansSchoolDriver/Pages/ChangePasswordPage.dart';
 import 'package:MediansSchoolDriver/Pages/UploadPicturePage.dart';
 import 'package:MediansSchoolDriver/Pages/LoginPage.dart';
-import 'package:MediansSchoolDriver/components/bottom_menu.dart';
+// import 'package:MediansSchoolDriver/components/bottom_menu.dart';
 import 'package:MediansSchoolDriver/components/loader.dart';
 import 'package:MediansSchoolDriver/components/header.dart';
 import 'package:MediansSchoolDriver/components/CustomRow.dart';
@@ -127,63 +127,62 @@ class _ProfilePageState extends State<ProfilePage> {
                                                   activeTheme.h4.fontWeight,
                                               color: Colors.white)),
                                     ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 10, vertical: 4),
-                                      decoration: BoxDecoration(
-                                          color: activeTheme.buttonBG,
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(10))),
-                                      margin: const EdgeInsets.only(top: 15),
-                                      child: Text("${driver.contact_number}",
-                                          style: TextStyle(
-                                            color: activeTheme.buttonColor,
-                                            fontWeight: FontWeight.bold,
-                                          )),
-                                    ),
+                                    // Container(
+                                    //   padding: const EdgeInsets.symmetric(
+                                    //       horizontal: 10, vertical: 4),
+                                    //   decoration: BoxDecoration(
+                                    //       color: activeTheme.buttonBG,
+                                    //       borderRadius: const BorderRadius.all(
+                                    //           Radius.circular(10))),
+                                    //   margin: const EdgeInsets.only(top: 15),
+                                    //   child: Text("${driver.contact_number}",
+                                    //       style: TextStyle(
+                                    //         color: activeTheme.buttonColor,
+                                    //         fontWeight: FontWeight.bold,
+                                    //       )),
+                                    // ),
                                   ],
                                 ),
                                 const Expanded(child: Center()),
-                                // Expanded(child: Icon(Icons.edit, color: activeTheme.icon_color,)),
-                                Column(
-                                  children: [
-                                    const SizedBox(height: 50),
-                                    Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisSize: MainAxisSize.max,
-                                        children: [
-                                          GestureDetector(
-                                            onTap: () {
-                                              launchCall(driver.contact_number);
-                                            },
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                  top: 10, right: 20, left: 20),
-                                              child: Icon(
-                                                Icons.call,
-                                                color: activeTheme.icon_color,
-                                              ),
-                                            ),
-                                          ),
-                                          GestureDetector(
-                                            onTap: () {
-                                              launchWP(driver.contact_number);
-                                            },
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                  top: 10, right: 20, left: 20),
-                                              child: Icon(
-                                                Icons.maps_ugc_outlined,
-                                                color: activeTheme.icon_color,
-                                              ),
-                                            ),
-                                          ),
-                                        ])
-                                  ],
-                                )
+                                // Column(
+                                //   children: [
+                                //     const SizedBox(height: 50),
+                                //     Row(
+                                //         mainAxisAlignment:
+                                //             MainAxisAlignment.spaceBetween,
+                                //         crossAxisAlignment:
+                                //             CrossAxisAlignment.start,
+                                //         mainAxisSize: MainAxisSize.max,
+                                //         children: [
+                                //           GestureDetector(
+                                //             onTap: () {
+                                //               launchCall(driver.contact_number);
+                                //             },
+                                //             child: Padding(
+                                //               padding: const EdgeInsets.only(
+                                //                   top: 10, right: 20, left: 20),
+                                //               child: Icon(
+                                //                 Icons.call,
+                                //                 color: activeTheme.icon_color,
+                                //               ),
+                                //             ),
+                                //           ),
+                                //           GestureDetector(
+                                //             onTap: () {
+                                //               launchWP(driver.contact_number);
+                                //             },
+                                //             child: Padding(
+                                //               padding: const EdgeInsets.only(
+                                //                   top: 10, right: 20, left: 20),
+                                //               child: Icon(
+                                //                 Icons.maps_ugc_outlined,
+                                //                 color: activeTheme.icon_color,
+                                //               ),
+                                //             ),
+                                //           ),
+                                //         ])
+                                //   ],
+                                // )
                               ])),
                           Container(
                             margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -266,11 +265,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     left: 0,
                     right: 0,
                     child: Header(lang.translate('sitename'))),
-                Positioned(
-                    bottom: 20,
-                    left: 20,
-                    right: 20,
-                    child: BottomMenu('profile', openNewPage))
+                // Positioned(
+                //     bottom: 20,
+                //     left: 20,
+                //     right: 20,
+                //     child: BottomMenu('profile', openNewPage))
               ]),
             ),
     );

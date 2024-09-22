@@ -74,12 +74,15 @@ class Header extends StatelessWidget {
 
   // Light Header
   Widget header_2() {
+    
+    darkMode = storage.getItem('darkmode') ?? false;
+
     return Center(
         widthFactor: 1,
         child: Container(
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: activeTheme.main_color,
+            color: darkMode ? activeTheme.main_bg : activeTheme.main_color,
             borderRadius: BorderRadius.circular(15),
             boxShadow: [
               BoxShadow(
