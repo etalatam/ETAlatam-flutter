@@ -57,20 +57,20 @@ class _DriverPageState extends State<DriverPage> {
                       ScrollController scrollController) {
                     return Container(
                         child: Stack(children: [
-                      Container(
-                        width: double.infinity,
-                        height: 75,
-                        clipBehavior: Clip.antiAlias,
-                        decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withOpacity(0),
-                            Colors.black.withOpacity(.5),
-                          ],
-                        )),
-                      ),
+                      // Container(
+                      //   width: double.infinity,
+                      //   height: 75,
+                      //   clipBehavior: Clip.antiAlias,
+                      //   decoration: BoxDecoration(
+                      //       gradient: LinearGradient(
+                      //     begin: Alignment.topCenter,
+                      //     end: Alignment.bottomCenter,
+                      //     colors: [
+                      //       Colors.black.withOpacity(0),
+                      //       Colors.black.withOpacity(.5),
+                      //     ],
+                      //   )),
+                      // ),
                       Container(
                         margin: const EdgeInsets.only(top: 50),
                         height: double.infinity,
