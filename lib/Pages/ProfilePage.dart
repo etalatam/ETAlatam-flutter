@@ -25,7 +25,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   DriverModel driver = DriverModel(driver_id: 0, first_name: '');
 
-  final String profilePicture = "${apiURL}uploads/images/parent.gif";
+  final String profilePicture = "${apiURL}/uploads/images/parent.gif";
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +48,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   snapAnimationDuration: const Duration(seconds: 1),
                   initialChildSize: .7,
                   minChildSize: 0.7,
-                  maxChildSize: 0.8,
+                  maxChildSize: 0.85,
                   builder: (BuildContext context,
                       ScrollController scrollController) {
                     return Container(
@@ -223,13 +223,13 @@ class _ProfilePageState extends State<ProfilePage> {
                                   height: 1,
                                   color: activeTheme.main_color.withOpacity(.3),
                                 ),
-                                GestureDetector(
-                                    onTap: () {
-                                      openNewPage(
-                                          context, ChangePasswordPage());
-                                    },
-                                    child: CustomRow(
-                                        lang.translate('Change password'), '')),
+                                // GestureDetector(
+                                //     onTap: () {
+                                //       openNewPage(
+                                //           context, ChangePasswordPage());
+                                //     },
+                                //     child: CustomRow(
+                                //         lang.translate('Change password'), '')),
                                 Container(
                                   height: 1,
                                   color: activeTheme.main_color.withOpacity(.3),
