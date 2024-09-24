@@ -37,11 +37,13 @@ class HttpService {
   Map? headers;
 
   String getImageUrl() {
-    return "$apiURL/app/image.php?src=";
+    // return "$apiURL/app/image.php?src=";
+    return "$apiURL/rpc/get_image_avatar?_relacion=eta.usuarios&_id_usu=";
   }
 
   String croppedImage(path, int? width, int? height) {
-    return "$apiURL/app/image.php?w=$width&h=$height&src=$path";
+    // return "$apiURL/app/image.php?w=$width&h=$height&src=$path";
+    return "$apiURL/rpc/get_image_avatar?_relacion=eta.usuarios&_id_usu=";
   }
 
   /// Run API GET query

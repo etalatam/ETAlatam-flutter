@@ -31,14 +31,14 @@ class DriverModel {
     VehicleModel vehicle = json['vehicle'] != null ? VehicleModel.fromJson(json['vehicle']) : VehicleModel(vehicle_id: 0, plate_number: '');
     
     return DriverModel(
-      driver_id: json['id_driver'] as int?,
+      driver_id: json['driver_id'] as int?,
       first_name: json['nom_usu'] as String?,
       last_name: json['ape_usu'] as String?,
       name: json['nom_usu']+' '+json['ape_usu'] as String?,
       email: json['email'] as String?,
-      picture: json['licensephotoid'] ?? '',
-      contact_number: json['phonenumber'] as String?,
-      driver_license_number: json['driver_license_number'] as String?,
+      picture: json['user_id'],
+      contact_number: json['tel_usu'] as String?,
+      driver_license_number: json['docid'] as String?,
       vehicle: vehicle,
     );
   }
