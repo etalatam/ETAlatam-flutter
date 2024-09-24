@@ -1,20 +1,12 @@
 import 'package:MediansSchoolDriver/domain/datasources/local_storage_datasource.dart';
 import 'package:MediansSchoolDriver/domain/entities/background_locator/background_position.dart';
+import 'package:MediansSchoolDriver/infrastructure/services/isar_services.dart';
 import 'package:isar/isar.dart';
-import 'package:path_provider/path_provider.dart';
 
 class IsarDatasource extends LocalSotrageDatasource {
   late Future<Isar> db;
   IsarDatasource() {
-    db = openDB();
-  }
-
-  Future<Isar> openDB() async {
-    final dir = await getApplicationDocumentsDirectory();
-    if (Isar.instanceNames.isEmpty) {
-      return await Isar.open([BackgroundPositionSchema], directory: dir.path);
-    }
-    return Future.value(Isar.getInstance());
+    db = IsarService.openDB();
   }
 
   @override

@@ -1,7 +1,17 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:MediansSchoolDriver/Models/PickupLocationModel.dart';
+import 'package:MediansSchoolDriver/Models/login_information_model.dart';
+import 'package:MediansSchoolDriver/Pages/providers/driver_provider.dart';
+import 'package:MediansSchoolDriver/domain/datasources/login_datasource.dart';
 import 'package:MediansSchoolDriver/domain/entities/background_locator/background_position.dart';
+import 'package:MediansSchoolDriver/domain/entities/user/driver.dart';
+import 'package:MediansSchoolDriver/domain/entities/user/login_information.dart';
+import 'package:MediansSchoolDriver/domain/repositories/login_information_repository.dart';
+import 'package:MediansSchoolDriver/infrastructure/datasources/login_information_datasource.dart';
+import 'package:MediansSchoolDriver/infrastructure/mappers/driver_mapper.dart';
+import 'package:MediansSchoolDriver/infrastructure/mappers/login_information_mapper.dart';
+import 'package:MediansSchoolDriver/infrastructure/repositories/login_information_repository_impl.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
@@ -56,9 +66,10 @@ class HttpService {
 
   /// Load Trips
   Future<List<TripModel>> getTrips(int lastId) async {
-    http.Response res = await getQuery("/mobile_api/trips?lastId=$lastId");
+    http.Response res = await getQuery("/rpc/driver_trips?select=*&limit=10");
     if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
+      // return [];
       return body.map((dynamic item) => TripModel.fromJson(item)).toList();
     }
     debugPrint(res.body.toString());
@@ -98,7 +109,9 @@ class HttpService {
 
     if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
-      return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
+      List<RouteModel> routes = await Future.wait(
+          body.map((dynamic item) => RouteModel.fromJson(item)).toList());
+      return routes;
     }
     return [];
   }
@@ -116,11 +129,14 @@ class HttpService {
 
   /// Load Driver
   Future<DriverModel> getDriver(id) async {
-    http.Response res = await getQuery("/driver/$id");
+    http.Response res = await getQuery("/rpc/driver_info");
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
-      return DriverModel.fromJson(body);
+      final driverModel = DriverModel.fromJson(body);
+      final Driver driver = DriverMapper.convert(driverModel);
+      await driverProvider.save(driver);
+      return driverModel;
     }
     return DriverModel(driver_id: 0, first_name: '');
   }
@@ -161,13 +177,26 @@ class HttpService {
 
   /// Load Routes
   Future<List<RouteModel>> getRoutes() async {
-    http.Response res = await getQuery("/driver_routes");
+    http.Response res = await getQuery(
+      "/rpc/driver_routes?limit=10",
+    );
     if (res.statusCode == 200) {
-      List<dynamic> body = jsonDecode(res.body);
-      return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
+      try {
+        final List<dynamic> body = jsonDecode(res.body);
+        if (res.body.isEmpty) return [];
+        // Convertir todo el arreglo de forma asíncrona
+        final List<RouteModel> routes = await Future.wait(
+          body
+              .map((dynamic item) async => await RouteModel.fromJson(item))
+              .toList(),
+        );
+        return routes;
+      } catch (e) {
+        print("getRoutes error: ${e.toString()}");
+        return [];
+      }
     }
 
-    debugPrint(res.body.toString());
     return [];
   }
 
@@ -322,11 +351,21 @@ class HttpService {
       http.Response res = await postQuery('/rpc/login', data);
 
       if (res.statusCode == 200) {
-        var body = jsonDecode(res.body);
+        dynamic body = jsonDecode(res.body);
+
         debugPrint(body.toString());
         await storage.setItem(
             'token', body['token'].isEmpty ? '' : body['token']);
         await storage.setItem('driver_id', body['id_usu'] ?? body['id_usu']);
+        try {
+          final LoginInformation login =
+              LoginInformationMapper.information(LoginInfo.fromJson(body));
+          final userService =
+              LoginInformationRepositoryImpl(LoginInformationDatasource());
+          await userService.saveLogin(login);
+        } on Exception catch (e) {
+          debugPrint('Error saving login info: $e');
+        }
         return '1';
       } else {
         return parseResponseMessage(res);
@@ -583,8 +622,7 @@ class HttpService {
     debugPrint('sendTracking');
     final driverID = await storage.getItem('driver_id');
     final data = {
-      'driver_id': driverID ??
-          driver, //TODO al momento de tener el coductor cambiar dinamicamente
+      'driver_id': driverID ?? driver,
       'latitude': position.latitude,
       'longitude': position.longitude,
       'speed': position.speed,
@@ -599,6 +637,38 @@ class HttpService {
     try {
       // var requestAccessRes = await requestAccess();
       http.Response res = await postQuery('/rpc/user_tracking', jsonData,
+          contentType: 'application/json');
+      if (res.statusCode == 200) {
+        return res.body;
+      } else {
+        return res;
+      }
+    } catch (e) {
+      print("sendTracking error: ${e.toString()}");
+      return null;
+    }
+  }
+
+  Future<dynamic> driverInfo(
+      {required BackgroundPosition position, int driver = 18}) async {
+    debugPrint('sendTracking');
+    final driverID = await storage.getItem('driver_id');
+    final data = {
+      'driver_id': driverID ?? driver,
+      'latitude': position.latitude,
+      'longitude': position.longitude,
+      'speed': position.speed,
+      'heading': position.heading,
+      'time': position.time,
+      'accuracy': position.accuracy,
+      'altitude': position.altitude,
+      'speedAccuracy': position.speedAccuracy,
+      'isMocked': position.isMocked
+    };
+    final jsonData = jsonEncode(data);
+    try {
+      // var requestAccessRes = await requestAccess();
+      http.Response res = await postQuery('/rpc/driver_info', null,
           contentType: 'application/json');
       if (res.statusCode == 200) {
         return res.body;

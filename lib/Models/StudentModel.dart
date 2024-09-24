@@ -70,7 +70,7 @@ class StudentModel {
 
     PickupLocationModel? pickupLocation = json['pickup_location'] != null ? PickupLocationModel.fromJson(json['pickup_location']) : PickupLocationModel();
     DestinationModel? destination = json['destination'] != null ? DestinationModel.fromJson(json['destination']) : DestinationModel();
-    RouteModel? route = json['route'] != null ? RouteModel.fromJson(json['route']) : RouteModel(pickup_locations: [],route_id: 0, route_name: '');
+    // RouteModel? route = json['route'] != null ? RouteModel.fromJson(json['route']) : RouteModel(pickup_locations: [],route_id: 0, route_name: '');
 
     return StudentModel(
       student_id: json['student_id'] as int?,
@@ -86,7 +86,7 @@ class StudentModel {
       trips_count: json['trips_count'] as int?,
       pickup_location: pickupLocation,
       destination: destination,
-      route: route,
+      // route: route,
     );
   }
 

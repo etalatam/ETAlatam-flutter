@@ -3,6 +3,8 @@ import 'package:MediansSchoolDriver/Models/VehicleModel.dart';
 import 'package:MediansSchoolDriver/Models/DriverModel.dart';
 import 'package:MediansSchoolDriver/Models/PickupLocationModel.dart';
 import 'package:MediansSchoolDriver/Models/DestinationModel.dart';
+import 'package:MediansSchoolDriver/Pages/providers/driver_provider.dart';
+import 'package:MediansSchoolDriver/domain/entities/user/driver.dart';
 
 class RouteModel {
   int? route_id;
@@ -12,8 +14,15 @@ class RouteModel {
   double? longitude;
   List<PickupLocationModel> pickup_locations;
   List<DestinationModel>? destinations;
-  DriverModel? driver;
+  Driver? driver;
   VehicleModel? vehicle;
+  String? busPlate;
+  String? busModel;
+  String? startTime;
+  String? endTime;
+  String? busYear;
+  int? driverId;
+  int? monitorId;
 
   RouteModel({
     required this.route_id,
@@ -25,38 +34,43 @@ class RouteModel {
     this.destinations,
     this.driver,
     this.vehicle,
-
+    this.busPlate,
+    this.busModel,
+    this.busYear,
+    this.endTime,
+    this.startTime,
+    this.driverId,
+    this.monitorId,
   });
 
-  factory RouteModel.fromJson(Map<String, dynamic> json) {
+  // Convertimos el factory en un Future para manejar la carga asíncrona del driver
+  static Future<RouteModel> fromJson(Map<String, dynamic> json) async {
+    // Cargamos el driver de forma asíncrona
+    Driver? driver = await driverProvider.load();
 
-    DriverModel driver = json['driver'] != null ? DriverModel.fromJson(json['driver']) : DriverModel(driver_id: 0, first_name: '');
-    VehicleModel vehicle = json['vehicle'] != null ? VehicleModel.fromJson(json['vehicle']) : VehicleModel(vehicle_id: 0,plate_number: '');
+    // Procesamos las otras partes del JSON
+    final init = json["schedule_start_time"];
+    List<String> initParts = init.split(':');
+    String initTime = "${initParts[0]}:${initParts[1]}";
 
-    List<PickupLocationModel>? pickupLocations = [];
-    if (json['pickup_locations'] != null )
-    {
-      Iterable l = json["pickup_locations"];
-      pickupLocations = List<PickupLocationModel>.from(l.map((model)=> PickupLocationModel.fromJson(model)));
-    }
+    final end = json["schedule_end_time"];
+    List<String> endParts = end.split(':');
+    String endTime = "${endParts[0]}:${endParts[1]}";
 
-    List<DestinationModel>? destinations = [];
-    if (json['destinations'] != null )
-    {
-      Iterable l = json["destinations"];
-      destinations = List<DestinationModel>.from(l.map((model)=> DestinationModel.fromJson(model)));
-    }
-    
+    final description = "Horario: $initTime - $endTime";
+
     return RouteModel(
       route_id: json['route_id'] as int?,
-      route_name: json['route_name'] as String?,
-      description: json['description'] as String?,
-      latitude: double.parse(json['latitude']),
-      longitude: double.parse(json['longitude']),
-      pickup_locations: pickupLocations,
-      driver: driver,
-      vehicle: vehicle,
-      destinations: destinations,
+      route_name: json['route_description'] ?? '',
+      description: description,
+      busPlate: json['bus_plate'] ?? 'Sin información',
+      startTime: json["schedule_start_time"] ?? '',
+      endTime: json["schedule_end_time"] ?? '',
+      driverId: json['driver_id'],
+      monitorId: json['monitor_id'],
+      pickup_locations: [], // TODO: a agregar al API las ubicaciones
+      driver: driver, // Asignamos el driver cargado
+      // Puedes asignar los vehículos y destinos según lo que se tenga disponible
     );
   }
 }

@@ -21,6 +21,7 @@ class DriverModel {
     this.picture,
     this.contact_number,
     this.driver_license_number,
+    
     this.vehicle,
 
   });
@@ -30,13 +31,13 @@ class DriverModel {
     VehicleModel vehicle = json['vehicle'] != null ? VehicleModel.fromJson(json['vehicle']) : VehicleModel(vehicle_id: 0, plate_number: '');
     
     return DriverModel(
-      driver_id: json['driver_id'] as int?,
-      first_name: json['first_name'] as String?,
-      last_name: json['last_name'] as String?,
-      name: json['first_name']+' '+json['last_name'] as String?,
+      driver_id: json['id_driver'] as int?,
+      first_name: json['nom_usu'] as String?,
+      last_name: json['ape_usu'] as String?,
+      name: json['nom_usu']+' '+json['ape_usu'] as String?,
       email: json['email'] as String?,
-      picture: json['picture'] as String?,
-      contact_number: json['contact_number'] as String?,
+      picture: json['licensephotoid'] ?? '',
+      contact_number: json['phonenumber'] as String?,
       driver_license_number: json['driver_license_number'] as String?,
       vehicle: vehicle,
     );

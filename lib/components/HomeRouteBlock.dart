@@ -60,6 +60,8 @@ class HomeRouteBlock extends StatelessWidget {
                         Expanded(
                           child: GestureDetector(
                               onTap: (() {
+                                return;
+                                //TODO ir a mapa
                                 openNewPage(context,
                                     RouteMap(route_id: route.route_id!));
                               }),
@@ -71,20 +73,35 @@ class HomeRouteBlock extends StatelessWidget {
                                     style: activeTheme.h5,
                                   ))),
                         ),
-                        route.driver!.driver_id! < 1
-                            ? const Center()
-                            : Row(mainAxisSize: MainAxisSize.max, children: [
-                                SvgPicture.asset(
-                                  "assets/svg/bus.svg",
-                                  color: activeTheme.main_color,
-                                  width: 20,
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  "${route.vehicle!.plate_number}",
-                                  style: activeTheme.h6,
-                                )
-                              ]),
+                        const SizedBox(width: 10),
+                        // route.driver.driver_id! < 1
+                        //     ? const Center() :
+                        //  Row(mainAxisSize: MainAxisSize.max, children: [
+                        //     SvgPicture.asset(
+                        //       "assets/svg/bus.svg",
+                        //       // ignore: deprecated_member_use
+                        //       color: activeTheme.main_color,
+                        //       width: 20,
+                        //     ),
+                        //     const SizedBox(width: 5),
+                        //     Text(
+                        //       "${route.vehicle!.plate_number}",
+                        //       style: activeTheme.h6,
+                        //     )
+                        //   ]),
+                        Row(mainAxisSize: MainAxisSize.max, children: [
+                          SvgPicture.asset(
+                            "assets/svg/bus.svg",
+                            // ignore: deprecated_member_use
+                            color: activeTheme.main_color,
+                            width: 20,
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            "${route.busPlate}",
+                            style: activeTheme.h6,
+                          )
+                        ]),
                       ],
                     ),
                     const SizedBox(height: 10),
@@ -136,7 +153,9 @@ class HomeRouteBlock extends StatelessWidget {
                                       left: (i * (1 - .4) * 60).toDouble(),
                                       top: 0,
                                       child: GestureDetector(
-                                        onTap: (() => {
+                                        onTap: true ? null : (() => {
+                                         
+                                          //TODO
                                               openNewPage(
                                                   context,
                                                   PickupsPage(
@@ -173,14 +192,16 @@ class HomeRouteBlock extends StatelessWidget {
                                         right: 0,
                                         top: 15,
                                         child: GestureDetector(
-                                            onTap: (() => {
-                                                  openNewPage(
-                                                      context,
-                                                      PickupsPage(
-                                                        pickup_locations: route
-                                                            .pickup_locations,
-                                                      ))
-                                                }),
+                                            // onTap: (() => {
+                                            //   //TODO
+                                            //   openNewPage(
+                                            //       openNewPage(
+                                            //           context,
+                                            //           PickupsPage(
+                                            //             pickup_locations: route
+                                            //                 .pickup_locations,
+                                            //           ))
+                                            //     }),
                                             child: Row(
                                               children: [
                                                 Icon(
@@ -198,6 +219,8 @@ class HomeRouteBlock extends StatelessWidget {
                       ),
                       GestureDetector(
                           onTap: () {
+                            return;
+                            //TODO
                             callback!(
                                 route.route_id, route.vehicle!.vehicle_id);
                             // openNewPage(context, DriverPage(driver: route.driver, vehicle: route.vehicle,));

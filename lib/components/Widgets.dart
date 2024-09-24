@@ -3,6 +3,7 @@ import 'package:MediansSchoolDriver/Models/TripModel.dart';
 import 'package:MediansSchoolDriver/Pages/EventPage.dart';
 import 'package:MediansSchoolDriver/Pages/HelpMessagesPage.dart';
 import 'package:MediansSchoolDriver/Pages/PickupsPage.dart';
+import 'package:MediansSchoolDriver/domain/entities/user/login_information.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
@@ -145,17 +146,16 @@ mixin MediansWidgets {
                                               height: 60,
                                               decoration: ShapeDecoration(
                                                 image: DecorationImage(
-                                                  image: NetworkImage((parentModel
-                                                              .picture !=
-                                                          null)
-                                                      ? (httpService
-                                                              .getImageUrl() +
-                                                          parentModel.picture!)
-                                                      : httpService.croppedImage(
-                                                          "/uploads/images/60x60.png",
-                                                          200,
-                                                          200)),
                                                   fit: BoxFit.fill,
+                                                  image: parentModel.picture !=
+                                                              null &&
+                                                          parentModel.picture!
+                                                              .isNotEmpty
+                                                      ? NetworkImage(httpService
+                                                              .getImageUrl()) //TODO falta url de la imagen a colocar
+                                                          as ImageProvider
+                                                      : AssetImage(
+                                                          'assets/logo.png'), // AssetImage es un ImageProvider
                                                 ),
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius:
@@ -179,7 +179,7 @@ mixin MediansWidgets {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              parentModel.first_name!,
+                                              "${parentModel.name}",
                                               style: activeTheme.h5,
                                             ),
                                             const SizedBox(height: 10),
@@ -677,7 +677,7 @@ mixin MediansWidgets {
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        "${tripInfo.vehicle!.plate_number}",
+                        tripInfo.busPlate ?? 'Sin información',
                         style: activeTheme.largeText,
                       )
                     ]),
@@ -712,90 +712,91 @@ mixin MediansWidgets {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 150,
-                  height: 80,
-                  clipBehavior: Clip.antiAlias,
-                  decoration: const BoxDecoration(),
-                  child: Stack(children: [
-                    for (var i = 0;
-                        i < tripInfo.pickup_locations!.length && i < 3;
-                        i++)
-                      Positioned(
-                          left: (i * (1 - .4) * 60).toDouble(),
-                          top: 0,
-                          child: GestureDetector(
-                            onTap: (() => {
-                                  Get.to(PickupsPage(
-                                      trip_pickup_locations:
-                                          tripInfo.pickup_locations))
-                                }),
-                            child: Container(
-                              width: 51.03,
-                              height: 51.03,
-                              decoration: ShapeDecoration(
-                                image: DecorationImage(
-                                  image: NetworkImage((tripInfo
-                                              .pickup_locations![i]
-                                              .location!
-                                              .picture !=
-                                          null)
-                                      ? "${httpService.getImageUrl()}${tripInfo.pickup_locations![i].location!.picture}"
-                                      : "https://via.placeholder.com/51x51"),
-                                  fit: BoxFit.fill,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(50),
-                                  side: const BorderSide(
-                                      width: 4, color: Colors.white),
-                                ),
-                              ),
-                            ),
-                          )),
-                    Positioned(
-                      right: -5,
-                      top: 15,
-                      child: GestureDetector(
-                          onTap: (() => {
-                                Get.to(PickupsPage(
-                                    trip_pickup_locations:
-                                        tripInfo.pickup_locations))
-                              }),
-                          child: Row(
-                            children: [
-                              Icon(Icons.pin_drop,
-                                  color: activeTheme.main_color),
-                              Text(
-                                '${tripInfo.pickup_locations!.length.toString()} ',
-                                style: activeTheme.h6,
-                              ),
-                            ],
-                          )),
-                    ),
-                  ]),
-                ),
-                const SizedBox(width: 30),
-                GestureDetector(
-                  onTap: (() => {}),
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                        color: activeTheme.buttonBG,
-                        border:
-                            Border.all(width: 1, color: activeTheme.main_color),
-                        borderRadius: BorderRadius.circular(10)),
-                    child: Text(
-                      lang.translate("${tripInfo.trip_status}"),
-                      style: TextStyle(
-                          color: activeTheme.buttonColor,
-                          fontSize: 16,
-                          fontFamily: activeTheme.h6.fontFamily
-                          // decoration: TextDecoration.underline,
-                          ),
-                    ),
-                  ),
-                )
+                //TODO PARADAS UBICACION
+                // Container(
+                //   width: 150,
+                //   height: 80,
+                //   clipBehavior: Clip.antiAlias,
+                //   decoration: const BoxDecoration(),
+                //   child: Stack(children: [
+                //     for (var i = 0;
+                //         i < tripInfo.pickup_locations!.length && i < 3;
+                //         i++)
+                //       Positioned(
+                //           left: (i * (1 - .4) * 60).toDouble(),
+                //           top: 0,
+                //           child: GestureDetector(
+                //             onTap: (() => {
+                //                   Get.to(PickupsPage(
+                //                       trip_pickup_locations:
+                //                           tripInfo.pickup_locations))
+                //                 }),
+                //             child: Container(
+                //               width: 51.03,
+                //               height: 51.03,
+                //               decoration: ShapeDecoration(
+                //                 image: DecorationImage(
+                //                   image: NetworkImage((tripInfo
+                //                               .pickup_locations![i]
+                //                               .location!
+                //                               .picture !=
+                //                           null)
+                //                       ? "${httpService.getImageUrl()}${tripInfo.pickup_locations![i].location!.picture}"
+                //                       : "https://via.placeholder.com/51x51"),
+                //                   fit: BoxFit.fill,
+                //                 ),
+                //                 shape: RoundedRectangleBorder(
+                //                   borderRadius: BorderRadius.circular(50),
+                //                   side: const BorderSide(
+                //                       width: 4, color: Colors.white),
+                //                 ),
+                //               ),
+                //             ),
+                //           )),
+                //     Positioned(
+                //       right: -5,
+                //       top: 15,
+                //       child: GestureDetector(
+                //           onTap: (() => {
+                //                 Get.to(PickupsPage(
+                //                     trip_pickup_locations:
+                //                         tripInfo.pickup_locations))
+                //               }),
+                //           child: Row(
+                //             children: [
+                //               Icon(Icons.pin_drop,
+                //                   color: activeTheme.main_color),
+                //               Text(
+                //                 '${tripInfo.pickup_locations!.length.toString()} ',
+                //                 style: activeTheme.h6,
+                //               ),
+                //             ],
+                //           )),
+                //     ),
+                //   ]),
+                // ),
+                // const SizedBox(width: 30),
+                // GestureDetector(
+                //   onTap: (() => {}),
+                //   child: Container(
+                //     padding:
+                //         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                //     decoration: BoxDecoration(
+                //         color: activeTheme.buttonBG,
+                //         border:
+                //             Border.all(width: 1, color: activeTheme.main_color),
+                //         borderRadius: BorderRadius.circular(10)),
+                //     child: Text(
+                //       lang.translate("${tripInfo.trip_status}"),
+                //       style: TextStyle(
+                //           color: activeTheme.buttonColor,
+                //           fontSize: 16,
+                //           fontFamily: activeTheme.h6.fontFamily
+                //           // decoration: TextDecoration.underline,
+                //           ),
+                //     ),
+                //   ),
+                // )
               ],
             ),
           ),
@@ -889,7 +890,7 @@ mixin MediansWidgets {
                 child: Text(lang.translate('Trip duration'),
                     style: activeTheme.smallText)),
             Text(
-              trip.duration.toString(),
+              formatTimeWithSeconds(trip.duration),
               style: activeTheme.h6,
             ),
           ],
@@ -938,11 +939,25 @@ mixin MediansWidgets {
                 padding: const EdgeInsets.all(5),
                 child: Text(lang.translate('Pickup locations'),
                     style: activeTheme.smallText)),
-            Text(trip.pickup_locations!.length.toString(),
-                style: activeTheme.h6),
+            Text("1", style: activeTheme.h6),
+            // Text(trip.pickup_locations!.length.toString(),
+            //     style: activeTheme.h6), //TODO ubicacion de paradas
           ],
         )
       ],
     );
+  }
+
+  static String formatTimeWithSeconds(String time) {
+    List<String> parts = time.split(':');
+    if (parts.length == 3) {
+      List<String> secondsParts = parts[2].split('.');
+      String secondsFormatted = secondsParts.length > 1
+          ? "${secondsParts[0]}.${secondsParts[1].substring(0, 2)}"
+          : parts[2];
+      return "${parts[0]}:${parts[1]}:$secondsFormatted";
+    } else {
+      throw FormatException("El formato de tiempo no es válido");
+    }
   }
 }
