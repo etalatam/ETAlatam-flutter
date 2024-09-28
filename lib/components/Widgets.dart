@@ -152,14 +152,14 @@ mixin MediansWidgets {
                                                           parentModel.picture!
                                                               .isNotEmpty
                                                       ? NetworkImage((parentModel
-                                                              .picture !=
-                                                          null)
-                                                      ? ('${httpService
-                                                              .getImageUrl()}${parentModel.picture}')
-                                                      : httpService.croppedImage(
-                                                          "/uploads/images/60x60.png",
-                                                          200,
-                                                          200))
+                                                                      .picture !=
+                                                                  null)
+                                                              ? ('${httpService.getImageUrl()}${parentModel.picture}')
+                                                              : httpService
+                                                                  .croppedImage(
+                                                                      "/uploads/images/60x60.png",
+                                                                      200,
+                                                                      200))
                                                           as ImageProvider
                                                       : AssetImage(
                                                           'assets/logo.png'), // AssetImage es un ImageProvider
@@ -631,184 +631,154 @@ mixin MediansWidgets {
     activeTheme =
         storage.getItem('darkmode') == true ? DarkTheme() : LightTheme();
 
-    return Container(
-      width: MediaQuery.of(context).size.width / 1.2,
-      clipBehavior: Clip.antiAlias,
-      margin: const EdgeInsets.all(10),
-      decoration: ShapeDecoration(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-              side: BorderSide(
-                  width: 1, color: activeTheme.main_color.withOpacity(.2))),
-          color: activeTheme.main_bg,
-          shadows: [
-            BoxShadow(
-              color: activeTheme.shadowColor,
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-              spreadRadius: 0,
-            )
-          ]),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: double.infinity,
-            // height: 235,
-            padding: const EdgeInsets.all(20),
-            clipBehavior: Clip.antiAlias,
-            decoration: const BoxDecoration(),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      lang.translate('Trip') +
-                          ' # ' +
-                          tripInfo.trip_id.toString(),
-                      style: activeTheme.h3,
-                    ),
-                    Row(children: [
-                      SvgPicture.asset(
-                        "assets/svg/bus.svg",
-                        color: activeTheme.main_color,
-                        width: 20,
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        tripInfo.busPlate ?? 'Sin información',
-                        style: activeTheme.largeText,
-                      )
-                    ]),
-                  ],
-                ),
-                const SizedBox(height: 5),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: tripInfoRow(tripInfo),
-                ),
-              ],
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Container(
+          width: MediaQuery.of(context).size.width / 1.2,
+          clipBehavior: Clip.antiAlias,
+          margin: EdgeInsets.all(10),
+          decoration: ShapeDecoration(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  side: BorderSide(
+                      width: 1,
+                      color: activeTheme.border_color.withOpacity(.1))),
+              color: Colors.white,
+              shadows: [
+                BoxShadow(
+                  color: Colors.black54,
+                  blurRadius: 10,
+                  offset: Offset(0, 5),
+                  spreadRadius: 0,
+                )
+              ]),
+          child: Stack(children: [
+            Positioned(
+              top: -30,
+              right: 0,
+              height: 120,
+              width: 120,
+              child: SvgPicture.asset("assets/svg/corner-circle.svg"),
             ),
-          ),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(10),
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-                gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.white.withOpacity(0),
-                darkMode == false
-                    ? const Color.fromRGBO(249, 250, 254, 1)
-                    : const Color.fromRGBO(249, 250, 254, .15),
-              ],
-            )),
-            child: Row(
+            Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                //TODO PARADAS UBICACION
-                // Container(
-                //   width: 150,
-                //   height: 80,
-                //   clipBehavior: Clip.antiAlias,
-                //   decoration: const BoxDecoration(),
-                //   child: Stack(children: [
-                //     for (var i = 0;
-                //         i < tripInfo.pickup_locations!.length && i < 3;
-                //         i++)
-                //       Positioned(
-                //           left: (i * (1 - .4) * 60).toDouble(),
-                //           top: 0,
-                //           child: GestureDetector(
-                //             onTap: (() => {
-                //                   Get.to(PickupsPage(
-                //                       trip_pickup_locations:
-                //                           tripInfo.pickup_locations))
-                //                 }),
-                //             child: Container(
-                //               width: 51.03,
-                //               height: 51.03,
-                //               decoration: ShapeDecoration(
-                //                 image: DecorationImage(
-                //                   image: NetworkImage((tripInfo
-                //                               .pickup_locations![i]
-                //                               .location!
-                //                               .picture !=
-                //                           null)
-                //                       ? "${httpService.getImageUrl()}${tripInfo.pickup_locations![i].location!.picture}"
-                //                       : "https://via.placeholder.com/51x51"),
-                //                   fit: BoxFit.fill,
-                //                 ),
-                //                 shape: RoundedRectangleBorder(
-                //                   borderRadius: BorderRadius.circular(50),
-                //                   side: const BorderSide(
-                //                       width: 4, color: Colors.white),
-                //                 ),
-                //               ),
-                //             ),
-                //           )),
-                //     Positioned(
-                //       right: -5,
-                //       top: 15,
-                //       child: GestureDetector(
-                //           onTap: (() => {
-                //                 Get.to(PickupsPage(
-                //                     trip_pickup_locations:
-                //                         tripInfo.pickup_locations))
-                //               }),
-                //           child: Row(
-                //             children: [
-                //               Icon(Icons.pin_drop,
-                //                   color: activeTheme.main_color),
-                //               Text(
-                //                 '${tripInfo.pickup_locations!.length.toString()} ',
-                //                 style: activeTheme.h6,
-                //               ),
-                //             ],
-                //           )),
-                //     ),
-                //   ]),
-                // ),
-                // const SizedBox(width: 30),
-                // GestureDetector(
-                //   onTap: (() => {}),
-                //   child: Container(
-                //     padding:
-                //         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                //     decoration: BoxDecoration(
-                //         color: activeTheme.buttonBG,
-                //         border:
-                //             Border.all(width: 1, color: activeTheme.main_color),
-                //         borderRadius: BorderRadius.circular(10)),
-                //     child: Text(
-                //       lang.translate("${tripInfo.trip_status}"),
-                //       style: TextStyle(
-                //           color: activeTheme.buttonColor,
-                //           fontSize: 16,
-                //           fontFamily: activeTheme.h6.fontFamily
-                //           // decoration: TextDecoration.underline,
-                //           ),
-                //     ),
-                //   ),
-                // )
+                Container(
+                  width: double.infinity,
+                  // height: 235,
+                  padding: const EdgeInsets.all(20),
+                  clipBehavior: Clip.antiAlias,
+                  decoration: const BoxDecoration(),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            "${tripInfo.route?.route_name}",
+                            style: activeTheme.h6,
+                          ),
+                          Row(children: [
+                            SvgPicture.asset(
+                              "assets/svg/bus.svg",
+                              width: 20,
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              tripInfo.busPlate ?? 'Sin información',
+                              style: TextStyle(color: Colors.white),
+                            )
+                          ]),
+                        ],
+                      ),
+                      SizedBox(height: 40),
+                      SizedBox(
+                        width: double.infinity,
+                        child: TextButton(
+                          onPressed: true
+                              ? null
+                              : () {
+                                  //TODO
+                                  return;
+                                  // Get.to(TripPage(trip: tripInfo,));
+                                },
+                          child: tripInfoRow(tripInfo),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: 20,
+                ),
+                Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Expanded(
+                          child: Container(
+                              constraints:
+                                  BoxConstraints(minWidth: 100, maxWidth: 150),
+                              width: 200,
+                              height: 51,
+                              clipBehavior: Clip.antiAlias,
+                              decoration: BoxDecoration(),
+                              child: Center())),
+                      Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                              color: activeTheme.buttonBG,
+                              border: Border.all(
+                                  width: 1, color: activeTheme.border_color),
+                              borderRadius: BorderRadius.circular(10)),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.route_rounded,
+                                color: activeTheme.buttonColor,
+                              ),
+                              SizedBox(
+                                width: 10,
+                              ),
+                              Text(
+                                '${tripInfo.done_locations_count}',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              SizedBox(
+                                width: 10,
+                              ),
+                              Text(
+                                "${lang.translate('Locations')}",
+                                style: TextStyle(
+                                    fontSize: activeTheme.h6.fontSize,
+                                    fontFamily: activeTheme.h6.fontFamily,
+                                    color: activeTheme.buttonColor),
+                              ),
+                            ],
+                          )),
+                      SizedBox(
+                        width: 10,
+                      ),
+                    ]),
               ],
             ),
-          ),
-        ],
-      ),
+            // Container(
+            //   child: MediansWidgets.sectioEndShadow(context),
+            // )
+          ])),
     );
   }
 
@@ -872,7 +842,7 @@ mixin MediansWidgets {
     );
   }
 
-  static Widget tripInfoRow(trip) {
+  static Widget tripInfoRow(TripModel trip) {
     return Row(
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -897,7 +867,7 @@ mixin MediansWidgets {
                 child: Text(lang.translate('Trip duration'),
                     style: activeTheme.smallText)),
             Text(
-              formatTimeWithSeconds(trip.duration),
+              formatTimeWithSeconds(trip.duration.toString()),
               style: activeTheme.h6,
             ),
           ],
@@ -946,7 +916,7 @@ mixin MediansWidgets {
                 padding: const EdgeInsets.all(5),
                 child: Text(lang.translate('Pickup locations'),
                     style: activeTheme.smallText)),
-            Text("1", style: activeTheme.h6),
+            Text(trip.done_locations_count.toString(), style: activeTheme.h6),
             // Text(trip.pickup_locations!.length.toString(),
             //     style: activeTheme.h6), //TODO ubicacion de paradas
           ],
@@ -966,5 +936,30 @@ mixin MediansWidgets {
     } else {
       throw FormatException("El formato de tiempo no es válido");
     }
+  }
+
+  static Widget sectioEndShadow(context) {
+    return Positioned(
+      bottom: 0,
+      child: SizedBox(
+        child: Container(
+          height: 100,
+          width: MediaQuery.of(context).size.width / 1,
+          padding: const EdgeInsets.all(10),
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.white.withOpacity(0),
+              Colors.white.withOpacity(.2),
+              Color.fromRGBO(200, 200, 200, 0.1).withOpacity(.1),
+            ],
+          )),
+          child: Center(),
+        ),
+      ),
+    );
   }
 }

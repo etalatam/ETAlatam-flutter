@@ -71,8 +71,12 @@ class HttpService {
     http.Response res = await getQuery("/rpc/driver_trips?select=*&limit=10");
     if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
-      // return [];
-      return body.map((dynamic item) => TripModel.fromJson(item)).toList();
+      final List<TripModel> trips = await Future.wait(
+        body
+            .map((dynamic item) async => await TripModel.fromJson(item))
+            .toList(),
+      );
+      return trips;
     }
     debugPrint(res.body.toString());
     return [];
@@ -184,8 +188,27 @@ class HttpService {
     );
     if (res.statusCode == 200) {
       try {
-        final List<dynamic> body = jsonDecode(res.body);
+        final pickUpLocation = await getPickUpLocationPoint();
+        final List<Map<String, dynamic>> body = jsonDecode(res.body);
+
         if (res.body.isEmpty) return [];
+        // Recorrer la lista de pickUpLocation
+        for (var route in body) {
+          for (var location in pickUpLocation) {
+            if (route["route_id"] == location["route_id"]) {
+              route["pickup_location"] = {
+                "schedule_start_time": location["schedule_start_time"],
+                "schedule_end_time": location["schedule_end_time"],
+                "bus_plate": location["bus_plate"],
+                "bus_model": location["bus_model"],
+                "bus_year": location["bus_year"],
+                "driver_id": location["driver_id"],
+                "monitor_id": location["monitor_id"]
+              };
+            }
+          }
+        }
+
         // Convertir todo el arreglo de forma asíncrona
         final List<RouteModel> routes = await Future.wait(
           body
@@ -197,20 +220,63 @@ class HttpService {
         print("getRoutes error: ${e.toString()}");
         return [];
       }
+    } else {
+      print("erorr en peticion: ${res.toString()}");
+    }
+
+    return [];
+  }
+
+  Future<List<Map<String, dynamic>>> getPickUpLocationPoint() async {
+    http.Response res = await getQuery(
+      "/rpc/route_pickup_points",
+    );
+    if (res.statusCode == 200) {
+      try {
+        final List<Map<String, dynamic>> body = jsonDecode(res.body);
+        if (res.body.isEmpty) return [];
+        return body;
+      } catch (e) {
+        print("getPickUpLocationPoint error: ${e.toString()}");
+        return [];
+      }
     }
 
     return [];
   }
 
   /// Load Trip
+  //TODO
   Future<TripModel> getTrip(id) async {
-    http.Response res = await getQuery("/trip/$id");
+    final trip = {
+      "id_trip": 1,
+      "start_ts": "2024-09-22T17:59:46.716875",
+      "end_ts": "2024-09-22T18:00:06.299405",
+      "distance": 0,
+      "duration": "00:00:19.58253",
+      "running": false,
+      "schedule_start_time": "05:30:00",
+      "schedule_end_time": "07:30:00",
+      "route_id": 1,
+      "route_description": "Ruta1",
+      "bus_plate": "ABCDEF",
+      "bus_model": "",
+      "bus_year": 2006,
+      "driver_id": 25,
+      "monitor_id": 3,
+      "relation_name_monitor": "eta.drivers"
+    };
+    final viaje = TripModel.fromJson(trip);
+    return viaje;
+    // http.Response res = await getQuery("/trip/$id");
 
-    if (res.statusCode == 200) {
-      var body = jsonDecode(res.body);
-      return body == null ? TripModel(trip_id: 0) : TripModel.fromJson(body);
-    }
-    return TripModel(trip_id: 0);
+    // if (res.statusCode == 200) {
+    //   var body = jsonDecode(res.body);
+    //   if (body == null) return TripModel(trip_id: 0);
+    //   final TripModel trips = await TripModel.fromJson(body);
+    //   return trips;
+    // }
+    // return TripModel(trip_id: 0);
   }
 
   /// Load Tripd
@@ -225,23 +291,45 @@ class HttpService {
   }
 
   /// Submit form to update data through API
+  //TODO cambiar por servicio de crear viaje
   Future<TripModel> create_trip(
       int driverId, int routeId, int vehicleId) async {
-    Map data = {
-      "driver_id": driverId,
-      "route_id": routeId,
-      "vehicle_id": vehicleId,
-      "trip_status": 'Scheduled',
+    final trip = {
+      "id_trip": 1,
+      "start_ts": "2024-09-22T17:59:46.716875",
+      "end_ts": "2024-09-22T18:00:06.299405",
+      "distance": 0,
+      "duration": "00:00:19.58253",
+      "running": false,
+      "schedule_start_time": "05:30:00",
+      "schedule_end_time": "07:30:00",
+      "route_id": 1,
+      "route_description": "Ruta1",
+      "bus_plate": "ABCDEF",
+      "bus_model": "",
+      "bus_year": 2006,
+      "driver_id": 25,
+      "monitor_id": 3,
+      "relation_name_monitor": "eta.drivers"
     };
+    final viaje = TripModel.fromJson(trip);
+    return viaje;
+    // Map data = {
+    //   "driver_id": driverId,
+    //   "route_id": routeId,
+    //   "vehicle_id": vehicleId,
+    //   "trip_status": 'Scheduled',
+    // };
 
-    Map? body = {"model": 'create_trip', "params": jsonEncode(data)};
-    http.Response res = await postQuery('/mobile_api', body);
+    // Map? body = {"model": 'create_trip', "params": jsonEncode(data)};
+    // http.Response res = await postQuery('/mobile_api', body);
 
-    if (res.statusCode == 200) {
-      return TripModel.fromJson(jsonDecode(res.body));
-    } else {
-      throw "Unable to retrieve data.";
-    }
+    // if (res.statusCode == 200) {
+
+    //   return TripModel.fromJson(jsonDecode(res.body));
+    // } else {
+    //   throw "Unable to retrieve data.";
+    // }
   }
 
   /// Submit form to update data through API

@@ -100,23 +100,23 @@ class PickupLocationModel {
     }
     
     return PickupLocationModel(
-      pickup_id: json['pickup_id'] as int?,
-      route_id: json['route_id'] as int?,
-      latitude: double.parse(json['latitude']),
-      longitude: double.parse(json['longitude']),
-      location_name: json['location_name'] as String?,
+      pickup_id: json['id_pickup_point'] as int?,
+      route_id: json['id_route'] as int?,
+      latitude: double.parse(json['lat'] ?? "10"),
+      longitude: double.parse(json['lon'] ?? "-66"),
+      location_name: json['name'] as String?,
       address: json['address'] as String?,
       contact_number: json['contact_number'] as String?,
-      picture: json['picture'] as String?,
+      picture: json['picture'] ?? "",
       student_name: json['student_name'] as String?,
       status: json['status'] == 1 ? true : false as bool?,
-      saturday: json['saturdays'] ? true : false,
-      sunday: json['sundays'] ? true : false,
-      monday: json['mondays'] ? true : false,
-      tuesday: json['tuesdays']  ? true : false,
-      wednesday: json['wednesdays']   ? true : false,
-      thursday: json['thursdays']   ? true : false,
-      friday: json['fridays']   ? true : false,
+      saturday: json['saturdays'].toString().isNotEmpty ? true : false,
+      sunday: json['sundays'].toString().isNotEmpty ? true : false,
+      monday: json['mondays'].toString().isNotEmpty ? true : false,
+      tuesday: json['tuesdays'].toString().isNotEmpty  ? true : false,
+      wednesday: json['wednesdays'].toString().isNotEmpty   ? true : false,
+      thursday: json['thursdays'].toString().isNotEmpty   ? true : false,
+      friday: json['fridays'].toString().isNotEmpty   ? true : false,
     );
   }
 

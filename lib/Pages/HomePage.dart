@@ -154,7 +154,7 @@ class _HomePageState extends State<HomePage>
                                     oldTripsList.isEmpty
                                         ? const Center()
                                         : SizedBox(
-                                            height: 370,
+                                            height: 310,
                                             child: ListView.builder(
                                                 scrollDirection:
                                                     Axis.horizontal,
@@ -223,7 +223,7 @@ class _HomePageState extends State<HomePage>
     final driverId = await storage.getItem('driver_id');
     TripModel? createdTrip =
         await httpService.create_trip(driverId, routeId, vehicleId);
-
+    print("llego-----------------------${createdTrip.trip_id}");
     if (createdTrip.trip_id != 0) {
       await Navigator.push(
         context,
