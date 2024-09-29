@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'package:MediansSchoolDriver/Models/RouteModel.dart';
-import 'package:MediansSchoolDriver/Pages/HelpPage.dart';
 import 'package:MediansSchoolDriver/Pages/LoginPage.dart';
+import 'package:MediansSchoolDriver/Pages/ProfilePage.dart';
 import 'package:MediansSchoolDriver/Pages/TripPage.dart';
-import 'package:MediansSchoolDriver/Pages/map/map_view.dart';
+import 'package:MediansSchoolDriver/Pages/providers/login_information_provider.dart';
+import 'package:MediansSchoolDriver/components/ActiveTrip.dart';
+import 'package:MediansSchoolDriver/domain/entities/user/login_information.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:localstorage/localstorage.dart';
 import 'package:location/location.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:MediansSchoolDriver/Models/DriverModel.dart';
@@ -14,6 +17,9 @@ import 'package:MediansSchoolDriver/Models/TripModel.dart';
 import 'package:MediansSchoolDriver/components/loader.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 import 'package:MediansSchoolDriver/components/Widgets.dart';
+import 'package:MediansSchoolDriver/components/header.dart';
+import 'package:MediansSchoolDriver/components/bottom_menu.dart';
+import 'package:MediansSchoolDriver/components/HomeRouteBlock.dart';
 import 'package:MediansSchoolDriver/Models/EventModel.dart';
 
 class HomePage extends StatefulWidget {
@@ -42,17 +48,171 @@ class _HomePageState extends State<HomePage>
   List<RouteModel> routesList = [];
   List<TripModel> oldTripsList = [];
 
+  Future<LoginInformation?> getLoginInformation({String? ticketId}) async {
+    const func = "getLoginInformation";
+    try {
+      final result = await loginInformationProvider.loadLoginInformation();
+      return result;
+    } catch (e) {
+      print(
+          "$func - Ocurrio un error cargando la información de login del conductor");
+      rethrow;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final LocalStorage storage = LocalStorage('tokens.json');
+    final token = storage.getItem('token');
+    print("token---------------------$token");
     activeTheme =
         storage.getItem('darkmode') == true ? DarkTheme() : LightTheme();
-
     return showLoader
         ? Loader()
         : Material(
             type: MaterialType.transparency,
             child: Scaffold(
-              body: Container()));
+                body: RefreshIndicator(
+                    triggerMode: RefreshIndicatorTriggerMode.onEdge,
+                    onRefresh: _refreshData,
+                    child: Stack(
+                      children: [
+                        Container(
+                            color: activeTheme.main_bg,
+                            height: MediaQuery.of(context).size.height,
+                            child: SingleChildScrollView(
+                              padding: const EdgeInsets.only(bottom: 100),
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              child: Stack(children: <Widget>[
+                                Container(
+                                  color: activeTheme.main_bg,
+                                  margin: const EdgeInsets.only(top: 120),
+                                  child: Column(children: [
+                                    Row(children: [
+                                      Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 20),
+                                          child: Text(
+                                            "${lang.translate('welcome')}  ${driverModel.first_name!}",
+                                            style: activeTheme.h4,
+                                            textAlign: TextAlign.start,
+                                          ))
+                                    ]),
+
+                                    /// Driver profile
+                                    GestureDetector(
+                                      onTap: () {
+                                        openNewPage(context, ProfilePage());
+                                      },
+                                      child: profileInfoBlock(
+                                          driverModel, context),
+                                    ),
+
+                                    /// Has Active Trip
+                                    !hasActiveTrip
+                                        ? const Center()
+                                        : ActiveTrip(openTrip, activeTrip),
+
+                                    MediansWidgets.svgTitle(
+                                        "assets/svg/fire.svg",
+                                        lang.translate("Route")),
+
+                                    const SizedBox(height: 10),
+
+                                    /// Available Routes
+                                    SizedBox(
+                                        height: 300,
+                                        child: ListView.builder(
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: routesList
+                                                .length, // Replace with the total number of items
+                                            itemBuilder: (BuildContext context,
+                                                int index) {
+                                              return Container(
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal:
+                                                        routesList.length < 2
+                                                            ? 20
+                                                            : 0),
+                                                width: routesList.length < 2
+                                                    ? MediaQuery.of(context)
+                                                        .size
+                                                        .width
+                                                    : 400,
+                                                height: 400,
+                                                child: HomeRouteBlock(
+                                                    route: routesList[index],
+                                                    callback: createTrip),
+                                              );
+                                            })),
+
+                                    MediansWidgets.svgTitle(
+                                        "assets/svg/bus.svg",
+                                        lang.translate('trips_history')),
+
+                                    /// Last Trips
+                                    oldTripsList.isEmpty
+                                        ? const Center()
+                                        : SizedBox(
+                                            height: 310,
+                                            child: ListView.builder(
+                                                scrollDirection:
+                                                    Axis.horizontal,
+                                                itemCount: oldTripsList
+                                                    .length, // Replace with the total number of items
+                                                itemBuilder:
+                                                    (BuildContext context,
+                                                        int index) {
+                                                  return GestureDetector(
+                                                      onTap: () {
+                                                        return;
+                                                        //TODO
+                                                        openNewPage(
+                                                            context,
+                                                            TripPage(
+                                                                trip:
+                                                                    oldTripsList[
+                                                                        index]));
+                                                      },
+                                                      child: MediansWidgets
+                                                          .homeTripBlock(
+                                                              context,
+                                                              oldTripsList[
+                                                                  index]));
+                                                })),
+                                    const SizedBox(
+                                      height: 30,
+                                    ),
+
+                                    // Container(
+                                    //     padding: const EdgeInsets.all(20),
+                                    //     child: Text(
+                                    //       "${lang.translate('Events and News')}",
+                                    //       style: activeTheme.h3,
+                                    //       textAlign: TextAlign.start,
+                                    //     )),
+
+                                    /// Events carousel
+                                    // Container(
+                                    //   width: MediaQuery.of(context).size.width,
+                                    //   alignment: Alignment.center,
+                                    //   child: MediansWidgets.eventCarousel(
+                                    //       eventsList, context),
+                                    // ),
+
+                                    // /// Help / Support Block
+                                    MediansWidgets.homeHelpBlock(),
+                                  ]),
+                                ),
+                              ]),
+                            )),
+                        Positioned(
+                            left: 0,
+                            right: 0,
+                            top: 0,
+                            child: Header(lang.translate('sitename'))),
+                      ],
+                    ))));
   }
 
   /// Create trip
@@ -63,7 +223,7 @@ class _HomePageState extends State<HomePage>
     final driverId = await storage.getItem('driver_id');
     TripModel? createdTrip =
         await httpService.create_trip(driverId, routeId, vehicleId);
-
+    print("llego-----------------------${createdTrip.trip_id}");
     if (createdTrip.trip_id != 0) {
       await Navigator.push(
         context,

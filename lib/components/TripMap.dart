@@ -191,9 +191,9 @@ class _MapWithRouteState extends State<MapWithRoute> {
   void initState() {
     super.initState();
 
-    fetchRoute();
-    _timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
-      fetchRoute();
-    });
+    // fetchRoute();
+    // _timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
+    //   fetchRoute();
+    // });
   }
 }

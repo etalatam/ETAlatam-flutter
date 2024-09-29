@@ -1,3 +1,4 @@
+import 'package:MediansSchoolDriver/Pages/HomePage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:MediansSchoolDriver/controllers/page_controller.dart' as p;
@@ -13,7 +14,8 @@ class HomeScreen extends StatelessWidget {
 
   final viewRoutes = const <Widget>[
     SettingsPage(),
-    MapView(),
+    HomePage(),
+    // MapView(),
     SendMessagePage(),
   ];
 

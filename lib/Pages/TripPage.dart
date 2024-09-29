@@ -23,7 +23,7 @@ class TripPage extends StatefulWidget {
 }
 
 class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
-  bool showLoader = true;
+  bool showLoader = false;
 
   bool isActiveTrip = true;
   String activeTab = 'pickup';
@@ -46,6 +46,11 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
 
   @override
   Widget build(BuildContext context) {
+    print(
+        "llego trip page--------------${widget.trip?.vehicle?.last_latitude}");
+    mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
+    mapOrigin =
+        LatLng(trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
     return Material(
       child: showLoader
           ? Loader()
@@ -274,7 +279,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
 
   Widget HeadWidget(item) {
     final user = hasCustomRoute ? item.student : item;
-    currentPicture = user.picture;
+    currentPicture = user?.picture ?? ' ';
 
     return Container(
         child: Row(
@@ -365,7 +370,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
           showMap = false;
         });
 
-        Timer(const Duration(seconds: 1), () async {
+        Timer(const Duration(seconds: 0), () async {
           setState(() {
             customRoute = pickupLocation;
             hasCustomRoute = true;

@@ -1,7 +1,17 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:MediansSchoolDriver/Models/PickupLocationModel.dart';
+import 'package:MediansSchoolDriver/Models/login_information_model.dart';
+import 'package:MediansSchoolDriver/Pages/providers/driver_provider.dart';
+import 'package:MediansSchoolDriver/domain/datasources/login_datasource.dart';
 import 'package:MediansSchoolDriver/domain/entities/background_locator/background_position.dart';
+import 'package:MediansSchoolDriver/domain/entities/user/driver.dart';
+import 'package:MediansSchoolDriver/domain/entities/user/login_information.dart';
+import 'package:MediansSchoolDriver/domain/repositories/login_information_repository.dart';
+import 'package:MediansSchoolDriver/infrastructure/datasources/login_information_datasource.dart';
+import 'package:MediansSchoolDriver/infrastructure/mappers/driver_mapper.dart';
+import 'package:MediansSchoolDriver/infrastructure/mappers/login_information_mapper.dart';
+import 'package:MediansSchoolDriver/infrastructure/repositories/login_information_repository_impl.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
@@ -58,10 +68,15 @@ class HttpService {
 
   /// Load Trips
   Future<List<TripModel>> getTrips(int lastId) async {
-    http.Response res = await getQuery("/mobile_api/trips?lastId=$lastId");
+    http.Response res = await getQuery("/rpc/driver_trips?select=*&limit=10");
     if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
-      return body.map((dynamic item) => TripModel.fromJson(item)).toList();
+      final List<TripModel> trips = await Future.wait(
+        body
+            .map((dynamic item) async => await TripModel.fromJson(item))
+            .toList(),
+      );
+      return trips;
     }
     debugPrint(res.body.toString());
     return [];
@@ -100,7 +115,9 @@ class HttpService {
 
     if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
-      return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
+      List<RouteModel> routes = await Future.wait(
+          body.map((dynamic item) => RouteModel.fromJson(item)).toList());
+      return routes;
     }
     return [];
   }
@@ -118,12 +135,14 @@ class HttpService {
 
   /// Load Driver
   Future<DriverModel> getDriver(id) async {
-    // http.Response res = await getQuery("/driver/$id");
     http.Response res = await getQuery("/rpc/driver_info");
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
-      return DriverModel.fromJson(body);
+      final driverModel = DriverModel.fromJson(body);
+      final Driver driver = DriverMapper.convert(driverModel);
+      await driverProvider.save(driver);
+      return driverModel;
     }
     return DriverModel(driver_id: 0, first_name: '');
   }
@@ -164,25 +183,100 @@ class HttpService {
 
   /// Load Routes
   Future<List<RouteModel>> getRoutes() async {
-    http.Response res = await getQuery("/driver_routes");
+    http.Response res = await getQuery(
+      "/rpc/driver_routes?limit=10",
+    );
     if (res.statusCode == 200) {
-      List<dynamic> body = jsonDecode(res.body);
-      return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
+      try {
+        final pickUpLocation = await getPickUpLocationPoint();
+        final List<Map<String, dynamic>> body = jsonDecode(res.body);
+
+        if (res.body.isEmpty) return [];
+        // Recorrer la lista de pickUpLocation
+        for (var route in body) {
+          for (var location in pickUpLocation) {
+            if (route["route_id"] == location["route_id"]) {
+              route["pickup_location"] = {
+                "schedule_start_time": location["schedule_start_time"],
+                "schedule_end_time": location["schedule_end_time"],
+                "bus_plate": location["bus_plate"],
+                "bus_model": location["bus_model"],
+                "bus_year": location["bus_year"],
+                "driver_id": location["driver_id"],
+                "monitor_id": location["monitor_id"]
+              };
+            }
+          }
+        }
+
+        // Convertir todo el arreglo de forma asíncrona
+        final List<RouteModel> routes = await Future.wait(
+          body
+              .map((dynamic item) async => await RouteModel.fromJson(item))
+              .toList(),
+        );
+        return routes;
+      } catch (e) {
+        print("getRoutes error: ${e.toString()}");
+        return [];
+      }
+    } else {
+      print("erorr en peticion: ${res.toString()}");
     }
 
-    debugPrint(res.body.toString());
+    return [];
+  }
+
+  Future<List<Map<String, dynamic>>> getPickUpLocationPoint() async {
+    http.Response res = await getQuery(
+      "/rpc/route_pickup_points",
+    );
+    if (res.statusCode == 200) {
+      try {
+        final List<Map<String, dynamic>> body = jsonDecode(res.body);
+        if (res.body.isEmpty) return [];
+        return body;
+      } catch (e) {
+        print("getPickUpLocationPoint error: ${e.toString()}");
+        return [];
+      }
+    }
+
     return [];
   }
 
   /// Load Trip
+  //TODO
   Future<TripModel> getTrip(id) async {
-    http.Response res = await getQuery("/trip/$id");
+    final trip = {
+      "id_trip": 1,
+      "start_ts": "2024-09-22T17:59:46.716875",
+      "end_ts": "2024-09-22T18:00:06.299405",
+      "distance": 0,
+      "duration": "00:00:19.58253",
+      "running": false,
+      "schedule_start_time": "05:30:00",
+      "schedule_end_time": "07:30:00",
+      "route_id": 1,
+      "route_description": "Ruta1",
+      "bus_plate": "ABCDEF",
+      "bus_model": "",
+      "bus_year": 2006,
+      "driver_id": 25,
+      "monitor_id": 3,
+      "relation_name_monitor": "eta.drivers"
+    };
+    final viaje = TripModel.fromJson(trip);
+    return viaje;
+    // http.Response res = await getQuery("/trip/$id");
 
-    if (res.statusCode == 200) {
-      var body = jsonDecode(res.body);
-      return body == null ? TripModel(trip_id: 0) : TripModel.fromJson(body);
-    }
-    return TripModel(trip_id: 0);
+    // if (res.statusCode == 200) {
+    //   var body = jsonDecode(res.body);
+    //   if (body == null) return TripModel(trip_id: 0);
+    //   final TripModel trips = await TripModel.fromJson(body);
+    //   return trips;
+    // }
+    // return TripModel(trip_id: 0);
   }
 
   /// Load Tripd
@@ -197,23 +291,45 @@ class HttpService {
   }
 
   /// Submit form to update data through API
+  //TODO cambiar por servicio de crear viaje
   Future<TripModel> create_trip(
       int driverId, int routeId, int vehicleId) async {
-    Map data = {
-      "driver_id": driverId,
-      "route_id": routeId,
-      "vehicle_id": vehicleId,
-      "trip_status": 'Scheduled',
+    final trip = {
+      "id_trip": 1,
+      "start_ts": "2024-09-22T17:59:46.716875",
+      "end_ts": "2024-09-22T18:00:06.299405",
+      "distance": 0,
+      "duration": "00:00:19.58253",
+      "running": false,
+      "schedule_start_time": "05:30:00",
+      "schedule_end_time": "07:30:00",
+      "route_id": 1,
+      "route_description": "Ruta1",
+      "bus_plate": "ABCDEF",
+      "bus_model": "",
+      "bus_year": 2006,
+      "driver_id": 25,
+      "monitor_id": 3,
+      "relation_name_monitor": "eta.drivers"
     };
+    final viaje = TripModel.fromJson(trip);
+    return viaje;
+    // Map data = {
+    //   "driver_id": driverId,
+    //   "route_id": routeId,
+    //   "vehicle_id": vehicleId,
+    //   "trip_status": 'Scheduled',
+    // };
 
-    Map? body = {"model": 'create_trip', "params": jsonEncode(data)};
-    http.Response res = await postQuery('/mobile_api', body);
+    // Map? body = {"model": 'create_trip', "params": jsonEncode(data)};
+    // http.Response res = await postQuery('/mobile_api', body);
 
-    if (res.statusCode == 200) {
-      return TripModel.fromJson(jsonDecode(res.body));
-    } else {
-      throw "Unable to retrieve data.";
-    }
+    // if (res.statusCode == 200) {
+
+    //   return TripModel.fromJson(jsonDecode(res.body));
+    // } else {
+    //   throw "Unable to retrieve data.";
+    // }
   }
 
   /// Submit form to update data through API
@@ -325,11 +441,21 @@ class HttpService {
       http.Response res = await postQuery('/rpc/login', data);
 
       if (res.statusCode == 200) {
-        var body = jsonDecode(res.body);
+        dynamic body = jsonDecode(res.body);
+
         debugPrint(body.toString());
         await storage.setItem(
             'token', body['token'].isEmpty ? '' : body['token']);
         await storage.setItem('driver_id', body['id_usu'] ?? body['id_usu']);
+        try {
+          final LoginInformation login =
+              LoginInformationMapper.information(LoginInfo.fromJson(body));
+          final userService =
+              LoginInformationRepositoryImpl(LoginInformationDatasource());
+          await userService.saveLogin(login);
+        } on Exception catch (e) {
+          debugPrint('Error saving login info: $e');
+        }
         return '1';
       } else {
         return parseResponseMessage(res);
@@ -586,8 +712,7 @@ class HttpService {
     debugPrint('sendTracking');
     final driverID = await storage.getItem('driver_id');
     final data = {
-      'driver_id': driverID ??
-          driver, //TODO al momento de tener el coductor cambiar dinamicamente
+      'driver_id': driverID ?? driver,
       'latitude': position.latitude,
       'longitude': position.longitude,
       'speed': position.speed,
@@ -602,6 +727,38 @@ class HttpService {
     try {
       // var requestAccessRes = await requestAccess();
       http.Response res = await postQuery('/rpc/user_tracking', jsonData,
+          contentType: 'application/json');
+      if (res.statusCode == 200) {
+        return res.body;
+      } else {
+        return res;
+      }
+    } catch (e) {
+      print("sendTracking error: ${e.toString()}");
+      return null;
+    }
+  }
+
+  Future<dynamic> driverInfo(
+      {required BackgroundPosition position, int driver = 18}) async {
+    debugPrint('sendTracking');
+    final driverID = await storage.getItem('driver_id');
+    final data = {
+      'driver_id': driverID ?? driver,
+      'latitude': position.latitude,
+      'longitude': position.longitude,
+      'speed': position.speed,
+      'heading': position.heading,
+      'time': position.time,
+      'accuracy': position.accuracy,
+      'altitude': position.altitude,
+      'speedAccuracy': position.speedAccuracy,
+      'isMocked': position.isMocked
+    };
+    final jsonData = jsonEncode(data);
+    try {
+      // var requestAccessRes = await requestAccess();
+      http.Response res = await postQuery('/rpc/driver_info', null,
           contentType: 'application/json');
       if (res.statusCode == 200) {
         return res.body;

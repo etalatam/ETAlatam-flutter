@@ -2,6 +2,7 @@ import 'package:MediansSchoolDriver/Pages/PickupsPage.dart';
 import 'package:MediansSchoolDriver/Pages/RouteMapPage.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 import 'package:MediansSchoolDriver/Models/RouteModel.dart';
+import 'package:MediansSchoolDriver/main.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -60,6 +61,8 @@ class HomeRouteBlock extends StatelessWidget {
                         Expanded(
                           child: GestureDetector(
                               onTap: (() {
+                                // return;
+                                //TODO ir a mapa
                                 openNewPage(context,
                                     RouteMap(route_id: route.route_id!));
                               }),
@@ -71,20 +74,20 @@ class HomeRouteBlock extends StatelessWidget {
                                     style: activeTheme.h5,
                                   ))),
                         ),
-                        route.driver!.driver_id! < 1
-                            ? const Center()
-                            : Row(mainAxisSize: MainAxisSize.max, children: [
-                                SvgPicture.asset(
-                                  "assets/svg/bus.svg",
-                                  color: activeTheme.main_color,
-                                  width: 20,
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  "${route.vehicle!.plate_number}",
-                                  style: activeTheme.h6,
-                                )
-                              ]),
+                        const SizedBox(width: 10),
+                        Row(mainAxisSize: MainAxisSize.max, children: [
+                          SvgPicture.asset(
+                            "assets/svg/bus.svg",
+                            // ignore: deprecated_member_use
+                            color: activeTheme.main_color,
+                            width: 20,
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            "${route.busPlate}",
+                            style: activeTheme.h6,
+                          )
+                        ]),
                       ],
                     ),
                     const SizedBox(height: 10),
@@ -136,31 +139,45 @@ class HomeRouteBlock extends StatelessWidget {
                                       left: (i * (1 - .4) * 60).toDouble(),
                                       top: 0,
                                       child: GestureDetector(
-                                        onTap: (() => {
-                                              openNewPage(
-                                                  context,
-                                                  PickupsPage(
-                                                    pickup_locations:
-                                                        route.pickup_locations,
-                                                  ))
-                                            }),
+                                        onTap:  (() => {
+                                                  //TODO
+                                                  openNewPage(
+                                                      context,
+                                                      PickupsPage(
+                                                        pickup_locations: route
+                                                            .pickup_locations,
+                                                      ))
+                                                }),
                                         child: Container(
                                           width: 51.03,
                                           height: 51.03,
                                           decoration: ShapeDecoration(
                                             image: DecorationImage(
-                                              image: NetworkImage(
-                                                  httpService.croppedImage(
-                                                      route.pickup_locations[i]
-                                                          .picture!,
-                                                      100,
-                                                      100)),
                                               fit: BoxFit.fill,
+                                              image: 
+                                              // route.pickup_locations[i]
+                                              //                 .picture !=
+                                              //             null &&
+                                              //         route.pickup_locations[i]
+                                              //             .picture!.isNotEmpty
+                                              //     ? 
+                                                  NetworkImage((route
+                                                              .pickup_locations[
+                                                                  i]
+                                                              .picture !=
+                                                          null)
+                                                      ? ('${httpService.getImageUrl()}${route.pickup_locations[i].picture}')
+                                                      : httpService.croppedImage(
+                                                          "/uploads/images/60x60.png",
+                                                          200,
+                                                          200)) as ImageProvider
+                                                  // : AssetImage(
+                                                  //     'assets/logo.png'),
                                             ),
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(50),
-                                              side: const BorderSide(
+                                              side:  BorderSide(
                                                   width: 4,
                                                   color: Colors.white),
                                             ),
@@ -173,31 +190,35 @@ class HomeRouteBlock extends StatelessWidget {
                                         right: 0,
                                         top: 15,
                                         child: GestureDetector(
-                                            onTap: (() => {
-                                                  openNewPage(
-                                                      context,
-                                                      PickupsPage(
-                                                        pickup_locations: route
-                                                            .pickup_locations,
-                                                      ))
-                                                }),
+                                            // onTap: (() => {
+                                            //   //TODO
+                                            //   openNewPage(
+                                            //       openNewPage(
+                                            //           context,
+                                            //           PickupsPage(
+                                            //             pickup_locations: route
+                                            //                 .pickup_locations,
+                                            //           ))
+                                            //     }),
                                             child: Row(
-                                              children: [
-                                                Icon(
-                                                  Icons.pin_drop,
-                                                  color: activeTheme.main_color,
-                                                ),
-                                                Text(
-                                                  '${route.pickup_locations.length}',
-                                                  style: activeTheme.normalText,
-                                                ),
-                                              ],
-                                            )),
+                                          children: [
+                                            Icon(
+                                              Icons.pin_drop,
+                                              color: activeTheme.main_color,
+                                            ),
+                                            Text(
+                                              '${route.pickup_locations.length}',
+                                              style: activeTheme.normalText,
+                                            ),
+                                          ],
+                                        )),
                                       ),
                               ]),
                       ),
                       GestureDetector(
                           onTap: () {
+                            // return;
+                            //TODO
                             callback!(
                                 route.route_id, route.vehicle!.vehicle_id);
                             // openNewPage(context, DriverPage(driver: route.driver, vehicle: route.vehicle,));
