@@ -156,10 +156,13 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                               httpService.resetPassword(email).then((value)  {
                                 setState(() {
                                     response=value;
+                                    var msg = value.split('/');
                                     showSuccessDialog(
                                         context,
-                                        lang.translate('Error'),
-                                        response == '1' ? lang.translate('Recovery password mail sended') : response,
+                                        "${lang.translate('Error')} (${msg[1]})",
+                                        response == '1' ? 
+                                        lang.translate('Recovery password mail sended') : 
+                                        lang.translate(msg[0]),
                                         callback);
                                     showLoader = false;
                                     activeResetPassword = true;

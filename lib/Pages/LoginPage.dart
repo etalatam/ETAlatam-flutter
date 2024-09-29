@@ -187,6 +187,7 @@ class _LoginState extends State<Login> {
                                         
                                         loginResponse = await httpService.login(
                                             email, password);
+                                        var msg =loginResponse?.split('/');
                                         
                                         setState(() {
                                           showLoader = false;
@@ -194,8 +195,9 @@ class _LoginState extends State<Login> {
                                             goHome();
                                           }else{
                                             showSuccessDialog(
-                                              context, lang.translate('Error'),
-                                              loginResponse,
+                                              context, 
+                                              "${lang.translate('Error')} (${msg![1]})",
+                                              lang.translate(msg[0]),
                                               callback);
                                           }
                                         });

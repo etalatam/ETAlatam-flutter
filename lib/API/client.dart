@@ -425,7 +425,7 @@ class HttpService {
       return '1';
     }
 
-    return parseResponseMessage(res);
+    return "${parseResponseMessage(res)}/${res.statusCode}";
   }
 
   /// Login with email & password
@@ -458,7 +458,7 @@ class HttpService {
         }
         return '1';
       } else {
-        return parseResponseMessage(res);
+        return "${parseResponseMessage(res)}/${res.statusCode}";
       }
     }
 
@@ -517,7 +517,7 @@ class HttpService {
       if (res.statusCode == 200) {
         return '1';
       } else {
-        return parseResponseMessage(res);
+        return "${parseResponseMessage(res)}/${res.statusCode}";
       }
     }
 
@@ -538,7 +538,9 @@ class HttpService {
       }
     } catch (e) {
       debugPrint(e.toString());
+      return 'Respuesta inesperada del servidor 😳';
     }
+    // return "";
   }
 
   /// Send message
