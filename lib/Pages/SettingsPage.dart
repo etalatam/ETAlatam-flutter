@@ -30,8 +30,8 @@ class _SettingsPageState extends State<SettingsPage>
 
   bool showLoader = true;
 
-  List<String> list = <String>['Español', 'English'];
-  String? subject;
+  List<String> langs = <String>['Español', 'English'];
+  String? selectedLang = 'Español';
 
   LocaleController localeController = Get.find<LocaleController>();
 
@@ -80,7 +80,7 @@ class _SettingsPageState extends State<SettingsPage>
                                   margin: const EdgeInsets.symmetric(
                                       horizontal: 10),
                                   child: DropdownButton<String>(
-                                    value: subject,
+                                    value: selectedLang,
                                     icon: const Icon(Icons.arrow_downward),
                                     elevation: 16,
                                     onChanged: (String? value) {
@@ -96,14 +96,14 @@ class _SettingsPageState extends State<SettingsPage>
                                               value == 'Español'
                                                   ? 'es'
                                                   : 'en'));
-                                          subject = value;
-                                          storage.setItem('lang', value);
+                                          // selectedLang = value;
+                                          // storage.setItem('lang', value);
+                                          setLang(value);
                                           showLoader = false;
                                         });
                                       });
                                     },
-                                    items: list.map<DropdownMenuItem<String>>(
-                                        (String value) {
+                                    items: langs.map<DropdownMenuItem<String>>((String value) {
                                       return DropdownMenuItem<String>(
                                         value: value,
                                         child: Text(
@@ -251,9 +251,7 @@ class _SettingsPageState extends State<SettingsPage>
         await httpService.getDriver(storage.getItem('driver_id'));
 
     setState(() {
-      driver = driverModel;
-      subject = storage.getItem('lang');
-      darkMode = storage.getItem('darkmode') ?? false;
+      driver = driverModel;      
       showLoader = false;
     });
   }
@@ -261,7 +259,16 @@ class _SettingsPageState extends State<SettingsPage>
   @override
   void initState() {
     super.initState();
-    subject = storage.getItem('lang');
+    selectedLang = storage.getItem('lang');
+    darkMode = storage.getItem('darkmode') ?? false;
     loadDriver();
   }
+
+  setLang(value) async {
+    selectedLang = value!;
+    localeController
+        .changeLocale(Locale(selectedLang == 'Español' ? 'es' : 'en'));
+    await storage.setItem('lang', selectedLang);
+  }
+
 }
