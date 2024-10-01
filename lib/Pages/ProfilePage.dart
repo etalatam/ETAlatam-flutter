@@ -2,7 +2,6 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:MediansSchoolDriver/Models/DriverModel.dart';
-import 'package:MediansSchoolDriver/Pages/ChangePasswordPage.dart';
 import 'package:MediansSchoolDriver/Pages/UploadPicturePage.dart';
 import 'package:MediansSchoolDriver/Pages/LoginPage.dart';
 // import 'package:MediansSchoolDriver/components/bottom_menu.dart';
@@ -25,7 +24,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   DriverModel driver = DriverModel(driver_id: 0, first_name: '');
 
-  final String profilePicture = "${apiURL}/uploads/images/parent.gif";
+  final String profilePicture = "$apiURL/uploads/images/parent.gif";
 
   @override
   Widget build(BuildContext context) {

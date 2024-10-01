@@ -1,6 +1,5 @@
 import 'dart:core';
 import 'package:MediansSchoolDriver/Models/DestinationModel.dart';
-import 'package:MediansSchoolDriver/Models/DriverModel.dart';
 import 'package:MediansSchoolDriver/Models/StudentModel.dart';
 import 'package:MediansSchoolDriver/Models/RouteModel.dart';
 import 'package:MediansSchoolDriver/Models/PickupLocationModel.dart';

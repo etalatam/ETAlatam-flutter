@@ -1,16 +1,12 @@
-import 'dart:js';
 
 import 'package:MediansSchoolDriver/Pages/HomePage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:MediansSchoolDriver/controllers/page_controller.dart' as p;
 import 'package:MediansSchoolDriver/Pages/HelpPage.dart';
 import 'package:MediansSchoolDriver/Pages/SettingsPage.dart';
-import 'package:MediansSchoolDriver/Pages/map/map_view.dart';
 import 'package:MediansSchoolDriver/shared/widgets/custom_bottom_navigation.dart';
 
-import '../components/WillPopScopeWidget.dart';
 
 class HomeScreen extends StatelessWidget {
   static const name = 'home-screen';

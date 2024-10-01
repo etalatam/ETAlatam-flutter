@@ -5,7 +5,6 @@ import 'package:MediansSchoolDriver/Models/DriverModel.dart';
 import 'package:MediansSchoolDriver/API/client.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 import 'package:MediansSchoolDriver/methods.dart';
-import 'package:MediansSchoolDriver/components/bottom_menu.dart';
 import 'package:MediansSchoolDriver/components/header.dart';
 import 'package:MediansSchoolDriver/components/InfoBlock.dart';
 import 'package:MediansSchoolDriver/components/loader.dart';

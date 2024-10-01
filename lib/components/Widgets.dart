@@ -2,8 +2,6 @@ import 'package:MediansSchoolDriver/Models/DriverModel.dart';
 import 'package:MediansSchoolDriver/Models/TripModel.dart';
 import 'package:MediansSchoolDriver/Pages/EventPage.dart';
 import 'package:MediansSchoolDriver/Pages/HelpMessagesPage.dart';
-import 'package:MediansSchoolDriver/Pages/PickupsPage.dart';
-import 'package:MediansSchoolDriver/domain/entities/user/login_information.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';

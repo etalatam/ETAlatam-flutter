@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 class WillPopScopeWidget extends StatelessWidget {
   const WillPopScopeWidget({
-    Key? key,
+    super.key,
     this.canPop = false,
     required this.onWillPop,
     required this.child,
     this.allowExitApp = true,
-  }) : super(key: key);
+  });
 
   final bool canPop;
   final Future<bool?> Function() onWillPop;

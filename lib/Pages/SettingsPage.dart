@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:MediansSchoolDriver/API/client.dart';
 import 'package:MediansSchoolDriver/methods.dart';
-import '../components/bottom_menu.dart';
 import '../components/header.dart';
 import '../components/loader.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';

@@ -2,7 +2,6 @@ import 'package:MediansSchoolDriver/Pages/PickupsPage.dart';
 import 'package:MediansSchoolDriver/Pages/RouteMapPage.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 import 'package:MediansSchoolDriver/Models/RouteModel.dart';
-import 'package:MediansSchoolDriver/main.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
