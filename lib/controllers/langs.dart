@@ -250,6 +250,19 @@ class Lang {
     'password': 'Contraseña',
     'confirm': 'Confirmar',
     'recovery_password_mail_sended':
-        '¡Correo de recuperación de contraseña enviado!'
+        '¡Correo de recuperación de contraseña enviado!',
+    'we_can_help': 'Necesitas ayuda?',
+    'message':'Mensaje',
+    'subject': 'Que necesitas?',
+    'your_old_sent_messages_list': 'Mensajes enviados',
+    'Click here to view your previous sent messages':'Haga clic aquí para ver sus mensajes enviados anteriormente',
+    'send_now':'Enviar',
+    'locations': 'Paradas',
+    'have_a_problem': 'Tiene un problema?',
+    'send_message_if_you_need_any_help': 'Envía un mensaje si necesitas ayuda',
+    'send_message': 'Enviar mensaje',
+    'welcome': 'Bienvenido',
+    'Route': 'Rutas',
+    'priority': 'Prioridad'
   };
 }

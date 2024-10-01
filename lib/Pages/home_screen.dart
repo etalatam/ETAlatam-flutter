@@ -26,39 +26,41 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScopeWidget(
-      onWillPop: _handlePop,
-      child: Scaffold(
+    // return WillPopScopeWidget(
+    //   onWillPop: _handlePop,
+      // child: 
+      return Scaffold(
       body: Obx(() => IndexedStack(
             index: _pageController.currentIndex.value,
             children: viewRoutes,
           )),
       bottomNavigationBar: CustomBottonNavigation(),
-    ));
-  }
-
-  Future<bool> _handlePop() async {
-    return await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Are you shure?'),
-        content: Text('Do you whan exit?'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text('No'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(true);
-              // if (isAndroid) {
-                // SystemNavigator.pop();
-              // }
-            },
-            child: Text('Yes'),
-          ),
-        ],
-      ),
+    // )
     );
   }
+
+  // Future<bool> _handlePop() async {
+  //   return await showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: Text('Are you shure?'),
+  //       content: Text('Do you whan exit?'),
+  //       actions: <Widget>[
+  //         TextButton(
+  //           onPressed: () => Navigator.of(context).pop(false),
+  //           child: Text('No'),
+  //         ),
+  //         TextButton(
+  //           onPressed: () {
+  //             Navigator.of(context).pop(true);
+  //             // if (isAndroid) {
+  //               // SystemNavigator.pop();
+  //             // }
+  //           },
+  //           child: Text('Yes'),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }
