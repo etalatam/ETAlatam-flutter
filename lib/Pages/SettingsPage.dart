@@ -1,4 +1,3 @@
-import 'package:get/get.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:MediansSchoolDriver/Models/DriverModel.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +8,6 @@ import '../components/header.dart';
 import '../components/loader.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 import 'package:MediansSchoolDriver/components/Widgets.dart';
-import 'package:MediansSchoolDriver/controllers/locale.dart';
 import 'package:MediansSchoolDriver/controllers/preferences.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -31,8 +29,6 @@ class _SettingsPageState extends State<SettingsPage>
 
   List<String> langs = <String>['Español', 'English'];
   String? selectedLang = 'Español';
-
-  LocaleController localeController = Get.find<LocaleController>();
 
   // PreferencesSetting preferences = Get.find<PreferencesSetting>();
   final preferences = PreferencesSetting();
@@ -258,15 +254,13 @@ class _SettingsPageState extends State<SettingsPage>
   @override
   void initState() {
     super.initState();
-    selectedLang = storage.getItem('lang');
+    selectedLang = storage.getItem('lang') ?? 'Español';
     darkMode = storage.getItem('darkmode') ?? false;
     loadDriver();
   }
 
   setLang(value) async {
     selectedLang = value!;
-    localeController
-        .changeLocale(Locale(selectedLang == 'Español' ? 'es' : 'en'));
     await storage.setItem('lang', selectedLang);
   }
 
