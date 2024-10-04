@@ -254,9 +254,19 @@ class _SettingsPageState extends State<SettingsPage>
   @override
   void initState() {
     super.initState();
-    selectedLang = storage.getItem('lang') ?? 'Español';
-    darkMode = storage.getItem('darkmode') ?? false;
+    getLang();
+    getDarkMode();
     loadDriver();
+  }
+
+  Future <bool> getDarkMode() async {
+    darkMode = await storage.getItem('darkmode');
+    return darkMode;
+  }
+  
+  Future <String> getLang() async {
+    selectedLang = await storage.getItem('lang');
+    return selectedLang ?? 'Español';
   }
 
   setLang(value) async {
