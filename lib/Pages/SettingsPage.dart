@@ -254,13 +254,13 @@ class _SettingsPageState extends State<SettingsPage>
   @override
   void initState() {
     super.initState();
-    getLang();
-    getDarkMode();
+    getLang().then((value) => selectedLang = value);
+    getDarkMode().then((value) => darkMode = value);
     loadDriver();
   }
 
   Future <bool> getDarkMode() async {
-    darkMode = await storage.getItem('darkmode');
+    var darkMode = await storage.getItem('darkmode');
     return darkMode;
   }
   
@@ -270,7 +270,7 @@ class _SettingsPageState extends State<SettingsPage>
   }
 
   setLang(value) async {
-    selectedLang = value!;
+    var selectedLang = value!;
     await storage.setItem('lang', selectedLang);
   }
 
