@@ -29,7 +29,11 @@ class _SentMessageState extends State<SendMessagePage> {
 
   bool showLoader = true;
 
-  List<String> list = <String>['Support', 'Human Resources', 'Other'];
+  List<String> list = <String>[
+      'Support', 
+      'Problems on the road',
+      'Crashed bus',
+      'Other'];
   String subject = 'Support';
   List<String> priorities = <String>['Normal', 'High', 'Low'];
   String priority = 'Normal';
@@ -152,7 +156,7 @@ class _SentMessageState extends State<SendMessagePage> {
                       items: list.map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
-                          child: Text(value),
+                          child: Text(lang.translate(value)),
                         );
                       }).toList(),
                     )),
@@ -224,7 +228,7 @@ class _SentMessageState extends State<SendMessagePage> {
                           .map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
-                          child: Text(value),
+                          child: Text(lang.translate(value)),
                         );
                       }).toList(),
                     )),

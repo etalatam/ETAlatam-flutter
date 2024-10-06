@@ -199,7 +199,7 @@ class _HomePageState extends State<HomePage>
                                     // ),
 
                                     // /// Help / Support Block
-                                    MediansWidgets.homeHelpBlock(),
+                                    // MediansWidgets.homeHelpBlock(),
                                   ]),
                                 ),
                               ]),
@@ -263,19 +263,19 @@ class _HomePageState extends State<HomePage>
   /// Load devices through API
   ///
   loadDriver() async {
-      final check = await storage.getItem('driver_id');
+    final check = await storage.getItem('driver_id');
 
-      print("[HomePage:loadDriver:driverid] $check");
-      if (check == null) {
-        Get.offAll(Login());
-        return;
-      }
+    print("[HomePage:loadDriver:driverid] $check");
+    if (check == null) {
+      Get.offAll(Login());
+      return;
+    }
 
-      await storage.getItem('darkmode');
-      setState(() {
-        darkMode = storage.getItem('darkmode') == true ? true : false;
-        showLoader = false;
-      });
+    await storage.getItem('darkmode');
+    setState(() {
+      darkMode = storage.getItem('darkmode') == true ? true : false;
+      showLoader = false;
+    });
 
     final eventsQuery = await httpService.getEvents();
     setState(() {
@@ -293,17 +293,18 @@ class _HomePageState extends State<HomePage>
       routesList = routesQuery;
     });
 
-    TripModel? activeTrip_ = await httpService.getActiveTrip();
-    setState(() {
-      activeTrip = activeTrip_;
-      hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
-    });
-
     List<TripModel>? oldTrips = await httpService.getTrips(0);
-
     setState(() {
       oldTripsList = oldTrips;
     });
+
+    // TripModel? activeTrip_ = await httpService.getActiveTrip();
+    setState(() {
+      
+      // activeTrip = activeTrip_;
+      // hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
+    });
+
   }
 
   openTrip(TripModel trip) {

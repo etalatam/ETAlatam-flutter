@@ -255,7 +255,7 @@ class Lang {
     'message':'Mensaje',
     'subject': 'Que necesitas?',
     'your_old_sent_messages_list': 'Mensajes enviados',
-    'Click here to view your previous sent messages':'Haga clic aquí para ver sus mensajes enviados anteriormente',
+    'click_here_to_view_your_previous_sent_messages':'Haga clic aquí para ver sus mensajes enviados anteriormente',
     'send_now':'Enviar',
     'locations': 'Paradas',
     'have_a_problem': 'Tiene un problema?',
@@ -268,6 +268,12 @@ class Lang {
     'last_name': 'Apellido',
     'contact_number': 'Teléfono',
     'logout': 'Salir',
-    'change_password': 'Cambiar contraseña'
+    'change_password': 'Cambiar contraseña',
+    'high': 'Alta',
+    'low': 'baja',
+    'support': 'Soporte',
+    'problems_on_the_road': 'Problemas en la vía',
+    'crashed_bus': 'Autobus accidentado',
+    'Other': 'Otro'
   };
 }
