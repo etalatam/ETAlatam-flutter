@@ -24,7 +24,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   DriverModel driver = DriverModel(driver_id: 0, first_name: '');
 
-  final String profilePicture = "$apiURL/uploads/images/parent.gif";
+  final String profilePicture = "assets/profile.avif";
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +37,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   height: MediaQuery.of(context).size.height / 2,
                   decoration: ShapeDecoration(
                     image: DecorationImage(
-                      image: NetworkImage(profilePicture),
+                      image: AssetImage(profilePicture),
                       fit: BoxFit.fitHeight,
                     ),
                     shape: const RoundedRectangleBorder(),
@@ -45,7 +45,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 DraggableScrollableSheet(
                   snapAnimationDuration: const Duration(seconds: 1),
-                  initialChildSize: .7,
+                  initialChildSize: .85,
                   minChildSize: 0.7,
                   maxChildSize: 0.85,
                   builder: (BuildContext context,
@@ -107,7 +107,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                         child: CircleAvatar(
                                             radius: 50,
                                             foregroundImage: NetworkImage(
-                                                "${httpService.getImageUrl()}${driver.picture}"
+                                                "${httpService.getImageUrl()}${driver.picture}",
+                                                headers: {'Accept': 'image/png'}
                                             )
                                 ))),
                                 Column(
@@ -203,7 +204,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   height: 1,
                                   color: activeTheme.main_color.withOpacity(.3),
                                 ),
-                                CustomRow(lang.translate('last Name'),
+                                CustomRow(lang.translate('Last Name'),
                                     driver.last_name),
                                 Container(
                                   height: 1,
@@ -221,13 +222,13 @@ class _ProfilePageState extends State<ProfilePage> {
                                   height: 1,
                                   color: activeTheme.main_color.withOpacity(.3),
                                 ),
-                                // GestureDetector(
-                                //     onTap: () {
-                                //       openNewPage(
-                                //           context, ChangePasswordPage());
-                                //     },
-                                //     child: CustomRow(
-                                //         lang.translate('Change password'), '')),
+                                GestureDetector(
+                                    onTap: () {
+                                      // openNewPage(
+                                      //     context, ChangePasswordPage());
+                                    },
+                                    child: CustomRow(
+                                        lang.translate('Change password'), '')),
                                 Container(
                                   height: 1,
                                   color: activeTheme.main_color.withOpacity(.3),

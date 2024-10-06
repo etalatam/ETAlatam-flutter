@@ -219,7 +219,7 @@ class Lang {
     'your_message_here': 'Escribe tu mensaje...',
     'you_have_no_route_yet': "Aún no tienes ninguna ruta",
     'login_copyrights': '',
-    'forgot_password': '¿ Olvidaste tu contraseña ?',
+    'forgot_password': '¿ Olvidaste tu seña ?',
     'student_info_updated':
         "Revisaremos su información y nos comunicaremos con usted lo antes posible.",
     'vacations_days_subtitle': 'Vacaciones y días de ausencia',
@@ -263,6 +263,11 @@ class Lang {
     'send_message': 'Enviar mensaje',
     'welcome': 'Bienvenido',
     'Route': 'Rutas',
-    'priority': 'Prioridad'
+    'priority': 'Prioridad',
+    'first_name': 'Nombre',
+    'last_name': 'Apellido',
+    'contact_number': 'Teléfono',
+    'logout': 'Salir',
+    'change_password': 'Cambiar contraseña'
   };
 }

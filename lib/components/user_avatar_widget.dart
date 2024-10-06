@@ -29,44 +29,59 @@ class _UserAvatarState extends State<UserAvatar> {
 
   @override
   Widget build(BuildContext context) {
-    print ('${httpService.getImageUrl()}${driver?.picture}');
-    return  GestureDetector(
-      onTap: (() => {
-        openNewPage(context, ProfilePage())
-      }),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment:
-            MainAxisAlignment.start,
-        crossAxisAlignment:
-            CrossAxisAlignment.center,
-        children: [
-          Container(
+    final imageUrl = '${httpService.getImageUrl()}${driver?.picture}';
+    print (imageUrl);
+
+    return GestureDetector(
+        onTap: () {
+          openNewPage(context, ProfilePage());
+        },
+        child: Container(
             width: 60,
             height: 60,
-            decoration: ShapeDecoration(
-              image: DecorationImage(
-                fit: BoxFit.fill,
-                image: driver?.picture !=
-                            null &&
-                        driver!.picture
-                            !.isNotEmpty
-                    ?
-                    NetworkImage('${httpService.getImageUrl()}${driver?.picture}',
-                      headers: {'Accept': 'image/png'})
-                    : 
-                    // AssetImage('assets/logo.png')
-                    NetworkImage('https://ui-avatars.com/api/?name=${driver?.first_name}')
+            padding: const EdgeInsets.symmetric(
+                horizontal: 5),
+            child: CircleAvatar(
+                radius: 50,
+                foregroundImage: NetworkImage(imageUrl,headers: {'Accept': 'image/png'})
+    )));
+    // return  GestureDetector(
+    //   onTap: (() => {
+    //     openNewPage(context, ProfilePage())
+    //   }),
+    //   child: Row(
+    //     mainAxisSize: MainAxisSize.min,
+    //     mainAxisAlignment:
+    //         MainAxisAlignment.start,
+    //     crossAxisAlignment:
+    //         CrossAxisAlignment.center,
+    //     children: [
+    //       Container(
+    //         width: 60,
+    //         height: 60,
+    //         decoration: ShapeDecoration(
+    //           image: DecorationImage(
+    //             fit: BoxFit.fill,
+    //             image: driver?.picture !=
+    //                         null &&
+    //                     driver!.picture
+    //                         !.isNotEmpty
+    //                 ?
+    //                 NetworkImage('${httpService.getImageUrl()}${driver?.picture}',
+    //                   headers: {'Accept': 'image/png'})
+    //                 : 
+    //                 // AssetImage('assets/logo.png')
+    //                 NetworkImage('https://ui-avatars.com/api/?name=${driver?.first_name}')
 
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(50),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    //           ),
+    //           shape: RoundedRectangleBorder(
+    //             borderRadius:
+    //                 BorderRadius.circular(50),
+    //           ),
+    //         ),
+    //       ),
+    //     ],
+    //   ),
+    // );
   }
 }
