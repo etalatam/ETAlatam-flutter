@@ -20,11 +20,16 @@ class _UserAvatarState extends State<UserAvatar> {
   @override
   void initState() {
     super.initState();
-    getDriver().then((value) => driver = value);
+    getDriver().then((value) => {
+      setState(() {
+        driver = value;
+      })
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    print ('${httpService.getImageUrl()}${driver?.picture}');
     return  GestureDetector(
       onTap: (() => {
         openNewPage(context, ProfilePage())
@@ -48,7 +53,7 @@ class _UserAvatarState extends State<UserAvatar> {
                             !.isNotEmpty
                     ?
                     NetworkImage('${httpService.getImageUrl()}${driver?.picture}',
-                      headers: {'Acept': 'image/png'})
+                      headers: {'Accept': 'image/png'})
                     : 
                     // AssetImage('assets/logo.png')
                     NetworkImage('https://ui-avatars.com/api/?name=${driver?.first_name}')

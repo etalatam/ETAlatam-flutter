@@ -6,7 +6,7 @@ import 'package:MediansSchoolDriver/Pages/UploadPicturePage.dart';
 import 'package:MediansSchoolDriver/Pages/LoginPage.dart';
 // import 'package:MediansSchoolDriver/components/bottom_menu.dart';
 import 'package:MediansSchoolDriver/components/loader.dart';
-import 'package:MediansSchoolDriver/components/header.dart';
+// import 'package:MediansSchoolDriver/components/header.dart';
 import 'package:MediansSchoolDriver/components/CustomRow.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 
@@ -107,10 +107,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                         child: CircleAvatar(
                                             radius: 50,
                                             foregroundImage: NetworkImage(
-                                                httpService.croppedImage(
-                                                    driver.picture,
-                                                    200,
-                                                    200))))),
+                                                "${httpService.getImageUrl()}${driver.picture}"
+                                            )
+                                ))),
                                 Column(
                                   textDirection: isRTL()
                                       ? TextDirection.rtl
@@ -259,11 +258,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     ]));
                   },
                 ),
-                Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: Header(lang.translate('sitename'))),
+                // Positioned(
+                //     top: 0,
+                //     left: 0,
+                //     right: 0,
+                //     child: Header(lang.translate('sitename'))),
                 // Positioned(
                 //     bottom: 20,
                 //     left: 20,

@@ -41,7 +41,7 @@ class DriverModel {
       last_name: json['lastname'] as String?,
       name: json['firstname']+' '+json['lastname'] as String?,
       email: json['email'] as String?,
-      picture: json['user_id'],
+      picture: "${json['id_usu']}",
       contact_number: json['tel_usu'] as String?,
       driver_license_number: json['docid'] as String?,
       vehicle: vehicle,

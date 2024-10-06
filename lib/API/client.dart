@@ -37,7 +37,7 @@ class HttpService {
 
   String getImageUrl() {
     // return "$apiURL/app/image.php?src=";
-    return "$apiURL/rpc/rpc/get_reource_image?_relation_name=eta.usuarios&_relation_id=";
+    return "$apiURL/rpc/get_reource_image?_relation_name=eta.usuarios&_relation_id=";
   }
 
   String croppedImage(path, int? width, int? height) {
