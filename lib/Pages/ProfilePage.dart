@@ -1,3 +1,4 @@
+import 'package:MediansSchoolDriver/Pages/ResetPasswordPage.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:MediansSchoolDriver/methods.dart';
@@ -226,6 +227,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     onTap: () {
                                       // openNewPage(
                                       //     context, ChangePasswordPage());
+                                      openNewPage(context, ResetPasswordPage(defaultMail: driver.email,));
                                     },
                                     child: CustomRow(
                                         lang.translate('Change password'), '')),

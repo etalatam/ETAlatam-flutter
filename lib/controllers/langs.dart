@@ -219,7 +219,7 @@ class Lang {
     'your_message_here': 'Escribe tu mensaje...',
     'you_have_no_route_yet': "Aún no tienes ninguna ruta",
     'login_copyrights': '',
-    'forgot_password': '¿ Olvidaste tu seña ?',
+    'forgot_password': '¿ Olvidaste tu contraseña ?',
     'student_info_updated':
         "Revisaremos su información y nos comunicaremos con usted lo antes posible.",
     'vacations_days_subtitle': 'Vacaciones y días de ausencia',
@@ -227,7 +227,7 @@ class Lang {
     'you_need_to_complete_some_required_information':
         'Necesitas completar alguna información requerida',
     'forgot_password_message':
-        'Indique su correo electrónico y le enviaremos un enlace de restablecimiento de contraseña.',
+        'Enviaremos un enlace de restablecimiento de contraseña a tu correo electrónico.',
     'change_password_message':
         'Puede encontrar su token en su correo electrónico y cambiar su contraseña y confirmación.',
     'select_your_language': 'Selecciona tu idioma',
