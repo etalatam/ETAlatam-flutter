@@ -122,9 +122,7 @@ class HttpService {
 
     if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
-      List<RouteModel> routes = await Future.wait(
-          body.map((dynamic item) => RouteModel.fromJson(item)).toList());
-      return routes;
+      return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
     }
     return [];
   }
@@ -193,57 +191,75 @@ class HttpService {
 
   /// Load Routes
   Future<List<RouteModel>> getRoutes() async {
-    http.Response res = await getQuery(
-      "/rpc/driver_routes?limit=10",
-    );
-
+    var res = await getQuery("/rpc/driver_routes?limit=10");
     print("res.statusCode: ${res.statusCode}");
     print("res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       try {
-        final pickUpLocation = await getPickUpLocationPoint();
-        final List<Map<String, dynamic>> body = jsonDecode(res.body);
-
-        if (res.body.isEmpty) return [];
-        // Recorrer la lista de pickUpLocation
-        for (var route in body) {
-          for (var location in pickUpLocation) {
-            if (route["route_id"] == location["route_id"]) {
-              route["pickup_location"] = {
-                "schedule_start_time": location["schedule_start_time"],
-                "schedule_end_time": location["schedule_end_time"],
-                "bus_plate": location["bus_plate"],
-                "bus_model": location["bus_model"],
-                "bus_year": location["bus_year"],
-                "driver_id": location["driver_id"],
-                "monitor_id": location["monitor_id"]
-              };
-            }
-          }
-        }
-
-        // Convertir todo el arreglo de forma asíncrona
-        final List<RouteModel> routes = await Future.wait(
-          body
-              .map((dynamic item) async => await RouteModel.fromJson(item))
-              .toList(),
-        );
-        return routes;
+        List<dynamic> body = jsonDecode(res.body);
+        return body.map((dynamic item) => RouteModel.fromJson(item)).toList();        
+        // await Future.wait(body
+        //       .map((dynamic item) async => RouteModel.fromJson(item))
+        //       .toList());
       } catch (e) {
         print("getRoutes error: ${e.toString()}");
         return [];
       }
-    } else {
-      print("erorr en peticion: ${res.toString()}");
-    }
+    } 
 
     return [];
-  }
+
+  }/// 
+  // Future<List<RouteModel>> getRoutes() async {
+  //   http.Response res = await getQuery(
+  //     "/rpc/driver_routes?limit=10",
+  //   );
+
+  //   print("res.statusCode: ${res.statusCode}");
+  //   print("res.body: ${res.body}");
+
+  //   if (res.statusCode == 200) {
+  //     try {
+  //       final pickUpLocation = await getPickUpLocationPoint();
+  //       final List<Map<String, dynamic>> body = jsonDecode(res.body);
+
+  //       if (res.body.isEmpty) return [];
+  //       // Recorrer la lista de pickUpLocation
+  //       for (var route in body) {
+  //         for (var location in pickUpLocation) {
+  //           if (route["route_id"] == location["route_id"]) {
+  //             route["pickup_location"] = {
+  //               "schedule_start_time": location["schedule_start_time"],
+  //               "schedule_end_time": location["schedule_end_time"],
+  //               "bus_plate": location["bus_plate"],
+  //               "bus_model": location["bus_model"],
+  //               "bus_year": location["bus_year"],
+  //               "driver_id": location["driver_id"],
+  //               "monitor_id": location["monitor_id"]
+  //             };
+  //           }
+  //         }
+  //       }
+
+  //       // Convertir todo el arreglo de forma asíncrona
+  //       final List<RouteModel> routes = await Future.wait(body
+  //             .map((dynamic item) async => await RouteModel.fromJson(item))
+  //             .toList(),
+  //       );
+  //       return routes;
+  //     } catch (e) {
+  //       print("getRoutes error: ${e.toString()}");
+  //       return [];
+  //     }
+  //   } else {
+  //     print("erorr en peticion: ${res.toString()}");
+  //   }
+
+  //   return [];
+  // }
 
   Future<List<Map<String, dynamic>>> getPickUpLocationPoint() async {
-    print("getPickUpLocationPoint");
-
     http.Response res = await getQuery(
       "/rpc/route_pickup_points",
     );
@@ -258,7 +274,6 @@ class HttpService {
         return body;
       } catch (e) {
         print("getPickUpLocationPoint error: ${e.toString()}");
-        return [];
       }
     }
 
@@ -283,16 +298,16 @@ class HttpService {
 
   /// Load Tripd
   Future<TripModel> getActiveTrip() async {
-    http.Response res =
+    /*http.Response res =
         await postQuery('/mobile_api', {"model": "Driver.getActiveDriverTrip"});
 
     print("res.statusCode ${res.statusCode}");
-    print("res.body] ${res.body}");
+    print("res.body ${res.body}");
     
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
       return TripModel.fromJson(body);
-    }
+    }*/
     return TripModel(trip_id: 0);
   }
 
@@ -311,9 +326,9 @@ class HttpService {
     // Map? body = {"model": 'create_trip', "params": jsonEncode(data)};
     // http.Response res = await postQuery('/mobile_api', body);
 
-    http.Response res = await postQuery('/mobile_api', data);
+    http.Response res = await postQuery('/rpc/driver_start_trip', data);
     print("res.statusCode ${res.statusCode}");
-    print("res.body] ${res.body}");
+    print("res.body ${res.body}");
 
     if (res.statusCode == 200) {
       return TripModel.fromJson(jsonDecode(res.body));

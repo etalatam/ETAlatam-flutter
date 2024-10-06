@@ -106,9 +106,10 @@ class _HomePageState extends State<HomePage>
                                     // ),
 
                                     /// Has Active Trip
-                                    !hasActiveTrip
-                                        ? const Center()
-                                        : ActiveTrip(openTrip, activeTrip),
+                                    ! hasActiveTrip
+                                         ? const Center()
+                                         : 
+                                        ActiveTrip(openTrip, activeTrip),
 
                                     MediansWidgets.svgTitle(
                                         "assets/svg/fire.svg",
@@ -248,7 +249,7 @@ class _HomePageState extends State<HomePage>
       showLoader = true;
     });
 
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 1));
     setState(() {
       loadDriver();
     });
