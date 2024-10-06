@@ -261,7 +261,7 @@ class _SettingsPageState extends State<SettingsPage>
 
   Future <bool> getDarkMode() async {
     var darkMode = await storage.getItem('darkmode');
-    return darkMode;
+    return darkMode ?? false;
   }
   
   Future <String> getLang() async {

@@ -48,13 +48,11 @@ class _HomePageState extends State<HomePage>
   List<TripModel> oldTripsList = [];
 
   Future<LoginInformation?> getLoginInformation({String? ticketId}) async {
-    const func = "getLoginInformation";
     try {
       final result = await loginInformationProvider.loadLoginInformation();
       return result;
     } catch (e) {
-      print(
-          "$func - Ocurrio un error cargando la información de login del conductor");
+      print("[HomePage:getLoginInformation] ${e.toString()}");
       rethrow;
     }
   }
@@ -62,8 +60,8 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     final LocalStorage storage = LocalStorage('tokens.json');
-    final token = storage.getItem('token');
-    print("token---------------------$token");
+    // final token = storage.getItem('token');
+    // print("[HomePage:build:token] $token");
     activeTheme =
         storage.getItem('darkmode') == true ? DarkTheme() : LightTheme();
     return showLoader
@@ -87,25 +85,25 @@ class _HomePageState extends State<HomePage>
                                   color: activeTheme.main_bg,
                                   margin: const EdgeInsets.only(top: 120),
                                   child: Column(children: [
-                                    Row(children: [
-                                      Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 20),
-                                          child: Text(
-                                            "${lang.translate('welcome')}  ${driverModel.first_name!}",
-                                            style: activeTheme.h4,
-                                            textAlign: TextAlign.start,
-                                          ))
-                                    ]),
+                                    // Row(children: [
+                                    //   Container(
+                                    //       padding: const EdgeInsets.symmetric(
+                                    //           horizontal: 20),
+                                    //       child: Text(
+                                    //         "${lang.translate('welcome')}  ${driverModel.first_name!}",
+                                    //         style: activeTheme.h4,
+                                    //         textAlign: TextAlign.start,
+                                    //       ))
+                                    // ]),
 
                                     /// Driver profile
-                                    GestureDetector(
-                                      onTap: () {
-                                        openNewPage(context, ProfilePage());
-                                      },
-                                      child: profileInfoBlock(
-                                          driverModel, context),
-                                    ),
+                                    // GestureDetector(
+                                    //   onTap: () {
+                                    //     openNewPage(context, ProfilePage());
+                                    //   },
+                                    //   child: profileInfoBlock(
+                                    //       driverModel, context),
+                                    // ),
 
                                     /// Has Active Trip
                                     !hasActiveTrip
@@ -222,7 +220,7 @@ class _HomePageState extends State<HomePage>
     final driverId = await storage.getItem('driver_id');
     TripModel? createdTrip =
         await httpService.create_trip(driverId, routeId, vehicleId);
-    print("llego-----------------------${createdTrip.trip_id}");
+    print("[Homepage:createTrip] ${createdTrip.trip_id}");
     if (createdTrip.trip_id != 0) {
       await Navigator.push(
         context,
@@ -264,9 +262,9 @@ class _HomePageState extends State<HomePage>
   /// Load devices through API
   ///
   loadDriver() async {
-    Timer(const Duration(seconds: 2), () async {
       final check = await storage.getItem('driver_id');
 
+      print("[HomePage:loadDriver:driverid] $check");
       if (check == null) {
         Get.offAll(Login());
         return;
@@ -277,7 +275,6 @@ class _HomePageState extends State<HomePage>
         darkMode = storage.getItem('darkmode') == true ? true : false;
         showLoader = false;
       });
-    });
 
     final eventsQuery = await httpService.getEvents();
     setState(() {

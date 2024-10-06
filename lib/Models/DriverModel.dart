@@ -1,5 +1,6 @@
 import 'dart:core';
 import 'package:MediansSchoolDriver/Models/VehicleModel.dart';
+import 'package:get/get.dart';
 
 class DriverModel {
   int? driver_id;
@@ -27,14 +28,18 @@ class DriverModel {
   });
 
   factory DriverModel.fromJson(Map<String, dynamic> json) {
-
-    VehicleModel vehicle = json['vehicle'] != null ? VehicleModel.fromJson(json['vehicle']) : VehicleModel(vehicle_id: 0, plate_number: '');
-    
+    VehicleModel? vehicle;
+    try{
+      vehicle = VehicleModel.fromJson(json['vehicle']);
+    }catch(e){
+      print(e.toString());
+    }
+        
     return DriverModel(
       driver_id: json['id_driver'] as int?,
-      first_name: json['nom_usu'] as String?,
-      last_name: json['ape_usu'] as String?,
-      name: json['nom_usu']+' '+json['ape_usu'] as String?,
+      first_name: json['firstname'] as String?,
+      last_name: json['lastname'] as String?,
+      name: json['firstname']+' '+json['lastname'] as String?,
       email: json['email'] as String?,
       picture: json['user_id'],
       contact_number: json['tel_usu'] as String?,

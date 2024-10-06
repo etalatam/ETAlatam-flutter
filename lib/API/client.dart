@@ -11,6 +11,7 @@ import 'package:MediansSchoolDriver/infrastructure/mappers/driver_mapper.dart';
 import 'package:MediansSchoolDriver/infrastructure/mappers/login_information_mapper.dart';
 import 'package:MediansSchoolDriver/infrastructure/repositories/login_information_repository_impl.dart';
 import 'package:MediansSchoolDriver/methods.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
@@ -46,8 +47,10 @@ class HttpService {
 
   /// Run API GET query
   getQuery(String path, {useToken = true}) async {
-    var token = storage.getItem('token');
-    return await http.get(Uri.parse(apiURL + path), headers: {
+    final token = storage.getItem('token');
+    final url = Uri.parse(apiURL + path);
+    print("$url");
+    return await http.get(url, headers: {
       'Content-Type': 'application/json',
       'Authorization': useToken ? 'Bearer $token' : '',
     });
@@ -58,7 +61,9 @@ class HttpService {
       {useToken = true,
       contentType = 'application/x-www-form-urlencoded'}) async {
     final token = storage.getItem('token');
-    return await http.post(Uri.parse(apiURL + path), body: body, headers: {
+    final url = Uri.parse(apiURL + path);
+    print("$url");
+    return await http.post(url, body: body, headers: {
       'Content-Type': contentType,
       'Authorization': useToken ? 'Bearer $token' : '',
     });
@@ -67,6 +72,10 @@ class HttpService {
   /// Load Trips
   Future<List<TripModel>> getTrips(int lastId) async {
     http.Response res = await getQuery("/rpc/driver_trips?select=*&limit=10");
+
+    print("res.statusCode: ${res.statusCode}");
+    print("res.body: ${res.body}");
+
     if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
       final List<TripModel> trips = await Future.wait(
@@ -135,6 +144,9 @@ class HttpService {
   Future<DriverModel> getDriver(id) async {
     http.Response res = await getQuery("/rpc/driver_info");
 
+    print("res.statusCode: ${res.statusCode}");
+    print("res.body: ${res.body}");
+    
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
       final driverModel = DriverModel.fromJson(body);
@@ -184,6 +196,10 @@ class HttpService {
     http.Response res = await getQuery(
       "/rpc/driver_routes?limit=10",
     );
+
+    print("res.statusCode: ${res.statusCode}");
+    print("res.body: ${res.body}");
+
     if (res.statusCode == 200) {
       try {
         final pickUpLocation = await getPickUpLocationPoint();
@@ -226,9 +242,15 @@ class HttpService {
   }
 
   Future<List<Map<String, dynamic>>> getPickUpLocationPoint() async {
+    print("getPickUpLocationPoint");
+
     http.Response res = await getQuery(
       "/rpc/route_pickup_points",
     );
+    
+    print("res.statusCode: ${res.statusCode}");
+    print("res.body: ${res.body}");
+
     if (res.statusCode == 200) {
       try {
         final List<Map<String, dynamic>> body = jsonDecode(res.body);
@@ -244,43 +266,29 @@ class HttpService {
   }
 
   /// Load Trip
-  //TODO
   Future<TripModel> getTrip(id) async {
-    final trip = {
-      "id_trip": 1,
-      "start_ts": "2024-09-22T17:59:46.716875",
-      "end_ts": "2024-09-22T18:00:06.299405",
-      "distance": 0,
-      "duration": "00:00:19.58253",
-      "running": false,
-      "schedule_start_time": "05:30:00",
-      "schedule_end_time": "07:30:00",
-      "route_id": 1,
-      "route_description": "Ruta1",
-      "bus_plate": "ABCDEF",
-      "bus_model": "",
-      "bus_year": 2006,
-      "driver_id": 25,
-      "monitor_id": 3,
-      "relation_name_monitor": "eta.drivers"
-    };
-    final viaje = TripModel.fromJson(trip);
-    return viaje;
-    // http.Response res = await getQuery("/trip/$id");
+    http.Response res = await getQuery("/rpc/driver_trips?select=*&limit=10");
 
-    // if (res.statusCode == 200) {
-    //   var body = jsonDecode(res.body);
-    //   if (body == null) return TripModel(trip_id: 0);
-    //   final TripModel trips = await TripModel.fromJson(body);
-    //   return trips;
-    // }
-    // return TripModel(trip_id: 0);
+    print("res.statusCode: ${res.statusCode}");
+    print("res.body: ${res.body}");
+
+    if (res.statusCode == 200) {
+      var body = jsonDecode(res.body);
+      if (body == null) return TripModel(trip_id: 0);
+      final TripModel trips = await TripModel.fromJson(body);
+      return trips;
+    }
+    return TripModel(trip_id: 0);
   }
 
   /// Load Tripd
   Future<TripModel> getActiveTrip() async {
     http.Response res =
         await postQuery('/mobile_api', {"model": "Driver.getActiveDriverTrip"});
+
+    print("res.statusCode ${res.statusCode}");
+    print("res.body] ${res.body}");
+    
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
       return TripModel.fromJson(body);
@@ -289,45 +297,29 @@ class HttpService {
   }
 
   /// Submit form to update data through API
-  //TODO cambiar por servicio de crear viaje
   Future<TripModel> create_trip(
       int driverId, int routeId, int vehicleId) async {
-    final trip = {
-      "id_trip": 1,
-      "start_ts": "2024-09-22T17:59:46.716875",
-      "end_ts": "2024-09-22T18:00:06.299405",
-      "distance": 0,
-      "duration": "00:00:19.58253",
-      "running": false,
-      "schedule_start_time": "05:30:00",
-      "schedule_end_time": "07:30:00",
-      "route_id": 1,
-      "route_description": "Ruta1",
-      "bus_plate": "ABCDEF",
-      "bus_model": "",
-      "bus_year": 2006,
-      "driver_id": 25,
-      "monitor_id": 3,
-      "relation_name_monitor": "eta.drivers"
+
+    Map data = {
+      "_route_id": routeId,
+      // "driver_id": driverId,
+      // "route_id": routeId,
+      // "vehicle_id": vehicleId,
+      // "trip_status": 'Scheduled',
     };
-    final viaje = TripModel.fromJson(trip);
-    return viaje;
-    // Map data = {
-    //   "driver_id": driverId,
-    //   "route_id": routeId,
-    //   "vehicle_id": vehicleId,
-    //   "trip_status": 'Scheduled',
-    // };
 
     // Map? body = {"model": 'create_trip', "params": jsonEncode(data)};
     // http.Response res = await postQuery('/mobile_api', body);
 
-    // if (res.statusCode == 200) {
+    http.Response res = await postQuery('/mobile_api', data);
+    print("res.statusCode ${res.statusCode}");
+    print("res.body] ${res.body}");
 
-    //   return TripModel.fromJson(jsonDecode(res.body));
-    // } else {
-    //   throw "Unable to retrieve data.";
-    // }
+    if (res.statusCode == 200) {
+      return TripModel.fromJson(jsonDecode(res.body));
+    } else {
+      throw "Unable to retrieve data.";
+    }
   }
 
   /// Submit form to update data through API
@@ -415,6 +407,9 @@ class HttpService {
     final http.Response res =
         await postQuery('/rpc/request_access', data, useToken: false);
 
+    print("statuscode: ${res.statusCode}");
+    print("res.body: ${res.body}");
+
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
       debugPrint(body.toString());
@@ -437,6 +432,9 @@ class HttpService {
     var requestAccessRes = await requestAccess();
     if (requestAccessRes == '1') {
       http.Response res = await postQuery('/rpc/login', data);
+
+      print("statuscode: ${res.statusCode}");
+      print("res.body: ${res.body}");
 
       if (res.statusCode == 200) {
         dynamic body = jsonDecode(res.body);
@@ -511,6 +509,9 @@ class HttpService {
     var requestAccessRes = await requestAccess();
     if (requestAccessRes == '1') {
       http.Response res = await postQuery('/rpc/update_password_request', data);
+
+      print("res.statusCode: ${res.statusCode}");
+      print("res.body: ${res.body}");
 
       if (res.statusCode == 200) {
         return '1';
