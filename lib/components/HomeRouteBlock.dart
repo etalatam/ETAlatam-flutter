@@ -17,8 +17,9 @@ class HomeRouteBlock extends StatelessWidget {
     return Column(
       children: [
         Container(
-          width: double.infinity,
+          // width: double.infinity,
           // height: 446.03,
+          width: MediaQuery.of(context).size.width / 1.2,
           clipBehavior: Clip.antiAlias,
           margin: const EdgeInsets.all(10),
           decoration: ShapeDecoration(

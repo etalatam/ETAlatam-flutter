@@ -113,7 +113,7 @@ class _HomePageState extends State<HomePage> with MediansWidgets, MediansTheme, 
                           return Container(
                             padding: EdgeInsets.symmetric(horizontal: routesList.length < 2 ? 20 : 0),
                             width: routesList.length < 2 ? MediaQuery.of(context).size.width : 400,
-                            height: 400,
+                            // height: 400,
                             child: HomeRouteBlock(route: routesList[index], callback: createTrip),
                           );
                         }
@@ -124,7 +124,7 @@ class _HomePageState extends State<HomePage> with MediansWidgets, MediansTheme, 
                     
                     /// Last Trips
                     oldTripsList.isEmpty ? const Center () : SizedBox(
-                      height: 370,
+                      height: 300,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         itemCount: oldTripsList.length, // Replace with the total number of items
