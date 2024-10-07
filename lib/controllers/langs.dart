@@ -274,6 +274,7 @@ class Lang {
     'support': 'Soporte',
     'problems_on_the_road': 'Problemas en la vía',
     'crashed_bus': 'Autobus accidentado',
-    'Other': 'Otro'
+    'other': 'Otro',
+    'routes': 'Rutas'
   };
 }

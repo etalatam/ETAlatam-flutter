@@ -100,7 +100,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                   children: [
                                 GestureDetector(
                                     onTap: () {
-                                      uploadPicture();
+                                      // uploadPicture();
+                                      // openNewPage(context, UploadPicturePage());
                                     },
                                     child: Container(
                                         padding: const EdgeInsets.symmetric(
@@ -289,13 +290,13 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   /// Open map to set location
-  uploadPicture() async {
-    await Navigator.push(
-        context, MaterialPageRoute(builder: (context) => UploadPicturePage()));
-    setState(() {
-      loadDriver();
-    });
-  }
+  // uploadPicture() async {
+  //   await Navigator.push(
+  //       context, MaterialPageRoute(builder: (context) => UploadPicturePage()));
+  //   setState(() {
+  //     loadDriver();
+  //   });
+  // }
 
   @override
   void initState() {

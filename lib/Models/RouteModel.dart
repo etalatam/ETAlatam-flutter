@@ -68,7 +68,7 @@ class RouteModel {
     return RouteModel(
       route_id: json['route_id'] as int?,
       route_name: json['route_description'] as String?,
-      description: json['route_description'] as String?,
+      description: "${json['schedule_start_time']} - ${json['schedule_end_time']}",
       // latitude: double.parse(json['latitude']),
       // longitude: double.parse(json['longitude']),
       latitude: 0,

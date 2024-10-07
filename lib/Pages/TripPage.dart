@@ -47,9 +47,8 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
   @override
   Widget build(BuildContext context) {
     print("[TripPage:build] ${widget.trip?.vehicle?.last_latitude}");
-    mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
-    mapOrigin =
-        LatLng(trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
+    // mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
+    // mapOrigin = LatLng(trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
     return Material(
       child: showLoader
           ? Loader()
@@ -373,10 +372,10 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
           setState(() {
             customRoute = pickupLocation;
             hasCustomRoute = true;
-            mapOrigin = LatLng(
-                trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
-            mapDestination =
-                LatLng(pickupLocation.latitude!, pickupLocation.longitude!);
+            // mapOrigin = LatLng(
+            //     trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
+            // mapDestination =
+            //     LatLng(pickupLocation.latitude!, pickupLocation.longitude!);
             showMap = true;
           });
         });
@@ -436,7 +435,8 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
               trip.pickup_locations![0].longitude!),
           destination: mapDestination!,
           pickup_locations: trip.pickup_locations,
-          destinations: trip.destinations);
+          destinations: trip.destinations
+          );
     }
 
     if (hasCustomRoute) {
@@ -487,9 +487,8 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
       setState(() {
         trip = trip_;
         currentPicture = "${trip.driver!.picture}";
-        mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
-        mapOrigin =
-            LatLng(trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
+        // mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
+        // mapOrigin = LatLng(trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
         isActiveTrip = true;
         showLoader = false;
       });
@@ -497,11 +496,11 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
   }
 
   Map<MarkerId, Marker> loadMarkers() {
-    for (var i = 0; i < trip.pickup_locations!.length; i++) {
-      final a = trip.pickup_locations![i];
-      addMarker(a.location!.address!, LatLng(a.latitude!, a.longitude!),
-          a.location!.address);
-    }
+    // for (var i = 0; i < trip.pickup_locations!.length; i++) {
+    //   final a = trip.pickup_locations![i];
+    //   addMarker(a.location!.address!, LatLng(a.latitude!, a.longitude!),
+    //       a.location!.address);
+    // }
     return markers;
   }
 

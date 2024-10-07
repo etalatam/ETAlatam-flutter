@@ -11,7 +11,7 @@ import 'package:MediansSchoolDriver/infrastructure/mappers/driver_mapper.dart';
 import 'package:MediansSchoolDriver/infrastructure/mappers/login_information_mapper.dart';
 import 'package:MediansSchoolDriver/infrastructure/repositories/login_information_repository_impl.dart';
 import 'package:MediansSchoolDriver/methods.dart';
-import 'package:get/get.dart';
+// import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
@@ -316,7 +316,7 @@ class HttpService {
       int driverId, int routeId, int vehicleId) async {
 
     Map data = {
-      "_route_id": routeId,
+      "_route_id": "$routeId",
       // "driver_id": driverId,
       // "route_id": routeId,
       // "vehicle_id": vehicleId,
@@ -333,7 +333,7 @@ class HttpService {
     if (res.statusCode == 200) {
       return TripModel.fromJson(jsonDecode(res.body));
     } else {
-      throw "Unable to retrieve data.";
+      throw "${parseResponseMessage(res)}/${res.statusCode}";
     }
   }
 
@@ -755,23 +755,21 @@ class HttpService {
     }
   }
 
-  Future<dynamic> driverInfo(
-      {required BackgroundPosition position, int driver = 18}) async {
-    debugPrint('sendTracking');
-    final driverID = await storage.getItem('driver_id');
-    final data = {
-      'driver_id': driverID ?? driver,
-      'latitude': position.latitude,
-      'longitude': position.longitude,
-      'speed': position.speed,
-      'heading': position.heading,
-      'time': position.time,
-      'accuracy': position.accuracy,
-      'altitude': position.altitude,
-      'speedAccuracy': position.speedAccuracy,
-      'isMocked': position.isMocked
-    };
-    final jsonData = jsonEncode(data);
+  Future<dynamic> driverInfo() async {
+    // final driverID = await storage.getItem('driver_id');
+    // final data = {
+    //   'driver_id': driverID ?? driver,
+    //   'latitude': position.latitude,
+    //   'longitude': position.longitude,
+    //   'speed': position.speed,
+    //   'heading': position.heading,
+    //   'time': position.time,
+    //   'accuracy': position.accuracy,
+    //   'altitude': position.altitude,
+    //   'speedAccuracy': position.speedAccuracy,
+    //   'isMocked': position.isMocked
+    // };
+    // final jsonData = jsonEncode(data);
     try {
       // var requestAccessRes = await requestAccess();
       http.Response res = await postQuery('/rpc/driver_info', null,
