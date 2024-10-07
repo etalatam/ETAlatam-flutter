@@ -275,6 +275,7 @@ class Lang {
     'problems_on_the_road': 'Problemas en la vía',
     'crashed_bus': 'Autobus accidentado',
     'other': 'Otro',
-    'routes': 'Rutas'
+    'routes': 'Rutas',
+    'Driver is running a trips': 'El conductor está ejecutando un viaje'
   };
 }

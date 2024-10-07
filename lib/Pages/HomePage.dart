@@ -213,10 +213,16 @@ class _HomePageState extends State<HomePage> with MediansWidgets, MediansTheme, 
     } catch (e) {
       print(e.toString());
       var msg =e.toString().split('/');
+      setState(() {
+        showLoader = false;
+      });
       showSuccessDialog(context, 
         "${lang.translate('Error')} (${msg[1]})",
         lang.translate(msg[0]),
-        null);
+        (){          
+          Get.back();
+        }
+        );
     }
   }
   
