@@ -1,11 +1,13 @@
 // import 'package:MediansSchoolDriver/Pages/NotificationsPage.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 import 'package:flutter/material.dart';
+
+import 'user_avatar_widget.dart';
+
 // import 'package:get/get.dart';
 
 class Header extends StatelessWidget {
   const Header(this.title, {super.key});
-
   final String? title;
 
   @override
@@ -74,7 +76,7 @@ class Header extends StatelessWidget {
 
   // Light Header
   Widget header_2() {
-    
+
     darkMode = storage.getItem('darkmode') ?? false;
 
     return Center(
@@ -113,7 +115,7 @@ class Header extends StatelessWidget {
                   style: activeTheme.h4,
                 ),
               ),
-              // TextButton(
+              UserAvatar()              // TextButton(
               //   onPressed: () {
               //     Get.to(NotificationsPage());
               //   },

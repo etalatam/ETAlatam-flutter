@@ -1,16 +1,13 @@
-import 'package:get/get.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:MediansSchoolDriver/Models/DriverModel.dart';
 import 'package:flutter/material.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:MediansSchoolDriver/API/client.dart';
 import 'package:MediansSchoolDriver/methods.dart';
-import '../components/bottom_menu.dart';
 import '../components/header.dart';
 import '../components/loader.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 import 'package:MediansSchoolDriver/components/Widgets.dart';
-import 'package:MediansSchoolDriver/controllers/locale.dart';
 import 'package:MediansSchoolDriver/controllers/preferences.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -30,10 +27,8 @@ class _SettingsPageState extends State<SettingsPage>
 
   bool showLoader = true;
 
-  List<String> list = <String>['Español', 'English'];
-  String? subject;
-
-  LocaleController localeController = Get.find<LocaleController>();
+  List<String> langs = <String>['Español', 'English'];
+  String? selectedLang = 'Español';
 
   // PreferencesSetting preferences = Get.find<PreferencesSetting>();
   final preferences = PreferencesSetting();
@@ -80,7 +75,7 @@ class _SettingsPageState extends State<SettingsPage>
                                   margin: const EdgeInsets.symmetric(
                                       horizontal: 10),
                                   child: DropdownButton<String>(
-                                    value: subject,
+                                    value: selectedLang,
                                     icon: const Icon(Icons.arrow_downward),
                                     elevation: 16,
                                     onChanged: (String? value) {
@@ -96,14 +91,14 @@ class _SettingsPageState extends State<SettingsPage>
                                               value == 'Español'
                                                   ? 'es'
                                                   : 'en'));
-                                          subject = value;
-                                          storage.setItem('lang', value);
+                                          // selectedLang = value;
+                                          // storage.setItem('lang', value);
+                                          setLang(value);
                                           showLoader = false;
                                         });
                                       });
                                     },
-                                    items: list.map<DropdownMenuItem<String>>(
-                                        (String value) {
+                                    items: langs.map<DropdownMenuItem<String>>((String value) {
                                       return DropdownMenuItem<String>(
                                         value: value,
                                         child: Text(
@@ -251,9 +246,7 @@ class _SettingsPageState extends State<SettingsPage>
         await httpService.getDriver(storage.getItem('driver_id'));
 
     setState(() {
-      driver = driverModel;
-      subject = storage.getItem('lang');
-      darkMode = storage.getItem('darkmode') ?? false;
+      driver = driverModel;      
       showLoader = false;
     });
   }
@@ -261,7 +254,24 @@ class _SettingsPageState extends State<SettingsPage>
   @override
   void initState() {
     super.initState();
-    subject = storage.getItem('lang');
+    getLang().then((value) => selectedLang = value);
+    getDarkMode().then((value) => darkMode = value);
     loadDriver();
   }
+
+  Future <bool> getDarkMode() async {
+    var darkMode = await storage.getItem('darkmode');
+    return darkMode ?? false;
+  }
+  
+  Future <String> getLang() async {
+    selectedLang = await storage.getItem('lang');
+    return selectedLang ?? 'Español';
+  }
+
+  setLang(value) async {
+    var selectedLang = value!;
+    await storage.setItem('lang', selectedLang);
+  }
+
 }

@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 
 import 'package:MediansSchoolDriver/shared/location/provider/location_notifier.dart';
 import 'package:flutter/material.dart';

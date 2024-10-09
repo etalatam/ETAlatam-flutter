@@ -46,11 +46,9 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
 
   @override
   Widget build(BuildContext context) {
-    print(
-        "llego trip page--------------${widget.trip?.vehicle?.last_latitude}");
-    mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
-    mapOrigin =
-        LatLng(trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
+    print("[TripPage:build] ${widget.trip?.vehicle?.last_latitude}");
+    // mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
+    // mapOrigin = LatLng(trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
     return Material(
       child: showLoader
           ? Loader()
@@ -66,7 +64,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                     ),
                     shape: const RoundedRectangleBorder(),
                   ),
-                  child: !showMap ? const Center() : MapWidget(customRoute),
+                  // child: !showMap ? const Center() : MapWidget(customRoute),
                 ),
                 DraggableScrollableSheet(
                   snapAnimationDuration: const Duration(seconds: 1),
@@ -374,10 +372,10 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
           setState(() {
             customRoute = pickupLocation;
             hasCustomRoute = true;
-            mapOrigin = LatLng(
-                trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
-            mapDestination =
-                LatLng(pickupLocation.latitude!, pickupLocation.longitude!);
+            // mapOrigin = LatLng(
+            //     trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
+            // mapDestination =
+            //     LatLng(pickupLocation.latitude!, pickupLocation.longitude!);
             showMap = true;
           });
         });
@@ -430,14 +428,15 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
     );
   }
 
-  Widget MapWidget(location) {
+  Widget? MapWidget(location) {
     if (trip.trip_status == 'Completed') {
       return StaticMap(
           origin: LatLng(trip.pickup_locations![0].latitude!,
               trip.pickup_locations![0].longitude!),
           destination: mapDestination!,
           pickup_locations: trip.pickup_locations,
-          destinations: trip.destinations);
+          destinations: trip.destinations
+          );
     }
 
     if (hasCustomRoute) {
@@ -447,6 +446,9 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
           pickup_locations: trip.pickup_locations);
     }
 
+    if(mapOrigin == null){
+        return null;
+    }
     return MapWithRoute(
         origin: mapOrigin!,
         destination: mapDestination!,
@@ -488,9 +490,8 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
       setState(() {
         trip = trip_;
         currentPicture = "${trip.driver!.picture}";
-        mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
-        mapOrigin =
-            LatLng(trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
+        // mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
+        // mapOrigin = LatLng(trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
         isActiveTrip = true;
         showLoader = false;
       });
@@ -498,11 +499,11 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
   }
 
   Map<MarkerId, Marker> loadMarkers() {
-    for (var i = 0; i < trip.pickup_locations!.length; i++) {
-      final a = trip.pickup_locations![i];
-      addMarker(a.location!.address!, LatLng(a.latitude!, a.longitude!),
-          a.location!.address);
-    }
+    // for (var i = 0; i < trip.pickup_locations!.length; i++) {
+    //   final a = trip.pickup_locations![i];
+    //   addMarker(a.location!.address!, LatLng(a.latitude!, a.longitude!),
+    //       a.location!.address);
+    // }
     return markers;
   }
 

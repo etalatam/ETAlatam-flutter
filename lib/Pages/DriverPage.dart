@@ -39,7 +39,11 @@ class _DriverPageState extends State<DriverPage> {
                           ? (httpService.croppedImage(
                               driver.picture, 800, 1200))
                           : httpService.croppedImage(
-                              "/uploads/images/60x60.png", 200, 200)),
+                              "/avatars/person.svg", 200, 200),
+                              headers: {
+                                "acept": "image/png"
+                              }                         
+                       ),
                       fit: BoxFit.fitHeight,
                     ),
                     shape: const RoundedRectangleBorder(),

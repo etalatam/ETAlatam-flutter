@@ -227,7 +227,7 @@ class Lang {
     'you_need_to_complete_some_required_information':
         'Necesitas completar alguna información requerida',
     'forgot_password_message':
-        'Indique su correo electrónico y le enviaremos un enlace de restablecimiento de contraseña.',
+        'Enviaremos un enlace de restablecimiento de contraseña a tu correo electrónico.',
     'change_password_message':
         'Puede encontrar su token en su correo electrónico y cambiar su contraseña y confirmación.',
     'select_your_language': 'Selecciona tu idioma',
@@ -250,6 +250,34 @@ class Lang {
     'password': 'Contraseña',
     'confirm': 'Confirmar',
     'recovery_password_mail_sended':
-        '¡Correo de recuperación de contraseña enviado!'
+        '¡Correo de recuperación de contraseña enviado!',
+    'we_can_help': 'Necesitas ayuda?',
+    'message':'Mensaje',
+    'subject': 'Que necesitas?',
+    'your_old_sent_messages_list': 'Mensajes enviados',
+    'click_here_to_view_your_previous_sent_messages':'Haga clic aquí para ver sus mensajes enviados anteriormente',
+    'send_now':'Enviar',
+    'locations': 'Paradas',
+    'have_a_problem': 'Tiene un problema?',
+    'send_message_if_you_need_any_help': 'Envía un mensaje si necesitas ayuda',
+    'send_message': 'Enviar mensaje',
+    'welcome': 'Bienvenido',
+    'Route': 'Rutas',
+    'priority': 'Prioridad',
+    'first_name': 'Nombre',
+    'last_name': 'Apellido',
+    'contact_number': 'Teléfono',
+    'logout': 'Salir',
+    'change_password': 'Cambiar contraseña',
+    'high': 'Alta',
+    'low': 'baja',
+    'support': 'Soporte',
+    'problems_on_the_road': 'Problemas en la vía',
+    'crashed_bus': 'Autobus accidentado',
+    'other': 'Otro',
+    'routes': 'Rutas',
+    'driver_is_running_a_trips': 'El conductor está ejecutando un viaje',
+    'your_active_trip': 'Ruta activa',
+    'start_trip': 'Comenzar'
   };
 }

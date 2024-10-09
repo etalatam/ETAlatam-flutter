@@ -2,7 +2,6 @@ import 'package:MediansSchoolDriver/Pages/PickupsPage.dart';
 import 'package:MediansSchoolDriver/Pages/RouteMapPage.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 import 'package:MediansSchoolDriver/Models/RouteModel.dart';
-import 'package:MediansSchoolDriver/main.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -18,8 +17,9 @@ class HomeRouteBlock extends StatelessWidget {
     return Column(
       children: [
         Container(
-          width: double.infinity,
+          // width: double.infinity,
           // height: 446.03,
+          width: MediaQuery.of(context).size.width / 1.2,
           clipBehavior: Clip.antiAlias,
           margin: const EdgeInsets.all(10),
           decoration: ShapeDecoration(
@@ -84,7 +84,7 @@ class HomeRouteBlock extends StatelessWidget {
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            "${route.busPlate}",
+                            "${route.vehicle?.plate_number}",
                             style: activeTheme.h6,
                           )
                         ]),

@@ -1,15 +1,12 @@
 import 'dart:async';
 import 'package:MediansSchoolDriver/Models/RouteModel.dart';
 import 'package:MediansSchoolDriver/Pages/LoginPage.dart';
-import 'package:MediansSchoolDriver/Pages/ProfilePage.dart';
+// import 'package:MediansSchoolDriver/Pages/ProfilePage.dart';
 import 'package:MediansSchoolDriver/Pages/TripPage.dart';
-import 'package:MediansSchoolDriver/Pages/providers/login_information_provider.dart';
 import 'package:MediansSchoolDriver/components/ActiveTrip.dart';
-import 'package:MediansSchoolDriver/domain/entities/user/login_information.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:localstorage/localstorage.dart';
 import 'package:location/location.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:MediansSchoolDriver/Models/DriverModel.dart';
@@ -18,7 +15,7 @@ import 'package:MediansSchoolDriver/components/loader.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 import 'package:MediansSchoolDriver/components/Widgets.dart';
 import 'package:MediansSchoolDriver/components/header.dart';
-import 'package:MediansSchoolDriver/components/bottom_menu.dart';
+// import 'package:MediansSchoolDriver/components/bottom_menu.dart';
 import 'package:MediansSchoolDriver/components/HomeRouteBlock.dart';
 import 'package:MediansSchoolDriver/Models/EventModel.dart';
 
@@ -48,25 +45,9 @@ class _HomePageState extends State<HomePage>
   List<RouteModel> routesList = [];
   List<TripModel> oldTripsList = [];
 
-  Future<LoginInformation?> getLoginInformation({String? ticketId}) async {
-    const func = "getLoginInformation";
-    try {
-      final result = await loginInformationProvider.loadLoginInformation();
-      return result;
-    } catch (e) {
-      print(
-          "$func - Ocurrio un error cargando la información de login del conductor");
-      rethrow;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final LocalStorage storage = LocalStorage('tokens.json');
-    final token = storage.getItem('token');
-    print("token---------------------$token");
-    activeTheme =
-        storage.getItem('darkmode') == true ? DarkTheme() : LightTheme();
+    // activeTheme = storage.getItem('darkmode') == true ? DarkTheme() : LightTheme();
     return showLoader
         ? Loader()
         : Material(
@@ -88,25 +69,21 @@ class _HomePageState extends State<HomePage>
                                   color: activeTheme.main_bg,
                                   margin: const EdgeInsets.only(top: 120),
                                   child: Column(children: [
-                                    Row(children: [
-                                      Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 20),
-                                          child: Text(
-                                            "${lang.translate('welcome')}  ${driverModel.first_name!}",
-                                            style: activeTheme.h4,
-                                            textAlign: TextAlign.start,
-                                          ))
-                                    ]),
+                                    // Row(children:[ Container(
+                                    //   padding: const EdgeInsets.symmetric(horizontal: 20),
+                                    //   child: Text(
+                                    //   "${lang.translate('welcome')}  ${driverModel.first_name!}",
+                                    //   style: activeTheme.h4,
+                                    //   textAlign: TextAlign.start,
+                                    // ))]),
 
                                     /// Driver profile
-                                    GestureDetector(
-                                      onTap: () {
-                                        openNewPage(context, ProfilePage());
-                                      },
-                                      child: profileInfoBlock(
-                                          driverModel, context),
-                                    ),
+                                    // GestureDetector(
+                                    //   onTap: () {
+                                    //     openNewPage(context, ProfilePage());
+                                    //   },
+                                    //   child: profileInfoBlock(driverModel, context),
+                                    // ),
 
                                     /// Has Active Trip
                                     !hasActiveTrip
@@ -115,7 +92,7 @@ class _HomePageState extends State<HomePage>
 
                                     MediansWidgets.svgTitle(
                                         "assets/svg/fire.svg",
-                                        lang.translate("Route")),
+                                        lang.translate("Routes")),
 
                                     const SizedBox(height: 10),
 
@@ -139,7 +116,7 @@ class _HomePageState extends State<HomePage>
                                                         .size
                                                         .width
                                                     : 400,
-                                                height: 400,
+                                                // height: 400,
                                                 child: HomeRouteBlock(
                                                     route: routesList[index],
                                                     callback: createTrip),
@@ -154,7 +131,7 @@ class _HomePageState extends State<HomePage>
                                     oldTripsList.isEmpty
                                         ? const Center()
                                         : SizedBox(
-                                            height: 310,
+                                            height: 300,
                                             child: ListView.builder(
                                                 scrollDirection:
                                                     Axis.horizontal,
@@ -165,8 +142,6 @@ class _HomePageState extends State<HomePage>
                                                         int index) {
                                                   return GestureDetector(
                                                       onTap: () {
-                                                        return;
-                                                        //TODO
                                                         openNewPage(
                                                             context,
                                                             TripPage(
@@ -185,23 +160,22 @@ class _HomePageState extends State<HomePage>
                                     ),
 
                                     // Container(
-                                    //     padding: const EdgeInsets.all(20),
-                                    //     child: Text(
-                                    //       "${lang.translate('Events and News')}",
-                                    //       style: activeTheme.h3,
-                                    //       textAlign: TextAlign.start,
-                                    //     )),
+                                    //   padding: const EdgeInsets.all(20),
+                                    //   child: Text(
+                                    //   "${lang.translate('Events and News')}",
+                                    //   style: activeTheme.h3,
+                                    //   textAlign: TextAlign.start,
+                                    // )),
 
                                     /// Events carousel
                                     // Container(
                                     //   width: MediaQuery.of(context).size.width,
                                     //   alignment: Alignment.center,
-                                    //   child: MediansWidgets.eventCarousel(
-                                    //       eventsList, context),
+                                    //   child:  MediansWidgets.eventCarousel(eventsList, context),
                                     // ),
 
-                                    // /// Help / Support Block
-                                    MediansWidgets.homeHelpBlock(),
+                                    /// Help / Support Block
+                                    // MediansWidgets.homeHelpBlock(),
                                   ]),
                                 ),
                               ]),
@@ -211,26 +185,51 @@ class _HomePageState extends State<HomePage>
                             right: 0,
                             top: 0,
                             child: Header(lang.translate('sitename'))),
+
+                        // Positioned(
+                        //   left: 0,
+                        //   right: 0,
+                        //   top: 0,
+                        //   child: Header(lang.translate('sitename'))
+                        // ),
+                        // Positioned(
+                        //   bottom: 20,
+                        //   left: 20,
+                        //   right: 20,
+                        //   child: BottomMenu('home', openNewPage)
+                        // )
                       ],
                     ))));
   }
 
   /// Create trip
   createTrip(routeId, vehicleId) async {
+    TripModel? createdTrip;
+
     setState(() {
       showLoader = true;
     });
     final driverId = await storage.getItem('driver_id');
-    TripModel? createdTrip =
-        await httpService.create_trip(driverId, routeId, vehicleId);
-    print("llego-----------------------${createdTrip.trip_id}");
-    if (createdTrip.trip_id != 0) {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => TripPage(trip: createdTrip)),
-      );
+    try {
+      createdTrip = await httpService.create_trip(driverId, routeId, vehicleId);
+      if (createdTrip.trip_id != 0) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => TripPage(trip: createdTrip)),
+        );
 
-      loadDriver();
+        loadResources();
+      }
+    } catch (e) {
+      print(e.toString());
+      var msg = e.toString().split('/');
+      setState(() {
+        showLoader = false;
+      });
+      showSuccessDialog(context, "${lang.translate('Error')} (${msg[1]})",
+          lang.translate(msg[0]), () {
+        Get.back();
+      });
     }
   }
 
@@ -253,7 +252,7 @@ class _HomePageState extends State<HomePage>
 
     await Future.delayed(const Duration(seconds: 2));
     setState(() {
-      loadDriver();
+      loadResources();
     });
   }
 
@@ -262,28 +261,26 @@ class _HomePageState extends State<HomePage>
   }
 
   ///
-  /// Load devices through API
+  /// Load resources through API
   ///
-  loadDriver() async {
-    Timer(const Duration(seconds: 2), () async {
-      final check = await storage.getItem('driver_id');
+  loadResources() async {
+    final check = await storage.getItem('driver_id');
 
-      if (check == null) {
-        Get.offAll(Login());
-        return;
-      }
+    if (check == null) {
+      Get.offAll(Login());
+      return;
+    }
 
-      await storage.getItem('darkmode');
-      setState(() {
-        darkMode = storage.getItem('darkmode') == true ? true : false;
-        showLoader = false;
-      });
-    });
-
-    final eventsQuery = await httpService.getEvents();
+    await storage.getItem('darkmode');
     setState(() {
-      eventsList = eventsQuery;
+      darkMode = storage.getItem('darkmode') == true ? true : false;
+      showLoader = false;
     });
+
+    // final eventsQuery = await httpService.getEvents();
+    // setState(()  {
+    //     eventsList = eventsQuery;
+    // });
 
     final driverId = await storage.getItem('driver_id');
     final driverQuery = await httpService.getDriver(driverId);
@@ -296,16 +293,15 @@ class _HomePageState extends State<HomePage>
       routesList = routesQuery;
     });
 
+    List<TripModel>? oldTrips = await httpService.getTrips(0);
+    setState(() {
+      oldTripsList = oldTrips;
+    });
+
     TripModel? activeTrip_ = await httpService.getActiveTrip();
     setState(() {
       activeTrip = activeTrip_;
       hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
-    });
-
-    List<TripModel>? oldTrips = await httpService.getTrips(0);
-
-    setState(() {
-      oldTripsList = oldTrips;
     });
   }
 
@@ -321,6 +317,6 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-    loadDriver();
+    loadResources();
   }
 }
