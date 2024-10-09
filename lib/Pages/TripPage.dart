@@ -64,7 +64,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                     ),
                     shape: const RoundedRectangleBorder(),
                   ),
-                  child: !showMap ? const Center() : MapWidget(customRoute),
+                  // child: !showMap ? const Center() : MapWidget(customRoute),
                 ),
                 DraggableScrollableSheet(
                   snapAnimationDuration: const Duration(seconds: 1),
@@ -428,7 +428,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
     );
   }
 
-  Widget MapWidget(location) {
+  Widget? MapWidget(location) {
     if (trip.trip_status == 'Completed') {
       return StaticMap(
           origin: LatLng(trip.pickup_locations![0].latitude!,
@@ -446,6 +446,9 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
           pickup_locations: trip.pickup_locations);
     }
 
+    if(mapOrigin == null){
+        return null;
+    }
     return MapWithRoute(
         origin: mapOrigin!,
         destination: mapDestination!,

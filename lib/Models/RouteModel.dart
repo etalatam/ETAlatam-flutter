@@ -79,6 +79,4 @@ class RouteModel {
       destinations: destinations,
     );
   }
-
-  get busPlate => null;
 }

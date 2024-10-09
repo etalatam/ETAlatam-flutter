@@ -691,7 +691,8 @@ mixin MediansWidgets {
                             ),
                             SizedBox(width: 10),
                             Text(
-                              tripInfo.busPlate ?? 'Sin información',
+                              // tripInfo.busPlate ?? 'Sin información',
+                              tripInfo.vehicle?.plate_number ?? '',
                               style: TextStyle(color: Colors.white),
                             )
                           ]),

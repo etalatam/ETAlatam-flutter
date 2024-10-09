@@ -35,6 +35,10 @@ class HttpService {
 
   Map? headers;
 
+  String getAvatarUrl(userId) {
+    return "$apiURL/rpc/get_reource_image?_relation_name=eta.usuarios&_relation_id=$userId";
+  }
+
   String getImageUrl() {
     // return "$apiURL/app/image.php?src=";
     return "$apiURL/rpc/get_reource_image?_relation_name=eta.usuarios&_relation_id=";
@@ -282,7 +286,7 @@ class HttpService {
 
   /// Load Trip
   Future<TripModel> getTrip(id) async {
-    http.Response res = await getQuery("/rpc/driver_trips?select=*&limit=10");
+    http.Response res = await getQuery("/rpc/driver_trips?select=*&limit=1&id_trip=eq.$id");
 
     print("res.statusCode: ${res.statusCode}");
     print("res.body: ${res.body}");
@@ -290,7 +294,7 @@ class HttpService {
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
       if (body == null) return TripModel(trip_id: 0);
-      final TripModel trips = await TripModel.fromJson(body);
+      final TripModel trips = TripModel.fromJson(body);
       return trips;
     }
     return TripModel(trip_id: 0);
@@ -298,16 +302,17 @@ class HttpService {
 
   /// Load Tripd
   Future<TripModel> getActiveTrip() async {
-    /*http.Response res =
-        await postQuery('/mobile_api', {"model": "Driver.getActiveDriverTrip"});
+    http.Response res = await getQuery("/rpc/driver_trips?select=*&limit=1&running=eq.true");
 
-    print("res.statusCode ${res.statusCode}");
-    print("res.body ${res.body}");
-    
+    print("res.statusCode: ${res.statusCode}");
+    print("res.body: ${res.body}");
+
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
-      return TripModel.fromJson(body);
-    }*/
+      if (body == null) return TripModel(trip_id: 0);
+      final TripModel trips =  TripModel.fromJson(body[0]);
+      return trips;
+    }
     return TripModel(trip_id: 0);
   }
 

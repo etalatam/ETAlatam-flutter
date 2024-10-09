@@ -5,6 +5,7 @@ import 'package:MediansSchoolDriver/Models/StudentModel.dart';
 import 'package:MediansSchoolDriver/Models/RouteModel.dart';
 import 'package:MediansSchoolDriver/Models/PickupLocationModel.dart';
 import 'package:MediansSchoolDriver/Models/VehicleModel.dart';
+import 'package:intl/intl.dart';
 
 class TripModel {
   int? trip_id;
@@ -70,17 +71,19 @@ class TripModel {
     VehicleModel? vehicle = json['vehicle']  != null ? VehicleModel.fromJson(json['vehicle']) : null;
     DriverModel? driver = json['driver']  != null ? DriverModel.fromJson(json['driver']) : null;
     
+    DateFormat format = DateFormat('HH:mm');
+
     return TripModel(
       trip_id: json['trip_id'] as int?,
       route_id: json['route_id'] as int?,
-      supervisor_id: json['supervisor_id'] as int?,
+      supervisor_id: json['monitor_id'] as int?,
       driver_id: json['driver_id'] as int?,
-      trip_date: json['trip_date'] as String?,
-      trip_status: json['trip_status'] as String?,
+      trip_date: format.format(DateTime.parse(json['start_ts'])) as String?,
+      trip_status: json['running'] as String?,
       distance: double.parse(json['distance'].toString().replaceAll(RegExp(r','), '')),
       duration: json['duration'] as String?,
-      short_date: json['short_date'] as String?,
-      date: json['date'] as String?,
+      short_date: json['start_ts'] as String?,
+      date: json['start_ts'] as String?,
       moving_locations_count: json['moving_locations_count'] == null ? 0 : json['moving_locations_count'] as int?,
       waiting_locations_count: json['waiting_locations_count']  == null ? 0 : json['waiting_locations_count']  as int?,
       done_locations_count: json['done_locations_count']  == null ? 0 : json['done_locations_count']  as int?,
@@ -91,10 +94,9 @@ class TripModel {
       driver: driver,
     );
   }
-
-  get busPlate => null;
 }
 
+// Lugar de recogida del viaje
 class TripPickupLocation {
   
   int? trip_pickup_id;
@@ -148,7 +150,7 @@ class TripPickupLocation {
 }
 
 
-
+// Ubicación del destino del viaje
 class TripDestinationLocation {
   
   int? trip_destination_id;

@@ -276,6 +276,8 @@ class Lang {
     'crashed_bus': 'Autobus accidentado',
     'other': 'Otro',
     'routes': 'Rutas',
-    'Driver is running a trips': 'El conductor está ejecutando un viaje'
+    'driver_is_running_a_trips': 'El conductor está ejecutando un viaje',
+    'your_active_trip': 'Ruta activa',
+    'start_trip': 'Comenzar'
   };
 }

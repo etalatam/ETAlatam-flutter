@@ -29,7 +29,7 @@ class _UserAvatarState extends State<UserAvatar> {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = '${httpService.getImageUrl()}${driver?.picture}';
+    final imageUrl = httpService.getAvatarUrl(driver?.picture);
     print (imageUrl);
 
     return GestureDetector(

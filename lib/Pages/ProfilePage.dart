@@ -109,7 +109,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                         child: CircleAvatar(
                                             radius: 50,
                                             foregroundImage: NetworkImage(
-                                                "${httpService.getImageUrl()}${driver.picture}",
+                                                httpService.getAvatarUrl(driver.picture),
                                                 headers: {'Accept': 'image/png'}
                                             )
                                 ))),

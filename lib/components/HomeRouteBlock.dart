@@ -84,7 +84,7 @@ class HomeRouteBlock extends StatelessWidget {
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            "${route.busPlate}",
+                            "${route.vehicle?.plate_number}",
                             style: activeTheme.h6,
                           )
                         ]),
