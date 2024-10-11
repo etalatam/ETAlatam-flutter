@@ -7,6 +7,8 @@ import 'package:MediansSchoolDriver/Models/PickupLocationModel.dart';
 import 'package:MediansSchoolDriver/Models/VehicleModel.dart';
 import 'package:intl/intl.dart';
 
+import '../controllers/Helpers.dart';
+
 class TripModel {
   int? trip_id;
   int? driver_id;
@@ -66,11 +68,28 @@ class TripModel {
     } catch (e) {
       print(e.toString());
     }
+
+    RouteModel? route;
+    try {
+      route = RouteModel.fromJson(json);  
+    } catch (e) {
+      print(e.toString());
+    }
     
-    RouteModel? route = json['route'] != null  ? RouteModel.fromJson(json['route']) : null;
-    VehicleModel? vehicle = json['vehicle']  != null ? VehicleModel.fromJson(json['vehicle']) : null;
-    DriverModel? driver = json['driver']  != null ? DriverModel.fromJson(json['driver']) : null;
+    VehicleModel? vehicle;
+    try {
+      vehicle = VehicleModel.fromJson(json);  
+    } catch (e) {
+      print(e.toString());
+    }
     
+    DriverModel? driver;
+    try {
+      driver = DriverModel.fromJson(json);  
+    } catch (e) {
+      print(e.toString());
+    }
+
     DateFormat format = DateFormat('HH:mm');
 
     return TripModel(

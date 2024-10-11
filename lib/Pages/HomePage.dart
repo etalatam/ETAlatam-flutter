@@ -60,7 +60,7 @@ class _HomePageState extends State<HomePage>
                       children: [
                         Container(
                             color: activeTheme.main_bg,
-                            height: MediaQuery.of(context).size.height,
+                            height: MediaQuery.of(context).size.height ,
                             child: SingleChildScrollView(
                               padding: const EdgeInsets.only(bottom: 100),
                               physics: const AlwaysScrollableScrollPhysics(),
@@ -155,9 +155,9 @@ class _HomePageState extends State<HomePage>
                                                               oldTripsList[
                                                                   index]));
                                                 })),
-                                    const SizedBox(
-                                      height: 30,
-                                    ),
+                                    // const SizedBox(
+                                    //   height: 30,
+                                    // ),
 
                                     // Container(
                                     //   padding: const EdgeInsets.all(20),

@@ -33,10 +33,10 @@ class VehicleModel {
     
     return VehicleModel(
       vehicle_id: json['vehicle_id'] as int?,
-      vehicle_name: json['vehicle_name'] as String?,
-      vehicle_type: json['vehicle_type'] as String?,
-      plate_number: json['plate_number'] as String?,
-      capacity: json['capacity'] as int?,
+      vehicle_name: json['bus_brand'] as String?,
+      vehicle_type: json['bus_model'] as String?,
+      plate_number: json['bus_plate'] as String?,
+      capacity: json['bus_capacity'] as int?,
       driver_id: json['driver_id'] as int?,
       route_id: json['route_id'] as int?,
       picture: json['picture'] as String?,

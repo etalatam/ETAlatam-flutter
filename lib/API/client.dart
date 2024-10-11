@@ -11,6 +11,7 @@ import 'package:MediansSchoolDriver/infrastructure/mappers/driver_mapper.dart';
 import 'package:MediansSchoolDriver/infrastructure/mappers/login_information_mapper.dart';
 import 'package:MediansSchoolDriver/infrastructure/repositories/login_information_repository_impl.dart';
 import 'package:MediansSchoolDriver/methods.dart';
+import 'package:get/get.dart';
 // import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
@@ -121,14 +122,19 @@ class HttpService {
   }
 
   /// Load Route
-  Future<List<RouteModel>> getRoute(String model) async {
-    http.Response res = await getQuery(model);
+  Future<RouteModel> getRoute(routeId) async {
+        http.Response res = await getQuery("/rpc/driver_routes?select=*&limit=1&route_id=eq.$routeId");
+
+    print("res.statusCode: ${res.statusCode}");
+    print("res.body: ${res.body}");
 
     if (res.statusCode == 200) {
-      List<dynamic> body = jsonDecode(res.body);
-      return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
+      var body = jsonDecode(res.body);
+      if (body == null) return RouteModel(route_id: 0, route_name: '', pickup_locations: []);
+      final RouteModel trips = RouteModel.fromJson(body[0]);
+      return trips;
     }
-    return [];
+    return RouteModel(route_id: 0, route_name: '', pickup_locations: []);
   }
 
   /// Load Route info
@@ -308,10 +314,14 @@ class HttpService {
     print("res.body: ${res.body}");
 
     if (res.statusCode == 200) {
-      var body = jsonDecode(res.body);
-      if (body == null) return TripModel(trip_id: 0);
-      final TripModel trips =  TripModel.fromJson(body[0]);
-      return trips;
+      try {
+        var body = jsonDecode(res.body);
+        if (body == null) return TripModel(trip_id: 0);
+        final TripModel trips =  TripModel.fromJson(body[0]);
+        return trips;
+      } catch (e) {
+        print(e.toString());
+      }
     }
     return TripModel(trip_id: 0);
   }

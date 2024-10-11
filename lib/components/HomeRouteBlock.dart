@@ -126,7 +126,7 @@ class HomeRouteBlock extends StatelessWidget {
                         constraints:
                             const BoxConstraints(minWidth: 100, maxWidth: 150),
                         width: 200,
-                        height: 51,
+                        height: 10,
                         clipBehavior: Clip.antiAlias,
                         decoration: const BoxDecoration(),
                         child: route.pickup_locations.isEmpty

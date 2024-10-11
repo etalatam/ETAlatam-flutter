@@ -290,7 +290,8 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
             child: CircleAvatar(
                 radius: 50,
                 foregroundImage: NetworkImage(
-                    httpService.croppedImage(currentPicture, 200, 200)))),
+                    httpService.getAvatarUrl(currentPicture)))
+                ),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -302,58 +303,58 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                       fontWeight: activeTheme.h4.fontWeight,
                       color: Colors.white)),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                  color: activeTheme.buttonBG,
-                  borderRadius: const BorderRadius.all(Radius.circular(10))),
-              margin: const EdgeInsets.only(top: 15),
-              child: Text("${user.contact_number}",
-                  style: TextStyle(
-                    color: activeTheme.buttonColor,
-                    fontWeight: FontWeight.bold,
-                  )),
-            ),
+            // Container(
+            //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            //   decoration: BoxDecoration(
+            //       color: activeTheme.buttonBG,
+            //       borderRadius: const BorderRadius.all(Radius.circular(10))),
+            //   margin: const EdgeInsets.only(top: 15),
+            //   child: Text("${user.contact_number}",
+            //       style: TextStyle(
+            //         color: activeTheme.buttonColor,
+            //         fontWeight: FontWeight.bold,
+            //       )),
+            // ),
           ],
         ),
-        const Expanded(child: Center()),
-        Column(
-          children: [
-            const SizedBox(height: 50),
-            Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      launchCall(user.contact_number);
-                    },
-                    child: Padding(
-                      padding:
-                          const EdgeInsets.only(top: 10, right: 20, left: 20),
-                      child: Icon(
-                        Icons.call,
-                        color: activeTheme.icon_color,
-                      ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      launchWP(user.contact_number);
-                    },
-                    child: Padding(
-                      padding:
-                          const EdgeInsets.only(top: 10, right: 20, left: 20),
-                      child: Icon(
-                        Icons.maps_ugc_outlined,
-                        color: activeTheme.icon_color,
-                      ),
-                    ),
-                  ),
-                ])
-          ],
-        )
+        // const Expanded(child: Center()),
+        // Column(
+        //   children: [
+        //     const SizedBox(height: 50),
+        //     Row(
+        //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //         crossAxisAlignment: CrossAxisAlignment.start,
+        //         mainAxisSize: MainAxisSize.max,
+        //         children: [
+        //           GestureDetector(
+        //             onTap: () {
+        //               launchCall(user.contact_number);
+        //             },
+        //             child: Padding(
+        //               padding:
+        //                   const EdgeInsets.only(top: 10, right: 20, left: 20),
+        //               child: Icon(
+        //                 Icons.call,
+        //                 color: activeTheme.icon_color,
+        //               ),
+        //             ),
+        //           ),
+        //           GestureDetector(
+        //             onTap: () {
+        //               launchWP(user.contact_number);
+        //             },
+        //             child: Padding(
+        //               padding:
+        //                   const EdgeInsets.only(top: 10, right: 20, left: 20),
+        //               child: Icon(
+        //                 Icons.maps_ugc_outlined,
+        //                 color: activeTheme.icon_color,
+        //               ),
+        //             ),
+        //           ),
+        //         ])
+        //   ],
+        // )
       ],
     ));
   }

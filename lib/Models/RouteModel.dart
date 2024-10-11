@@ -31,14 +31,14 @@ class RouteModel {
   factory RouteModel.fromJson(Map<String, dynamic> json) {
     DriverModel driver = DriverModel(driver_id: json['driver_id'], first_name: '');
     try {
-      driver = DriverModel.fromJson(json['driver']);
+      driver = DriverModel.fromJson(json);
     } catch (e) {
       print(e.toString());
     }
 
     VehicleModel vehicle = VehicleModel(vehicle_id: 0, plate_number: json['bus_plate']);
     try {
-      vehicle = VehicleModel.fromJson(json['vehicle']);
+      vehicle = VehicleModel.fromJson(json);
     } catch (e) {
       print(e.toString());
     }
