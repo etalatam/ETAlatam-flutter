@@ -355,17 +355,18 @@ class HttpService {
   /// Submit form to update data through API
   Future<String> endTrip(String tripId) async {
     Map data = {
-      "trip_id": tripId,
-      "trip_status": 'Completed',
+      // "trip_id": tripId,
+      // "trip_status": 'Completed',
     };
 
-    http.Response res = await postQuery(
-        '/mobile_api', {"model": 'end_trip', "params": jsonEncode(data)});
+    http.Response res = await postQuery('/rpc/driver_stop_trip', data);
+    print("res.statusCode ${res.statusCode}");
+    print("res.body ${res.body}");
 
     if (res.statusCode == 200) {
       return res.body;
     } else {
-      throw "Unable to retrieve data.";
+      throw "${parseResponseMessage(res)}/${res.statusCode}";
     }
   }
 
