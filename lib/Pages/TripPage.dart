@@ -46,7 +46,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
 
   @override
   Widget build(BuildContext context) {
-    print("[TripPage:build] ${widget.trip?.vehicle?.last_latitude}");
+    // print("[TripPage:build] ${widget.trip?.vehicle?.last_latitude}");
     // mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
     // mapOrigin = LatLng(trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
     return Material(

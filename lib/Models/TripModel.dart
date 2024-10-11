@@ -93,7 +93,7 @@ class TripModel {
     DateFormat format = DateFormat('HH:mm');
 
     return TripModel(
-      trip_id: json['trip_id'] as int?,
+      trip_id: json['id_trip'] as int?,
       route_id: json['route_id'] as int?,
       supervisor_id: json['monitor_id'] as int?,
       driver_id: json['driver_id'] as int?,

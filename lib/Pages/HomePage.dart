@@ -204,18 +204,18 @@ class _HomePageState extends State<HomePage>
 
   /// Create trip
   createTrip(routeId, vehicleId) async {
-    TripModel? createdTrip;
+    TripModel? trip;
 
     setState(() {
       showLoader = true;
     });
     final driverId = await storage.getItem('driver_id');
     try {
-      createdTrip = await httpService.startTrip(driverId, routeId, vehicleId);
-      if (createdTrip.trip_id != 0) {
+      trip = await httpService.startTrip(routeId);
+      if (trip.trip_id != 0) {
         await Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => TripPage(trip: createdTrip)),
+          MaterialPageRoute(builder: (context) => TripPage(trip: trip)),
         );
 
         loadResources();

@@ -300,7 +300,7 @@ class HttpService {
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
       if (body == null) return TripModel(trip_id: 0);
-      final TripModel trips = TripModel.fromJson(body);
+      final TripModel trips = TripModel.fromJson(body[0]);
       return trips;
     }
     return TripModel(trip_id: 0);
@@ -327,8 +327,7 @@ class HttpService {
   }
 
   /// Submit form to update data through API
-  Future<TripModel> startTrip(
-      int driverId, int routeId, int vehicleId) async {
+  Future<TripModel> startTrip(int routeId) async {
 
     Map data = {
       "_route_id": "$routeId",
