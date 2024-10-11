@@ -211,7 +211,7 @@ class _HomePageState extends State<HomePage>
     });
     final driverId = await storage.getItem('driver_id');
     try {
-      createdTrip = await httpService.create_trip(driverId, routeId, vehicleId);
+      createdTrip = await httpService.startTrip(driverId, routeId, vehicleId);
       if (createdTrip.trip_id != 0) {
         await Navigator.push(
           context,

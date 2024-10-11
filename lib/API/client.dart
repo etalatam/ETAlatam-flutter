@@ -327,7 +327,7 @@ class HttpService {
   }
 
   /// Submit form to update data through API
-  Future<TripModel> create_trip(
+  Future<TripModel> startTrip(
       int driverId, int routeId, int vehicleId) async {
 
     Map data = {
