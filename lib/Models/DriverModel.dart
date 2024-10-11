@@ -36,14 +36,14 @@ class DriverModel {
     }
         
     return DriverModel(
-      driver_id: json['id_driver'] as int?,
-      first_name: json['firstname'] as String?,
-      last_name: json['lastname'] as String?,
-      name: json['firstname']+' '+json['lastname'] as String?,
-      email: json['email'] as String?,
+      driver_id: json['driver_id'] as int?,
+      first_name: json['driver_firstname'] as String?,
+      last_name: json['driver_lastname'] as String?,
+      name: json['driver_firstname']+' '+json['driver_lastname'] as String?,
+      email: json['driver_email'] as String?,
       picture: "${json['id_usu']}",
-      contact_number: json['tel_usu'] as String?,
-      driver_license_number: json['docid'] as String?,
+      contact_number: json['driver_tel_usu'] as String?,
+      driver_license_number: json['diver_docid'] as String?,
       vehicle: vehicle,
     );
   }
