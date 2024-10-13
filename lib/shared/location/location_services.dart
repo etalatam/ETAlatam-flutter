@@ -20,20 +20,24 @@ class LocationService {
   Stream<LocationDto> get locationStream => _locationStreamController.stream;
 
   Future<void> init() async {
-    if (IsolateNameServer.lookupPortByName(isolateName) != null) {
-      IsolateNameServer.removePortNameMapping(isolateName);
-    }
-
-    IsolateNameServer.registerPortWithName(port.sendPort, isolateName);
-    port.listen((dynamic data) {
-      if (data != null) {
-        LocationDto location =
-            LocationDto.fromJson(Map<String, dynamic>.from(data));
-        _locationStreamController.add(location);
+    try {
+      if (IsolateNameServer.lookupPortByName(isolateName) != null) {
+        IsolateNameServer.removePortNameMapping(isolateName);
       }
-    });
 
-    await initPlatformState();
+      IsolateNameServer.registerPortWithName(port.sendPort, isolateName);
+      port.listen((dynamic data) {
+        if (data != null) {
+          LocationDto location =
+              LocationDto.fromJson(Map<String, dynamic>.from(data));
+          _locationStreamController.add(location);
+        }
+      });
+
+      await initPlatformState();
+    } catch (e) {
+      print('[locatiopnservice.init]${e.toString()}');
+    }
   }
 
   Future<bool> _checkLocationPermission() async {

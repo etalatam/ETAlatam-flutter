@@ -46,27 +46,27 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 DraggableScrollableSheet(
                   snapAnimationDuration: const Duration(seconds: 1),
-                  initialChildSize: .85,
+                  initialChildSize: .7,
                   minChildSize: 0.7,
-                  maxChildSize: 0.85,
+                  maxChildSize: 0.7,
                   builder: (BuildContext context,
                       ScrollController scrollController) {
                     return Container(
                         child: Stack(children: [
-                      Container(
-                        width: double.infinity,
-                        height: 75,
-                        clipBehavior: Clip.antiAlias,
-                        decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withOpacity(0),
-                            Colors.black.withOpacity(.5),
-                          ],
-                        )),
-                      ),
+                      // Container(
+                      //   width: double.infinity,
+                      //   height: 75,
+                      //   clipBehavior: Clip.antiAlias,
+                      //   decoration: BoxDecoration(
+                      //       gradient: LinearGradient(
+                      //     begin: Alignment.topCenter,
+                      //     end: Alignment.bottomCenter,
+                      //     colors: [
+                      //       Colors.black.withOpacity(0),
+                      //       Colors.black.withOpacity(.5),
+                      //     ],
+                      //   )),
+                      // ),
                       Container(
                         margin: const EdgeInsets.only(top: 50),
                         height: double.infinity,
@@ -76,13 +76,13 @@ class _ProfilePageState extends State<ProfilePage> {
                             topLeft: Radius.circular(20.0),
                             topRight: Radius.circular(20.0),
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              offset: const Offset(0.0, -3.0),
-                              blurRadius: 5.0,
-                            ),
-                          ],
+                          // boxShadow: [
+                          //   BoxShadow(
+                          //     color: Colors.black.withOpacity(0.2),
+                          //     offset: const Offset(0.0, -3.0),
+                          //     blurRadius: 5.0,
+                          //   ),
+                          // ],
                         ),
                       ),
                       SingleChildScrollView(

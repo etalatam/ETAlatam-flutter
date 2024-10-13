@@ -278,6 +278,16 @@ class Lang {
     'routes': 'Rutas',
     'driver_is_running_a_trips': 'El conductor está ejecutando un viaje',
     'your_active_trip': 'Ruta activa',
-    'start_trip': 'Comenzar'
+    'start_trip': 'Comenzar',
+    'sueccessfully_ended': 'Finalizado',
+    'trip_number': 'Viaje número',
+    'trip_duration': 'Tiempo',
+    'distance': 'Distancia',
+    'pickup_locations': 'Paradas',
+    'pickups': 'Paradas',
+    'trip': 'Viaje',
+    'trips': 'Viajes',
+    'end_trip': 'Finalizar',
+    'trip_status': ''
   };
 }

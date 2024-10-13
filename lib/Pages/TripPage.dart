@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:MediansSchoolDriver/Pages/map/map_view.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
@@ -58,43 +59,44 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
           : Scaffold(
               body: Stack(children: <Widget>[
                 Container(
-                  height: MediaQuery.of(context).size.height / 2,
-                  decoration: ShapeDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage(
-                          httpService.getAvatarUrl(currentPicture)),
-                      fit: BoxFit.fitHeight,
-                    ),
-                    shape: const RoundedRectangleBorder(),
-                  ),
-                  child: !showMap ? const Center() : MapWidget(customRoute),
+                  height: MediaQuery.of(context).size.height,
+                  // decoration: ShapeDecoration(
+                  //   image: DecorationImage(
+                  //     image: NetworkImage(
+                  //         httpService.getAvatarUrl(currentPicture)),
+                  //     fit: BoxFit.fitHeight,
+                  //   ),
+                  //   shape: const RoundedRectangleBorder(),
+                  // ),
+                  // child: !showMap ? const Center() : MapWidget(customRoute),
+                  child: !showMap ? const Center() : MapView(),
                 ),
                 DraggableScrollableSheet(
                   snapAnimationDuration: const Duration(seconds: 1),
                   initialChildSize:
-                      .6, // The initial size of the sheet (0.2 means 20% of the screen)
+                      .5, // The initial size of the sheet (0.2 means 20% of the screen)
                   minChildSize:
-                      0.5, // Minimum size of the sheet (10% of the screen)
+                      0.25, // Minimum size of the sheet (10% of the screen)
                   maxChildSize:
-                      0.7, // Maximum size of the sheet (80% of the screen)
+                      0.8, // Maximum size of the sheet (80% of the screen)
                   builder: (BuildContext context,
                       ScrollController scrollController) {
                     return Container(
                         child: Stack(children: [
-                      Container(
-                        width: double.infinity,
-                        height: 75,
-                        clipBehavior: Clip.antiAlias,
-                        decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withOpacity(0),
-                            Colors.black.withOpacity(.5),
-                          ],
-                        )),
-                      ),
+                      // Container(
+                      //   width: double.infinity,
+                      //   height: 75,
+                        // clipBehavior: Clip.antiAlias,
+                        // decoration: BoxDecoration(
+                        //     gradient: LinearGradient(
+                        //   begin: Alignment.topCenter,
+                        //   end: Alignment.bottomCenter,
+                        //   colors: [
+                        //     Colors.black.withOpacity(0),
+                        //     Colors.black.withOpacity(.1),
+                        //   ],
+                        // )),
+                      // ),
                       Container(
                         margin: const EdgeInsets.only(top: 50),
                         height: double.infinity,
@@ -117,8 +119,8 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                         controller: scrollController,
                         child: Container(
                             child: Stack(children: [
-                          HeadWidget(
-                              hasCustomRoute ? customRoute : trip.driver!),
+                          // HeadWidget(
+                          //     hasCustomRoute ? customRoute : trip.driver!),
                           Container(
                             margin: const EdgeInsets.symmetric(horizontal: 20),
                             height: 1,

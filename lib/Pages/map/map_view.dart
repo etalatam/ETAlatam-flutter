@@ -53,7 +53,7 @@ class _MapBoxWidgetState extends ConsumerState<MapView> {
       "zoom": 5.0,
       "lat": 10,
       "lng": -66,
-      "pitch": 50.0,
+      "pitch": 0.0,
       "bearing": 0.0,
     };
 
