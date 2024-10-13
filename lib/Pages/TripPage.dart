@@ -12,6 +12,7 @@ import 'package:MediansSchoolDriver/components/TripMap.dart';
 import 'package:MediansSchoolDriver/components/CustomRouteMap.dart';
 import 'package:MediansSchoolDriver/components/Slideable.dart';
 import 'package:MediansSchoolDriver/components/StaticMap.dart';
+import 'package:localstorage/localstorage.dart';
 
 class TripPage extends StatefulWidget {
   const TripPage({super.key, this.trip});
@@ -36,7 +37,8 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
 
   LatLng? mapOrigin;
 
-  String currentPicture = "/uploads/images/60x60.png";
+  // String currentPicture = "/uploads/images/60x60.png";
+  String currentPicture = "";
 
   bool showTripReportModal = false;
 
@@ -59,7 +61,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                   decoration: ShapeDecoration(
                     image: DecorationImage(
                       image: NetworkImage(
-                          httpService.croppedImage(currentPicture, 800, 1200)),
+                          httpService.getAvatarUrl(currentPicture)),
                       fit: BoxFit.fitHeight,
                     ),
                     shape: const RoundedRectangleBorder(),
@@ -277,7 +279,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
 
   Widget HeadWidget(item) {
     final user = hasCustomRoute ? item.student : item;
-    currentPicture = user?.picture ?? ' ';
+    // currentPicture = user?.picture ?? ' ';
 
     return Container(
         child: Row(
@@ -369,8 +371,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
           showMap = false;
         });
 
-        Timer(const Duration(seconds: 0), () async {
-          setState(() {
+        setState(() {
             customRoute = pickupLocation;
             hasCustomRoute = true;
             // mapOrigin = LatLng(
@@ -378,16 +379,14 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
             // mapDestination =
             //     LatLng(pickupLocation.latitude!, pickupLocation.longitude!);
             showMap = true;
-          });
-        });
+          }); 
       },
       child: Row(children: [
-        CircleAvatar(
-          maxRadius: 40,
-          backgroundColor: Colors.white,
-          foregroundImage: NetworkImage(httpService.croppedImage(
-              "${pickupLocation.location!.picture}", 200, 200)),
-        ),
+        // CircleAvatar(
+        //   maxRadius: 40,
+        //   backgroundColor: Colors.white,
+        //   foregroundImage: NetworkImage(httpService.getAvatarUrl(currentPicture)),
+        // ),
         const SizedBox(
           width: 10,
         ),
@@ -487,10 +486,15 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
 
   loadTrip() async {
     TripModel? trip_ = await httpService.getTrip(trip.trip_id);
+    final LocalStorage storage = LocalStorage('tokens.json');
+    final userId = await storage.getItem('id_usu');
+    print("[TipPage.loadTrip.usrId] $userId");
+
     if (trip_.trip_id != 0) {
       setState(() {
         trip = trip_;
-        currentPicture = "${trip.driver!.picture}";
+        currentPicture = "$userId";
+        // currentPicture = "${trip.driver!.picture}";
         // mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
         // mapOrigin = LatLng(trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
         isActiveTrip = true;

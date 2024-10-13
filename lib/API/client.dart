@@ -473,6 +473,7 @@ class HttpService {
         await storage.setItem(
             'token', body['token'].isEmpty ? '' : body['token']);
         await storage.setItem('driver_id', body['id_usu'] ?? body['id_usu']);
+        await storage.setItem('id_usu', body['id_usu'] ?? body['id_usu']);
         try {
           final LoginInformation login =
               LoginInformationMapper.information(LoginInfo.fromJson(body));
