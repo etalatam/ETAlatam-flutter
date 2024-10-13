@@ -45,13 +45,15 @@ class RouteModel {
 
     List<PickupLocationModel> pickupLocations = [];
     try {
-      if (json['pickup_locations'] != null )
+      print("[RouteModel.fromJson.pickup_points] ${json['pickup_points']}");
+      if (json['pickup_points'] != null )
       {
-          Iterable l = json["pickup_locations"];
+          Iterable l = json["pickup_points"];
           pickupLocations = List<PickupLocationModel>.from(l.map((model)=> PickupLocationModel.fromJson(model)));
+          print('pickup_points of RouteModel proccessed');
       }      
     } catch (e) {
-      print(e.toString());
+      print("[RouteModel.fromJson.error] ${e.toString()}");
     }
 
     List<DestinationModel>? destinations = [];

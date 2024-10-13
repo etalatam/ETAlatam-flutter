@@ -55,10 +55,12 @@ class TripModel {
   factory TripModel.fromJson(Map<String, dynamic> json) {
     List<TripPickupLocation> pickupLocations = [];
     try {
-      Iterable l = json["pickup_locations"] != '[]' ? json["pickup_locations"] : null;
+      print("[TripModel.fromJson.pickup_points] ${json['pickup_points']}");
+      Iterable l = json["pickup_points"] != '[]' ? json["pickup_points"] : null;
       pickupLocations = List<TripPickupLocation>.from(l.map((model)=> TripPickupLocation.fromJson(model)));
+      print('pickup_points of TripModel proccessed');
     } catch (e) {
-      print(e.toString());
+      print("[TripModel.fromJson.error] ${e.toString()}");
     }
 
     List<TripDestinationLocation>? destinations = [];
@@ -159,8 +161,8 @@ class TripPickupLocation {
       status: json['status'] as String?,
       boarding_time: json['boarding_time'] as String?,
       dropoff_time: json['dropoff_time'] as String?,
-      latitude: double.parse(json['latitude'].toString()),
-      longitude: double.parse(json['longitude'].toString()),
+      latitude: double.parse(json['pickup_point_lat'].toString()),
+      longitude: double.parse(json['pickup_point_lon'].toString()),
       location: pickupLocation,
       student: student,
     );

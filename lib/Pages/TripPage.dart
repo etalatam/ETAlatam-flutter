@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:MediansSchoolDriver/Models/TripModel.dart';
@@ -49,7 +50,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
   @override
   Widget build(BuildContext context) {
     // print("[TripPage:build] ${widget.trip?.vehicle?.last_latitude}");
-    // mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
+    mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
     // mapOrigin = LatLng(trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
     return Material(
       child: showLoader
@@ -66,7 +67,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                     ),
                     shape: const RoundedRectangleBorder(),
                   ),
-                  // child: !showMap ? const Center() : MapWidget(customRoute),
+                  child: !showMap ? const Center() : MapWidget(customRoute),
                 ),
                 DraggableScrollableSheet(
                   snapAnimationDuration: const Duration(seconds: 1),
@@ -376,8 +377,8 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
             hasCustomRoute = true;
             // mapOrigin = LatLng(
             //     trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
-            // mapDestination =
-            //     LatLng(pickupLocation.latitude!, pickupLocation.longitude!);
+            mapDestination =
+                LatLng(pickupLocation.latitude!, pickupLocation.longitude!);
             showMap = true;
           }); 
       },
@@ -407,7 +408,8 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
             pickupLocation.student == null
                 ? const Text("")
                 : Text(
-                    '${pickupLocation.student!.student_name}',
+                    // '${pickupLocation.student!.student_name}',
+                    '${pickupLocation.location_name}',
                     style: activeTheme.h5,
                   ),
             const SizedBox(
@@ -457,13 +459,23 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
   }
 
   endTrip() async {
-    final endTrip = await httpService.endTrip(widget.trip!.trip_id.toString());
-
-    if (endTrip == 'true') {
+    try {
+      await httpService.endTrip(widget.trip!.trip_id.toString());
       setState(() {
         showTripReportModal = true;
       });
-    }
+
+    } catch (e) {
+      print(e.toString());
+      var msg = e.toString().split('/');
+      setState(() {
+        showLoader = false;
+      });
+      showSuccessDialog(context, "${lang.translate('Error')} (${msg[1]})",
+          lang.translate(msg[0]), () {
+          Get.back();
+      });
+    }    
   }
 
   finish(TripPickupLocation pickupLocation) async {
@@ -491,15 +503,13 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
     print("[TipPage.loadTrip.usrId] $userId");
 
     if (trip_.trip_id != 0) {
-      setState(() {
-        trip = trip_;
-        currentPicture = "$userId";
-        // currentPicture = "${trip.driver!.picture}";
-        // mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
-        // mapOrigin = LatLng(trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
-        isActiveTrip = true;
-        showLoader = false;
-      });
+      trip = trip_;
+      currentPicture = "$userId";
+      // currentPicture = "${trip.driver!.picture}";
+      mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
+      // mapOrigin = LatLng(trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
+      isActiveTrip = true;
+      showLoader = false;
     }
   }
 

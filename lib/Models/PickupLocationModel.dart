@@ -100,12 +100,12 @@ class PickupLocationModel {
     }
     
     return PickupLocationModel(
-      pickup_id: json['id_pickup_point'] as int?,
-      route_id: json['id_route'] as int?,
-      latitude: double.parse(json['lat'] ?? "10"),
-      longitude: double.parse(json['lon'] ?? "-66"),
-      location_name: json['name'] as String?,
-      address: json['address'] as String?,
+      pickup_id: json['pickup_point_id'] as int?,
+      route_id: json['route_id'] as int?,
+      latitude: double.parse(json['pickup_point_lat'] ?? "10"),
+      longitude: double.parse(json['pickup_point_lon'] ?? "-66"),
+      location_name: json['pickup_point_name'] as String?,
+      address: json['pickup_point_address'] as String?,
       contact_number: json['contact_number'] as String?,
       picture: json['picture'] ?? "",
       student_name: json['student_name'] as String?,
