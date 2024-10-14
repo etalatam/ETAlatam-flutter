@@ -680,7 +680,7 @@ mixin MediansWidgets {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            "${tripInfo.route?.route_name}",
+                            "${lang.translate('Trip')} #${tripInfo.trip_id} (${tripInfo.route?.route_name})",
                             style: activeTheme.h6,
                           ),
                           Row(children: [
