@@ -16,6 +16,9 @@ import 'package:MediansSchoolDriver/components/Slideable.dart';
 import 'package:MediansSchoolDriver/components/StaticMap.dart';
 import 'package:localstorage/localstorage.dart';
 
+import '../Models/PickupLocationModel.dart';
+import 'map/full_map.dart';
+
 class TripPage extends StatefulWidget {
   const TripPage({super.key, this.trip});
 
@@ -59,7 +62,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
           : Scaffold(
               body: Stack(children: <Widget>[
                 Container(
-                  height: MediaQuery.of(context).size.height,
+                  height: MediaQuery.of(context).size.height / 1.33,
                   // decoration: ShapeDecoration(
                   //   image: DecorationImage(
                   //     image: NetworkImage(
@@ -69,7 +72,8 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                   //   shape: const RoundedRectangleBorder(),
                   // ),
                   // child: !showMap ? const Center() : MapWidget(customRoute),
-                  child: !showMap ? const Center() : MapView(),
+                  // child: !showMap ? const Center() : MapView(),
+                  child: !showMap ? const Center() : FullMap(),
                 ),
                 DraggableScrollableSheet(
                   snapAnimationDuration: const Duration(seconds: 1),
@@ -98,7 +102,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                         // )),
                       // ),
                       Container(
-                        margin: const EdgeInsets.only(top: 50),
+                        margin: const EdgeInsets.only(top: 0),
                         height: double.infinity,
                         decoration: BoxDecoration(
                           color: activeTheme.main_bg,
@@ -127,7 +131,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                             color: activeTheme.main_color.withOpacity(.2),
                           ),
                           Container(
-                            margin: const EdgeInsets.only(top: 120),
+                            margin: const EdgeInsets.only(top: 10),
                             padding: const EdgeInsets.all(20),
                             width: double.infinity,
                             child: Column(
@@ -207,18 +211,18 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                                                   : activeTheme.h6,
                                             )),
                                         const SizedBox(width: 50),
-                                        GestureDetector(
-                                            onTap: () {
-                                              setState(() {
-                                                activeTab = 'destination';
-                                              });
-                                            },
-                                            child: Text(
-                                              lang.translate("Destinations"),
-                                              style: activeTab == 'destination'
-                                                  ? activeTheme.h5
-                                                  : activeTheme.h6,
-                                            )),
+                                        // GestureDetector(
+                                        //     onTap: () {
+                                        //       setState(() {
+                                        //         activeTab = 'destination';
+                                        //       });
+                                        //     },
+                                        //     child: Text(
+                                        //       lang.translate("Destinations"),
+                                        //       style: activeTab == 'destination'
+                                        //           ? activeTheme.h5
+                                        //           : activeTheme.h6,
+                                        //     )),
                                       ]),
                                 ),
                                 const SizedBox(
@@ -245,27 +249,27 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                                           finishCallback: finish,
                                         )
                                       : const Center(),
-                                for (var i = 0;
-                                    i < trip.destinations!.length;
-                                    i++)
-                                  activeTab == 'destination'
-                                      ? Slideable(
-                                          model: trip.destinations![i],
-                                          hasLeft: true,
-                                          hasRight:
-                                              trip.destinations![i].status ==
-                                                      'waiting'
-                                                  ? true
-                                                  : false,
-                                          widget: Container(
-                                            margin: const EdgeInsets.only(
-                                                bottom: 10, top: 10),
-                                            child:
-                                                TripUser(trip.destinations![i]),
-                                          ),
-                                          finishCallback: finishDestination,
-                                        )
-                                      : const Center()
+                                // for (var i = 0;
+                                //     i < trip.destinations!.length;
+                                //     i++)
+                                //   activeTab == 'destination'
+                                //       ? Slideable(
+                                //           model: trip.destinations![i],
+                                //           hasLeft: true,
+                                //           hasRight:
+                                //               trip.destinations![i].status ==
+                                //                       'waiting'
+                                //                   ? true
+                                //                   : false,
+                                //           widget: Container(
+                                //             margin: const EdgeInsets.only(
+                                //                 bottom: 10, top: 10),
+                                //             child:
+                                //                 TripUser(trip.destinations![i]),
+                                //           ),
+                                //           finishCallback: finishDestination,
+                                //         )
+                                //       : const Center()
                               ],
                             ),
                           )
@@ -366,11 +370,11 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
 
   bool showMap = true;
 
-  Widget TripUser(pickupLocation) {
+  Widget TripUser(TripPickupLocation pickupLocation) {
     return GestureDetector(
       onTap: () {
         setState(() {
-          currentPicture = pickupLocation.student.picture;
+          // currentPicture = pickupLocation.student.picture;
           showMap = false;
         });
 
@@ -407,13 +411,23 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            pickupLocation.student == null
-                ? const Text("")
-                : Text(
+            Text(
                     // '${pickupLocation.student!.student_name}',
-                    '${pickupLocation.location_name}',
+                    '${pickupLocation.location?.location_name}',
                     style: activeTheme.h5,
                   ),
+            Text(
+                    // '${pickupLocation.student!.student_name}',
+                    '${pickupLocation.location?.address}',
+                    style: activeTheme.h6,
+                  ),
+            // pickupLocation.student == null
+            //     ? const Text("")
+            //     : Text(
+            //         // '${pickupLocation.student!.student_name}',
+            //         '${pickupLocation.location_name}',
+            //         style: activeTheme.h5,
+            //       ),
             const SizedBox(
               height: 5,
             ),

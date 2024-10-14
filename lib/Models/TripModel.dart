@@ -150,8 +150,20 @@ class TripPickupLocation {
   
   factory TripPickupLocation.fromJson( json) 
   {
-    PickupLocationModel pickupLocation = PickupLocationModel.fromJson(json['location']);
-    StudentModel? student = json['model']  != null ? StudentModel.fromJson(json['model']) : null;
+    PickupLocationModel? pickupLocation;
+
+    try {
+      pickupLocation = PickupLocationModel.fromJson(json);
+    } catch (e) {
+      print('[TripPickupLocation.fromJson.pickupLocation] ${e.toString()}');
+    }
+    
+    StudentModel? student;
+    try {
+      student = json['model']  != null ? StudentModel.fromJson(json) : null;
+    } catch (e) {
+      print('[TripPickupLocation.fromJson.student] ${e.toString()}');
+    }
     
     return TripPickupLocation(
       trip_pickup_id: json['trip_pickup_id'] as int?,
