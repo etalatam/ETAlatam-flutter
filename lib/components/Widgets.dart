@@ -651,13 +651,13 @@ mixin MediansWidgets {
                 )
               ]),
           child: Stack(children: [
-            Positioned(
-              top: -30,
-              right: 0,
-              height: 120,
-              width: 120,
-              child: SvgPicture.asset("assets/svg/corner-circle.svg"),
-            ),
+            // Positioned(
+            //   top: -30,
+            //   right: 0,
+            //   height: 120,
+            //   width: 120,
+            //   child: SvgPicture.asset("assets/svg/corner-circle.svg"),
+            // ),
             Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -684,16 +684,15 @@ mixin MediansWidgets {
                             style: activeTheme.h6,
                           ),
                           Row(children: [
-                            SvgPicture.asset(
-                              "assets/svg/bus.svg",
-                              width: 20,
-                              color: Colors.white,
-                            ),
+                            SvgPicture.asset("assets/svg/bus.svg",
+                                width: 20, color: activeTheme.main_color),
                             SizedBox(width: 10),
                             Text(
                               // tripInfo.busPlate ?? 'Sin información',
                               tripInfo.vehicle?.plate_number ?? '',
-                              style: TextStyle(color: Colors.white),
+                              style: TextStyle(
+                                color: activeTheme.main_color,
+                              ),
                             )
                           ]),
                         ],

@@ -1,5 +1,3 @@
-import 'dart:async';
-import 'package:MediansSchoolDriver/Pages/map/map_view.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +14,6 @@ import 'package:MediansSchoolDriver/components/Slideable.dart';
 import 'package:MediansSchoolDriver/components/StaticMap.dart';
 import 'package:localstorage/localstorage.dart';
 
-import '../Models/PickupLocationModel.dart';
 import 'map/full_map.dart';
 
 class TripPage extends StatefulWidget {
@@ -90,16 +87,16 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                       // Container(
                       //   width: double.infinity,
                       //   height: 75,
-                        // clipBehavior: Clip.antiAlias,
-                        // decoration: BoxDecoration(
-                        //     gradient: LinearGradient(
-                        //   begin: Alignment.topCenter,
-                        //   end: Alignment.bottomCenter,
-                        //   colors: [
-                        //     Colors.black.withOpacity(0),
-                        //     Colors.black.withOpacity(.1),
-                        //   ],
-                        // )),
+                      // clipBehavior: Clip.antiAlias,
+                      // decoration: BoxDecoration(
+                      //     gradient: LinearGradient(
+                      //   begin: Alignment.topCenter,
+                      //   end: Alignment.bottomCenter,
+                      //   colors: [
+                      //     Colors.black.withOpacity(0),
+                      //     Colors.black.withOpacity(.1),
+                      //   ],
+                      // )),
                       // ),
                       Container(
                         margin: const EdgeInsets.only(top: 0),
@@ -242,8 +239,8 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                                               : false,
                                           widget: Container(
                                             margin: const EdgeInsets.only(
-                                                bottom: 10, top: 10),
-                                            child: TripUser(
+                                                bottom: 10, top: 5),
+                                            child: tripUser(
                                                 trip.pickup_locations![i]),
                                           ),
                                           finishCallback: finish,
@@ -265,7 +262,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                                 //             margin: const EdgeInsets.only(
                                 //                 bottom: 10, top: 10),
                                 //             child:
-                                //                 TripUser(trip.destinations![i]),
+                                //                 tripUser(trip.destinations![i]),
                                 //           ),
                                 //           finishCallback: finishDestination,
                                 //         )
@@ -298,9 +295,8 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: CircleAvatar(
                 radius: 50,
-                foregroundImage: NetworkImage(
-                    httpService.getAvatarUrl(currentPicture)))
-                ),
+                foregroundImage:
+                    NetworkImage(httpService.getAvatarUrl(currentPicture)))),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -370,7 +366,8 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
 
   bool showMap = true;
 
-  Widget TripUser(TripPickupLocation pickupLocation) {
+  Widget tripUser(TripPickupLocation pickupLocation) {
+    print('[TripPage.tripUser.pickupLocation] ${pickupLocation.toString()}');
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -379,14 +376,14 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
         });
 
         setState(() {
-            customRoute = pickupLocation;
-            hasCustomRoute = true;
-            // mapOrigin = LatLng(
-            //     trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
-            mapDestination =
-                LatLng(pickupLocation.latitude!, pickupLocation.longitude!);
-            showMap = true;
-          }); 
+          customRoute = pickupLocation;
+          hasCustomRoute = true;
+          // mapOrigin = LatLng(
+          //     trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
+          mapDestination =
+              LatLng(pickupLocation.latitude!, pickupLocation.longitude!);
+          showMap = true;
+        });
       },
       child: Row(children: [
         // CircleAvatar(
@@ -399,28 +396,30 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
         ),
         SizedBox(
           width: 20,
-          height: 2,
+          height: 5,
           child: Container(
               color: pickupLocation.status != 'waiting'
                   ? Colors.green
                   : Colors.red),
         ),
         const SizedBox(
-          width: 10,
+          width: 15,
         ),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-                    // '${pickupLocation.student!.student_name}',
-                    '${pickupLocation.location?.location_name}',
-                    style: activeTheme.h5,
-                  ),
+              // '${pickupLocation.student!.student_name}',
+              '${pickupLocation.location?.location_name}',
+              style: activeTheme.h5,
+            ),
             Text(
-                    // '${pickupLocation.student!.student_name}',
-                    '${pickupLocation.location?.address}',
-                    style: activeTheme.h6,
-                  ),
+              // '${pickupLocation.student!.student_name}',
+              '${pickupLocation.location?.address}',
+              style: TextStyle(
+                  fontSize: activeTheme.smallText.fontSize,
+                  color: activeTheme.smallText.color),
+            ),
             // pickupLocation.student == null
             //     ? const Text("")
             //     : Text(
@@ -431,15 +430,15 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
             const SizedBox(
               height: 5,
             ),
-            pickupLocation.status == 'waiting'
-                ? Text(lang.translate('Waiting'),
-                    style: const TextStyle(color: Colors.red))
-                : Text(
-                    '${pickupLocation.status}',
-                    style: TextStyle(
-                        fontSize: activeTheme.smallText.fontSize,
-                        color: activeTheme.smallText.color),
-                  )
+            // pickupLocation.status == 'waiting'
+            //     ? Text(lang.translate('Waiting'),
+            //         style: const TextStyle(color: Colors.red))
+            //     : Text(
+            //         '${pickupLocation.status}',
+            //         style: TextStyle(
+            //             fontSize: activeTheme.smallText.fontSize,
+            //             color: activeTheme.smallText.color),
+            //       )
           ],
         )
       ]),
@@ -453,8 +452,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
               trip.pickup_locations![0].longitude!),
           destination: mapDestination!,
           pickup_locations: trip.pickup_locations,
-          destinations: trip.destinations
-          );
+          destinations: trip.destinations);
     }
 
     if (hasCustomRoute) {
@@ -464,8 +462,8 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
           pickup_locations: trip.pickup_locations);
     }
 
-    if(mapOrigin == null){
-        return null;
+    if (mapOrigin == null) {
+      return null;
     }
     return MapWithRoute(
         origin: mapOrigin!,
@@ -480,7 +478,6 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
       setState(() {
         showTripReportModal = true;
       });
-
     } catch (e) {
       print(e.toString());
       var msg = e.toString().split('/');
@@ -489,9 +486,9 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
       });
       showSuccessDialog(context, "${lang.translate('Error')} (${msg[1]})",
           lang.translate(msg[0]), () {
-          Get.back();
+        Get.back();
       });
-    }    
+    }
   }
 
   finish(TripPickupLocation pickupLocation) async {
