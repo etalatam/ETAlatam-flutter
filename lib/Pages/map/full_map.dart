@@ -32,9 +32,10 @@ class FullMapState extends State<FullMap> {
     // this.mapboxMap?.on UserLocationUpdated
 
     this.mapboxMap?.setCamera(CameraOptions(
+        center: Point(coordinates: Position(-79.5197300, 8.9936000)),
         padding: MbxEdgeInsets(top: 1, left: 2, bottom: 3, right: 4),
         anchor: ScreenCoordinate(x: 1, y: 1),
-        zoom: 14));
+        zoom: 5));
     // MbxEdgeInsets(top: 1, left: 2, bottom: 3, right: 4),
     this.mapboxMap?.scaleBar.updateSettings(ScaleBarSettings(
         enabled: true, position: OrnamentPosition.BOTTOM_LEFT));
