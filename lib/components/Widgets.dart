@@ -664,11 +664,21 @@ mixin MediansWidgets {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color.fromARGB(255, 223, 231, 238),
+                        Color.fromARGB(255, 246, 237, 248)
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
                   width: double.infinity,
-                  // height: 235,
+                  // height: 240,
                   padding: const EdgeInsets.all(20),
                   clipBehavior: Clip.antiAlias,
-                  decoration: const BoxDecoration(),
+                  //decoration: const BoxDecoration(),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -714,63 +724,60 @@ mixin MediansWidgets {
                     ],
                   ),
                 ),
-                SizedBox(
-                  width: 20,
-                ),
-                Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Expanded(
-                          child: Container(
-                              constraints:
-                                  BoxConstraints(minWidth: 100, maxWidth: 150),
-                              width: 200,
-                              height: 51,
-                              clipBehavior: Clip.antiAlias,
-                              decoration: BoxDecoration(),
-                              child: Center())),
-                      // Container(
-                      //     padding:
-                      //         EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      //     decoration: BoxDecoration(
-                      //         color: activeTheme.buttonBG,
-                      //         border: Border.all(
-                      //             width: 1, color: activeTheme.border_color),
-                      //         borderRadius: BorderRadius.circular(10)),
-                      //     child: Row(
-                      //       children: [
-                      //         Icon(
-                      //           Icons.route_rounded,
-                      //           color: activeTheme.buttonColor,
-                      //         ),
-                      //         SizedBox(
-                      //           width: 10,
-                      //         ),
-                      //         Text(
-                      //           '${tripInfo.done_locations_count}',
-                      //           style: TextStyle(color: Colors.white),
-                      //         ),
-                      //         SizedBox(
-                      //           width: 10,
-                      //         ),
-                      //         Text(
-                      //           "${lang.translate('Locations')}",
-                      //           style: TextStyle(
-                      //               fontSize: activeTheme.h6.fontSize,
-                      //               fontFamily: activeTheme.h6.fontFamily,
-                      //               color: activeTheme.buttonColor),
-                      //         ),
-                      //       ],
-                      //     )),
-                      SizedBox(
-                        width: 10,
-                      ),
-                    ]),
+                // SizedBox(
+                //   width: 20,
+                // ),
+                // Row(
+                //     mainAxisSize: MainAxisSize.max,
+                //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //     crossAxisAlignment: CrossAxisAlignment.center,
+                //     children: [
+                //       SizedBox(
+                //         width: 10,
+                //       ),
+                //       Expanded(
+                //           child: Container(
+                //               constraints:
+                //                   BoxConstraints(minWidth: 100, maxWidth: 150),
+                //               width: 200,
+                //               height: 51,
+                //               clipBehavior: Clip.antiAlias,
+                //               decoration: BoxDecoration(),
+                //               child: Center())),
+                // Container(
+                //     padding:
+                //         EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                //     decoration: BoxDecoration(
+                //         color: activeTheme.buttonBG,
+                //         border: Border.all(
+                //             width: 1, color: activeTheme.border_color),
+                //         borderRadius: BorderRadius.circular(10)),
+                //     child: Row(
+                //       children: [
+                //         Icon(
+                //           Icons.route_rounded,
+                //           color: activeTheme.buttonColor,
+                //         ),
+                //         SizedBox(
+                //           width: 10,
+                //         ),
+                //         Text(
+                //           '${tripInfo.done_locations_count}',
+                //           style: TextStyle(color: Colors.white),
+                //         ),
+                //         SizedBox(
+                //           width: 10,
+                //         ),
+                //         Text(
+                //           "${lang.translate('Locations')}",
+                //           style: TextStyle(
+                //               fontSize: activeTheme.h6.fontSize,
+                //               fontFamily: activeTheme.h6.fontFamily,
+                //               color: activeTheme.buttonColor),
+                //         ),
+                //       ],
+                //     )),
+                // ]),
               ],
             ),
             // Container(

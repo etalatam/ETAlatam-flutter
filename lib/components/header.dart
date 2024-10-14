@@ -52,9 +52,9 @@ class Header extends StatelessWidget {
             ),
             const SizedBox(height: 80),
             const Image(
-                image: AssetImage("assets/logo.png"),
-                width: 120,
-                height: 120,
+              image: AssetImage("assets/logo.png"),
+              width: 120,
+              height: 120,
             )
             // TextButton(
             //   style: TextButton.styleFrom(
@@ -76,7 +76,6 @@ class Header extends StatelessWidget {
 
   // Light Header
   Widget header_2() {
-
     darkMode = storage.getItem('darkmode') ?? false;
 
     return Center(
@@ -84,8 +83,16 @@ class Header extends StatelessWidget {
         child: Container(
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: darkMode ? activeTheme.main_bg : activeTheme.main_color,
+            // color: darkMode ? activeTheme.main_bg : activeTheme.main_color,
             borderRadius: BorderRadius.circular(15),
+            gradient: LinearGradient(
+              colors: [
+                darkMode ? activeTheme.main_bg : activeTheme.main_color,
+                Color.fromARGB(255, 169, 199, 226)
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             boxShadow: [
               BoxShadow(
                 color: shadowColor,
@@ -115,7 +122,7 @@ class Header extends StatelessWidget {
                   style: activeTheme.h4,
                 ),
               ),
-              UserAvatar()              // TextButton(
+              UserAvatar() // TextButton(
               //   onPressed: () {
               //     Get.to(NotificationsPage());
               //   },

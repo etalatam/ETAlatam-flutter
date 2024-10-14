@@ -47,7 +47,16 @@ class HomeRouteBlock extends StatelessWidget {
                 // height: 235,
                 padding: const EdgeInsets.all(20),
                 clipBehavior: Clip.antiAlias,
-                decoration: const BoxDecoration(),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color.fromARGB(255, 223, 231, 238),
+                      Color.fromARGB(255, 246, 237, 248)
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -188,7 +197,7 @@ class HomeRouteBlock extends StatelessWidget {
                                     ? const Center()
                                     : Positioned(
                                         right: 0,
-                                        top: 15,
+                                        top: 10,
                                         child: GestureDetector(
                                             // onTap: (() => {
                                             //   //TODO
@@ -226,9 +235,10 @@ class HomeRouteBlock extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
-                                  color: activeTheme.buttonBG,
-                                  border: Border.all(
-                                      width: 1, color: activeTheme.main_color),
+                                  // color: activeTheme.buttonBG,
+                                  color: Colors.green,
+                                  border:
+                                      Border.all(width: 1, color: Colors.green),
                                   borderRadius: BorderRadius.circular(10)),
                               child: Row(
                                 children: [

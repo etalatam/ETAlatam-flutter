@@ -1,3 +1,5 @@
+import 'package:MediansSchoolDriver/shared/location/location_service.dart';
+import 'package:MediansSchoolDriver/shared/location/location_services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +15,7 @@ import 'package:MediansSchoolDriver/components/CustomRouteMap.dart';
 import 'package:MediansSchoolDriver/components/Slideable.dart';
 import 'package:MediansSchoolDriver/components/StaticMap.dart';
 import 'package:localstorage/localstorage.dart';
+import 'package:provider/provider.dart';
 
 import 'map/full_map.dart';
 
@@ -184,7 +187,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                                             child: ButtonTextIcon(
                                                 lang.translate('End trip'),
                                                 Icon(
-                                                  Icons.save,
+                                                  Icons.route,
                                                   color:
                                                       activeTheme.buttonColor,
                                                 )))),
@@ -538,6 +541,15 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
   @override
   void initState() {
     super.initState();
+
+    // WidgetsBinding.instance.endOfFrame.then((_) {
+    //   final locationService =
+    //       Provider.of<ETALocationService>(context, listen: false);
+
+    //   if (mounted) {
+    //     locationService.askPermission();
+    //   }
+    // });
 
     setState(() {
       trip = widget.trip!;

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:location/location.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 class FullMap extends StatefulWidget {

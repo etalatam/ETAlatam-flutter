@@ -19,7 +19,8 @@ class ActiveTrip extends StatelessWidget {
           margin: const EdgeInsets.fromLTRB(25, 0, 25, 20),
           clipBehavior: Clip.antiAlias,
           decoration: ShapeDecoration(
-            color: activeTheme.main_color,
+            // color: activeTheme.main_color,
+            color: Color.fromARGB(255, 69, 148, 82),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30),
             ),
@@ -39,10 +40,11 @@ class ActiveTrip extends StatelessWidget {
             children: [
               Container(
                 decoration: ShapeDecoration(
-                    color: activeTheme.main_color,
+                    //color: activeTheme.main_color,
+                    // color: Colors.amber,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    )),
+                  borderRadius: BorderRadius.circular(12),
+                )),
                 width: 80,
                 alignment: Alignment.center,
                 child: const Image(

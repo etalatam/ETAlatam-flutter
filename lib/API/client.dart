@@ -744,21 +744,18 @@ class HttpService {
     return json.decode(response.body);
   }
 
-  Future<dynamic> sendTracking(
-      {required BackgroundPosition position, int driver = 18}) async {
-    debugPrint('sendTracking');
-    final driverID = await storage.getItem('driver_id');
+  Future<dynamic> sendTracking({required position, int driver = 18}) async {
+    print('sendTracking.position ${position}');
+    final userId = await storage.getItem('id_usu');
     final data = {
-      'driver_id': driverID ?? driver,
+      'user_id': userId,
       'latitude': position.latitude,
       'longitude': position.longitude,
       'speed': position.speed,
       'heading': position.heading,
       'time': position.time,
       'accuracy': position.accuracy,
-      'altitude': position.altitude,
-      'speedAccuracy': position.speedAccuracy,
-      'isMocked': position.isMocked
+      'altitude': position.altitude
     };
     final jsonData = jsonEncode(data);
     try {

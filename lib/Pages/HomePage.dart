@@ -19,6 +19,8 @@ import 'package:MediansSchoolDriver/components/header.dart';
 import 'package:MediansSchoolDriver/components/HomeRouteBlock.dart';
 import 'package:MediansSchoolDriver/Models/EventModel.dart';
 
+import '../shared/location/provider/location_notifier.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -60,7 +62,7 @@ class _HomePageState extends State<HomePage>
                       children: [
                         Container(
                             color: activeTheme.main_bg,
-                            height: MediaQuery.of(context).size.height ,
+                            height: MediaQuery.of(context).size.height,
                             child: SingleChildScrollView(
                               padding: const EdgeInsets.only(bottom: 100),
                               physics: const AlwaysScrollableScrollPhysics(),
@@ -131,7 +133,7 @@ class _HomePageState extends State<HomePage>
                                     oldTripsList.isEmpty
                                         ? const Center()
                                         : SizedBox(
-                                            height: 300,
+                                            height: 238,
                                             child: ListView.builder(
                                                 scrollDirection:
                                                     Axis.horizontal,
@@ -232,6 +234,8 @@ class _HomePageState extends State<HomePage>
       });
     }
   }
+
+  void tracking() async {}
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
