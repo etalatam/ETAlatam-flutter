@@ -734,39 +734,39 @@ mixin MediansWidgets {
                               clipBehavior: Clip.antiAlias,
                               decoration: BoxDecoration(),
                               child: Center())),
-                      Container(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                              color: activeTheme.buttonBG,
-                              border: Border.all(
-                                  width: 1, color: activeTheme.border_color),
-                              borderRadius: BorderRadius.circular(10)),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.route_rounded,
-                                color: activeTheme.buttonColor,
-                              ),
-                              SizedBox(
-                                width: 10,
-                              ),
-                              Text(
-                                '${tripInfo.done_locations_count}',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              SizedBox(
-                                width: 10,
-                              ),
-                              Text(
-                                "${lang.translate('Locations')}",
-                                style: TextStyle(
-                                    fontSize: activeTheme.h6.fontSize,
-                                    fontFamily: activeTheme.h6.fontFamily,
-                                    color: activeTheme.buttonColor),
-                              ),
-                            ],
-                          )),
+                      // Container(
+                      //     padding:
+                      //         EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      //     decoration: BoxDecoration(
+                      //         color: activeTheme.buttonBG,
+                      //         border: Border.all(
+                      //             width: 1, color: activeTheme.border_color),
+                      //         borderRadius: BorderRadius.circular(10)),
+                      //     child: Row(
+                      //       children: [
+                      //         Icon(
+                      //           Icons.route_rounded,
+                      //           color: activeTheme.buttonColor,
+                      //         ),
+                      //         SizedBox(
+                      //           width: 10,
+                      //         ),
+                      //         Text(
+                      //           '${tripInfo.done_locations_count}',
+                      //           style: TextStyle(color: Colors.white),
+                      //         ),
+                      //         SizedBox(
+                      //           width: 10,
+                      //         ),
+                      //         Text(
+                      //           "${lang.translate('Locations')}",
+                      //           style: TextStyle(
+                      //               fontSize: activeTheme.h6.fontSize,
+                      //               fontFamily: activeTheme.h6.fontFamily,
+                      //               color: activeTheme.buttonColor),
+                      //         ),
+                      //       ],
+                      //     )),
                       SizedBox(
                         width: 10,
                       ),
@@ -916,7 +916,7 @@ mixin MediansWidgets {
                     style: activeTheme.smallText)),
             Text(trip.done_locations_count.toString(), style: activeTheme.h6),
             // Text(trip.pickup_locations!.length.toString(),
-            //     style: activeTheme.h6), //TODO ubicacion de paradas
+            //     style: activeTheme.h6),
           ],
         )
       ],

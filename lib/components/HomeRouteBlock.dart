@@ -139,45 +139,45 @@ class HomeRouteBlock extends StatelessWidget {
                                       left: (i * (1 - .4) * 60).toDouble(),
                                       top: 0,
                                       child: GestureDetector(
-                                        onTap:  (() => {
-                                                  //TODO
-                                                  openNewPage(
-                                                      context,
-                                                      PickupsPage(
-                                                        pickup_locations: route
-                                                            .pickup_locations,
-                                                      ))
-                                                }),
+                                        onTap: (() => {
+                                              //TODO
+                                              openNewPage(
+                                                  context,
+                                                  PickupsPage(
+                                                    pickup_locations:
+                                                        route.pickup_locations,
+                                                  ))
+                                            }),
                                         child: Container(
                                           width: 51.03,
                                           height: 51.03,
                                           decoration: ShapeDecoration(
                                             image: DecorationImage(
-                                              fit: BoxFit.fill,
-                                              image: 
-                                              // route.pickup_locations[i]
-                                              //                 .picture !=
-                                              //             null &&
-                                              //         route.pickup_locations[i]
-                                              //             .picture!.isNotEmpty
-                                              //     ? 
-                                                  NetworkImage((route
-                                                              .pickup_locations[
-                                                                  i]
-                                                              .picture !=
-                                                          null)
-                                                      ? ('${httpService.getImageUrl()}${route.pickup_locations[i].picture}')
-                                                      : httpService.croppedImage(
-                                                          "/uploads/images/60x60.png",
-                                                          200,
-                                                          200)) as ImageProvider
-                                                  // : AssetImage(
-                                                  //     'assets/logo.png'),
-                                            ),
+                                                fit: BoxFit.fill,
+                                                image:
+                                                    // route.pickup_locations[i]
+                                                    //                 .picture !=
+                                                    //             null &&
+                                                    //         route.pickup_locations[i]
+                                                    //             .picture!.isNotEmpty
+                                                    //     ?
+                                                    NetworkImage((route
+                                                                .pickup_locations[
+                                                                    i]
+                                                                .picture !=
+                                                            null)
+                                                        ? ('${httpService.getImageUrl()}${route.pickup_locations[i].picture}')
+                                                        : httpService.croppedImage(
+                                                            "/uploads/images/60x60.png",
+                                                            200,
+                                                            200)) as ImageProvider
+                                                // : AssetImage(
+                                                //     'assets/logo.png'),
+                                                ),
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(50),
-                                              side:  BorderSide(
+                                              side: BorderSide(
                                                   width: 4,
                                                   color: Colors.white),
                                             ),
