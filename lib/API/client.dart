@@ -76,7 +76,8 @@ class HttpService {
 
   /// Load Trips
   Future<List<TripModel>> getTrips(int lastId) async {
-    http.Response res = await getQuery("/rpc/driver_trips?select=*&limit=10");
+    http.Response res = await getQuery(
+        "/rpc/driver_trips?select=*&running=eq.false&limit=10&order=start_ts.desc");
 
     print("res.statusCode: ${res.statusCode}");
     print("res.body: ${res.body}");
@@ -123,14 +124,16 @@ class HttpService {
 
   /// Load Route
   Future<RouteModel> getRoute(routeId) async {
-        http.Response res = await getQuery("/rpc/driver_routes?select=*&limit=1&route_id=eq.$routeId");
+    http.Response res = await getQuery(
+        "/rpc/driver_routes?select=*&limit=1&route_id=eq.$routeId");
 
     print("res.statusCode: ${res.statusCode}");
     print("res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
-      if (body == null) return RouteModel(route_id: 0, route_name: '', pickup_locations: []);
+      if (body == null)
+        return RouteModel(route_id: 0, route_name: '', pickup_locations: []);
       final RouteModel trips = RouteModel.fromJson(body[0]);
       return trips;
     }
@@ -154,7 +157,7 @@ class HttpService {
 
     print("res.statusCode: ${res.statusCode}");
     print("res.body: ${res.body}");
-    
+
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
       final driverModel = DriverModel.fromJson(body);
@@ -208,7 +211,7 @@ class HttpService {
     if (res.statusCode == 200) {
       try {
         List<dynamic> body = jsonDecode(res.body);
-        return body.map((dynamic item) => RouteModel.fromJson(item)).toList();        
+        return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
         // await Future.wait(body
         //       .map((dynamic item) async => RouteModel.fromJson(item))
         //       .toList());
@@ -216,11 +219,12 @@ class HttpService {
         print("getRoutes error: ${e.toString()}");
         return [];
       }
-    } 
+    }
 
     return [];
+  }
 
-  }/// 
+  ///
   // Future<List<RouteModel>> getRoutes() async {
   //   http.Response res = await getQuery(
   //     "/rpc/driver_routes?limit=10",
@@ -273,7 +277,7 @@ class HttpService {
     http.Response res = await getQuery(
       "/rpc/route_pickup_points",
     );
-    
+
     print("res.statusCode: ${res.statusCode}");
     print("res.body: ${res.body}");
 
@@ -292,7 +296,8 @@ class HttpService {
 
   /// Load Trip
   Future<TripModel> getTrip(id) async {
-    http.Response res = await getQuery("/rpc/driver_trips?select=*&limit=1&id_trip=eq.$id");
+    http.Response res =
+        await getQuery("/rpc/driver_trips?select=*&limit=1&id_trip=eq.$id");
 
     print("res.statusCode: ${res.statusCode}");
     print("res.body: ${res.body}");
@@ -308,7 +313,8 @@ class HttpService {
 
   /// Load Tripd
   Future<TripModel> getActiveTrip() async {
-    http.Response res = await getQuery("/rpc/driver_trips?select=*&limit=1&running=eq.true");
+    http.Response res =
+        await getQuery("/rpc/driver_trips?select=*&limit=1&running=eq.true");
 
     print("res.statusCode: ${res.statusCode}");
     print("res.body: ${res.body}");
@@ -317,7 +323,7 @@ class HttpService {
       try {
         var body = jsonDecode(res.body);
         if (body == null) return TripModel(trip_id: 0);
-        final TripModel trips =  TripModel.fromJson(body[0]);
+        final TripModel trips = TripModel.fromJson(body[0]);
         return trips;
       } catch (e) {
         print(e.toString());
@@ -328,7 +334,6 @@ class HttpService {
 
   /// Submit form to update data through API
   Future<TripModel> startTrip(int routeId) async {
-
     Map data = {
       "_route_id": "$routeId",
       // "driver_id": driverId,
