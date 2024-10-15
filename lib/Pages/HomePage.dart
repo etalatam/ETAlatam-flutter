@@ -91,8 +91,39 @@ class _HomePageState extends State<HomePage>
 
                                     /// Has Active Trip
                                     !hasActiveTrip
-                                        ? const Center()
-                                        : ActiveTrip(openTrip, activeTrip),
+                                        ? 
+                                        Container(
+                                          width: double.infinity,
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                          margin: const EdgeInsets.fromLTRB(25, 0, 25, 20),
+                                          clipBehavior: Clip.antiAlias,
+                                          decoration: ShapeDecoration(
+                                            color: Color.fromARGB(255, 228, 201, 119),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(30),
+                                            ),
+                                            shadows: [
+                                              BoxShadow(
+                                                color: activeTheme.main_color.withOpacity(.3),
+                                                blurRadius: 10,
+                                                offset: const Offset(0, 1),
+                                                spreadRadius: 0,
+                                              )
+                                            ],
+                                            
+                                          ),
+                                          child: Text(
+                                            lang.translate("Does not have active trips"),
+                                            style: TextStyle(
+                                              color: Color.fromARGB(255, 112, 88, 16),
+                                              fontSize: activeTheme.h5.fontSize,
+                                              fontFamily: activeTheme.h6.fontFamily,
+                                              fontWeight: activeTheme.h6.fontWeight,
+                                            )
+                                            )
+                                        )
+                                        : 
+                                    ActiveTrip(openTrip, activeTrip),
 
                                     MediansWidgets.svgTitle(
                                         "assets/svg/fire.svg",

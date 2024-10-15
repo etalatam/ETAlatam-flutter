@@ -112,6 +112,7 @@ class LocationService extends ChangeNotifier {
   }
 
   Future tracking(dynamic locationInfo) async {
+    print('[ETALocationService.tracking]');
     try {
       final jsonData = {
         'latitude': locationInfo?['latitude'],
