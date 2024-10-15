@@ -66,7 +66,7 @@ class _HomePageState extends State<HomePage>
                             color: activeTheme.main_bg,
                             height: MediaQuery.of(context).size.height,
                             child: SingleChildScrollView(
-                              padding: const EdgeInsets.only(bottom: 100),
+                              padding: const EdgeInsets.only(bottom: 40),
                               physics: const AlwaysScrollableScrollPhysics(),
                               child: Stack(children: <Widget>[
                                 Container(
@@ -95,7 +95,7 @@ class _HomePageState extends State<HomePage>
                                         Container(
                                           width: double.infinity,
                                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                          margin: const EdgeInsets.fromLTRB(25, 0, 25, 20),
+                                          margin: const EdgeInsets.fromLTRB(25, 0, 25, 10),
                                           clipBehavior: Clip.antiAlias,
                                           decoration: ShapeDecoration(
                                             color: Color.fromARGB(255, 228, 201, 119),
@@ -133,7 +133,7 @@ class _HomePageState extends State<HomePage>
 
                                     /// Available Routes
                                     SizedBox(
-                                        height: 300,
+                                        height: 260,
                                         child: ListView.builder(
                                             scrollDirection: Axis.horizontal,
                                             itemCount: routesList
