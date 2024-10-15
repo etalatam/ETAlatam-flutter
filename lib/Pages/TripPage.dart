@@ -1,5 +1,5 @@
-
 import 'package:MediansSchoolDriver/Pages/providers/location_service_provider.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
@@ -177,7 +177,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                                                 .toString()
                                                 .toLowerCase() ==
                                             'completed')
-                                    ? const Center() 
+                                    ? const Center()
                                     : GestureDetector(
                                         onTap: (() {
                                           endTrip();
@@ -189,7 +189,8 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                                                   Icons.route,
                                                   color:
                                                       activeTheme.buttonColor,
-                                                ), Colors.red))),
+                                                ),
+                                                Colors.red))),
                                 Container(
                                   padding: const EdgeInsets.only(top: 20),
                                   child: Row(
@@ -226,29 +227,30 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                                         //     )),
                                       ]),
                                 ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
+
                                 for (var i = 0;
                                     i < trip.pickup_locations!.length;
                                     i++)
                                   activeTab == 'pickup'
-                                      ? Slideable(
-                                          model: trip.pickup_locations![i],
-                                          hasLeft: true,
-                                          hasRight: trip.pickup_locations![i]
-                                                      .status ==
-                                                  'waiting'
-                                              ? true
-                                              : false,
-                                          widget: Container(
-                                            margin: const EdgeInsets.only(
-                                                bottom: 10, top: 5),
-                                            child: tripUser(
-                                                trip.pickup_locations![i]),
-                                          ),
-                                          finishCallback: finish,
-                                        )
+                                      ? Row(children: [
+                                          tripUser(trip.pickup_locations![i]),
+                                        ])
+                                      // Slideable(
+                                      //     model: trip.pickup_locations![i],
+                                      //     hasLeft: true,
+                                      //     hasRight: trip.pickup_locations![i]
+                                      //                 .status ==
+                                      //             'waiting'
+                                      //         ? true
+                                      //         : false,
+                                      //     widget: Container(
+                                      //       margin: const EdgeInsets.only(
+                                      //           bottom: 10, top: 5),
+                                      //       child: tripUser(
+                                      //           trip.pickup_locations![i]),
+                                      //     ),
+                                      //     finishCallback: finish,
+                                      //   )
                                       : const Center(),
                                 // for (var i = 0;
                                 //     i < trip.destinations!.length;
@@ -398,17 +400,29 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
         const SizedBox(
           width: 10,
         ),
-        SizedBox(
-          width: 20,
-          height: 5,
-          child: Container(
+        Column(
+          children: [
+            SizedBox(
+              width: 20,
+              height: 10,
+              child: Container(
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: pickupLocation.status != 'waiting'
+                        ? Colors.green
+                        : Colors.grey),
+              ),
+            ),
+            Container(
+              width: 3.0,
+              height: 120.0,
               color: pickupLocation.status != 'waiting'
                   ? Colors.green
-                  : Colors.red),
+                  : Colors.grey,
+            ),
+          ],
         ),
-        const SizedBox(
-          width: 15,
-        ),
+
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -417,13 +431,17 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
               '${pickupLocation.location?.location_name}',
               style: activeTheme.h5,
             ),
-            Text(
-              // '${pickupLocation.student!.student_name}',
-              '${pickupLocation.location?.address}',
-              style: TextStyle(
-                  fontSize: activeTheme.smallText.fontSize,
-                  color: activeTheme.smallText.color),
-            ),
+            SizedBox(
+                width: 300,
+                child: Text(
+                  // '${pickupLocation.student!.student_name}',
+                  '${pickupLocation.location?.address}',
+                  softWrap: true,
+                  maxLines: 2,
+                  style: TextStyle(
+                      fontSize: activeTheme.smallText.fontSize,
+                      color: activeTheme.smallText.color),
+                )),
             // pickupLocation.student == null
             //     ? const Text("")
             //     : Text(

@@ -175,7 +175,7 @@ class TripPickupLocation {
       trip_id: json['trip_id'] as int?,
       model_id: json['model_id'] as int?,
       pickup_id: json['pickup_id'] as int?,
-      status: json['status'] as String?,
+      status: json['status'] ?? 'waiting',
       boarding_time: json['boarding_time'] as String?,
       dropoff_time: json['dropoff_time'] as String?,
       latitude: double.parse(json['pickup_point_lat'].toString()),
