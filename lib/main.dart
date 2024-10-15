@@ -23,9 +23,8 @@ void main() async {
 ThemeData? themeData;
 
 class MyApp extends StatelessWidget {
-  final LocaleController localeController = Get.find<LocaleController>();
+  final LocaleController localeController = Get.find<LocaleController>();  
   final PreferencesSetting preferences = Get.find<PreferencesSetting>();
-
   final LocalStorage storage = LocalStorage('tokens.json');
 
   MyApp({super.key});

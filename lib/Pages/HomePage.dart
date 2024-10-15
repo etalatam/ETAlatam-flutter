@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:MediansSchoolDriver/Models/RouteModel.dart';
 import 'package:MediansSchoolDriver/Pages/LoginPage.dart';
-// import 'package:MediansSchoolDriver/Pages/ProfilePage.dart';
 import 'package:MediansSchoolDriver/Pages/TripPage.dart';
+import 'package:MediansSchoolDriver/Pages/providers/location_service_provider.dart';
 import 'package:MediansSchoolDriver/components/ActiveTrip.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -15,11 +15,9 @@ import 'package:MediansSchoolDriver/components/loader.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 import 'package:MediansSchoolDriver/components/Widgets.dart';
 import 'package:MediansSchoolDriver/components/header.dart';
-// import 'package:MediansSchoolDriver/components/bottom_menu.dart';
 import 'package:MediansSchoolDriver/components/HomeRouteBlock.dart';
 import 'package:MediansSchoolDriver/Models/EventModel.dart';
 
-import '../shared/location/provider/location_notifier.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -30,6 +28,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with MediansWidgets, MediansTheme, WidgetsBindingObserver {
+  
   final widgets = MediansWidgets;
 
   late GoogleMapController mapController;
@@ -37,6 +36,7 @@ class _HomePageState extends State<HomePage>
   bool hasActiveTrip = false;
 
   DriverModel driverModel = DriverModel(driver_id: 0, first_name: '');
+  
   TripModel? activeTrip;
 
   Location location = Location();
@@ -50,6 +50,8 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     // activeTheme = storage.getItem('darkmode') == true ? DarkTheme() : LightTheme();
+    // locationService = Provider.of<ETALocationService>(context, listen: false);
+    // locationService?.init();    
     return showLoader
         ? Loader()
         : Material(
@@ -221,6 +223,7 @@ class _HomePageState extends State<HomePage>
         );
 
         loadResources();
+        locationServiceProvider.startLocationService();
       }
     } catch (e) {
       print(e.toString());
@@ -254,7 +257,7 @@ class _HomePageState extends State<HomePage>
       showLoader = true;
     });
 
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 1));
     setState(() {
       loadResources();
     });
@@ -322,5 +325,6 @@ class _HomePageState extends State<HomePage>
   void initState() {
     super.initState();
     loadResources();
+    locationServiceProvider.init();
   }
 }

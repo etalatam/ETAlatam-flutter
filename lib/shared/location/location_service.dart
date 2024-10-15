@@ -11,7 +11,7 @@ import 'package:location/location.dart' hide LocationAccuracy;
 import 'location_callback_handler.dart';
 import 'location_service_repository.dart';
 
-class ETALocationService extends ChangeNotifier {
+class LocationService extends ChangeNotifier {
   String? domain;
 
   Map<String, dynamic>? _locationData;
@@ -24,7 +24,12 @@ class ETALocationService extends ChangeNotifier {
 
   ReceivePort port = ReceivePort();
 
-  ETALocationService() {
+  static final LocationService _instance = LocationService._internal();
+  factory LocationService() => _instance;
+  LocationService._internal();
+
+  init() {
+    print('[ETALocationService.init]');
     askPermission().then((value) {
       if (value) {
         if (IsolateNameServer.lookupPortByName(
@@ -48,11 +53,12 @@ class ETALocationService extends ChangeNotifier {
         });
 
         BackgroundLocator.initialize();
-        _startLocator().then((value) => null);
+        // _startLocator().then((value) => null);
       }
     });
   }
-  Future<void> _startLocator() async {
+  Future<void> startLocationService() async {
+    print('[ETALocationService.startLocationService]');
     var data = <String, dynamic>{'countInit': 1};
     return await BackgroundLocator.registerLocationUpdate(
         LocationCallbackHandler.callback,
@@ -82,6 +88,7 @@ class ETALocationService extends ChangeNotifier {
   }
 
   Future<bool> askPermission() async {
+    print('[ETALocationService.askPermission]');
     bool serviceEnabled;
     PermissionStatus permissionGranted;
 
@@ -119,5 +126,10 @@ class ETALocationService extends ChangeNotifier {
       print('tracking: $err');
     }
     return null;
+  }
+
+  void stopLocationService() {
+    IsolateNameServer.removePortNameMapping(LocationServiceRepository.isolateName);
+    BackgroundLocator.unRegisterLocationUpdate();
   }
 }

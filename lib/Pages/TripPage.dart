@@ -1,5 +1,5 @@
-import 'package:MediansSchoolDriver/shared/location/location_service.dart';
-import 'package:MediansSchoolDriver/shared/location/location_services.dart';
+
+import 'package:MediansSchoolDriver/Pages/providers/location_service_provider.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +15,6 @@ import 'package:MediansSchoolDriver/components/CustomRouteMap.dart';
 import 'package:MediansSchoolDriver/components/Slideable.dart';
 import 'package:MediansSchoolDriver/components/StaticMap.dart';
 import 'package:localstorage/localstorage.dart';
-import 'package:provider/provider.dart';
 
 import 'map/full_map.dart';
 
@@ -178,7 +177,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                                                 .toString()
                                                 .toLowerCase() ==
                                             'completed')
-                                    ? const Center()
+                                    ? const Center() 
                                     : GestureDetector(
                                         onTap: (() {
                                           endTrip();
@@ -190,7 +189,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                                                   Icons.route,
                                                   color:
                                                       activeTheme.buttonColor,
-                                                )))),
+                                                ), Colors.red))),
                                 Container(
                                   padding: const EdgeInsets.only(top: 20),
                                   child: Row(
@@ -210,7 +209,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                                                   ? activeTheme.h5
                                                   : activeTheme.h6,
                                             )),
-                                        const SizedBox(width: 50),
+                                        // const SizedBox(width: 50),
                                         // GestureDetector(
                                         //     onTap: () {
                                         //       setState(() {
@@ -478,6 +477,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
   endTrip() async {
     try {
       await httpService.endTrip(widget.trip!.trip_id.toString());
+      locationServiceProvider.stopLocationService();
       setState(() {
         showTripReportModal = true;
       });

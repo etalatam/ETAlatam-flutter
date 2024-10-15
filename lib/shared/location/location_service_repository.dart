@@ -19,7 +19,7 @@ class LocationServiceRepository {
   int _count = -1;
 
   Future<void> init(Map<dynamic, dynamic> params) async {
-    //TODO change logs
+    
     print('***********Init callback handler');
     if (params.containsKey('countInit')) {
       dynamic tmpCount = params['countInit'];
@@ -36,7 +36,7 @@ class LocationServiceRepository {
       _count = 0;
     }
     print('$_count');
-    await setLogLabel('start');
+    // await setLogLabel('start');
     final send = IsolateNameServer.lookupPortByName(isolateName);
     send?.send(null);
   }
@@ -44,30 +44,30 @@ class LocationServiceRepository {
   Future<void> dispose() async {
     print('***********Dispose callback handler');
     print('$_count');
-    await setLogLabel('end');
+    // await setLogLabel('end');
     final send = IsolateNameServer.lookupPortByName(isolateName);
     send?.send(null);
   }
 
   Future<void> callback(LocationDto locationDto) async {
     print('$_count location in dart: ${locationDto.toString()}');
-    await setLogPosition(_count, locationDto);
+    // await setLogPosition(_count, locationDto);
     final send = IsolateNameServer.lookupPortByName(isolateName);
     send?.send(locationDto.toJson());
     _count++;
   }
 
-  static Future<void> setLogLabel(String label) async {
-    final date = DateTime.now();
-    // await FileManager.writeToLogFile(
-    //     '------------\n$label: ${formatDateLog(date)}\n------------\n');
-  }
+  // static Future<void> setLogLabel(String label) async {
+  //   // final date = DateTime.now();
+  //   // await FileManager.writeToLogFile(
+  //   //     '------------\n$label: ${formatDateLog(date)}\n------------\n');
+  // }
 
-  static Future<void> setLogPosition(int count, LocationDto data) async {
-    final date = DateTime.now();
-    // await FileManager.writeToLogFile(
-    //     '$count : ${formatDateLog(date)} --> ${formatLog(data)} --- isMocked: ${data.isMocked}\n');
-  }
+  // static Future<void> setLogPosition(int count, LocationDto data) async {
+  //   // final date = DateTime.now();
+  //   // await FileManager.writeToLogFile(
+  //   //     '$count : ${formatDateLog(date)} --> ${formatLog(data)} --- isMocked: ${data.isMocked}\n');
+  // }
 
   static double dp(double val, int places) {
     var mod = pow(10.0, places);

@@ -308,7 +308,7 @@ class _LocationMapPageState extends State<LocationMapPage> {
                           Icon(
                             Icons.check,
                             color: Theme.of(context).scaffoldBackgroundColor,
-                          )))),
+                          ), Colors.amber))),
             ],
           ),
         ));

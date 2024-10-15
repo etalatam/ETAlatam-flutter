@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 
 class ButtonTextIcon extends StatelessWidget {
-  const ButtonTextIcon(this.text, this.icon, {super.key});
+  const ButtonTextIcon(this.text, this.icon, this.bgcolor, {super.key});
 
   final String? text;
 
   final Icon? icon;
+
+  final Color? bgcolor;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +23,7 @@ class ButtonTextIcon extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
             decoration: ShapeDecoration(
-              color: activeTheme.main_color,
+              color: bgcolor ?? activeTheme.main_color,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
             ),
@@ -34,14 +36,14 @@ class ButtonTextIcon extends StatelessWidget {
                 const SizedBox(
                   width: 10,
                 ),
-                SizedBox(
-                  height: 15,
-                  width: 2,
-                  child: Container(color: Colors.blueGrey),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
+                // SizedBox(
+                //   height: 15,
+                //   width: 2,
+                //   child: Container(color: const Color.fromARGB(255, 252, 252, 252)),
+                // ),
+                // const SizedBox(
+                //   width: 10,
+                // ),
                 Text(
                   text!,
                   textAlign: TextAlign.center,

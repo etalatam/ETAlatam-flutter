@@ -1,13 +1,12 @@
 import 'dart:async';
 
-import 'package:MediansSchoolDriver/Models/background_position_model.dart';
 import 'package:MediansSchoolDriver/Pages/providers/local_storage_provider.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 import 'package:MediansSchoolDriver/domain/repositories/local_storage_repository.dart';
-import 'package:MediansSchoolDriver/infrastructure/mappers/background_position_mapper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:MediansSchoolDriver/shared/location/location_services.dart'; // Ajusta la ruta según la ubicación real
+// import 'package:MediansSchoolDriver/shared/location/location_services.dart'; // Ajusta la ruta según la ubicación real
 import 'package:background_locator_2/location_dto.dart';
+
+import '../location_service.dart';
 
 // Define el estado para el LocationNotifier
 class LocationState {
@@ -47,23 +46,23 @@ class LocationNotifier extends StateNotifier<LocationState> {
     _locationService.startLocationService();
     _locationSubscription?.cancel(); // Cancelar cualquier suscripción existente
     // Configuramos el stream para escuchar actualizaciones de ubicación
-    _locationSubscription =
-        _locationService.locationStream.listen((LocationDto locationDto) async {
-      // Actualiza el estado con la nueva ubicación
-      state =
-          LocationState(location: locationDto, isTracking: state.isTracking);
+    // _locationSubscription =
+    //     _locationService.locationStream.listen((LocationDto locationDto) async {
+    //   // Actualiza el estado con la nueva ubicación
+    //   state =
+    //       LocationState(location: locationDto, isTracking: state.isTracking);
 
-      // Lógica para manejar la ubicación
-      final json = locationDto.toJson();
-      try {
-        final position = BackgroundPositionMapper.position(
-            BackgroundLocation.fromJson(json));
-        await localStorageRepository.savePosition(position);
-        await httpService.sendTracking(position: position);
-      } catch (e) {
-        print('Error al escuchar posición: ${e.toString()}');
-      }
-    });
+    //   // Lógica para manejar la ubicación
+    //   final json = locationDto.toJson();
+    //   try {
+    //     final position = BackgroundPositionMapper.position(
+    //         BackgroundLocation.fromJson(json));
+    //     await localStorageRepository.savePosition(position);
+    //     await httpService.sendTracking(position: position);
+    //   } catch (e) {
+    //     print('Error al escuchar posición: ${e.toString()}');
+    //   }
+    // });
     state = LocationState(location: state.location, isTracking: true);
   }
 
