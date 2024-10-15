@@ -16,7 +16,7 @@ import 'package:MediansSchoolDriver/components/Slideable.dart';
 import 'package:MediansSchoolDriver/components/StaticMap.dart';
 import 'package:localstorage/localstorage.dart';
 
-import 'map/full_map.dart';
+import 'map/map_wiew.dart';
 
 class TripPage extends StatefulWidget {
   const TripPage({super.key, this.trip});
@@ -70,9 +70,9 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                   //   ),
                   //   shape: const RoundedRectangleBorder(),
                   // ),
-                  // child: !showMap ? const Center() : MapWidget(customRoute),
+                  // child: !showMap ? const Center() : MapWiew(customRoute),
                   // child: !showMap ? const Center() : MapView(),
-                  child: !showMap ? const Center() : FullMap(),
+                  child: !showMap ? const Center() : MapWiew(),
                 ),
                 DraggableScrollableSheet(
                   snapAnimationDuration: const Duration(seconds: 1),
@@ -464,32 +464,32 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
     );
   }
 
-  Widget? MapWidget(location) {
-    if (trip.trip_status == 'Completed') {
-      return StaticMap(
-          origin: LatLng(trip.pickup_locations![0].latitude!,
-              trip.pickup_locations![0].longitude!),
-          destination: mapDestination!,
-          pickup_locations: trip.pickup_locations,
-          destinations: trip.destinations);
-    }
+  // Widget? MapWiew(location) {
+  //   if (trip.trip_status == 'Completed') {
+  //     return StaticMap(
+  //         origin: LatLng(trip.pickup_locations![0].latitude!,
+  //             trip.pickup_locations![0].longitude!),
+  //         destination: mapDestination!,
+  //         pickup_locations: trip.pickup_locations,
+  //         destinations: trip.destinations);
+  //   }
 
-    if (hasCustomRoute) {
-      return CustomRouteMap(
-          origin: mapOrigin!,
-          destination: mapDestination!,
-          pickup_locations: trip.pickup_locations);
-    }
+  //   if (hasCustomRoute) {
+  //     return CustomRouteMap(
+  //         origin: mapOrigin!,
+  //         destination: mapDestination!,
+  //         pickup_locations: trip.pickup_locations);
+  //   }
 
-    if (mapOrigin == null) {
-      return null;
-    }
-    return MapWithRoute(
-        origin: mapOrigin!,
-        destination: mapDestination!,
-        pickup_locations: trip.pickup_locations,
-        trip: trip);
-  }
+  //   if (mapOrigin == null) {
+  //     return null;
+  //   }
+  //   return MapWithRoute(
+  //       origin: mapOrigin!,
+  //       destination: mapDestination!,
+  //       pickup_locations: trip.pickup_locations,
+  //       trip: trip);
+  // }
 
   endTrip() async {
     try {

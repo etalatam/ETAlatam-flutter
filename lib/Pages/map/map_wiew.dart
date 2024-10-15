@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:provider/provider.dart';
 
-class FullMap extends StatefulWidget {
-  const FullMap();
+import '../../shared/location/location_service.dart';
+
+class MapWiew extends StatefulWidget {
+  const MapWiew();
 
   @override
-  State createState() => FullMapState();
+  State createState() => MapWiewState();
 }
 
-class FullMapState extends State<FullMap> {
+class MapWiewState extends State<MapWiew> {
   MapboxMap? mapboxMap;
 
   _onMapCreated(MapboxMap mapboxMap) {
     this.mapboxMap = mapboxMap;
+
+    final locationService = Provider.of<LocationService>(context, listen: true);
 
     this
         .mapboxMap
@@ -31,7 +36,11 @@ class FullMapState extends State<FullMap> {
     // this.mapboxMap?.on UserLocationUpdated
 
     this.mapboxMap?.setCamera(CameraOptions(
-        center: Point(coordinates: Position(-79.5197300, 8.9936000)),
+        center: Point(
+            coordinates: Position(
+          locationService.locationData?['longitude'],
+          locationService.locationData?['latitude'],
+        )),
         padding: MbxEdgeInsets(top: 1, left: 2, bottom: 3, right: 4),
         anchor: ScreenCoordinate(x: 1, y: 1),
         zoom: 5));

@@ -47,9 +47,6 @@ class _HomePageState extends State<HomePage>
 
   @override
   Widget build(BuildContext context) {
-    // activeTheme = storage.getItem('darkmode') == true ? DarkTheme() : LightTheme();
-    // locationService = Provider.of<ETALocationService>(context, listen: false);
-    // locationService?.init();
     return showLoader
         ? Loader()
         : Material(
@@ -251,11 +248,11 @@ class _HomePageState extends State<HomePage>
     try {
       trip = await httpService.startTrip(routeId);
       if (trip.trip_id != 0) {
+        await locationServiceProvider.startLocationService();
         await Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => TripPage(trip: trip)),
         );
-        locationServiceProvider.startLocationService();
         loadResources();
       }
     } catch (e) {

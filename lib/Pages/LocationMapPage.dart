@@ -227,14 +227,13 @@ class _LocationMapPageState extends State<LocationMapPage> {
                         )),
                   ),
                 ),
-                Positioned(
-                    right: 50, left: 50, bottom: 50, child: onMapWidget()),
+                Positioned(right: 50, left: 50, bottom: 50, child: onMapWiew()),
               ]),
             )),
     );
   }
 
-  Widget onMapWidget() {
+  Widget onMapWiew() {
     return ClipRRect(
         borderRadius: BorderRadius.circular(30),
         child: Container(
@@ -308,7 +307,8 @@ class _LocationMapPageState extends State<LocationMapPage> {
                           Icon(
                             Icons.check,
                             color: Theme.of(context).scaffoldBackgroundColor,
-                          ), Colors.amber))),
+                          ),
+                          Colors.amber))),
             ],
           ),
         ));
