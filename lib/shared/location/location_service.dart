@@ -72,7 +72,7 @@ class LocationService extends ChangeNotifier {
             stopWithTerminate: true),
         autoStop: false,
         androidSettings: const AndroidSettings(
-            // accuracy: LocationAccuracy.NAVIGATION,
+            accuracy: LocationAccuracy.NAVIGATION,
             interval: 30,
             distanceFilter: 0,
             client: LocationClient.google,

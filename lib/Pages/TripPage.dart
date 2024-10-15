@@ -196,19 +196,21 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        GestureDetector(
-                                            onTap: () {
-                                              setState(() {
-                                                activeTab = 'pickup';
-                                              });
-                                            },
-                                            child: Text(
-                                              lang.translate(
-                                                  "Pickup Locations"),
-                                              style: activeTab == 'pickup'
-                                                  ? activeTheme.h5
-                                                  : activeTheme.h6,
-                                            )),
+                                        // GestureDetector(
+                                        //     onTap: () {
+                                        //       setState(() {
+                                        //         activeTab = 'pickup';
+                                        //       });
+                                        //     },
+                                        //     child: Text(
+                                        //       lang.translate(
+                                        //           "Pickup Locations"),
+                                        //       style: activeTab == 'pickup'
+                                        //           ? activeTheme.h5
+                                        //           : activeTheme.h6,
+                                        //     )
+                                        //     ),
+
                                         // const SizedBox(width: 50),
                                         // GestureDetector(
                                         //     onTap: () {
@@ -225,7 +227,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                                       ]),
                                 ),
                                 const SizedBox(
-                                  height: 40,
+                                  height: 10,
                                 ),
                                 for (var i = 0;
                                     i < trip.pickup_locations!.length;
