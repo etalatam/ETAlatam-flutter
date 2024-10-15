@@ -24,11 +24,16 @@ class LocationService extends ChangeNotifier {
 
   ReceivePort port = ReceivePort();
 
+  bool initialization = false;
+
   static final LocationService _instance = LocationService._internal();
   factory LocationService() => _instance;
   LocationService._internal();
 
   init() {
+    if (initialization) {
+      return;
+    }
     print('[ETALocationService.init]');
     askPermission().then((value) {
       if (value) {
@@ -53,10 +58,12 @@ class LocationService extends ChangeNotifier {
         });
 
         BackgroundLocator.initialize();
+        initialization = true;
         // _startLocator().then((value) => null);
       }
     });
   }
+
   Future<void> startLocationService() async {
     print('[ETALocationService.startLocationService]');
     var data = <String, dynamic>{'countInit': 1};
@@ -130,7 +137,7 @@ class LocationService extends ChangeNotifier {
   }
 
   void stopLocationService() {
-    IsolateNameServer.removePortNameMapping(LocationServiceRepository.isolateName);
-    BackgroundLocator.unRegisterLocationUpdate();
+    // IsolateNameServer.removePortNameMapping(LocationServiceRepository.isolateName);
+    // BackgroundLocator.unRegisterLocationUpdate();
   }
 }

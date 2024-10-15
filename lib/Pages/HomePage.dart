@@ -18,7 +18,6 @@ import 'package:MediansSchoolDriver/components/header.dart';
 import 'package:MediansSchoolDriver/components/HomeRouteBlock.dart';
 import 'package:MediansSchoolDriver/Models/EventModel.dart';
 
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -28,7 +27,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with MediansWidgets, MediansTheme, WidgetsBindingObserver {
-  
   final widgets = MediansWidgets;
 
   late GoogleMapController mapController;
@@ -36,7 +34,7 @@ class _HomePageState extends State<HomePage>
   bool hasActiveTrip = false;
 
   DriverModel driverModel = DriverModel(driver_id: 0, first_name: '');
-  
+
   TripModel? activeTrip;
 
   Location location = Location();
@@ -51,7 +49,7 @@ class _HomePageState extends State<HomePage>
   Widget build(BuildContext context) {
     // activeTheme = storage.getItem('darkmode') == true ? DarkTheme() : LightTheme();
     // locationService = Provider.of<ETALocationService>(context, listen: false);
-    // locationService?.init();    
+    // locationService?.init();
     return showLoader
         ? Loader()
         : Material(
@@ -91,39 +89,44 @@ class _HomePageState extends State<HomePage>
 
                                     /// Has Active Trip
                                     !hasActiveTrip
-                                        ? 
-                                        Container(
-                                          width: double.infinity,
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                          margin: const EdgeInsets.fromLTRB(25, 0, 25, 10),
-                                          clipBehavior: Clip.antiAlias,
-                                          decoration: ShapeDecoration(
-                                            color: Color.fromARGB(255, 228, 201, 119),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(30),
+                                        ? Container(
+                                            width: double.infinity,
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 6),
+                                            margin: const EdgeInsets.fromLTRB(
+                                                25, 0, 25, 10),
+                                            clipBehavior: Clip.antiAlias,
+                                            decoration: ShapeDecoration(
+                                              color: Color.fromARGB(
+                                                  255, 228, 201, 119),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(30),
+                                              ),
+                                              shadows: [
+                                                BoxShadow(
+                                                  color: activeTheme.main_color
+                                                      .withOpacity(.3),
+                                                  blurRadius: 10,
+                                                  offset: const Offset(0, 1),
+                                                  spreadRadius: 0,
+                                                )
+                                              ],
                                             ),
-                                            shadows: [
-                                              BoxShadow(
-                                                color: activeTheme.main_color.withOpacity(.3),
-                                                blurRadius: 10,
-                                                offset: const Offset(0, 1),
-                                                spreadRadius: 0,
-                                              )
-                                            ],
-                                            
-                                          ),
-                                          child: Text(
-                                            lang.translate("Does not have active trips"),
-                                            style: TextStyle(
-                                              color: Color.fromARGB(255, 112, 88, 16),
-                                              fontSize: activeTheme.h5.fontSize,
-                                              fontFamily: activeTheme.h6.fontFamily,
-                                              fontWeight: activeTheme.h6.fontWeight,
-                                            )
-                                            )
-                                        )
-                                        : 
-                                    ActiveTrip(openTrip, activeTrip),
+                                            child: Text(
+                                                lang.translate(
+                                                    "Does not have active trips"),
+                                                style: TextStyle(
+                                                  color: Color.fromARGB(
+                                                      255, 112, 88, 16),
+                                                  fontSize:
+                                                      activeTheme.h5.fontSize,
+                                                  fontFamily:
+                                                      activeTheme.h6.fontFamily,
+                                                  fontWeight:
+                                                      activeTheme.h6.fontWeight,
+                                                )))
+                                        : ActiveTrip(openTrip, activeTrip),
 
                                     MediansWidgets.svgTitle(
                                         "assets/svg/fire.svg",
@@ -252,9 +255,8 @@ class _HomePageState extends State<HomePage>
           context,
           MaterialPageRoute(builder: (context) => TripPage(trip: trip)),
         );
-
-        loadResources();
         locationServiceProvider.startLocationService();
+        loadResources();
       }
     } catch (e) {
       print(e.toString());

@@ -76,12 +76,9 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                 ),
                 DraggableScrollableSheet(
                   snapAnimationDuration: const Duration(seconds: 1),
-                  initialChildSize:
-                      .5, // The initial size of the sheet (0.2 means 20% of the screen)
-                  minChildSize:
-                      0.25, // Minimum size of the sheet (10% of the screen)
-                  maxChildSize:
-                      0.8, // Maximum size of the sheet (80% of the screen)
+                  initialChildSize: .5,
+                  minChildSize: 0.25,
+                  maxChildSize: 1,
                   builder: (BuildContext context,
                       ScrollController scrollController) {
                     return Container(
