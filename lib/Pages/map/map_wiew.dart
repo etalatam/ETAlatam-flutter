@@ -5,7 +5,14 @@ import 'package:provider/provider.dart';
 import '../../shared/location/location_service.dart';
 
 class MapWiew extends StatefulWidget {
-  const MapWiew();
+  // Indica si el mapa debe mostrar la ubicación
+  // y actualizar el mapa
+  bool navigationMode = false;
+
+  // callback para iniclizar elementos sobre el mapa
+  final Future<void> Function(MapboxMap) onMapReady;
+
+  MapWiew({required bool navigationMode, required this.onMapReady});
 
   @override
   State createState() => MapWiewState();
@@ -18,7 +25,7 @@ class MapWiewState extends State<MapWiew> {
 
   bool _firstLocationUpdate = true;
 
-  _onMapCreated(MapboxMap mapboxMap) {
+  _onMapCreated(MapboxMap mapboxMap) async {
     print('[MapView._onMapCreated]');
 
     this.mapboxMap = mapboxMap;
@@ -53,6 +60,8 @@ class MapWiewState extends State<MapWiew> {
         enabled: true, position: OrnamentPosition.BOTTOM_LEFT));
     this.mapboxMap?.compass.updateSettings(CompassSettings(
         enabled: true, position: OrnamentPosition.BOTTOM_RIGHT));
+
+    await widget.onMapReady(mapboxMap);
   }
 
   @override
@@ -62,7 +71,7 @@ class MapWiewState extends State<MapWiew> {
         Consumer<LocationService>(builder: (context, locationService, child) {
       final locationData = locationService.locationData;
       print('[MapView.Consumer.LocationService] $locationData');
-      if (locationData != null && mapboxMap != null) {
+      if (locationData != null && mapboxMap != null && widget.navigationMode) {
         if (_firstLocationUpdate) {
           mapboxMap?.setCamera(CameraOptions(
             zoom: 14,
