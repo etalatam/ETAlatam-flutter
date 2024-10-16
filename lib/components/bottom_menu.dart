@@ -1,6 +1,5 @@
 import 'package:MediansSchoolDriver/Pages/SettingsPage.dart';
 import 'package:MediansSchoolDriver/Pages/HelpPage.dart';
-import 'package:MediansSchoolDriver/Pages/map/map_view.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:flutter/material.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
@@ -29,10 +28,10 @@ class BottomMenu extends StatelessWidget {
       //     page: ProfilePage()),
       // MenuModel(
       //     iconData: Icons.home, active: checkTrue('home'), page: HomePage()),
-      MenuModel(
-          iconData: Icons.map_rounded,
-          active: checkTrue('home'),
-          page: MapView()),
+      // MenuModel(
+      //     iconData: Icons.map_rounded,
+      //     active: checkTrue('home'),
+      //     page: MapView()),
       // MenuModel(
       //     iconData: Icons.notifications_on_outlined,
       //     active: checkTrue('notifications'),

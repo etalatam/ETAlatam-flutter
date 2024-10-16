@@ -19,7 +19,8 @@ class ActiveTrip extends StatelessWidget {
           margin: const EdgeInsets.fromLTRB(25, 0, 25, 20),
           clipBehavior: Clip.antiAlias,
           decoration: ShapeDecoration(
-            color: activeTheme.main_color,
+            // color: activeTheme.main_color,
+            color: trip?.trip_id == 0 ? Color.fromARGB(255, 123, 161, 180) : Color.fromARGB(255, 69, 148, 82),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30),
             ),
@@ -37,18 +38,20 @@ class ActiveTrip extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              if (trip?.trip_id != 0)
               Container(
                 decoration: ShapeDecoration(
-                    color: activeTheme.main_color,
+                    //color: activeTheme.main_color,
+                    // color: Colors.amber,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    )),
+                  borderRadius: BorderRadius.circular(12),
+                )),
                 width: 80,
                 alignment: Alignment.center,
-                child: const Image(
+                child: Image(
                     width: 80,
                     height: 70,
-                    image: AssetImage("assets/moving_car.gif")),
+                    image:  AssetImage("assets/moving_car.gif")),
               ),
               Expanded(
                 child: Container(
@@ -78,7 +81,7 @@ class ActiveTrip extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Text(
-                                      lang.translate('Your active trip'),
+                                      trip?.trip_id == 0 ? lang.translate("Does not have active trips") : lang.translate('Your active trip'),
                                       style: TextStyle(
                                         color: activeTheme.buttonColor,
                                         fontSize: activeTheme.h5.fontSize,
@@ -100,7 +103,7 @@ class ActiveTrip extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Text(
-                                      "${trip!.trip_date}",
+                                      trip?.trip_id == 0 ? "" : "${trip?.trip_date}",
                                       style: TextStyle(
                                         color: activeTheme.buttonColor,
                                         fontSize: activeTheme.h6.fontSize,

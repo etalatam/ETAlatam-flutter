@@ -1,5 +1,4 @@
 class PickupLocationModel {
-  
   int? pickup_id;
   int? route_id;
   String? location_name;
@@ -14,12 +13,12 @@ class PickupLocationModel {
   String? student_name;
   bool? status;
   bool saturday;
-	bool sunday;
-	bool monday;
-	bool tuesday;
-	bool wednesday;
-	bool thursday;
-	bool friday;
+  bool sunday;
+  bool monday;
+  bool tuesday;
+  bool wednesday;
+  bool thursday;
+  bool friday;
 
   PickupLocationModel({
     this.pickup_id,
@@ -40,30 +39,28 @@ class PickupLocationModel {
     this.wednesday = false,
     this.thursday = false,
     this.friday = false,
-    
   });
 
-  
   // Convert the instance to a JSON object
   Map<String, dynamic> toJson() {
     return {
-      "pickup_id" : pickup_id,
-      "route_id" : route_id,
-      "latitude" :latitude,
-      "longitude" : longitude,
-      "location_name" : location_name,
-      "address" : address,
-      "contact_number" :contact_number,
-      "distance" : distance,
-      "student_name" : student_name,
-      "picture" : picture,
-      "saturday" : saturday,
-      "sunday" : sunday,
-      "monday" : monday,
-      "tuesday" : tuesday,
-      "wednesday" : wednesday,
-      "thursday" : thursday,
-      "friday" : friday,
+      "pickup_id": pickup_id,
+      "route_id": route_id,
+      "latitude": latitude,
+      "longitude": longitude,
+      "location_name": location_name,
+      "address": address,
+      "contact_number": contact_number,
+      "distance": distance,
+      "student_name": student_name,
+      "picture": picture,
+      "saturday": saturday,
+      "sunday": sunday,
+      "monday": monday,
+      "tuesday": tuesday,
+      "wednesday": wednesday,
+      "thursday": thursday,
+      "friday": friday,
     };
   }
 
@@ -93,19 +90,18 @@ class PickupLocationModel {
     }
   }
 
-  factory PickupLocationModel.fromJson( json) {
-    if(json == null)
-    {
+  factory PickupLocationModel.fromJson(json) {
+    if (json == null) {
       return PickupLocationModel();
     }
-    
+
     return PickupLocationModel(
-      pickup_id: json['id_pickup_point'] as int?,
-      route_id: json['id_route'] as int?,
-      latitude: double.parse(json['lat'] ?? "10"),
-      longitude: double.parse(json['lon'] ?? "-66"),
-      location_name: json['name'] as String?,
-      address: json['address'] as String?,
+      pickup_id: json['pickup_point_id'] as int?,
+      route_id: json['route_id'] as int?,
+      latitude: double.parse("${json['pickup_point_lat']}"),
+      longitude: double.parse("${json['pickup_point_lon']}"),
+      location_name: json['pickup_point_name'] as String?,
+      address: json['pickup_point_address'] as String?,
       contact_number: json['contact_number'] as String?,
       picture: json['picture'] ?? "",
       student_name: json['student_name'] as String?,
@@ -113,11 +109,10 @@ class PickupLocationModel {
       saturday: json['saturdays'].toString().isNotEmpty ? true : false,
       sunday: json['sundays'].toString().isNotEmpty ? true : false,
       monday: json['mondays'].toString().isNotEmpty ? true : false,
-      tuesday: json['tuesdays'].toString().isNotEmpty  ? true : false,
-      wednesday: json['wednesdays'].toString().isNotEmpty   ? true : false,
-      thursday: json['thursdays'].toString().isNotEmpty   ? true : false,
-      friday: json['fridays'].toString().isNotEmpty   ? true : false,
+      tuesday: json['tuesdays'].toString().isNotEmpty ? true : false,
+      wednesday: json['wednesdays'].toString().isNotEmpty ? true : false,
+      thursday: json['thursdays'].toString().isNotEmpty ? true : false,
+      friday: json['fridays'].toString().isNotEmpty ? true : false,
     );
   }
-
 }

@@ -2,8 +2,6 @@ import 'package:MediansSchoolDriver/Models/DriverModel.dart';
 import 'package:MediansSchoolDriver/Models/TripModel.dart';
 import 'package:MediansSchoolDriver/Pages/EventPage.dart';
 import 'package:MediansSchoolDriver/Pages/HelpMessagesPage.dart';
-import 'package:MediansSchoolDriver/Pages/PickupsPage.dart';
-import 'package:MediansSchoolDriver/domain/entities/user/login_information.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
@@ -653,24 +651,34 @@ mixin MediansWidgets {
                 )
               ]),
           child: Stack(children: [
-            Positioned(
-              top: -30,
-              right: 0,
-              height: 120,
-              width: 120,
-              child: SvgPicture.asset("assets/svg/corner-circle.svg"),
-            ),
+            // Positioned(
+            //   top: -30,
+            //   right: 0,
+            //   height: 120,
+            //   width: 120,
+            //   child: SvgPicture.asset("assets/svg/corner-circle.svg"),
+            // ),
             Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color.fromARGB(255, 223, 231, 238),
+                        Color.fromARGB(255, 246, 237, 248)
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
                   width: double.infinity,
-                  // height: 235,
+                  // height: 240,
                   padding: const EdgeInsets.all(20),
                   clipBehavior: Clip.antiAlias,
-                  decoration: const BoxDecoration(),
+                  //decoration: const BoxDecoration(),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -682,19 +690,19 @@ mixin MediansWidgets {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            "${tripInfo.route?.route_name}",
+                            "${lang.translate('Trip')} #${tripInfo.trip_id} (${tripInfo.route?.route_name})",
                             style: activeTheme.h6,
                           ),
                           Row(children: [
-                            SvgPicture.asset(
-                              "assets/svg/bus.svg",
-                              width: 20,
-                              color: Colors.white,
-                            ),
+                            SvgPicture.asset("assets/svg/bus.svg",
+                                width: 20, color: activeTheme.main_color),
                             SizedBox(width: 10),
                             Text(
-                              tripInfo.busPlate ?? 'Sin información',
-                              style: TextStyle(color: Colors.white),
+                              // tripInfo.busPlate ?? 'Sin información',
+                              tripInfo.vehicle?.plate_number ?? '',
+                              style: TextStyle(
+                                color: activeTheme.main_color,
+                              ),
                             )
                           ]),
                         ],
@@ -716,63 +724,60 @@ mixin MediansWidgets {
                     ],
                   ),
                 ),
-                SizedBox(
-                  width: 20,
-                ),
-                Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Expanded(
-                          child: Container(
-                              constraints:
-                                  BoxConstraints(minWidth: 100, maxWidth: 150),
-                              width: 200,
-                              height: 51,
-                              clipBehavior: Clip.antiAlias,
-                              decoration: BoxDecoration(),
-                              child: Center())),
-                      Container(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                              color: activeTheme.buttonBG,
-                              border: Border.all(
-                                  width: 1, color: activeTheme.border_color),
-                              borderRadius: BorderRadius.circular(10)),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.route_rounded,
-                                color: activeTheme.buttonColor,
-                              ),
-                              SizedBox(
-                                width: 10,
-                              ),
-                              Text(
-                                '${tripInfo.done_locations_count}',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              SizedBox(
-                                width: 10,
-                              ),
-                              Text(
-                                "${lang.translate('Locations')}",
-                                style: TextStyle(
-                                    fontSize: activeTheme.h6.fontSize,
-                                    fontFamily: activeTheme.h6.fontFamily,
-                                    color: activeTheme.buttonColor),
-                              ),
-                            ],
-                          )),
-                      SizedBox(
-                        width: 10,
-                      ),
-                    ]),
+                // SizedBox(
+                //   width: 20,
+                // ),
+                // Row(
+                //     mainAxisSize: MainAxisSize.max,
+                //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //     crossAxisAlignment: CrossAxisAlignment.center,
+                //     children: [
+                //       SizedBox(
+                //         width: 10,
+                //       ),
+                //       Expanded(
+                //           child: Container(
+                //               constraints:
+                //                   BoxConstraints(minWidth: 100, maxWidth: 150),
+                //               width: 200,
+                //               height: 51,
+                //               clipBehavior: Clip.antiAlias,
+                //               decoration: BoxDecoration(),
+                //               child: Center())),
+                // Container(
+                //     padding:
+                //         EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                //     decoration: BoxDecoration(
+                //         color: activeTheme.buttonBG,
+                //         border: Border.all(
+                //             width: 1, color: activeTheme.border_color),
+                //         borderRadius: BorderRadius.circular(10)),
+                //     child: Row(
+                //       children: [
+                //         Icon(
+                //           Icons.route_rounded,
+                //           color: activeTheme.buttonColor,
+                //         ),
+                //         SizedBox(
+                //           width: 10,
+                //         ),
+                //         Text(
+                //           '${tripInfo.done_locations_count}',
+                //           style: TextStyle(color: Colors.white),
+                //         ),
+                //         SizedBox(
+                //           width: 10,
+                //         ),
+                //         Text(
+                //           "${lang.translate('Locations')}",
+                //           style: TextStyle(
+                //               fontSize: activeTheme.h6.fontSize,
+                //               fontFamily: activeTheme.h6.fontFamily,
+                //               color: activeTheme.buttonColor),
+                //         ),
+                //       ],
+                //     )),
+                // ]),
               ],
             ),
             // Container(
@@ -918,7 +923,7 @@ mixin MediansWidgets {
                     style: activeTheme.smallText)),
             Text(trip.done_locations_count.toString(), style: activeTheme.h6),
             // Text(trip.pickup_locations!.length.toString(),
-            //     style: activeTheme.h6), //TODO ubicacion de paradas
+            //     style: activeTheme.h6),
           ],
         )
       ],

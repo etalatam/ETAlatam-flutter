@@ -5,7 +5,6 @@ import 'package:MediansSchoolDriver/Models/DriverModel.dart';
 import 'package:MediansSchoolDriver/API/client.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 import 'package:MediansSchoolDriver/methods.dart';
-import 'package:MediansSchoolDriver/components/bottom_menu.dart';
 import 'package:MediansSchoolDriver/components/header.dart';
 import 'package:MediansSchoolDriver/components/InfoBlock.dart';
 import 'package:MediansSchoolDriver/components/loader.dart';
@@ -30,7 +29,11 @@ class _SentMessageState extends State<SendMessagePage> {
 
   bool showLoader = true;
 
-  List<String> list = <String>['Support', 'Human Resources', 'Other'];
+  List<String> list = <String>[
+      'Support', 
+      'Problems on the road',
+      'Crashed bus',
+      'Other'];
   String subject = 'Support';
   List<String> priorities = <String>['Normal', 'High', 'Low'];
   String priority = 'Normal';
@@ -153,7 +156,7 @@ class _SentMessageState extends State<SendMessagePage> {
                       items: list.map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
-                          child: Text(value),
+                          child: Text(lang.translate(value)),
                         );
                       }).toList(),
                     )),
@@ -225,7 +228,7 @@ class _SentMessageState extends State<SendMessagePage> {
                           .map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
-                          child: Text(value),
+                          child: Text(lang.translate(value)),
                         );
                       }).toList(),
                     )),

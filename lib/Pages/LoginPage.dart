@@ -2,12 +2,11 @@ import 'package:MediansSchoolDriver/API/client.dart';
 import 'package:MediansSchoolDriver/Pages/ResetPasswordPage.dart';
 import 'package:MediansSchoolDriver/Pages/home_screen.dart';
 import 'package:MediansSchoolDriver/components/loader.dart';
-import 'package:MediansSchoolDriver/components/header.dart';
+// import 'package:MediansSchoolDriver/components/header.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
-import 'package:MediansSchoolDriver/Pages/HomePage.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -187,6 +186,7 @@ class _LoginState extends State<Login> {
                                         
                                         loginResponse = await httpService.login(
                                             email, password);
+                                        var msg =loginResponse?.split('/');
                                         
                                         setState(() {
                                           showLoader = false;
@@ -194,8 +194,9 @@ class _LoginState extends State<Login> {
                                             goHome();
                                           }else{
                                             showSuccessDialog(
-                                              context, lang.translate('Error'),
-                                              loginResponse,
+                                              context, 
+                                              "${lang.translate('Error')} (${msg![1]})",
+                                              lang.translate(msg[0]),
                                               callback);
                                           }
                                         });
@@ -236,11 +237,11 @@ class _LoginState extends State<Login> {
                           ],
                         )),
                   )),
-              Positioned(
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  child: Header(lang.translate('sitename'))),
+              // Positioned(
+              //     left: 0,
+              //     right: 0,
+              //     top: 0,
+              //     child: Header(lang.translate('sitename'))),
             ]));
   }
 

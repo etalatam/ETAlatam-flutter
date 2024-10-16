@@ -32,12 +32,11 @@ class DriverDatasources extends DriverDatasource {
     final isar = await db;
     final haveDriver =
         await isar.drivers.filter().isarIdEqualTo(driver.driver_id).findFirst();
-    print("driver-----------------$haveDriver");
+    print("[DriverDataSource:save] driver: $haveDriver");
     if (haveDriver != null) {
       isar.writeTxnSync(() => isar.drivers.deleteSync(haveDriver.driver_id!));
       return;
     }
-    print("driver---------paso--------$haveDriver");
     isar.writeTxnSync(() => isar.drivers.putSync(driver));
   }
 }

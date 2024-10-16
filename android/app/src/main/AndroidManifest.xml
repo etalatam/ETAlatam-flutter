@@ -17,7 +17,8 @@
     <application
         android:label="ETA"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:enableOnBackInvokedCallback="true">
         
         <!-- TODO: Add your Google Maps API key here -->
         <meta-data android:name="com.google.android.geo.API_KEY"

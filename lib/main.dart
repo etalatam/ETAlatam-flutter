@@ -3,11 +3,14 @@ import 'package:MediansSchoolDriver/Pages/SplashScreenPage.dart';
 import 'package:MediansSchoolDriver/Pages/home_screen.dart';
 import 'package:MediansSchoolDriver/controllers/preferences.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:MediansSchoolDriver/controllers/locale.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:provider/provider.dart';
+
+import 'shared/location/location_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,7 +20,12 @@ void main() async {
   Get.put(PreferencesSetting());
   MapboxOptions.setAccessToken(
       "sk.eyJ1IjoiZWxpZ2FiYXkiLCJhIjoiY20xMm1nYTA4MHV1cjJscXlocXA0MW5zciJ9.N3pZgESYISIcM3dlWrdgTQ");
-  runApp(ProviderScope(child: MyApp()));
+  runApp(ChangeNotifierProvider(
+    create: (context) => LocationService(),
+    child: MaterialApp(
+      home: MyApp(),
+    ),
+  ));
 }
 
 ThemeData? themeData;
@@ -25,7 +33,6 @@ ThemeData? themeData;
 class MyApp extends StatelessWidget {
   final LocaleController localeController = Get.find<LocaleController>();
   final PreferencesSetting preferences = Get.find<PreferencesSetting>();
-
   final LocalStorage storage = LocalStorage('tokens.json');
 
   MyApp({super.key});

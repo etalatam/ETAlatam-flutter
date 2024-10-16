@@ -115,7 +115,7 @@ openNewPage(context, page) {
 PageRouteBuilder _createRoute(page) {
   return PageRouteBuilder(
     pageBuilder: (context, animation, secondaryAnimation) => page,
-    transitionDuration: const Duration(milliseconds: 100),
+    transitionDuration: const Duration(milliseconds: 50),
     transitionsBuilder: (BuildContext context,
               Animation<double> animation,
               Animation<double> secondaryAnimation,

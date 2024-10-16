@@ -85,8 +85,8 @@ class _TripReport extends State<TripReport> {
                   },
                   child: Container(
                       child: Container(
-                    width: 100,
-                    height: 40,
+                    width: 150,
+                    height: 100,
                     padding: const EdgeInsets.symmetric(
                         horizontal: 10, vertical: 10),
                     decoration: ShapeDecoration(
@@ -155,7 +155,7 @@ class _TripReport extends State<TripReport> {
                                         trip!.trip_id.toString(),
                                     style: TextStyle(
                                       color: Colors.black
-                                          .withOpacity(0.8700000047683716),
+                                          .withOpacity(0.8),
                                       fontSize: 24,
                                       fontWeight: FontWeight.w700,
                                       height: 0,
@@ -165,17 +165,17 @@ class _TripReport extends State<TripReport> {
                                     mainAxisSize: MainAxisSize.max,
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Text(
-                                        '${lang.translate('Trip status')} ${lang.translate(trip!.trip_status!)}',
-                                        style: TextStyle(
-                                          color: Colors.black
-                                              .withOpacity(0.6000000238418579),
-                                          fontSize: 16,
-                                          fontFamily: 'Heebo',
-                                          fontWeight: FontWeight.w400,
-                                          height: 0,
-                                        ),
-                                      )
+                                      // Text(
+                                      //   '${lang.translate('Trip status')} ${lang.translate(trip!.trip_status!)}',
+                                      //   style: TextStyle(
+                                      //     color: Colors.green
+                                      //         .withOpacity(0.6000000238418579),
+                                      //     fontSize: 16,
+                                      //     fontFamily: 'Heebo',
+                                      //     fontWeight: FontWeight.w400,
+                                      //     height: 0,
+                                      //   ),
+                                      // )
                                     ],
                                   ),
                                 ],
@@ -206,10 +206,10 @@ class _TripReport extends State<TripReport> {
                                 children: [
                                   const SizedBox(width: 10),
                                   Text(
-                                    lang.translate('Trip sueccessfully ended'),
+                                    lang.translate('Sueccessfully ended'),
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                      color: Colors.black
+                                      color: Colors.green
                                           .withOpacity(0.8700000047683716),
                                       fontSize: 22,
                                       fontFamily: 'Heebo',

@@ -91,8 +91,8 @@ class _StaticMapState extends State<StaticMap> {
 
     if (response.statusCode == 200) {
       final decoded = json.decode(response.body);
-      List<LatLng> points = _decodePoly(
-          encodedString: decoded['routes'][0]['overview_polyline']['points']);
+      // List<LatLng> points = _decodePoly(
+      //     encodedString: decoded['routes'][0]['overview_polyline']['points']);
 
       Marker mark = await carMarker('car', widget.origin);
       Marker destination = await destinationMarker(widget.destination);
@@ -100,7 +100,7 @@ class _StaticMapState extends State<StaticMap> {
         markers[mark.markerId] = mark;
         markers[destination.markerId] = destination;
 
-        _routeCoordinates = points;
+        // _routeCoordinates = points;
       });
     } else {
       throw Exception('Failed to fetch route');
@@ -147,15 +147,17 @@ class _StaticMapState extends State<StaticMap> {
           "Pickup$i",
           LatLng(widget.pickup_locations![i].latitude!,
               widget.pickup_locations![i].longitude!),
-          widget.pickup_locations![i].student!.student_name);
-      Marker destMarker = await addMarker(
-          "Destination$i",
-          LatLng(widget.destinations![i].latitude!,
-              widget.destinations![i].longitude!),
-          widget.destinations![i].student!.student_name);
+          // widget.pickup_locations![i].student!.student_name
+          "Pickup$i"
+          );
+      // Marker destMarker = await addMarker(
+      //     "Destination$i",
+      //     LatLng(widget.destinations![i].latitude!,
+      //         widget.destinations![i].longitude!),
+      //     widget.destinations![i].student!.student_name);
       setState(() {
         markers[origMarker.markerId] = origMarker;
-        markers[destMarker.markerId] = destMarker;
+        // markers[destMarker.markerId] = destMarker;
       });
     }
   }

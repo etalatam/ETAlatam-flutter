@@ -2,7 +2,6 @@ import 'package:MediansSchoolDriver/Pages/PickupsPage.dart';
 import 'package:MediansSchoolDriver/Pages/RouteMapPage.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 import 'package:MediansSchoolDriver/Models/RouteModel.dart';
-import 'package:MediansSchoolDriver/main.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -18,8 +17,9 @@ class HomeRouteBlock extends StatelessWidget {
     return Column(
       children: [
         Container(
-          width: double.infinity,
+          // width: double.infinity,
           // height: 446.03,
+          width: MediaQuery.of(context).size.width / 1.2,
           clipBehavior: Clip.antiAlias,
           margin: const EdgeInsets.all(10),
           decoration: ShapeDecoration(
@@ -47,7 +47,16 @@ class HomeRouteBlock extends StatelessWidget {
                 // height: 235,
                 padding: const EdgeInsets.all(20),
                 clipBehavior: Clip.antiAlias,
-                decoration: const BoxDecoration(),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color.fromARGB(255, 223, 231, 238),
+                      Color.fromARGB(255, 246, 237, 248)
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -84,7 +93,7 @@ class HomeRouteBlock extends StatelessWidget {
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            "${route.busPlate}",
+                            "${route.vehicle?.plate_number}",
                             style: activeTheme.h6,
                           )
                         ]),
@@ -126,7 +135,7 @@ class HomeRouteBlock extends StatelessWidget {
                         constraints:
                             const BoxConstraints(minWidth: 100, maxWidth: 150),
                         width: 200,
-                        height: 51,
+                        height: 10,
                         clipBehavior: Clip.antiAlias,
                         decoration: const BoxDecoration(),
                         child: route.pickup_locations.isEmpty
@@ -139,45 +148,45 @@ class HomeRouteBlock extends StatelessWidget {
                                       left: (i * (1 - .4) * 60).toDouble(),
                                       top: 0,
                                       child: GestureDetector(
-                                        onTap:  (() => {
-                                                  //TODO
-                                                  openNewPage(
-                                                      context,
-                                                      PickupsPage(
-                                                        pickup_locations: route
-                                                            .pickup_locations,
-                                                      ))
-                                                }),
+                                        onTap: (() => {
+                                              //TODO
+                                              openNewPage(
+                                                  context,
+                                                  PickupsPage(
+                                                    pickup_locations:
+                                                        route.pickup_locations,
+                                                  ))
+                                            }),
                                         child: Container(
                                           width: 51.03,
                                           height: 51.03,
                                           decoration: ShapeDecoration(
                                             image: DecorationImage(
-                                              fit: BoxFit.fill,
-                                              image: 
-                                              // route.pickup_locations[i]
-                                              //                 .picture !=
-                                              //             null &&
-                                              //         route.pickup_locations[i]
-                                              //             .picture!.isNotEmpty
-                                              //     ? 
-                                                  NetworkImage((route
-                                                              .pickup_locations[
-                                                                  i]
-                                                              .picture !=
-                                                          null)
-                                                      ? ('${httpService.getImageUrl()}${route.pickup_locations[i].picture}')
-                                                      : httpService.croppedImage(
-                                                          "/uploads/images/60x60.png",
-                                                          200,
-                                                          200)) as ImageProvider
-                                                  // : AssetImage(
-                                                  //     'assets/logo.png'),
-                                            ),
+                                                fit: BoxFit.fill,
+                                                image:
+                                                    // route.pickup_locations[i]
+                                                    //                 .picture !=
+                                                    //             null &&
+                                                    //         route.pickup_locations[i]
+                                                    //             .picture!.isNotEmpty
+                                                    //     ?
+                                                    NetworkImage((route
+                                                                .pickup_locations[
+                                                                    i]
+                                                                .picture !=
+                                                            null)
+                                                        ? ('${httpService.getImageUrl()}${route.pickup_locations[i].picture}')
+                                                        : httpService.croppedImage(
+                                                            "/uploads/images/60x60.png",
+                                                            200,
+                                                            200)) as ImageProvider
+                                                // : AssetImage(
+                                                //     'assets/logo.png'),
+                                                ),
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(50),
-                                              side:  BorderSide(
+                                              side: BorderSide(
                                                   width: 4,
                                                   color: Colors.white),
                                             ),
@@ -188,7 +197,7 @@ class HomeRouteBlock extends StatelessWidget {
                                     ? const Center()
                                     : Positioned(
                                         right: 0,
-                                        top: 15,
+                                        top: 10,
                                         child: GestureDetector(
                                             // onTap: (() => {
                                             //   //TODO
@@ -218,7 +227,6 @@ class HomeRouteBlock extends StatelessWidget {
                       GestureDetector(
                           onTap: () {
                             // return;
-                            //TODO
                             callback!(
                                 route.route_id, route.vehicle!.vehicle_id);
                             // openNewPage(context, DriverPage(driver: route.driver, vehicle: route.vehicle,));
@@ -227,9 +235,10 @@ class HomeRouteBlock extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
-                                  color: activeTheme.buttonBG,
-                                  border: Border.all(
-                                      width: 1, color: activeTheme.main_color),
+                                  // color: activeTheme.buttonBG,
+                                  color: Colors.green,
+                                  border:
+                                      Border.all(width: 1, color: Colors.green),
                                   borderRadius: BorderRadius.circular(10)),
                               child: Row(
                                 children: [

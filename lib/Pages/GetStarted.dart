@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:MediansSchoolDriver/Pages/HomePage.dart';
-import 'package:MediansSchoolDriver/Pages/map/map_view.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
@@ -114,7 +113,7 @@ class _GetStartedAppState extends State<GetStartedApp> {
       token = storage.getItem('token');
 
       if (token != null) {
-        Get.offAll(() => MapView());
+        // Get.offAll(() => MapView());
       } else if (sessionLang != null) {
         Get.offAll(() => Login());
       }

@@ -1,13 +1,13 @@
+import 'package:MediansSchoolDriver/Pages/ResetPasswordPage.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:MediansSchoolDriver/Models/DriverModel.dart';
-import 'package:MediansSchoolDriver/Pages/ChangePasswordPage.dart';
 import 'package:MediansSchoolDriver/Pages/UploadPicturePage.dart';
 import 'package:MediansSchoolDriver/Pages/LoginPage.dart';
 // import 'package:MediansSchoolDriver/components/bottom_menu.dart';
 import 'package:MediansSchoolDriver/components/loader.dart';
-import 'package:MediansSchoolDriver/components/header.dart';
+// import 'package:MediansSchoolDriver/components/header.dart';
 import 'package:MediansSchoolDriver/components/CustomRow.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 
@@ -25,7 +25,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   DriverModel driver = DriverModel(driver_id: 0, first_name: '');
 
-  final String profilePicture = "${apiURL}/uploads/images/parent.gif";
+  final String profilePicture = "assets/profile.avif";
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +38,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   height: MediaQuery.of(context).size.height / 2,
                   decoration: ShapeDecoration(
                     image: DecorationImage(
-                      image: NetworkImage(profilePicture),
+                      image: AssetImage(profilePicture),
                       fit: BoxFit.fitHeight,
                     ),
                     shape: const RoundedRectangleBorder(),
@@ -48,25 +48,25 @@ class _ProfilePageState extends State<ProfilePage> {
                   snapAnimationDuration: const Duration(seconds: 1),
                   initialChildSize: .7,
                   minChildSize: 0.7,
-                  maxChildSize: 0.85,
+                  maxChildSize: 0.7,
                   builder: (BuildContext context,
                       ScrollController scrollController) {
                     return Container(
                         child: Stack(children: [
-                      Container(
-                        width: double.infinity,
-                        height: 75,
-                        clipBehavior: Clip.antiAlias,
-                        decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withOpacity(0),
-                            Colors.black.withOpacity(.5),
-                          ],
-                        )),
-                      ),
+                      // Container(
+                      //   width: double.infinity,
+                      //   height: 75,
+                      //   clipBehavior: Clip.antiAlias,
+                      //   decoration: BoxDecoration(
+                      //       gradient: LinearGradient(
+                      //     begin: Alignment.topCenter,
+                      //     end: Alignment.bottomCenter,
+                      //     colors: [
+                      //       Colors.black.withOpacity(0),
+                      //       Colors.black.withOpacity(.5),
+                      //     ],
+                      //   )),
+                      // ),
                       Container(
                         margin: const EdgeInsets.only(top: 50),
                         height: double.infinity,
@@ -76,13 +76,13 @@ class _ProfilePageState extends State<ProfilePage> {
                             topLeft: Radius.circular(20.0),
                             topRight: Radius.circular(20.0),
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              offset: const Offset(0.0, -3.0),
-                              blurRadius: 5.0,
-                            ),
-                          ],
+                          // boxShadow: [
+                          //   BoxShadow(
+                          //     color: Colors.black.withOpacity(0.2),
+                          //     offset: const Offset(0.0, -3.0),
+                          //     blurRadius: 5.0,
+                          //   ),
+                          // ],
                         ),
                       ),
                       SingleChildScrollView(
@@ -100,7 +100,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                   children: [
                                 GestureDetector(
                                     onTap: () {
-                                      uploadPicture();
+                                      // uploadPicture();
+                                      // openNewPage(context, UploadPicturePage());
                                     },
                                     child: Container(
                                         padding: const EdgeInsets.symmetric(
@@ -108,10 +109,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                         child: CircleAvatar(
                                             radius: 50,
                                             foregroundImage: NetworkImage(
-                                                httpService.croppedImage(
-                                                    driver.picture,
-                                                    200,
-                                                    200))))),
+                                                httpService.getAvatarUrl(driver.picture),
+                                                headers: {'Accept': 'image/png'}
+                                            )
+                                ))),
                                 Column(
                                   textDirection: isRTL()
                                       ? TextDirection.rtl
@@ -205,7 +206,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   height: 1,
                                   color: activeTheme.main_color.withOpacity(.3),
                                 ),
-                                CustomRow(lang.translate('last Name'),
+                                CustomRow(lang.translate('Last Name'),
                                     driver.last_name),
                                 Container(
                                   height: 1,
@@ -223,13 +224,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                   height: 1,
                                   color: activeTheme.main_color.withOpacity(.3),
                                 ),
-                                // GestureDetector(
-                                //     onTap: () {
-                                //       openNewPage(
-                                //           context, ChangePasswordPage());
-                                //     },
-                                //     child: CustomRow(
-                                //         lang.translate('Change password'), '')),
+                                GestureDetector(
+                                    onTap: () {
+                                      // openNewPage(
+                                      //     context, ChangePasswordPage());
+                                      openNewPage(context, ResetPasswordPage(defaultMail: driver.email,));
+                                    },
+                                    child: CustomRow(
+                                        lang.translate('Change password'), '')),
                                 Container(
                                   height: 1,
                                   color: activeTheme.main_color.withOpacity(.3),
@@ -260,11 +262,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     ]));
                   },
                 ),
-                Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: Header(lang.translate('sitename'))),
+                // Positioned(
+                //     top: 0,
+                //     left: 0,
+                //     right: 0,
+                //     child: Header(lang.translate('sitename'))),
                 // Positioned(
                 //     bottom: 20,
                 //     left: 20,
@@ -288,13 +290,13 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   /// Open map to set location
-  uploadPicture() async {
-    await Navigator.push(
-        context, MaterialPageRoute(builder: (context) => UploadPicturePage()));
-    setState(() {
-      loadDriver();
-    });
-  }
+  // uploadPicture() async {
+  //   await Navigator.push(
+  //       context, MaterialPageRoute(builder: (context) => UploadPicturePage()));
+  //   setState(() {
+  //     loadDriver();
+  //   });
+  // }
 
   @override
   void initState() {

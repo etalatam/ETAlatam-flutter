@@ -1,14 +1,14 @@
 import 'package:MediansSchoolDriver/API/client.dart';
 import 'package:MediansSchoolDriver/components/loader.dart';
-import 'package:MediansSchoolDriver/components/header.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
-import 'package:MediansSchoolDriver/Pages/LoginPage.dart';
 
 class ResetPasswordPage extends StatefulWidget {
-  const ResetPasswordPage({super.key});
+  String? defaultMail;
+
+  ResetPasswordPage({super.key, this.defaultMail=''});
 
   @override
   _ResetPasswordPageState createState() => _ResetPasswordPageState();
@@ -22,17 +22,17 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   TextEditingController confirmedPasswordController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   String email = '';
-  String reset_token = '';
+  // String reset_token = '';
   String password = '';
-  String confirm_password = '';
-
-  String? token;
+  // String confirm_password = '';
+  // String? token;
   String? response;
   bool showLoader = false;
   bool activeResetPassword = false;
 
   @override
   Widget build(BuildContext context) {
+    email = widget.defaultMail ?? '';
     return showLoader
         ? Loader()
         : Material(
@@ -41,11 +41,11 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
             child: Stack(children: [
               // !activeResetPassword ? resetPassword() : changePassword(),
               resetPassword(),
-              Positioned(
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  child: Header(lang.translate('sitename'))),
+              // Positioned(
+              //     left: 0,
+              //     right: 0,
+              //     top: 0,
+              //     child: Header(lang.translate('sitename'))),
             ]));
   }
 
@@ -103,7 +103,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // response == null ? Center() : Text("${response}", style: TextStyle(color: activeTheme.main_color),),
+                              if(widget.defaultMail!.isEmpty)
                               Text(
                                 lang.translate('Email'),
                                 style: TextStyle(
@@ -111,7 +111,21 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                   fontSize: 16,
                                 ),
                               ),
+                              if(widget.defaultMail!.isNotEmpty)
+                              Text(
+                                widget.defaultMail!,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: darkBlueColor,
+                                  fontSize: activeTheme.h3.fontSize,
+                                  fontWeight: activeTheme.h1.fontWeight,
+                                  fontFamily: activeTheme.h1.fontFamily,
+                                ),
+                              ),
+                              if(widget.defaultMail!.isNotEmpty)
+                              const SizedBox(height: 50),
                               const SizedBox(height: 8),
+                              if(widget.defaultMail!.isEmpty)
                               TextField(
                                 controller: _emailController,
                                 decoration: InputDecoration(
@@ -156,10 +170,13 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                               httpService.resetPassword(email).then((value)  {
                                 setState(() {
                                     response=value;
+                                    var msg = value.split('/');
                                     showSuccessDialog(
                                         context,
-                                        lang.translate('Error'),
-                                        response == '1' ? lang.translate('Recovery password mail sended') : response,
+                                        "${lang.translate('Error')} (${msg[1]})",
+                                        response == '1' ? 
+                                        lang.translate('Recovery password mail sended') : 
+                                        lang.translate(msg[0]),
                                         callback);
                                     showLoader = false;
                                     activeResetPassword = true;
@@ -171,7 +188,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                               });
                             },
                             child: Text(
-                              lang.translate('Confirm'),
+                              lang.translate('Send now'),
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                 color: Colors.white,
