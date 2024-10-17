@@ -6,7 +6,6 @@ import 'package:MediansSchoolDriver/Pages/providers/location_service_provider.da
 import 'package:MediansSchoolDriver/components/ActiveTrip.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:MediansSchoolDriver/Models/DriverModel.dart';
@@ -27,9 +26,10 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with MediansWidgets, MediansTheme, WidgetsBindingObserver {
+
   final widgets = MediansWidgets;
 
-  late GoogleMapController mapController;
+  // late GoogleMapController mapController;
 
   bool hasActiveTrip = false;
 
@@ -340,6 +340,11 @@ class _HomePageState extends State<HomePage>
       activeTrip = activeTrip_;
       hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
     });
+
+      if(hasActiveTrip){
+        await locationServiceProvider.startLocationService();
+      }
+
   }
 
   openTrip(TripModel trip) {

@@ -49,6 +49,7 @@ class TripModel {
   });
 
   factory TripModel.fromJson(Map<String, dynamic> json) {
+    // print('[TripModel.fromJson] $json');
     List<TripPickupLocation> pickupLocations = [];
     try {
       print("[TripModel.fromJson.pickup_points] ${json['pickup_points']}");

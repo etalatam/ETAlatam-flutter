@@ -749,17 +749,16 @@ class HttpService {
     final userId = await storage.getItem('id_usu');
     final data = {
       'user_id': userId,
-      'latitude': position.latitude,
-      'longitude': position.longitude,
-      'speed': position.speed,
-      'heading': position.heading,
-      'time': position.time,
-      'accuracy': position.accuracy,
-      'altitude': position.altitude
+      'latitude': position['latitude'],
+      'longitude': position['longitude'],
+      'speed': position['speed'],
+      'heading': position['heading'],
+      'time': position['time'],
+      'accuracy': position['accuracy'],
+      'altitude': position['altitude']
     };
     final jsonData = jsonEncode(data);
     try {
-      // var requestAccessRes = await requestAccess();
       http.Response res = await postQuery('/rpc/user_tracking', jsonData,
           contentType: 'application/json');
       if (res.statusCode == 200) {
