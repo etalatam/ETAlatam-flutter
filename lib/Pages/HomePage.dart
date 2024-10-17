@@ -308,6 +308,8 @@ class _HomePageState extends State<HomePage>
       return;
     }
 
+    await locationServiceProvider.init();
+
     await storage.getItem('darkmode');
     setState(() {
       darkMode = storage.getItem('darkmode') == true ? true : false;
@@ -360,6 +362,6 @@ class _HomePageState extends State<HomePage>
   void initState() {
     super.initState();
     loadResources();
-    locationServiceProvider.init();
+    
   }
 }
