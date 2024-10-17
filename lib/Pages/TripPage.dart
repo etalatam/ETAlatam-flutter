@@ -1,8 +1,6 @@
-import 'dart:typed_data';
 
 import 'package:MediansSchoolDriver/Pages/providers/location_service_provider.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
@@ -13,10 +11,6 @@ import 'package:MediansSchoolDriver/components/button_text_icon.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:MediansSchoolDriver/components/loader.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
-import 'package:MediansSchoolDriver/components/TripMap.dart';
-import 'package:MediansSchoolDriver/components/CustomRouteMap.dart';
-import 'package:MediansSchoolDriver/components/Slideable.dart';
-import 'package:MediansSchoolDriver/components/StaticMap.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
@@ -64,7 +58,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
           ? Loader()
           : Scaffold(
               body: Stack(children: <Widget>[
-                Container(
+                SizedBox(
                   height: MediaQuery.of(context).size.height / 1.33,
                   // decoration: ShapeDecoration(
                   //   image: DecorationImage(
@@ -589,15 +583,6 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
   @override
   void initState() {
     super.initState();
-
-    // WidgetsBinding.instance.endOfFrame.then((_) {
-    //   final locationService =
-    //       Provider.of<ETALocationService>(context, listen: false);
-
-    //   if (mounted) {
-    //     locationService.askPermission();
-    //   }
-    // });
 
     setState(() {
       trip = widget.trip!;
