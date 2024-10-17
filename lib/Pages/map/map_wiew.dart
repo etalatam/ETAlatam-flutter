@@ -21,6 +21,7 @@ class MapWiew extends StatefulWidget {
 }
 
 class MapWiewState extends State<MapWiew> {
+
   MapboxMap? mapboxMap;
 
   LocationService? locationService;
@@ -32,9 +33,7 @@ class MapWiewState extends State<MapWiew> {
 
     this.mapboxMap = mapboxMap;
 
-    this
-        .mapboxMap
-        ?.logo
+    this.mapboxMap?.logo
         .updateSettings(LogoSettings(marginRight: 3000, marginTop: 3000));
     this.mapboxMap?.attribution.updateSettings(AttributionSettings(
         marginRight: 3000, marginTop: 3000, clickable: false));
@@ -46,22 +45,12 @@ class MapWiewState extends State<MapWiew> {
           puckBearingEnabled: true,
         ));
 
-    // this.mapboxMap?.on UserLocationUpdated
-
-    // this.mapboxMap?.setCamera(CameraOptions(
-    //     center: Point(
-    //         coordinates: Position(
-    //       locationService?.locationData?['longitude'],
-    //       locationService?.locationData?['latitude'],
-    //     )),
-    //     padding: MbxEdgeInsets(top: 1, left: 2, bottom: 3, right: 4),
-    //     anchor: ScreenCoordinate(x: 1, y: 1),
-    //     zoom: 5));
-    // MbxEdgeInsets(top: 1, left: 2, bottom: 3, right: 4),
     this.mapboxMap?.scaleBar.updateSettings(ScaleBarSettings(
         enabled: true, position: OrnamentPosition.BOTTOM_LEFT));
     this.mapboxMap?.compass.updateSettings(CompassSettings(
         enabled: true, position: OrnamentPosition.BOTTOM_RIGHT));
+
+    await locationService?.init();
 
     await widget.onMapReady(mapboxMap);
   }

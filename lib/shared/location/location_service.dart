@@ -35,14 +35,14 @@ class LocationService extends ChangeNotifier {
 
   init() async {
 
-     _locationData = await storage.getItem('lastPosition');
+    _locationData = await storage.getItem('lastPosition');
+    print('[ETALocationService.init] $_locationData');
     notifyListeners();
 
     if (initialization) {
       return;
     }
 
-    print('[ETALocationService.init]');
     askPermission().then((value) {
       if (value) {
         if (IsolateNameServer.lookupPortByName(
@@ -61,7 +61,7 @@ class LocationService extends ChangeNotifier {
               (_locationData?['latitude'] != data['latitude']) &&
               (_locationData?['longitude'] != data['longitude'])) {
             _locationData = data;
-            storage.setItem('lastPosition', data);
+            await storage.setItem('lastPosition', data);
             await tracking(_locationData);
             notifyListeners();
           }
