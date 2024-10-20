@@ -85,17 +85,37 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                                 .annotations
                                 .createPointAnnotationManager();
 
+                            List<Position> points = [];
+
                             for (var pickupPoint in trip.pickup_locations!) {
+                              final position = Position(
+                                  pickupPoint.location!.longitude
+                                      as double,
+                                  pickupPoint.location!.latitude
+                                      as double);
                               final point = PointAnnotationOptions(
                                   geometry: Point(
-                                      coordinates: Position(
-                                          pickupPoint.location!.longitude
-                                              as double,
-                                          pickupPoint.location!.latitude
-                                              as double)),
+                                      coordinates: position),
                                   image: imageData);
                               pointAnnotationManager.create(point);
+                              points.add(position);
                             }
+
+                            final lineFeature = Feature(
+                                id: "featureID",
+                                geometry: LineString(coordinates: points));
+                            await mapboxMap.style.addSource(GeoJsonSource(id: "line",
+                              data: FeatureCollection(
+                                features: [lineFeature]
+                              ).toJson().toString()
+                            ));
+                            await mapboxMap.style.addLayer(LineLayer(
+                                id: "line_layer",
+                                sourceId: "line",
+                                lineJoin: LineJoin.ROUND,
+                                lineCap: LineCap.ROUND,
+                                lineColor: Colors.blue.value,
+                                lineWidth: 6.0));
                           },
                         ),
                 ),
