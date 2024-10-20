@@ -5,27 +5,35 @@ import 'package:provider/provider.dart';
 import '../../shared/location/location_service.dart';
 
 class MapWiew extends StatefulWidget {
-  const MapWiew();
+  // Indica si el mapa debe mostrar la ubicación
+  // y actualizar el mapa
+  final bool navigationMode;
+
+  // callback para iniclizar elementos sobre el mapa
+  Future<void> Function(MapboxMap) onMapReady;
+
+  MapWiew({this.navigationMode = false, required this.onMapReady}){
+    print('[MapWiew.navigationMode] $navigationMode');
+  }
 
   @override
   State createState() => MapWiewState();
 }
 
 class MapWiewState extends State<MapWiew> {
+
   MapboxMap? mapboxMap;
 
   LocationService? locationService;
 
   bool _firstLocationUpdate = true;
 
-  _onMapCreated(MapboxMap mapboxMap) {
+  _onMapCreated(MapboxMap mapboxMap) async {
     print('[MapView._onMapCreated]');
 
     this.mapboxMap = mapboxMap;
 
-    this
-        .mapboxMap
-        ?.logo
+    this.mapboxMap?.logo
         .updateSettings(LogoSettings(marginRight: 3000, marginTop: 3000));
     this.mapboxMap?.attribution.updateSettings(AttributionSettings(
         marginRight: 3000, marginTop: 3000, clickable: false));
@@ -37,22 +45,14 @@ class MapWiewState extends State<MapWiew> {
           puckBearingEnabled: true,
         ));
 
-    // this.mapboxMap?.on UserLocationUpdated
-
-    // this.mapboxMap?.setCamera(CameraOptions(
-    //     center: Point(
-    //         coordinates: Position(
-    //       locationService?.locationData?['longitude'],
-    //       locationService?.locationData?['latitude'],
-    //     )),
-    //     padding: MbxEdgeInsets(top: 1, left: 2, bottom: 3, right: 4),
-    //     anchor: ScreenCoordinate(x: 1, y: 1),
-    //     zoom: 5));
-    // MbxEdgeInsets(top: 1, left: 2, bottom: 3, right: 4),
     this.mapboxMap?.scaleBar.updateSettings(ScaleBarSettings(
         enabled: true, position: OrnamentPosition.BOTTOM_LEFT));
     this.mapboxMap?.compass.updateSettings(CompassSettings(
         enabled: true, position: OrnamentPosition.BOTTOM_RIGHT));
+
+    await locationService?.init();
+
+    await widget.onMapReady(mapboxMap);
   }
 
   @override
@@ -62,11 +62,13 @@ class MapWiewState extends State<MapWiew> {
         Consumer<LocationService>(builder: (context, locationService, child) {
       final locationData = locationService.locationData;
       print('[MapView.Consumer.LocationService] $locationData');
-      if (locationData != null && mapboxMap != null) {
+      print('MapView.Consumer.LocationService.widget.navigationMode ${widget.navigationMode}');
+      if (locationData != null && mapboxMap != null && widget.navigationMode) {
         if (_firstLocationUpdate) {
+          print('[MapView.build._firstLocationUpdate] $_firstLocationUpdate');
           mapboxMap?.setCamera(CameraOptions(
-            zoom: 14,
-            pitch: 60,
+            zoom: 18,
+            pitch: 80,
             center: Point(
                 coordinates: Position(
                     locationData?['longitude'], locationData?['latitude'])),

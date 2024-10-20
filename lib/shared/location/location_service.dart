@@ -7,6 +7,7 @@ import 'package:background_locator_2/settings/android_settings.dart';
 import 'package:background_locator_2/settings/ios_settings.dart';
 import 'package:background_locator_2/settings/locator_settings.dart';
 import 'package:flutter/foundation.dart';
+import 'package:localstorage/localstorage.dart';
 import 'package:location/location.dart' hide LocationAccuracy;
 import 'location_callback_handler.dart';
 import 'location_service_repository.dart';
@@ -26,15 +27,22 @@ class LocationService extends ChangeNotifier {
 
   bool initialization = false;
 
+  final LocalStorage storage = LocalStorage('tokens.json');
+
   static final LocationService _instance = LocationService._internal();
   factory LocationService() => _instance;
   LocationService._internal();
 
-  init() {
+  init() async {
+
+    _locationData = await storage.getItem('lastPosition');
+    print('[ETALocationService.init] $_locationData');
+    notifyListeners();
+
     if (initialization) {
       return;
     }
-    print('[ETALocationService.init]');
+
     askPermission().then((value) {
       if (value) {
         if (IsolateNameServer.lookupPortByName(
@@ -53,6 +61,7 @@ class LocationService extends ChangeNotifier {
               (_locationData?['latitude'] != data['latitude']) &&
               (_locationData?['longitude'] != data['longitude'])) {
             _locationData = data;
+            await storage.setItem('lastPosition', data);
             await tracking(_locationData);
             notifyListeners();
           }
@@ -120,7 +129,7 @@ class LocationService extends ChangeNotifier {
   }
 
   Future tracking(dynamic locationInfo) async {
-    print('[ETALocationService.tracking]');
+    print('[ETALocationService.tracking] ${locationInfo.toString()}');
     try {
       final jsonData = {
         'latitude': locationInfo?['latitude'],
@@ -129,10 +138,9 @@ class LocationService extends ChangeNotifier {
         'accuracy': locationInfo?['accuracy'],
         'speed': locationInfo?['speed']
       };
-
       return await httpService.sendTracking(position: jsonData);
-    } catch (err) {
-      print('tracking: $err');
+    } catch (e) {
+      print('[ETALocationService.tracking.error] ${e.toString()}');
     }
     return null;
   }

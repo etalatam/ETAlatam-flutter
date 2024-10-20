@@ -1,5 +1,6 @@
+
 import 'package:MediansSchoolDriver/Pages/providers/location_service_provider.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
@@ -10,11 +11,8 @@ import 'package:MediansSchoolDriver/components/button_text_icon.dart';
 import 'package:MediansSchoolDriver/methods.dart';
 import 'package:MediansSchoolDriver/components/loader.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
-import 'package:MediansSchoolDriver/components/TripMap.dart';
-import 'package:MediansSchoolDriver/components/CustomRouteMap.dart';
-import 'package:MediansSchoolDriver/components/Slideable.dart';
-import 'package:MediansSchoolDriver/components/StaticMap.dart';
 import 'package:localstorage/localstorage.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 import 'map/map_wiew.dart';
 
@@ -31,6 +29,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
   bool showLoader = false;
 
   bool isActiveTrip = true;
+
   String activeTab = 'pickup';
 
   TripModel trip = TripModel(trip_id: 0);
@@ -41,7 +40,6 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
 
   LatLng? mapOrigin;
 
-  // String currentPicture = "/uploads/images/60x60.png";
   String currentPicture = "";
 
   bool showTripReportModal = false;
@@ -60,7 +58,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
           ? Loader()
           : Scaffold(
               body: Stack(children: <Widget>[
-                Container(
+                SizedBox(
                   height: MediaQuery.of(context).size.height / 1.33,
                   // decoration: ShapeDecoration(
                   //   image: DecorationImage(
@@ -72,7 +70,34 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                   // ),
                   // child: !showMap ? const Center() : MapWiew(customRoute),
                   // child: !showMap ? const Center() : MapView(),
-                  child: !showMap ? const Center() : MapWiew(),
+                  child: !showMap
+                      ? const Center()
+                      : MapWiew(
+                          navigationMode:
+                              trip.trip_status == 'Running' ? true : false,
+                          onMapReady: (MapboxMap mapboxMap) async {
+                            final ByteData bytes = await rootBundle
+                                .load('assets/pickup-map-icon.png');
+                            final Uint8List imageData =
+                                bytes.buffer.asUint8List();
+
+                            final pointAnnotationManager = await mapboxMap
+                                .annotations
+                                .createPointAnnotationManager();
+
+                            for (var pickupPoint in trip.pickup_locations!) {
+                              final point = PointAnnotationOptions(
+                                  geometry: Point(
+                                      coordinates: Position(
+                                          pickupPoint.location!.longitude
+                                              as double,
+                                          pickupPoint.location!.latitude
+                                              as double)),
+                                  image: imageData);
+                              pointAnnotationManager.create(point);
+                            }
+                          },
+                        ),
                 ),
                 DraggableScrollableSheet(
                   snapAnimationDuration: const Duration(seconds: 1),
@@ -558,15 +583,6 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
   @override
   void initState() {
     super.initState();
-
-    // WidgetsBinding.instance.endOfFrame.then((_) {
-    //   final locationService =
-    //       Provider.of<ETALocationService>(context, listen: false);
-
-    //   if (mounted) {
-    //     locationService.askPermission();
-    //   }
-    // });
 
     setState(() {
       trip = widget.trip!;
