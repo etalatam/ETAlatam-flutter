@@ -1,4 +1,7 @@
 
+import 'dart:math';
+
+import 'package:MediansSchoolDriver/Pages/attendance.dart';
 import 'package:MediansSchoolDriver/Pages/providers/location_service_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -47,6 +50,36 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
   bool hasCustomRoute = false;
 
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
+
+  CoordinateBounds getCoordinateBounds(List<Position> points) {
+    double minLat = double.infinity;
+    double minLng = double.infinity;
+    double maxLat = -double.infinity;
+    double maxLng = -double.infinity;
+
+    for (var point in points) {
+      minLat = min(minLat, point.lat as double);
+      minLng = min(minLng, point.lng as double);
+      maxLat = max(maxLat, point.lat as double);
+      maxLng = max(maxLng, point.lng as double); 
+    }
+
+    return CoordinateBounds(
+      southwest: Point( coordinates: Position(minLng, minLat)),
+      northeast: Point( coordinates: Position(maxLat, maxLng)), 
+      infiniteBounds: true,
+    );
+  }
+
+  void cameraForCoordinateBounds(mapboxMap, CoordinateBounds coordinateBounds) async  {
+      await mapboxMap.cameraForCoordinateBounds(
+          coordinateBounds,
+          MbxEdgeInsets(top: 1, left: 2, bottom: 3, right: 4),
+          10.0,
+          20.0,
+          null,
+          null);
+  }  
 
   @override
   Widget build(BuildContext context) {
@@ -116,6 +149,9 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                                 lineCap: LineCap.ROUND,
                                 lineColor: Colors.blue.value,
                                 lineWidth: 6.0));
+
+                            
+                            cameraForCoordinateBounds(mapboxMap, getCoordinateBounds(points));
                           },
                         ),
                 ),
@@ -162,163 +198,201 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                       ),
                       SingleChildScrollView(
                         controller: scrollController,
-                        child: Container(
-                            child: Stack(children: [
-                          // HeadWidget(
-                          //     hasCustomRoute ? customRoute : trip.driver!),
-                          Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 20),
-                            height: 1,
-                            color: activeTheme.main_color.withOpacity(.2),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.only(top: 10),
-                            padding: const EdgeInsets.all(20),
-                            width: double.infinity,
-                            child: Column(
-                              crossAxisAlignment: storage
-                                          .getItem('lang')
-                                          .toString()
-                                          .toLowerCase() ==
-                                      'español'
-                                  ? CrossAxisAlignment.end
-                                  : CrossAxisAlignment.start,
+                        child: Stack(children: [
+                                                  // HeadWidget(
+                                                  //     hasCustomRoute ? customRoute : trip.driver!),
+                        Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 20),
+                        height: 1,
+                        color: activeTheme.main_color.withOpacity(.2),
+                                                  ),
+                                                  Container(
+                        margin: const EdgeInsets.only(top: 10),
+                        padding: const EdgeInsets.all(20),
+                        width: double.infinity,
+                        child: Column(
+                          crossAxisAlignment: storage
+                                      .getItem('lang')
+                                      .toString()
+                                      .toLowerCase() ==
+                                  'español'
+                              ? CrossAxisAlignment.end
+                              : CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Row(
                               mainAxisSize: MainAxisSize.max,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "${lang.translate('Trip')} #${trip.trip_id}",
-                                      style: activeTheme.h3,
-                                    ),
-                                    Text(
-                                      "${trip.trip_date}",
-                                      style: activeTheme.normalText,
-                                    ),
-                                  ],
+                                Text(
+                                  "${lang.translate('Trip')} #${trip.trip_id}",
+                                  style: activeTheme.h3,
                                 ),
-                                const SizedBox(
-                                  height: 20,
+                                Text(
+                                  "${trip.trip_date}",
+                                  style: activeTheme.normalText,
                                 ),
-                                Container(
-                                  height: 1,
-                                  color: activeTheme.main_color.withOpacity(.3),
-                                ),
-                                const SizedBox(
-                                  height: 20,
-                                ),
-                                trip.trip_status == 'Completed'
-                                    ? MediansWidgets.tripInfoRow(trip)
-                                    : const Center(),
-                                (trip.waiting_locations_count != 0 ||
-                                        trip.trip_status
-                                                .toString()
-                                                .toLowerCase() ==
-                                            'completed')
-                                    ? const Center()
-                                    : GestureDetector(
-                                        onTap: (() {
-                                          endTrip();
-                                        }),
-                                        child: Center(
-                                            child: ButtonTextIcon(
-                                                lang.translate('End trip'),
-                                                Icon(
-                                                  Icons.route,
-                                                  color:
-                                                      activeTheme.buttonColor,
-                                                ),
-                                                Colors.red))),
-                                Container(
-                                  padding: const EdgeInsets.only(top: 20),
-                                  child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        // GestureDetector(
-                                        //     onTap: () {
-                                        //       setState(() {
-                                        //         activeTab = 'pickup';
-                                        //       });
-                                        //     },
-                                        //     child: Text(
-                                        //       lang.translate(
-                                        //           "Pickup Locations"),
-                                        //       style: activeTab == 'pickup'
-                                        //           ? activeTheme.h5
-                                        //           : activeTheme.h6,
-                                        //     )
-                                        //     ),
-
-                                        // const SizedBox(width: 50),
-                                        // GestureDetector(
-                                        //     onTap: () {
-                                        //       setState(() {
-                                        //         activeTab = 'destination';
-                                        //       });
-                                        //     },
-                                        //     child: Text(
-                                        //       lang.translate("Destinations"),
-                                        //       style: activeTab == 'destination'
-                                        //           ? activeTheme.h5
-                                        //           : activeTheme.h6,
-                                        //     )),
-                                      ]),
-                                ),
-
-                                for (var i = 0;
-                                    i < trip.pickup_locations!.length;
-                                    i++)
-                                  activeTab == 'pickup'
-                                      ? Row(children: [
-                                          tripUser(trip.pickup_locations![i]),
-                                        ])
-                                      // Slideable(
-                                      //     model: trip.pickup_locations![i],
-                                      //     hasLeft: true,
-                                      //     hasRight: trip.pickup_locations![i]
-                                      //                 .status ==
-                                      //             'waiting'
-                                      //         ? true
-                                      //         : false,
-                                      //     widget: Container(
-                                      //       margin: const EdgeInsets.only(
-                                      //           bottom: 10, top: 5),
-                                      //       child: tripUser(
-                                      //           trip.pickup_locations![i]),
-                                      //     ),
-                                      //     finishCallback: finish,
-                                      //   )
-                                      : const Center(),
-                                // for (var i = 0;
-                                //     i < trip.destinations!.length;
-                                //     i++)
-                                //   activeTab == 'destination'
-                                //       ? Slideable(
-                                //           model: trip.destinations![i],
-                                //           hasLeft: true,
-                                //           hasRight:
-                                //               trip.destinations![i].status ==
-                                //                       'waiting'
-                                //                   ? true
-                                //                   : false,
-                                //           widget: Container(
-                                //             margin: const EdgeInsets.only(
-                                //                 bottom: 10, top: 10),
-                                //             child:
-                                //                 tripUser(trip.destinations![i]),
-                                //           ),
-                                //           finishCallback: finishDestination,
-                                //         )
-                                //       : const Center()
+                              if(trip.trip_status == 'Completed')
+                              GestureDetector(
+                                onTap: (() {
+                                  openNewPage(
+                                    context,
+                                    AttendancePage());
+                                }),
+                                child: Center(
+                                    child: ButtonTextIcon(
+                                        '',
+                                        Icon(
+                                          Icons.list,
+                                          color:
+                                              activeTheme.buttonColor,
+                                        ),
+                                        Color.fromARGB(255, 226, 187, 32)))),
                               ],
                             ),
-                          )
-                        ])),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            Container(
+                              height: 1,
+                              color: activeTheme.main_color.withOpacity(.3),
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                              trip.trip_status == 'Completed'
+                                  ? MediansWidgets.tripInfoRow(trip)
+                                  : const Center(),                            
+                            Row(
+                              children: [
+                              (trip.waiting_locations_count != 0 ||
+                                      trip.trip_status
+                                              .toString()
+                                              .toLowerCase() ==
+                                          'completed')
+                                  ? const Center()
+                                  : GestureDetector(
+                                      onTap: (() {
+                                        endTrip();
+                                      }),
+                                      child: Center(
+                                          child: ButtonTextIcon(
+                                              lang.translate('End trip'),
+                                              Icon(
+                                                Icons.route,
+                                                color:
+                                                    activeTheme.buttonColor,
+                                              ),
+                                              Colors.red))),
+                            if(trip.trip_status == 'Running')
+                            const SizedBox(
+                              width: 20,
+                            ),
+                            if(trip.trip_status == 'Running')
+                              GestureDetector(
+                                onTap: (() {
+                                  openNewPage(
+                                    context,
+                                    AttendancePage());
+                                }),
+                                child: Center(
+                                    child: ButtonTextIcon(
+                                        lang.translate('Attendance'),
+                                        Icon(
+                                          Icons.list,
+                                          color:
+                                              activeTheme.buttonColor,
+                                        ),
+                                        Color.fromARGB(255, 226, 187, 32)))),
+                              ]),
+                            Container(
+                              padding: const EdgeInsets.only(top: 20),
+                              child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.center,
+                                  children: [
+                                    // GestureDetector(
+                                    //     onTap: () {
+                                    //       setState(() {
+                                    //         activeTab = 'pickup';
+                                    //       });
+                                    //     },
+                                    //     child: Text(
+                                    //       lang.translate(
+                                    //           "Pickup Locations"),
+                                    //       style: activeTab == 'pickup'
+                                    //           ? activeTheme.h5
+                                    //           : activeTheme.h6,
+                                    //     )
+                                    //     ),
+                        
+                                    // const SizedBox(width: 50),
+                                    // GestureDetector(
+                                    //     onTap: () {
+                                    //       setState(() {
+                                    //         activeTab = 'destination';
+                                    //       });
+                                    //     },
+                                    //     child: Text(
+                                    //       lang.translate("Destinations"),
+                                    //       style: activeTab == 'destination'
+                                    //           ? activeTheme.h5
+                                    //           : activeTheme.h6,
+                                    //     )),
+                                  ]),
+                            ),
+                        
+                            for (var i = 0;
+                                i < trip.pickup_locations!.length;
+                                i++)
+                              activeTab == 'pickup'
+                                  ? Row(children: [
+                                      tripUser(trip.pickup_locations![i]),
+                                    ])
+                                  // Slideable(
+                                  //     model: trip.pickup_locations![i],
+                                  //     hasLeft: true,
+                                  //     hasRight: trip.pickup_locations![i]
+                                  //                 .status ==
+                                  //             'waiting'
+                                  //         ? true
+                                  //         : false,
+                                  //     widget: Container(
+                                  //       margin: const EdgeInsets.only(
+                                  //           bottom: 10, top: 5),
+                                  //       child: tripUser(
+                                  //           trip.pickup_locations![i]),
+                                  //     ),
+                                  //     finishCallback: finish,
+                                  //   )
+                                  : const Center(),
+                            // for (var i = 0;
+                            //     i < trip.destinations!.length;
+                            //     i++)
+                            //   activeTab == 'destination'
+                            //       ? Slideable(
+                            //           model: trip.destinations![i],
+                            //           hasLeft: true,
+                            //           hasRight:
+                            //               trip.destinations![i].status ==
+                            //                       'waiting'
+                            //                   ? true
+                            //                   : false,
+                            //           widget: Container(
+                            //             margin: const EdgeInsets.only(
+                            //                 bottom: 10, top: 10),
+                            //             child:
+                            //                 tripUser(trip.destinations![i]),
+                            //           ),
+                            //           finishCallback: finishDestination,
+                            //         )
+                            //       : const Center()
+                          ],
+                        ),
+                                                  )
+                                                ]),
                       )
                     ]));
                   },

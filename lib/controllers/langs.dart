@@ -289,6 +289,7 @@ class Lang {
     'trips': 'Viajes',
     'end_trip': 'Finalizar',
     'trip_status': '',
-    'does_not_have_active_trips': 'No hay viajes activos.'
+    'does_not_have_active_trips': 'No hay viajes activos.',
+    'attendance': 'Asistencia'
   };
 }
