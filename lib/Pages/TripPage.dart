@@ -66,17 +66,17 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
 
     return CoordinateBounds(
       southwest: Point( coordinates: Position(minLng, minLat)),
-      northeast: Point( coordinates: Position(maxLat, maxLng)), 
+      northeast: Point( coordinates: Position(maxLng, maxLat)), 
       infiniteBounds: true,
     );
   }
 
-  void cameraForCoordinateBounds(mapboxMap, CoordinateBounds coordinateBounds) async  {
-      await mapboxMap.cameraForCoordinateBounds(
+  Future cameraForCoordinateBounds(mapboxMap, CoordinateBounds coordinateBounds) {
+    return mapboxMap.cameraForCoordinateBounds(
           coordinateBounds,
           MbxEdgeInsets(top: 1, left: 2, bottom: 3, right: 4),
-          10.0,
-          20.0,
+          0.0,
+          0.0,
           null,
           null);
   }  
@@ -151,7 +151,11 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                                 lineWidth: 6.0));
 
                             
-                            cameraForCoordinateBounds(mapboxMap, getCoordinateBounds(points));
+                            cameraForCoordinateBounds(mapboxMap, getCoordinateBounds(points)).then((value) => print('cameraForCoordinateBounds:  $value'));
+
+                            mapboxMap.setCamera(CameraOptions(
+                              zoom: 12
+                            ));
                           },
                         ),
                 ),
