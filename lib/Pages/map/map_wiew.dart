@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -99,4 +100,5 @@ class MapWiewState extends State<MapWiew> {
     super.initState();
     locationService = Provider.of<LocationService>(context, listen: false);
   }
+
 }
