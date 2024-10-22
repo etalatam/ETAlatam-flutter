@@ -32,23 +32,19 @@ class _DriverPageState extends State<AttendancePage> {
   void _scrollListener() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
       _page++;
-      // Provider.of<DataProvider>(context, listen: false).fetchData(
-      //   page: _page,
-      //   query: _queryController.text,
-      //   filter: _filter,
-      // );
+      fetchData();
     }
   }
 
-  fetchData ({limit = 20, offset = 0, filter= ''}) {
+  fetchData () {
     try {
       httpService.routeStudents(
-        limit: limit, 
-        offset: offset, 
-        filter: filter
-      ).then((value) {
+        limit: 20, 
+        offset: _page * 20, 
+        filter: _filter.isNotEmpty ? "$_filter=like.*${_queryController.text}*" : ""
+      ).then((students) {
         setState(() {
-          list = value;
+          list = students;
         });
       });
     } catch (e) {
@@ -82,10 +78,6 @@ class _DriverPageState extends State<AttendancePage> {
                 onPressed: () {
                   _page = 1;
                   fetchData();
-                  // dataProvider.fetchData(
-                  //   query: _queryController.text,
-                  //   filter: _filter,
-                  // );
                 },
               ),
             ),
@@ -94,18 +86,16 @@ class _DriverPageState extends State<AttendancePage> {
             value: _filter,
             items: [
               DropdownMenuItem(value: "", child: Text("No Filter")),
-              DropdownMenuItem(value: "filter1", child: Text("Filter 1")),
-              DropdownMenuItem(value: "filter2", child: Text("Filter 2")),
+              DropdownMenuItem(value: "firstname", child: Text("Nombre")),
+              DropdownMenuItem(value: "school_name", child: Text("Esculea")),
+              DropdownMenuItem(value: "pickup_point_name", child: Text("Parada")),
             ],
             onChanged: (value) {
               setState(() {
                 _filter = value ?? "";
                 _page = 1;
               });
-              // dataProvider.fetchData(
-              //   query: _queryController.text,
-              //   filter: _filter,
-              // );
+              fetchData();
             },
           ),
           Expanded(
