@@ -29,20 +29,22 @@ class _DriverPageState extends State<AttendancePage> {
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
+    fetchData();
   }
 
   void _scrollListener() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
-      _page++;
-      fetchData();
-    }
+    // if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    //   _page++;
+    //   fetchData();
+    // }
   }
 
   fetchData () {
+    print('[Attendance.fetchData]');
     try {
       httpService.routeStudents(
         limit: 20, 
-        offset: _page * 20, 
+        offset: (_page - 1) * 20, 
         filter: _filter.isNotEmpty ? "$_filter=like.*${_queryController.text}*" : ""
       ).then((students) {
         setState(() {
@@ -51,7 +53,7 @@ class _DriverPageState extends State<AttendancePage> {
         });
       });
     } catch (e) {
-      print(e.toString());
+      print('[Attendance.fetchData] ${e.toString()}');
       loading = false;
     }
   }
@@ -123,7 +125,7 @@ class _DriverPageState extends State<AttendancePage> {
                           title: Text(item.first_name!),
                           trailing: Checkbox(
                             // value: item.isChecked,
-                            value: item.status?.isEmpty,
+                            value: item.first_name?.isEmpty,
                             onChanged: (value) {
                               // dataProvider.toggleItemChecked(item);
                             },

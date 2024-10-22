@@ -772,7 +772,7 @@ class HttpService {
     }
   }
 
-  Future<List<StudentModel>> routeStudents({limit = 20, offset = 0, String filter = ''}) async {
+  Future<List<StudentModel>> routeStudents({limit = 20, offset = 0, String filter = ''}) async {    
     http.Response res = await getQuery(
         "/rpc/route_students?order=firstname.desc&limit=$limit&offset=$offset&$filter");
 
@@ -781,12 +781,12 @@ class HttpService {
 
     if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
-      final List<StudentModel> trips = await Future.wait(
+      final List<StudentModel> students = await Future.wait(
         body
             .map((dynamic item) async => await StudentModel.fromJson(item))
             .toList(),
       );
-      return trips;
+      return students;
     }
     debugPrint(res.body.toString());
     return [];
