@@ -1,4 +1,7 @@
+import 'package:MediansSchoolDriver/Models/StudentModel.dart';
 import 'package:flutter/material.dart';
+
+import '../controllers/Helpers.dart';
 
 class AttendancePage extends StatefulWidget {
   const AttendancePage({super.key});
@@ -11,14 +14,18 @@ class AttendancePage extends StatefulWidget {
 class _DriverPageState extends State<AttendancePage> {
 
   TextEditingController _queryController = TextEditingController();
-  String _filter = "";
-  int _page = 1;
+
   ScrollController _scrollController = ScrollController();
+
+  String _filter = "";
+  
+  int _page = 1;
+
+  List<StudentModel> list = [];
 
   @override
   void initState() {
     super.initState();
-    // Provider.of<DataProvider>(context, listen: false).fetchData();
     _scrollController.addListener(_scrollListener);
   }
 
@@ -33,10 +40,24 @@ class _DriverPageState extends State<AttendancePage> {
     }
   }
 
+  fetchData ({limit = 20, offset = 0, filter= ''}) {
+    try {
+      httpService.routeStudents(
+        limit: limit, 
+        offset: offset, 
+        filter: filter
+      ).then((value) {
+        setState(() {
+          list = value;
+        });
+      });
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // final dataProvider = Provider.of<DataProvider>(context);
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Attendance'),
@@ -45,7 +66,7 @@ class _DriverPageState extends State<AttendancePage> {
             icon: Icon(Icons.refresh),
             onPressed: () {
               _page = 1;
-              // dataProvider.fetchData();
+              fetchData();
             },
           ),
         ],
@@ -60,6 +81,7 @@ class _DriverPageState extends State<AttendancePage> {
                 icon: Icon(Icons.search),
                 onPressed: () {
                   _page = 1;
+                  fetchData();
                   // dataProvider.fetchData(
                   //   query: _queryController.text,
                   //   filter: _filter,
