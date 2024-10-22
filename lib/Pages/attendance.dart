@@ -63,31 +63,18 @@ class _DriverPageState extends State<AttendancePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Attendance'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: () {
-              _page = 1;
-              fetchData();
-            },
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: Icon(Icons.refresh),
+        //     onPressed: () {
+        //       _page = 1;
+        //       fetchData();
+        //     },
+        //   ),
+        // ],
       ),
       body: Column(
         children: [
-          TextField(
-            controller: _queryController,
-            decoration: InputDecoration(
-              labelText: "Search",
-              suffixIcon: IconButton(
-                icon: Icon(Icons.search),
-                onPressed: () {
-                  _page = 1;
-                  fetchData();
-                },
-              ),
-            ),
-          ),
           DropdownButton<String>(
             value: _filter,
             items: [
@@ -104,6 +91,19 @@ class _DriverPageState extends State<AttendancePage> {
               fetchData();
             },
           ),
+          TextField(
+            controller: _queryController,
+            decoration: InputDecoration(
+              labelText: "Search",
+              suffixIcon: IconButton(
+                icon: Icon(Icons.search),
+                onPressed: () {
+                  _page = 1;
+                  fetchData();
+                },
+              ),
+            ),
+          ),          
           Expanded(
             child: loading && _page == 1
                 ? Center(child: CircularProgressIndicator())
