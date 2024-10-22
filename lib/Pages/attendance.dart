@@ -23,6 +23,8 @@ class _DriverPageState extends State<AttendancePage> {
 
   List<StudentModel> list = [];
 
+  bool loading = true;
+
   @override
   void initState() {
     super.initState();
@@ -45,10 +47,12 @@ class _DriverPageState extends State<AttendancePage> {
       ).then((students) {
         setState(() {
           list = students;
+          loading = false;
         });
       });
     } catch (e) {
       print(e.toString());
+      loading = false;
     }
   }
 
@@ -99,32 +103,32 @@ class _DriverPageState extends State<AttendancePage> {
             },
           ),
           Expanded(
-            // child: dataProvider.isLoading && _page == 1
-            child: _page == 1
+            child: loading && _page == 1
                 ? Center(child: CircularProgressIndicator())
                 : RefreshIndicator(
                     onRefresh: () async {
                       _page = 1;
-                      // await dataProvider.fetchData();
+                      fetchData();
                     },
                     child: ListView.builder(
                       controller: _scrollController,
-                      // itemCount: dataProvider.items.length + (dataProvider.isLoading ? 1 : 0),
+                      itemCount: list.length + (loading ? 1 : 0),
                       itemBuilder: (context, index) {
-                        // if (index == dataProvider.items.length) {
-                        //   return Center(child: CircularProgressIndicator());
-                        // }
-                        // final item = dataProvider.items[index];
-                        // return ListTile(
-                        //   leading: Image.network(item.imageUrl),
-                        //   title: Text(item.name),
-                        //   trailing: Checkbox(
-                        //     value: item.isChecked,
-                        //     onChanged: (value) {
-                        //       dataProvider.toggleItemChecked(item);
-                        //     },
-                        //   ),
-                        // );
+                        if (index == list.length) {
+                          return Center(child: CircularProgressIndicator());
+                        }
+                        final item = list[index];
+                        return ListTile(
+                          // leading: Image.network(item.),
+                          title: Text(item.first_name!),
+                          trailing: Checkbox(
+                            // value: item.isChecked,
+                            value: item.status?.isEmpty,
+                            onChanged: (value) {
+                              // dataProvider.toggleItemChecked(item);
+                            },
+                          ),
+                        );
                       },
                     ),
                   ),
