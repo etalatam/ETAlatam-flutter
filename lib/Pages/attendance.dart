@@ -1,5 +1,6 @@
 import 'package:MediansSchoolDriver/Models/StudentModel.dart';
 import 'package:MediansSchoolDriver/Models/TripModel.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../controllers/Helpers.dart';
@@ -107,10 +108,17 @@ class _DriverPageState extends State<AttendancePage> {
                         }
                         final item = list[index];
                         return ListTile(
-                          // leading: Image.network(item.),
+                          leading: CircleAvatar(
+                            backgroundImage: CachedNetworkImageProvider(
+                              'https://ui-avatars.com/api/?background=random&name=${item.first_name!}'
+                            )
+                          ),
+                            
                           title: Text(item.first_name!),
                           trailing: Checkbox(
-                            value: item.first_name?.isEmpty,
+                            activeColor: Colors.green,
+                            checkColor: Colors.white,
+                            value: true,
                             onChanged: (value) {
                               print('value');
                             },
