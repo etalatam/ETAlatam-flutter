@@ -243,7 +243,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                                 onTap: (() {
                                   openNewPage(
                                     context,
-                                    AttendancePage());
+                                    AttendancePage(trip: trip));
                                 }),
                                 child: Center(
                                     child: ButtonTextIcon(
@@ -299,7 +299,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                                 onTap: (() {
                                   openNewPage(
                                     context,
-                                    AttendancePage());
+                                    AttendancePage(trip: trip));
                                 }),
                                 child: Center(
                                     child: ButtonTextIcon(

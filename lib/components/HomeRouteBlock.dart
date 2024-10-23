@@ -193,35 +193,30 @@ class HomeRouteBlock extends StatelessWidget {
                                           ),
                                         ),
                                       )),
-                                route.pickup_locations.isEmpty
-                                    ? const Center()
-                                    : Positioned(
-                                        right: 0,
-                                        top: 10,
-                                        child: GestureDetector(
-                                            // onTap: (() => {
-                                            //   //TODO
-                                            //   openNewPage(
-                                            //       openNewPage(
-                                            //           context,
-                                            //           PickupsPage(
-                                            //             pickup_locations: route
-                                            //                 .pickup_locations,
-                                            //           ))
-                                            //     }),
-                                            child: Row(
-                                          children: [
-                                            Icon(
-                                              Icons.pin_drop,
-                                              color: activeTheme.main_color,
-                                            ),
-                                            Text(
-                                              '${route.pickup_locations.length}',
-                                              style: activeTheme.normalText,
-                                            ),
-                                          ],
-                                        )),
-                                      ),
+                                // route.pickup_locations.isEmpty
+                                //     ? const Center()
+                                //     : GestureDetector(
+                                //             onTap: (() => {
+                                //                 openNewPage(
+                                //                     context,
+                                //                     PickupsPage(
+                                //                       pickup_locations: route
+                                //                           .pickup_locations,
+                                //                     ))
+                                //             }),
+                                //             child: Row(
+                                //               children: [
+                                //                 Icon(
+                                //                   Icons.pin_drop,
+                                //                   color: activeTheme.main_color,
+                                //                 ),
+                                //                 Text(
+                                //                   '${route.pickup_locations.length}',
+                                //                   style: activeTheme.normalText,
+                                //                 ),
+                                //               ],
+                                //         )),
+                                      
                               ]),
                       ),
                       GestureDetector(

@@ -1,11 +1,15 @@
+import 'package:MediansSchoolDriver/Models/RouteModel.dart';
 import 'package:MediansSchoolDriver/Models/StudentModel.dart';
+import 'package:MediansSchoolDriver/Models/TripModel.dart';
 import 'package:flutter/material.dart';
 
 import '../controllers/Helpers.dart';
 
 class AttendancePage extends StatefulWidget {
-  const AttendancePage({super.key});
 
+  TripModel trip;
+
+  AttendancePage({super.key, required this.trip});
 
   @override
   State<AttendancePage> createState() => _DriverPageState();
@@ -43,9 +47,10 @@ class _DriverPageState extends State<AttendancePage> {
     print('[Attendance.fetchData]');
     try {
       httpService.routeStudents(
+        routeID: widget.trip.route_id,
         limit: 20, 
         offset: (_page - 1) * 20, 
-        filter: _filter.isNotEmpty ? "$_filter=like.*${_queryController.text}*" : ""
+        filter: _queryController.text
       ).then((students) {
         setState(() {
           list = students;
@@ -75,35 +80,19 @@ class _DriverPageState extends State<AttendancePage> {
       ),
       body: Column(
         children: [
-          DropdownButton<String>(
-            value: _filter,
-            items: [
-              DropdownMenuItem(value: "", child: Text("No Filter")),
-              DropdownMenuItem(value: "firstname", child: Text("Nombre")),
-              DropdownMenuItem(value: "school_name", child: Text("Esculea")),
-              DropdownMenuItem(value: "pickup_point_name", child: Text("Parada")),
-            ],
-            onChanged: (value) {
-              setState(() {
-                _filter = value ?? "";
-                _page = 1;
-              });
-              fetchData();
-            },
-          ),
           TextField(
-            controller: _queryController,
-            decoration: InputDecoration(
-              labelText: "Search",
-              suffixIcon: IconButton(
-                icon: Icon(Icons.search),
-                onPressed: () {
-                  _page = 1;
-                  fetchData();
-                },
+              controller: _queryController,
+              decoration: InputDecoration(
+                labelText: "Search",
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.search),
+                  onPressed: () {
+                    _page = 1;
+                    fetchData();
+                  },
+                ),
               ),
-            ),
-          ),          
+            ),            
           Expanded(
             child: loading && _page == 1
                 ? Center(child: CircularProgressIndicator())
@@ -124,10 +113,9 @@ class _DriverPageState extends State<AttendancePage> {
                           // leading: Image.network(item.),
                           title: Text(item.first_name!),
                           trailing: Checkbox(
-                            // value: item.isChecked,
                             value: item.first_name?.isEmpty,
                             onChanged: (value) {
-                              // dataProvider.toggleItemChecked(item);
+                              print('value');
                             },
                           ),
                         );
