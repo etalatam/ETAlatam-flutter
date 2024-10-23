@@ -1,4 +1,3 @@
-import 'package:MediansSchoolDriver/Models/RouteModel.dart';
 import 'package:MediansSchoolDriver/Models/StudentModel.dart';
 import 'package:MediansSchoolDriver/Models/TripModel.dart';
 import 'package:flutter/material.dart';
