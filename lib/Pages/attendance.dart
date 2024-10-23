@@ -19,12 +19,10 @@ class _DriverPageState extends State<AttendancePage> {
   TextEditingController _queryController = TextEditingController();
 
   ScrollController _scrollController = ScrollController();
-
-  String _filter = "";
   
-  int _page = 1;
-
   List<StudentModel> list = [];
+
+  int _page = 1;
 
   bool loading = true;
 
@@ -66,7 +64,7 @@ class _DriverPageState extends State<AttendancePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Attendance'),
+        title: Text(lang.translate('Attendance')),
         // actions: [
         //   IconButton(
         //     icon: Icon(Icons.refresh),
@@ -82,7 +80,7 @@ class _DriverPageState extends State<AttendancePage> {
           TextField(
               controller: _queryController,
               decoration: InputDecoration(
-                labelText: "Search",
+                labelText: lang.translate('Search'),
                 suffixIcon: IconButton(
                   icon: Icon(Icons.search),
                   onPressed: () {

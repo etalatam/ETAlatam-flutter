@@ -290,6 +290,7 @@ class Lang {
     'end_trip': 'Finalizar',
     'trip_status': '',
     'does_not_have_active_trips': 'No hay viajes activos.',
-    'attendance': 'Asistencia'
+    'attendance': 'Asistencia',
+    'search': 'Buscar'
   };
 }
