@@ -216,7 +216,6 @@ class HomeRouteBlock extends StatelessWidget {
                                 //                 ),
                                 //               ],
                                 //         )),
-                                      
                               ]),
                       ),
                       GestureDetector(
@@ -231,9 +230,10 @@ class HomeRouteBlock extends StatelessWidget {
                                   horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
                                   // color: activeTheme.buttonBG,
-                                  color: Colors.green,
-                                  border:
-                                      Border.all(width: 1, color: Colors.green),
+                                  color:
+                                      const Color.fromARGB(255, 59, 140, 135),
+                                  // border:
+                                  //     Border.all(width: 1, color: Colors.green),
                                   borderRadius: BorderRadius.circular(10)),
                               child: Row(
                                 children: [

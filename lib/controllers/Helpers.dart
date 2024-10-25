@@ -245,7 +245,8 @@ abstract class DefaultTheme {
 
   static Color default_color = Colors.transparent;
   static Color default_bg = Colors.transparent;
-  Color main_color = Colors.transparent;
+  Color main_color = Color.fromARGB(0, 17, 24, 39);
+
   Color main_bg = Colors.transparent;
   Color border_color = const Color.fromARGB(0, 17, 24, 39);
   Color icon_color = Colors.transparent;

@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import '../controllers/Helpers.dart';
 
 class AttendancePage extends StatefulWidget {
-
   TripModel trip;
 
   AttendancePage({super.key, required this.trip});
@@ -16,16 +15,17 @@ class AttendancePage extends StatefulWidget {
 }
 
 class _DriverPageState extends State<AttendancePage> {
-
   TextEditingController _queryController = TextEditingController();
 
   ScrollController _scrollController = ScrollController();
-  
+
   List<StudentModel> list = [];
 
   int _page = 1;
 
   bool loading = true;
+
+  int? _editingIndex;
 
   @override
   void initState() {
@@ -41,15 +41,16 @@ class _DriverPageState extends State<AttendancePage> {
     // }
   }
 
-  fetchData () {
+  fetchData() {
     print('[Attendance.fetchData]');
     try {
-      httpService.routeStudents(
-        routeID: widget.trip.route_id,
-        limit: 20, 
-        offset: (_page - 1) * 20, 
-        filter: _queryController.text
-      ).then((students) {
+      httpService
+          .routeStudents(
+              routeID: widget.trip.route_id,
+              limit: 20,
+              offset: (_page - 1) * 20,
+              filter: _queryController.text)
+          .then((students) {
         setState(() {
           list = students;
           loading = false;
@@ -59,6 +60,15 @@ class _DriverPageState extends State<AttendancePage> {
       print('[Attendance.fetchData] ${e.toString()}');
       loading = false;
     }
+  }
+
+  void _setStatus(int status) {
+    // setState(() {
+    //   if (_editingIndex != null) {
+    //     items[_editingIndex!].status = status;
+    //   }
+    //   _editingIndex = null;
+    // });
   }
 
   @override
@@ -79,18 +89,18 @@ class _DriverPageState extends State<AttendancePage> {
       body: Column(
         children: [
           TextField(
-              controller: _queryController,
-              decoration: InputDecoration(
-                labelText: lang.translate('Search'),
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.search),
-                  onPressed: () {
-                    _page = 1;
-                    fetchData();
-                  },
-                ),
+            controller: _queryController,
+            decoration: InputDecoration(
+              labelText: lang.translate('Search'),
+              suffixIcon: IconButton(
+                icon: Icon(Icons.search),
+                onPressed: () {
+                  _page = 1;
+                  fetchData();
+                },
               ),
-            ),            
+            ),
+          ),
           Expanded(
             child: loading && _page == 1
                 ? Center(child: CircularProgressIndicator())
@@ -107,23 +117,68 @@ class _DriverPageState extends State<AttendancePage> {
                           return Center(child: CircularProgressIndicator());
                         }
                         final item = list[index];
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundImage: CachedNetworkImageProvider(
-                              'https://ui-avatars.com/api/?background=random&name=${item.first_name!}'
-                            )
-                          ),
-                            
-                          title: Text(item.first_name!),
-                          trailing: Checkbox(
-                            activeColor: Colors.green,
-                            checkColor: Colors.white,
-                            value: true,
-                            onChanged: (value) {
-                              print('value');
-                            },
-                          ),
-                        );
+                        return GestureDetector(
+                            onTap: () => {
+                                  setState(() {
+                                    _editingIndex = index;
+                                  })
+                                },
+                            child: Card(
+                                margin: EdgeInsets.all(8.0),
+                                child: Column(children: [
+                                  ListTile(
+                                      leading: CircleAvatar(
+                                          backgroundImage:
+                                              CachedNetworkImageProvider(
+                                                  'https://ui-avatars.com/api/?background=random&name=${item.first_name!}')),
+                                      title: Text(item.first_name!),
+                                      trailing: Column(
+                                        children: [
+                                          if (_editingIndex == null)
+                                            Checkbox(
+                                              activeColor: Colors.green,
+                                              checkColor: Colors.white,
+                                              value: true,
+                                              onChanged: (value) {
+                                                print('value');
+                                              },
+                                            ),
+                                        ],
+                                      )),
+                                  if (_editingIndex == index)
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16.0),
+                                      child: Row(
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(Icons.check_circle,
+                                                color: Colors.red),
+                                            onPressed: () => _setStatus(0),
+                                          ),
+                                          IconButton(
+                                            icon: Icon(Icons.check_circle,
+                                                color: Colors.yellow),
+                                            onPressed: () => _setStatus(1),
+                                          ),
+                                          IconButton(
+                                            icon: Icon(Icons.check_circle,
+                                                color: Colors.green),
+                                            onPressed: () => _setStatus(2),
+                                          ),
+                                          Spacer(),
+                                          IconButton(
+                                            icon: Icon(Icons.close),
+                                            onPressed: () {
+                                              setState(() {
+                                                _editingIndex = null;
+                                              });
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                ])));
                       },
                     ),
                   ),
