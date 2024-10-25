@@ -3,6 +3,7 @@ import 'package:MediansSchoolDriver/Models/TripModel.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../components/IconButtonWithText.dart';
 import '../controllers/Helpers.dart';
 
 class AttendancePage extends StatefulWidget {
@@ -125,60 +126,69 @@ class _DriverPageState extends State<AttendancePage> {
                                 },
                             child: Card(
                                 margin: EdgeInsets.all(8.0),
-                                child: Column(children: [
-                                  ListTile(
-                                      leading: CircleAvatar(
-                                          backgroundImage:
-                                              CachedNetworkImageProvider(
-                                                  'https://ui-avatars.com/api/?background=random&name=${item.first_name!}')),
-                                      title: Text(item.first_name!),
-                                      trailing: Column(
-                                        children: [
-                                          if (_editingIndex == null)
-                                            Checkbox(
-                                              activeColor: Colors.green,
-                                              checkColor: Colors.white,
-                                              value: true,
-                                              onChanged: (value) {
-                                                print('value');
-                                              },
-                                            ),
-                                        ],
-                                      )),
-                                  if (_editingIndex == index)
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16.0),
-                                      child: Row(
-                                        children: [
-                                          IconButton(
-                                            icon: Icon(Icons.check_circle,
-                                                color: Colors.red),
-                                            onPressed: () => _setStatus(0),
+                                child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16),
+                                    child: Column(children: [
+                                      ListTile(
+                                          leading: CircleAvatar(
+                                              backgroundImage:
+                                                  CachedNetworkImageProvider(
+                                                      'https://ui-avatars.com/api/?background=random&name=${item.first_name!}')),
+                                          title: Text(item.first_name!),
+                                          trailing: Column(
+                                            children: [
+                                              if (_editingIndex == null)
+                                                IconButton(
+                                                  icon: Icon(Icons.check_circle,
+                                                      color: Colors.orange),
+                                                  onPressed: () => {},
+                                                ),
+                                            ],
+                                          )),
+                                      if (_editingIndex == index)
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 16, horizontal: 16.0),
+                                          child: Row(
+                                            children: [
+                                              IconButtonWithText(
+                                                label: Text('No abordó'),
+                                                icon: Icon(Icons.check_circle,
+                                                    color: Colors.red),
+                                                onPressed: () => _setStatus(0),
+                                              ),
+                                              SizedBox(
+                                                width: 30,
+                                              ),
+                                              IconButtonWithText(
+                                                label: Text('Permiso'),
+                                                icon: Icon(Icons.check_circle,
+                                                    color: Colors.orange),
+                                                onPressed: () => _setStatus(1),
+                                              ),
+                                              SizedBox(
+                                                width: 30,
+                                              ),
+                                              IconButtonWithText(
+                                                label: Text('Abordó'),
+                                                icon: Icon(Icons.check_circle,
+                                                    color: Colors.green),
+                                                onPressed: () => _setStatus(2),
+                                              ),
+                                              Spacer(),
+                                              IconButton(
+                                                icon: Icon(Icons.close),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    _editingIndex = null;
+                                                  });
+                                                },
+                                              ),
+                                            ],
                                           ),
-                                          IconButton(
-                                            icon: Icon(Icons.check_circle,
-                                                color: Colors.yellow),
-                                            onPressed: () => _setStatus(1),
-                                          ),
-                                          IconButton(
-                                            icon: Icon(Icons.check_circle,
-                                                color: Colors.green),
-                                            onPressed: () => _setStatus(2),
-                                          ),
-                                          Spacer(),
-                                          IconButton(
-                                            icon: Icon(Icons.close),
-                                            onPressed: () {
-                                              setState(() {
-                                                _editingIndex = null;
-                                              });
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                ])));
+                                        ),
+                                    ]))));
                       },
                     ),
                   ),
