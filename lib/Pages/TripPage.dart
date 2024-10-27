@@ -37,17 +37,17 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme i
 
   TripModel trip = TripModel(trip_id: 0);
 
-  Object? customRoute;
+  // Object? customRoute;
 
-  LatLng? mapDestination;
+  // LatLng? mapDestination;
 
-  LatLng? mapOrigin;
+  // LatLng? mapOrigin;
 
-  String currentPicture = "";
+  // String currentPicture = "";
 
   bool showTripReportModal = false;
 
-  bool hasCustomRoute = false;
+  // bool hasCustomRoute = false;
 
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
   
@@ -79,7 +79,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme i
   @override
   Widget build(BuildContext context) {
     // print("[TripPage:build] ${widget.trip?.vehicle?.last_latitude}");
-    mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
+    // mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
     // mapOrigin = LatLng(trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
     return Material(
       child: showLoader
@@ -88,9 +88,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme i
               body: Stack(children: <Widget>[
                 SizedBox(
                   height: MediaQuery.of(context).size.height / 1.40,
-                  child: !showMap
-                      ? const Center()
-                      : MapWiew(
+                  child: MapWiew(
                           navigationMode:
                               trip.trip_status == 'Running' ? true : false,
                           onMapReady: (MapboxMap mapboxMap) async {
@@ -274,13 +272,14 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme i
                   },
                 ),
                 showTripReportModal ? TripReport(trip: trip) : const Center(),
+                
               ]),
             ),
     );
   }
 
   Widget headWidget(item) {
-    final user = hasCustomRoute ? item.student : item;
+    // final user = hasCustomRoute ? item.student : item;
     // currentPicture = user?.picture ?? ' ';
 
     return Row(
@@ -288,23 +287,23 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme i
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.max,
           children: [
-    Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: CircleAvatar(
-            radius: 50,
-            foregroundImage:
-                NetworkImage(httpService.getAvatarUrl(currentPicture)))),
+    // Container(
+    //     padding: const EdgeInsets.symmetric(horizontal: 20),
+    //     child: CircleAvatar(
+    //         radius: 50,
+    //         foregroundImage:
+    //             NetworkImage(httpService.getAvatarUrl(currentPicture)))),
     Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.only(top: 15),
-          child: Text("${user.first_name}",
-              style: TextStyle(
-                  fontSize: activeTheme.h5.fontSize,
-                  fontWeight: activeTheme.h4.fontWeight,
-                  color: Colors.white)),
-        ),
+        // Container(
+        //   padding: const EdgeInsets.only(top: 15),
+        //   child: Text("${user.first_name}",
+        //       style: TextStyle(
+        //           fontSize: activeTheme.h5.fontSize,
+        //           fontWeight: activeTheme.h4.fontWeight,
+        //           color: Colors.white)),
+        // ),
         // Container(
         //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         //   decoration: BoxDecoration(
@@ -361,33 +360,20 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme i
         );
   }
 
-  bool showMap = true;
 
   Widget tripUser(TripPickupLocation pickupLocation) {
     print('[TripPage.tripUser.pickupLocation] ${pickupLocation.toString()}');
     return GestureDetector(
       onTap: () {
-        setState(() {
-          // currentPicture = pickupLocation.student.picture;
-          showMap = false;
-        });
-
-        setState(() {
-          customRoute = pickupLocation;
-          hasCustomRoute = true;
-          // mapOrigin = LatLng(
-          //     trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
-          mapDestination =
-              LatLng(pickupLocation.latitude!, pickupLocation.longitude!);
-          showMap = true;
-        });
+        _mapboxMapController?.setCamera(CameraOptions(
+          zoom: 18,
+          center: Point(coordinates: Position(
+            pickupLocation.location!.longitude as num,
+            pickupLocation.location!.latitude as num
+          ))
+        ));
       },
       child: Row(children: [
-        // CircleAvatar(
-        //   maxRadius: 40,
-        //   backgroundColor: Colors.white,
-        //   foregroundImage: NetworkImage(httpService.getAvatarUrl(currentPicture)),
-        // ),
         const SizedBox(
           width: 10,
         ),
@@ -531,9 +517,9 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme i
 
     if (trip_.trip_id != 0) {
       trip = trip_;
-      currentPicture = "$userId";
+      // currentPicture = "$userId";
       // currentPicture = "${trip.driver!.picture}";
-      mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
+      // mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
       // mapOrigin = LatLng(trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
       isActiveTrip = true;
       showLoader = false;
@@ -561,7 +547,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme i
   
   @override
   void onPointAnnotationClick(PointAnnotation annotation) {
-    _showInfoWindow(annotation);
+    // _showInfoWindow(annotation);
   }
 
   void _showInfoWindow(PointAnnotation annotation) {
@@ -631,9 +617,8 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme i
       final coordinateBounds = getCoordinateBounds(points);
       _mapboxMapController?.setCamera(CameraOptions(
         center: coordinateBounds.southwest,
-        zoom: 15,
+        zoom: 15.5,
         pitch: 70
-
       ));
   }
 
