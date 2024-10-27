@@ -1,7 +1,7 @@
 
 import 'dart:math';
 
-import 'package:MediansSchoolDriver/Pages/attendance.dart';
+import 'package:MediansSchoolDriver/Pages/attendance_page.dart';
 import 'package:MediansSchoolDriver/Pages/providers/location_service_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -110,7 +110,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                               trip.trip_status == 'Running' ? true : false,
                           onMapReady: (MapboxMap mapboxMap) async {
                             final ByteData bytes = await rootBundle
-                                .load('assets/pickup-map-icon.png');
+                                .load('assets/markers/marker-start-route.png');
                             final Uint8List imageData =
                                 bytes.buffer.asUint8List();
 
@@ -154,14 +154,15 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                             cameraForCoordinateBounds(mapboxMap, getCoordinateBounds(points)).then((value) => print('cameraForCoordinateBounds:  $value'));
 
                             mapboxMap.setCamera(CameraOptions(
-                              zoom: 12
+                              zoom: 12,
+                              pitch: 45
                             ));
                           },
                         ),
                 ),
                 DraggableScrollableSheet(
                   snapAnimationDuration: const Duration(seconds: 1),
-                  initialChildSize: .5,
+                  initialChildSize: trip.trip_status == 'Running' ? .5 : .28,
                   minChildSize: 0.25,
                   maxChildSize: 1,
                   builder: (BuildContext context,

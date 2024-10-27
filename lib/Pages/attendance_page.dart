@@ -28,6 +28,8 @@ class _DriverPageState extends State<AttendancePage> {
 
   int? _editingIndex;
 
+  int? _loadingIndex;
+
   @override
   void initState() {
     super.initState();
@@ -63,13 +65,27 @@ class _DriverPageState extends State<AttendancePage> {
     }
   }
 
-  void _setStatus(int status) {
-    // setState(() {
-    //   if (_editingIndex != null) {
-    //     items[_editingIndex!].status = status;
-    //   }
-    //   _editingIndex = null;
-    // });
+  updateAttendance (StudentModel student, String statusCode, int index) async {
+    print('[Attendance.updateAttendance] ${student.toJson()}');
+    try {
+      setState(() {
+          _loadingIndex = index;
+      });
+      final result = await httpService
+          .updateAttendance(widget.trip, student, statusCode);
+      
+      print('[Attendance.updateAttendance] $result');
+
+      setState(() {
+        _editingIndex = null;
+        _loadingIndex = null;
+      });
+    } catch (e) {
+      print('[Attendance.updateAttendance] ${e.toString()}');
+      setState(() {
+          _loadingIndex = null;
+      });
+    }
   }
 
   @override
@@ -104,7 +120,7 @@ class _DriverPageState extends State<AttendancePage> {
           ),
           Expanded(
             child: loading && _page == 1
-                ? Center(child: CircularProgressIndicator())
+                ? Center(child: CircularProgressIndicator(color: activeTheme.main_color))
                 : RefreshIndicator(
                     onRefresh: () async {
                       _page = 1;
@@ -139,7 +155,7 @@ class _DriverPageState extends State<AttendancePage> {
                                           title: Text('${item.first_name!} ${item.last_name}'),
                                           trailing: Column(
                                             children: [
-                                              if (_editingIndex == null)
+                                              if (_editingIndex != index)
                                                 IconButton(
                                                   icon: Icon(Icons.check_circle,
                                                       color: Colors.orange),
@@ -158,31 +174,33 @@ class _DriverPageState extends State<AttendancePage> {
                                         Padding(
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 16, horizontal: 16.0),
-                                          child: Row(
+                                          child: _loadingIndex == index ? 
+                                          Center(child: CircularProgressIndicator( color: activeTheme.main_color,)):
+                                          Row(
                                             children: [
                                               IconButtonWithText(
-                                                label: Text('No abordó'),
+                                                label: Text(lang.translate('Will not board')),
                                                 icon: Icon(Icons.check_circle,
                                                     color: Colors.red),
-                                                onPressed: () => _setStatus(0),
+                                                onPressed: () => updateAttendance(item,'WILL_NOT_BOARD', index),
                                               ),
                                               SizedBox(
                                                 width: 30,
                                               ),
                                               IconButtonWithText(
-                                                label: Text('Permiso'),
+                                                label: Text(lang.translate('Not boarding')),
                                                 icon: Icon(Icons.check_circle,
                                                     color: Colors.orange),
-                                                onPressed: () => _setStatus(1),
+                                                onPressed: () => updateAttendance(item,'NOT_BOARDING', index),
                                               ),
                                               SizedBox(
                                                 width: 30,
                                               ),
                                               IconButtonWithText(
-                                                label: Text('Abordó'),
+                                                label: Text(lang.translate('Boarding')),
                                                 icon: Icon(Icons.check_circle,
                                                     color: Colors.green),
-                                                onPressed: () => _setStatus(2),
+                                                onPressed: () => updateAttendance(item,'BOARDING', index),
                                               ),
                                               Spacer(),
                                               IconButton(

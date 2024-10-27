@@ -21,6 +21,7 @@ class StudentModel {
   PickupLocationModel? pickup_location;
   DestinationModel? destination;
   RouteModel? route;
+  int? schoolId;
 
   StudentModel({
     required this.student_id,
@@ -39,6 +40,7 @@ class StudentModel {
     this.destination,
     this.route,
     this.trips_count,
+    this.schoolId
 
   });
 
@@ -61,6 +63,7 @@ class StudentModel {
       "trips_count" : trips_count,
       "pickup_location": pickup_location!.toJson(),
       "destination" : destination!.toJson(),
+      "schoolId": schoolId
       // "route" : route!.toJson(),
     };
   }
@@ -70,10 +73,11 @@ class StudentModel {
 
     PickupLocationModel? pickupLocation = json['pickup_location'] != null ? PickupLocationModel.fromJson(json['pickup_location']) : PickupLocationModel();
     DestinationModel? destination = json['destination'] != null ? DestinationModel.fromJson(json['destination']) : DestinationModel();
+    
     // RouteModel? route = json['route'] != null ? RouteModel.fromJson(json['route']) : RouteModel(pickup_locations: [],route_id: 0, route_name: '');
 
     return StudentModel(
-      student_id: json['student_id'] as int?,
+      student_id: json['id_student'] as int?,
       parent_id: json['parent_id'] as int?,
       first_name: json['firstname'] as String?,
       last_name: json['lastname'] as String?,
@@ -86,6 +90,7 @@ class StudentModel {
       trips_count: json['trips_count'] as int?,
       pickup_location: pickupLocation,
       destination: destination,
+      schoolId: json['school_id']
       // route: route,
     );
   }

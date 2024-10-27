@@ -356,6 +356,28 @@ class HttpService {
     }
   }
 
+   Future<StudentModel> updateAttendance(TripModel trip,  StudentModel student, String statusCode) async {
+    final data = jsonEncode({
+      "id_school": student.schoolId,
+      "id_student": student.student_id,
+      "id_trip": trip.trip_id,
+      "status_code": statusCode
+    });
+
+    print("[client.updateAttendance] $data");
+
+    http.Response res = await postQuery('/rpc/update_attendance',  data, 
+      contentType: 'application/json');
+    print("res.statusCode ${res.statusCode}");
+    print("res.body ${res.body}");
+
+    if (res.statusCode == 200) {
+      return StudentModel.fromJson(jsonDecode(res.body));
+    } else {
+      throw "${parseResponseMessage(res)}/${res.statusCode}";
+    }
+  }
+
   /// Submit form to update data through API
   Future<String> endTrip(String tripId) async {
     Map data = {
@@ -778,11 +800,13 @@ class HttpService {
     url = "$url&route_id=eq.$routeID";
 
     if(filter.isNotEmpty){
-      url = "$url&firstname=ilike.*$filter*";
-      url = "$url&lastname=ilike.*$filter*";
-      url = "$url&address=ilike.*$filter*";
-      url = "$url&school_name=ilike.*$filter*";
-      url = "$url&pickup_point_name=ilike.*$filter*";
+      url = "&or=(";
+      url = "${url}firstname.ilike.*$filter*";
+      url = "$url,lastname.ilike.*$filter*";
+      url = "$url,address.ilike.*$filter*";
+      url = "$url,school_name.ilike.*$filter*";
+      url = "$url,pickup_point_name.ilike.*$filter*";
+      url = ")";
     }
     
     http.Response res = await getQuery(url);

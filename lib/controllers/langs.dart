@@ -1,4 +1,5 @@
 import 'dart:core';
+
 import 'package:localstorage/localstorage.dart';
 
 class Lang {
@@ -291,6 +292,9 @@ class Lang {
     'trip_status': '',
     'does_not_have_active_trips': 'No hay viajes activos.',
     'attendance': 'Asistencia',
-    'search': 'Buscar'
+    'search': 'Buscar',
+    'will_not_board': 'No abordará',
+    'not_boarding': 'No abordó',
+    'boarding': 'Abordó'
   };
 }
