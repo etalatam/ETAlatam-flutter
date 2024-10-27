@@ -147,12 +147,14 @@ class _DriverPageState extends State<AttendancePage> {
                                                 ),
                                             ],
                                           )),
-                                          Row(
-                                            children: [
-                                              Text(item.pickup_location?.location_name ?? '')
-                                            ],
-                                          ),
-                                      if (_editingIndex == index)
+                                        SizedBox(height: 10,),
+                                        if (_editingIndex == index)
+                                        Container(
+                                          width: 350.0,
+                                          height: 1.0,
+                                          color: Colors.grey,
+                                        ),
+                                        if (_editingIndex == index)
                                         Padding(
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 16, horizontal: 16.0),
