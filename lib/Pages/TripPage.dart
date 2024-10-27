@@ -1,4 +1,5 @@
 
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:MediansSchoolDriver/Pages/attendance_page.dart';
@@ -64,22 +65,15 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
       maxLng = max(maxLng, point.lng as double); 
     }
 
+    print('[trip.getCoordinateBounds] $minLng, $minLat');
+    print('[trip.getCoordinateBounds] $maxLng, $maxLat');
+
     return CoordinateBounds(
       southwest: Point( coordinates: Position(minLng, minLat)),
       northeast: Point( coordinates: Position(maxLng, maxLat)), 
       infiniteBounds: true,
     );
   }
-
-  Future cameraForCoordinateBounds(mapboxMap, CoordinateBounds coordinateBounds) {
-    return mapboxMap.cameraForCoordinateBounds(
-          coordinateBounds,
-          MbxEdgeInsets(top: 1, left: 2, bottom: 3, right: 4),
-          0.0,
-          0.0,
-          null,
-          null);
-  }  
 
   @override
   Widget build(BuildContext context) {
@@ -134,28 +128,29 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme {
                               points.add(position);
                             }
 
-                            final lineFeature = Feature(
-                                id: "featureID",
-                                geometry: LineString(coordinates: points));
-                            await mapboxMap.style.addSource(GeoJsonSource(id: "line",
-                              data: FeatureCollection(
-                                features: [lineFeature]
-                              ).toJson().toString()
-                            ));
-                            await mapboxMap.style.addLayer(LineLayer(
-                                id: "line_layer",
-                                sourceId: "line",
-                                lineJoin: LineJoin.ROUND,
-                                lineCap: LineCap.ROUND,
-                                lineColor: Colors.blue.value,
-                                lineWidth: 6.0));
+                            // final lineFeature = Feature(
+                            //     id: "featureID",
+                            //     geometry: LineString(coordinates: points));
 
-                            
-                            cameraForCoordinateBounds(mapboxMap, getCoordinateBounds(points)).then((value) => print('cameraForCoordinateBounds:  $value'));
+                            // await mapboxMap.style.addSource(GeoJsonSource(id: "line",
+                            //   data: FeatureCollection(
+                            //     features: [lineFeature]
+                            //   ).toJson().toString()
+                            // ));
 
+                            // await mapboxMap.style.addLayer(LineLayer(
+                            //     id: "line_layer",
+                            //     sourceId: "line",
+                            //     lineJoin: LineJoin.ROUND,
+                            //     lineCap: LineCap.ROUND,
+                            //     lineColor: Colors.blue.value,
+                            //     lineWidth: 6.0));
+                            final coordinateBounds = getCoordinateBounds(points);
                             mapboxMap.setCamera(CameraOptions(
-                              zoom: 12,
-                              pitch: 45
+                              center: coordinateBounds.southwest,
+                              zoom: 15,
+                              pitch: 70
+
                             ));
                           },
                         ),
