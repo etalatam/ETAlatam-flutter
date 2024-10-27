@@ -125,6 +125,7 @@ class _DriverPageState extends State<AttendancePage> {
                                   })
                                 },
                             child: Card(
+                                color: _editingIndex == index ? Color.fromARGB(255, 245, 243, 236) : Colors.white,
                                 margin: EdgeInsets.all(8.0),
                                 child: Padding(
                                     padding: const EdgeInsets.symmetric(
@@ -135,7 +136,7 @@ class _DriverPageState extends State<AttendancePage> {
                                               backgroundImage:
                                                   CachedNetworkImageProvider(
                                                       'https://ui-avatars.com/api/?background=random&name=${item.first_name!}')),
-                                          title: Text(item.first_name!),
+                                          title: Text('${item.first_name!} ${item.last_name}'),
                                           trailing: Column(
                                             children: [
                                               if (_editingIndex == null)
@@ -146,6 +147,11 @@ class _DriverPageState extends State<AttendancePage> {
                                                 ),
                                             ],
                                           )),
+                                          Row(
+                                            children: [
+                                              Text(item.pickup_location?.location_name ?? '')
+                                            ],
+                                          ),
                                       if (_editingIndex == index)
                                         Padding(
                                           padding: const EdgeInsets.symmetric(
