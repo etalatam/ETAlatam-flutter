@@ -403,7 +403,7 @@ class HttpService {
     };
 
     http.Response res = await postQuery(
-        '/mobile_api', {"model": 'updatePickup', "params": jsonEncode(data)});
+        '/mobile_api', {"model": 'update_pickup', "params": jsonEncode(data)});
 
     if (res.statusCode == 200) {
     } else {
@@ -798,13 +798,13 @@ class HttpService {
     url = "$url&route_id=eq.$routeID";
 
     if(filter.isNotEmpty){
-      url = "&or=(";
+      url = "$url&or=(";
       url = "${url}firstname.ilike.*$filter*";
       url = "$url,lastname.ilike.*$filter*";
       url = "$url,address.ilike.*$filter*";
       url = "$url,school_name.ilike.*$filter*";
       url = "$url,pickup_point_name.ilike.*$filter*";
-      url = ")";
+      url = "$url)";
     }
     
     http.Response res = await getQuery(url);
