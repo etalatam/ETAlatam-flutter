@@ -181,7 +181,7 @@ class _DriverPageState extends State<AttendancePage> {
                                               IconButtonWithText(
                                                 label: Text(lang.translate('Will not board')),
                                                 icon: Icon(Icons.check_circle,
-                                                    color: Colors.red),
+                                                    color: Colors.orange),
                                                 onPressed: () => updateAttendance(item,'WILL_NOT_BOARD', index),
                                               ),
                                               SizedBox(
@@ -190,7 +190,7 @@ class _DriverPageState extends State<AttendancePage> {
                                               IconButtonWithText(
                                                 label: Text(lang.translate('Not boarding')),
                                                 icon: Icon(Icons.check_circle,
-                                                    color: Colors.orange),
+                                                    color: Colors.red),
                                                 onPressed: () => updateAttendance(item,'NOT_BOARDING', index),
                                               ),
                                               SizedBox(
