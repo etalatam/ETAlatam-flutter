@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:MediansSchoolDriver/Models/PickupLocationModel.dart';
 import 'package:MediansSchoolDriver/Models/login_information_model.dart';
 import 'package:MediansSchoolDriver/Pages/providers/driver_provider.dart';
-import 'package:MediansSchoolDriver/domain/entities/background_locator/background_position.dart';
 import 'package:MediansSchoolDriver/domain/entities/user/driver.dart';
 import 'package:MediansSchoolDriver/domain/entities/user/login_information.dart';
 import 'package:MediansSchoolDriver/infrastructure/datasources/login_information_datasource.dart';
@@ -11,7 +10,6 @@ import 'package:MediansSchoolDriver/infrastructure/mappers/driver_mapper.dart';
 import 'package:MediansSchoolDriver/infrastructure/mappers/login_information_mapper.dart';
 import 'package:MediansSchoolDriver/infrastructure/repositories/login_information_repository_impl.dart';
 import 'package:MediansSchoolDriver/methods.dart';
-import 'package:get/get.dart';
 // import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
@@ -397,7 +395,7 @@ class HttpService {
   }
 
   /// Submit form to update data through API
-  Future update_pickup(int pickupId, int tripId, String status) async {
+  Future updatePickup(int pickupId, int tripId, String status) async {
     Map data = {
       "trip_id": tripId,
       "trip_pickup_id": pickupId,
@@ -405,7 +403,7 @@ class HttpService {
     };
 
     http.Response res = await postQuery(
-        '/mobile_api', {"model": 'update_pickup', "params": jsonEncode(data)});
+        '/mobile_api', {"model": 'updatePickup', "params": jsonEncode(data)});
 
     if (res.statusCode == 200) {
     } else {

@@ -709,17 +709,8 @@ mixin MediansWidgets {
                       ),
                       SizedBox(height: 40),
                       SizedBox(
-                        width: double.infinity,
-                        child: TextButton(
-                          onPressed: true
-                              ? null
-                              : () {
-                                  //TODO
-                                  return;
-                                  // Get.to(TripPage(trip: tripInfo,));
-                                },
+                        width: double.infinity,                        
                           child: tripInfoRow(tripInfo),
-                        ),
                       )
                     ],
                   ),
