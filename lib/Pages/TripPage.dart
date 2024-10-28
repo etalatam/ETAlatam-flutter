@@ -600,7 +600,7 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme i
                 as double);
         final point = PointAnnotationOptions(
             textField: "${pickupPoint.location?.location_name}",
-            textOffset: [0.0, -3],
+            textOffset: [0.0, -2.5],
             textColor: Color.fromARGB(255, 2, 54, 37).value,
             textLineHeight: 20,
             textSize: 20,
