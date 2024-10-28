@@ -116,10 +116,10 @@ class _DriverPageState extends State<AttendancePage> {
             decoration: InputDecoration(
               labelText: lang.translate('Search'),
               labelStyle: TextStyle(color: Colors.black),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.black),
+              // focusedBorder: OutlineInputBorder(
+              //   borderSide: BorderSide(color: Colors.black),
                 
-              ),
+              // ),
               // enabledBorder: OutlineInputBorder(
               //   borderSide: BorderSide(color: Colors.grey), 
               // ),
