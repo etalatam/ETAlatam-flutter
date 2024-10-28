@@ -49,10 +49,10 @@ class _DriverPageState extends State<AttendancePage> {
     try {
       httpService
           .routeStudents(
-              routeID: widget.trip.route_id,
+              tripId: widget.trip.trip_id,
               limit: 20,
               offset: (_page - 1) * 20,
-              filter: _queryController.text)
+              filter: _queryController.text.trim())
           .then((students) {
         setState(() {
           list = students;
@@ -79,6 +79,7 @@ class _DriverPageState extends State<AttendancePage> {
       setState(() {
         _editingIndex = null;
         _loadingIndex = null;
+        list[index].statusCode = result.statusCode;
       });
     } catch (e) {
       print('[Attendance.updateAttendance] ${e.toString()}');
@@ -107,8 +108,21 @@ class _DriverPageState extends State<AttendancePage> {
         children: [
           TextField(
             controller: _queryController,
+            onSubmitted:(value) {
+              _page = 1;
+              fetchData();
+            },
+            style: TextStyle(color: Colors.black),
             decoration: InputDecoration(
               labelText: lang.translate('Search'),
+              labelStyle: TextStyle(color: Colors.black),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black),
+                
+              ),
+              // enabledBorder: OutlineInputBorder(
+              //   borderSide: BorderSide(color: Colors.grey), 
+              // ),
               suffixIcon: IconButton(
                 icon: Icon(Icons.search),
                 onPressed: () {
@@ -158,8 +172,8 @@ class _DriverPageState extends State<AttendancePage> {
                                               if (_editingIndex != index)
                                                 IconButton(
                                                   icon: Icon(Icons.check_circle,
-                                                      color: const Color.fromARGB(255, 149, 148, 146)),
-                                                  onPressed: () => {},
+                                                      color: getStatusColor(item.statusCode)),
+                                                  onPressed: null,
                                                 ),
                                             ],
                                           )),
@@ -228,5 +242,19 @@ class _DriverPageState extends State<AttendancePage> {
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+  
+  Color getStatusColor(String? statusCode) {
+    Color color =Color.fromARGB(255, 149, 148, 146);
+      
+    if(statusCode == 'WILL_NOT_BOARD'){
+      color = Colors.orange;
+    }else if(statusCode == 'BOARDING'){
+      color =  Colors.green;
+    }else if(statusCode == 'NOT_BOARDING'){
+      color = Colors.red;
+    }
+
+    return color;
   }
 }

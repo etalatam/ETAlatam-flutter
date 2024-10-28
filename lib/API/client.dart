@@ -792,10 +792,10 @@ class HttpService {
     }
   }
 
-  Future<List<StudentModel>> routeStudents({required routeID,limit = 20, offset = 0, String filter = ''}) async {
+  Future<List<StudentModel>> routeStudents({required tripId,limit = 20, offset = 0, String filter = ''}) async {
     String url = "/rpc/route_students?order=firstname.desc&limit=$limit&offset=$offset";
 
-    url = "$url&route_id=eq.$routeID";
+    url = "$url&id_trip=eq.$tripId";
 
     if(filter.isNotEmpty){
       url = "$url&or=(";
