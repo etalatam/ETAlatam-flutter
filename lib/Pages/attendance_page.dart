@@ -149,7 +149,7 @@ class _DriverPageState extends State<AttendancePage> {
                         }
                         final item = list[index];
                         return GestureDetector(
-                            onTap: () => {
+                            onTap: widget.trip.trip_status != 'Running' ? null : () => {
                                   setState(() {
                                     _editingIndex = index;
                                   })
