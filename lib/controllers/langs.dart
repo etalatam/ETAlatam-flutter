@@ -254,7 +254,7 @@ class Lang {
         '¡Correo de recuperación de contraseña enviado!',
     'we_can_help': 'Necesitas ayuda?',
     'message':'Mensaje',
-    'subject': 'Que necesitas?',
+    'subject': 'Asunto',
     'your_old_sent_messages_list': 'Mensajes enviados',
     'click_here_to_view_your_previous_sent_messages':'Haga clic aquí para ver sus mensajes enviados anteriormente',
     'send_now':'Enviar',

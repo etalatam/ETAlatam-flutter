@@ -107,6 +107,25 @@ class HttpService {
     return [];
   }
 
+  Future<List<SupportHelpCategory>> supportHelpCategory() async {
+    http.Response res = await getQuery(
+        "/rpc/support_help_category?order=name.asc");
+
+    print("res.statusCode: ${res.statusCode}");
+    print("res.body: ${res.body}");
+
+    if (res.statusCode == 200) {
+      List<dynamic> body = jsonDecode(res.body);
+      final List<SupportHelpCategory> supportHelpCategoryList = await Future.wait(body
+            .map((dynamic item) async => await SupportHelpCategory.fromJson(item))
+            .toList(),
+      );
+      return supportHelpCategoryList;
+    }
+    debugPrint(res.body.toString());
+    return [];    
+  }
+
   /// Load Help Messages
   Future<List<HelpMessageModel>?> getHelpMessages() async {
     http.Response res = await getQuery("/mobile_api/help_messages");
@@ -518,24 +537,24 @@ class HttpService {
   }
 
   /// Send message
-  sendMessage(String subject, String message, String? priority) async {
+  Future <String> sendMessage(int categoryId, String message, int priority) async {
     Map data = {
-      "subject": subject,
-      "message": message,
-      "priority": priority,
-      "status": 'new',
+      "category_id": categoryId,
+      "content": message,
+      "priority_id": priority,
+      // "status": 'new',
     };
 
-    http.Response res = await postQuery('/mobile_api',
-        {"model": "driver_help_message", "params": jsonEncode(data)});
+    http.Response res = await postQuery('/rpc/save_support_message',
+      jsonEncode(data), contentType: 'application/json');
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
 
       return (body['success'] != null) ? body['result'] : body['error'];
-    } else {
-      throw "Unable to retrieve data.";
-    }
+    } 
+
+    return "${parseResponseMessage(res)}/${res.statusCode}";
   }
 
   /// Send message

@@ -1,5 +1,22 @@
 import 'dart:core';
 
+
+class SupportHelpCategory {
+  int? id;
+  String? name;
+
+  SupportHelpCategory({
+    this.id,
+    this.name
+  });
+
+  factory SupportHelpCategory.fromJson( json ) {
+    return SupportHelpCategory(
+      id: json['id'],
+      name: json['name']
+    );
+  }
+}
 class HelpMessageModel {
   
   int? message_id;
@@ -47,9 +64,6 @@ class HelpMessageModel {
 
 }
 
-
-
-
 class CommentModel {
   
   int? id;
@@ -85,8 +99,6 @@ class CommentModel {
   }
 
 }
-
-
 
 class CommentUserModel {
   
