@@ -65,7 +65,7 @@ class HttpService {
       contentType = 'application/x-www-form-urlencoded'}) async {
     final token = storage.getItem('token');
     final url = Uri.parse(apiURL + path);
-    print("$url");
+    print("[Api.url] $url");
     return await http.post(url, body: body, headers: {
       'Content-Type': contentType,
       'Authorization': useToken ? 'Bearer $token' : '',
@@ -538,19 +538,20 @@ class HttpService {
 
   /// Send message
   Future <String> sendMessage(int categoryId, String message, int priority) async {
-    Map data = {
+  final  data = {
       "category_id": categoryId,
       "content": message,
-      "priority_id": priority,
-      // "status": 'new',
+      "priority_id": priority
     };
 
     http.Response res = await postQuery('/rpc/save_support_message',
       jsonEncode(data), contentType: 'application/json');
 
+    print("[sendMessage] statuscode: ${res.statusCode}");
+    print("[sendMessage] res.body: ${res.body}");
+
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
-
       return (body['success'] != null) ? body['result'] : body['error'];
     } 
 

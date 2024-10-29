@@ -300,21 +300,24 @@ class _SentMessageState extends State<SendMessagePage> {
   }
 
   sendMessage() async {
+    print('[Help.sendMessage]');
     setState(() {
       showLoader = true;
     });
     try {
-      String res = await httpService.sendMessage(categoryId, message, priorities.indexOf(priority));  
+      String result = await httpService.sendMessage(categoryId, message, priorities.indexOf(priority)); 
+      print('[Help.sendMessage.result] ${result.toString()}');
+      
       setState(() {
         showLoader = false;
+        showSuccessDialog(context, 
+          lang.translate('Done'),
+          lang.translate("Mensaje enviado"), 
+          result);
       });
-      showSuccessDialog(context, 
-        lang.translate('Done'),
-        lang.translate("Mensaje enviado"), 
-        res);
 
     } catch (e) {
-      print(e.toString());
+      print('[Help.sendMessage.error] ${e.toString()}');
       setState(() {
         showLoader = false;
       });
