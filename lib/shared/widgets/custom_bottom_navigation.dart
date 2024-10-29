@@ -12,6 +12,8 @@ class CustomBottonNavigation extends StatelessWidget {
 
     return Obx(() => BottomNavigationBar(
           currentIndex: pageController.currentIndex.value,
+          selectedItemColor: Color.fromARGB(255, 59, 140, 135),
+          unselectedItemColor: const Color.fromARGB(255, 61, 61, 61),
           onTap: (value) {
             pageController.changePage(value); // Cambia el índice
           },

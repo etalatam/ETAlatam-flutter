@@ -1,3 +1,6 @@
+import 'dart:ffi';
+
+import 'package:MediansSchoolDriver/Models/HelpMessageModel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:MediansSchoolDriver/Pages/HelpMessagesPage.dart';
@@ -22,21 +25,46 @@ class _SentMessageState extends State<SendMessagePage> {
   final HttpService httpService = HttpService();
 
   String email = '';
+
   String message = '';
 
   String? token;
+
   String? response;
 
   bool showLoader = true;
 
-  List<String> list = <String>[
-      'Support', 
-      'Problems on the road',
-      'Crashed bus',
-      'Other'];
-  String subject = 'Support';
+  List<SupportHelpCategory>? list;
+  int categoryId = 1;
+
   List<String> priorities = <String>['Normal', 'High', 'Low'];
   String priority = 'Normal';
+
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+  }
+
+  fetchData() {
+    print('[Attendance.fetchData]');
+    try {
+      setState(() {
+        showLoader = true;
+      });
+      httpService
+          .supportHelpCategory()
+          .then((result) {
+        setState(() {
+          list = result;
+          showLoader = false;
+        });
+      });
+    } catch (e) {
+      print('[Attendance.fetchData] ${e.toString()}');
+      showLoader = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +134,7 @@ class _SentMessageState extends State<SendMessagePage> {
               // Positioned(
               //     bottom: 20,
               //     left: 20,
-              //     right: 20,
+              //     right: 20,send
               //     child: BottomMenu('help', openPage))
             ],
           ));
@@ -143,20 +171,20 @@ class _SentMessageState extends State<SendMessagePage> {
                         border: Border.all(
                             width: 1, color: const Color.fromRGBO(0, 0, 0, .6)),
                         borderRadius: BorderRadius.circular(10)),
-                    child: DropdownButton<String>(
-                      value: subject,
+                    child: DropdownButton<int>(
+                      value: categoryId,
                       icon: const Icon(Icons.arrow_downward),
                       elevation: 16,
-                      onChanged: (String? value) {
-                        // This is called when the user selects an item.
+                      onChanged: (int? value) {
                         setState(() {
-                          subject = value!;
+                          categoryId = value!;
+
                         });
                       },
-                      items: list.map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(lang.translate(value)),
+                      items: list?.map<DropdownMenuItem<int>>((SupportHelpCategory item) {
+                        return DropdownMenuItem<int>(
+                          value: item.id,
+                          child: Text(item.name!),
                         );
                       }).toList(),
                     )),
@@ -271,24 +299,25 @@ class _SentMessageState extends State<SendMessagePage> {
     setState(() => openNewPage(context, page));
   }
 
-  loadPage() async {
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() {
-      showLoader = false;
-    });
-  }
-
   sendMessage() async {
-    dynamic res = await httpService.sendMessage(subject, message, priority);
     setState(() {
-      showSuccessDialog(context, lang.translate('Done'),
-          lang.translate("student_info_updated"), res);
+      showLoader = true;
     });
-  }
+    try {
+      String res = await httpService.sendMessage(categoryId, message, priorities.indexOf(priority));  
+      setState(() {
+        showLoader = false;
+      });
+      showSuccessDialog(context, 
+        lang.translate('Done'),
+        lang.translate("Mensaje enviado"), 
+        res);
 
-  @override
-  void initState() {
-    super.initState();
-    loadPage();
+    } catch (e) {
+      print(e.toString());
+      setState(() {
+        showLoader = false;
+      });
+    }
   }
 }

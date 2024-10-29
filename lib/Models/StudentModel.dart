@@ -21,6 +21,8 @@ class StudentModel {
   PickupLocationModel? pickup_location;
   DestinationModel? destination;
   RouteModel? route;
+  int? schoolId;
+  String? statusCode;
 
   StudentModel({
     required this.student_id,
@@ -39,6 +41,8 @@ class StudentModel {
     this.destination,
     this.route,
     this.trips_count,
+    this.schoolId,
+    this.statusCode
 
   });
 
@@ -61,6 +65,8 @@ class StudentModel {
       "trips_count" : trips_count,
       "pickup_location": pickup_location!.toJson(),
       "destination" : destination!.toJson(),
+      "schoolId": schoolId,
+      "statuscode": statusCode
       // "route" : route!.toJson(),
     };
   }
@@ -70,22 +76,25 @@ class StudentModel {
 
     PickupLocationModel? pickupLocation = json['pickup_location'] != null ? PickupLocationModel.fromJson(json['pickup_location']) : PickupLocationModel();
     DestinationModel? destination = json['destination'] != null ? DestinationModel.fromJson(json['destination']) : DestinationModel();
+    
     // RouteModel? route = json['route'] != null ? RouteModel.fromJson(json['route']) : RouteModel(pickup_locations: [],route_id: 0, route_name: '');
 
     return StudentModel(
-      student_id: json['student_id'] as int?,
+      student_id: json['id_student'] as int?,
       parent_id: json['parent_id'] as int?,
-      first_name: json['first_name'] as String?,
-      last_name: json['last_name'] as String?,
-      student_name: (json['first_name'] +" "+ json['last_name']) as String?,
-      date_of_birth: json['date_of_birth'] as String?,
+      first_name: json['firstname'] as String?,
+      last_name: json['lastname'] as String?,
+      student_name: ("${json['firstname']} ${json['lastname']}") as String?,
+      date_of_birth: json['birthday'] as String?,
       picture: json['picture'] as String?,
-      contact_number: json['contact_number'] as String?,
+      contact_number: json['phonenumber'] as String?,
       transfer_status: json['transfer_status'] as String?,
       gender: json['gender'] as String?,
       trips_count: json['trips_count'] as int?,
       pickup_location: pickupLocation,
       destination: destination,
+      schoolId: json['school_id'],
+      statusCode: json['status_code']
       // route: route,
     );
   }

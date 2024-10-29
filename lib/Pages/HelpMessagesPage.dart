@@ -11,7 +11,7 @@ import 'package:MediansSchoolDriver/components/header.dart';
 import 'package:MediansSchoolDriver/components/loader.dart';
 
 const List<String> list = <String>['Support', 'Human Resources', 'Other'];
-String subject = 'Support';
+// String subject = 'Support';
 const List<String> priorities = <String>['Normal', 'High', 'Low'];
 
 class HelpMessagesPage extends StatefulWidget {

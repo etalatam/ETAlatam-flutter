@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:MediansSchoolDriver/Models/PickupLocationModel.dart';
 import 'package:MediansSchoolDriver/Models/login_information_model.dart';
 import 'package:MediansSchoolDriver/Pages/providers/driver_provider.dart';
-import 'package:MediansSchoolDriver/domain/entities/background_locator/background_position.dart';
 import 'package:MediansSchoolDriver/domain/entities/user/driver.dart';
 import 'package:MediansSchoolDriver/domain/entities/user/login_information.dart';
 import 'package:MediansSchoolDriver/infrastructure/datasources/login_information_datasource.dart';
@@ -11,7 +10,6 @@ import 'package:MediansSchoolDriver/infrastructure/mappers/driver_mapper.dart';
 import 'package:MediansSchoolDriver/infrastructure/mappers/login_information_mapper.dart';
 import 'package:MediansSchoolDriver/infrastructure/repositories/login_information_repository_impl.dart';
 import 'package:MediansSchoolDriver/methods.dart';
-import 'package:get/get.dart';
 // import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
@@ -107,6 +105,25 @@ class HttpService {
           .toList();
     }
     return [];
+  }
+
+  Future<List<SupportHelpCategory>> supportHelpCategory() async {
+    http.Response res = await getQuery(
+        "/rpc/support_help_category?order=name.asc");
+
+    print("res.statusCode: ${res.statusCode}");
+    print("res.body: ${res.body}");
+
+    if (res.statusCode == 200) {
+      List<dynamic> body = jsonDecode(res.body);
+      final List<SupportHelpCategory> supportHelpCategoryList = await Future.wait(body
+            .map((dynamic item) async => await SupportHelpCategory.fromJson(item))
+            .toList(),
+      );
+      return supportHelpCategoryList;
+    }
+    debugPrint(res.body.toString());
+    return [];    
   }
 
   /// Load Help Messages
@@ -356,6 +373,28 @@ class HttpService {
     }
   }
 
+   Future<StudentModel> updateAttendance(TripModel trip,  StudentModel student, String statusCode) async {
+    final data = jsonEncode({
+      "id_school": student.schoolId,
+      "id_student": student.student_id,
+      "id_trip": trip.trip_id,
+      "status_code": statusCode
+    });
+
+    print("[client.updateAttendance] $data");
+
+    http.Response res = await postQuery('/rpc/update_attendance',  data, 
+      contentType: 'application/json');
+    print("res.statusCode ${res.statusCode}");
+    print("res.body ${res.body}");
+
+    if (res.statusCode == 200) {
+      return StudentModel.fromJson(jsonDecode(res.body));
+    } else {
+      throw "${parseResponseMessage(res)}/${res.statusCode}";
+    }
+  }
+
   /// Submit form to update data through API
   Future<String> endTrip(String tripId) async {
     Map data = {
@@ -375,7 +414,7 @@ class HttpService {
   }
 
   /// Submit form to update data through API
-  Future update_pickup(int pickupId, int tripId, String status) async {
+  Future updatePickup(int pickupId, int tripId, String status) async {
     Map data = {
       "trip_id": tripId,
       "trip_pickup_id": pickupId,
@@ -498,24 +537,24 @@ class HttpService {
   }
 
   /// Send message
-  sendMessage(String subject, String message, String? priority) async {
+  Future <String> sendMessage(int categoryId, String message, int priority) async {
     Map data = {
-      "subject": subject,
-      "message": message,
-      "priority": priority,
-      "status": 'new',
+      "category_id": categoryId,
+      "content": message,
+      "priority_id": priority,
+      // "status": 'new',
     };
 
-    http.Response res = await postQuery('/mobile_api',
-        {"model": "driver_help_message", "params": jsonEncode(data)});
+    http.Response res = await postQuery('/rpc/save_support_message',
+      jsonEncode(data), contentType: 'application/json');
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
 
       return (body['success'] != null) ? body['result'] : body['error'];
-    } else {
-      throw "Unable to retrieve data.";
-    }
+    } 
+
+    return "${parseResponseMessage(res)}/${res.statusCode}";
   }
 
   /// Send message
@@ -770,6 +809,39 @@ class HttpService {
       print("sendTracking error: ${e.toString()}");
       return null;
     }
+  }
+
+  Future<List<StudentModel>> routeStudents({required tripId,limit = 20, offset = 0, String filter = ''}) async {
+    String url = "/rpc/route_students?order=firstname.desc&limit=$limit&offset=$offset";
+
+    url = "$url&id_trip=eq.$tripId";
+
+    if(filter.isNotEmpty){
+      url = "$url&or=(";
+      url = "${url}firstname.ilike.*$filter*";
+      url = "$url,lastname.ilike.*$filter*";
+      url = "$url,address.ilike.*$filter*";
+      url = "$url,school_name.ilike.*$filter*";
+      url = "$url,pickup_point_name.ilike.*$filter*";
+      url = "$url)";
+    }
+    
+    http.Response res = await getQuery(url);
+
+    print("res.statusCode: ${res.statusCode}");
+    print("res.body: ${res.body}");
+
+    if (res.statusCode == 200) {
+      List<dynamic> body = jsonDecode(res.body);
+      final List<StudentModel> students = await Future.wait(
+        body
+            .map((dynamic item) async => await StudentModel.fromJson(item))
+            .toList(),
+      );
+      return students;
+    }
+    debugPrint(res.body.toString());
+    return [];
   }
 
   Future<dynamic> driverInfo() async {

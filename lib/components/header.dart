@@ -83,31 +83,32 @@ class Header extends StatelessWidget {
         child: Container(
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            // color: darkMode ? activeTheme.main_bg : activeTheme.main_color,
-            borderRadius: BorderRadius.circular(15),
-            gradient: LinearGradient(
-              colors: [
-                darkMode ? activeTheme.main_bg : activeTheme.main_color,
-                Color.fromARGB(255, 169, 199, 226)
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: shadowColor,
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-                spreadRadius: 0,
-              )
-            ],
-          ),
+              // color: darkMode ? activeTheme.main_bg : activeTheme.main_color,
+              //borderRadius: BorderRadius.circular(15),
+              // gradient: LinearGradient(
+              //   colors: [
+              //     darkMode ? activeTheme.main_bg : activeTheme.main_color,
+              //     //Color.fromARGB(255, 169, 199, 226)
+              //     Color.fromARGB(255, 17, 24, 39)
+              //   ],
+              //   begin: Alignment.topLeft,
+              //   end: Alignment.bottomRight,
+              // ),
+              // boxShadow: [
+              //   BoxShadow(
+              //     color: shadowColor,
+              //     blurRadius: 10,
+              //     offset: const Offset(0, 5),
+              //     spreadRadius: 0,
+              //   )
+              // ],
+              ),
           padding:
               const EdgeInsets.only(left: 20, right: 20, top: 40, bottom: 10),
           child: Row(
             children: [
               const Image(
-                image: AssetImage("assets/logo-white.png"),
+                image: AssetImage("assets/logo.png"),
                 width: 60,
                 height: 60,
               ),

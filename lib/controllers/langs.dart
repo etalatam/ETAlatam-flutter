@@ -1,4 +1,5 @@
 import 'dart:core';
+
 import 'package:localstorage/localstorage.dart';
 
 class Lang {
@@ -253,7 +254,7 @@ class Lang {
         '¡Correo de recuperación de contraseña enviado!',
     'we_can_help': 'Necesitas ayuda?',
     'message':'Mensaje',
-    'subject': 'Que necesitas?',
+    'subject': 'Asunto',
     'your_old_sent_messages_list': 'Mensajes enviados',
     'click_here_to_view_your_previous_sent_messages':'Haga clic aquí para ver sus mensajes enviados anteriormente',
     'send_now':'Enviar',
@@ -290,6 +291,10 @@ class Lang {
     'end_trip': 'Finalizar',
     'trip_status': '',
     'does_not_have_active_trips': 'No hay viajes activos.',
-    'attendance': 'Asistencia'
+    'attendance': 'Asistencia',
+    'search': 'Buscar',
+    'will_not_board': 'No abordará',
+    'not_boarding': 'No abordó',
+    'boarding': 'Abordó'
   };
 }
