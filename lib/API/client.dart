@@ -128,14 +128,21 @@ class HttpService {
 
   /// Load Help Messages
   Future<List<HelpMessageModel>?> getHelpMessages() async {
-    http.Response res = await getQuery("/mobile_api/help_messages");
+    http.Response res = await getQuery(
+        "/rpc/support_message?order=ts.desc");
+
+    print("res.statusCode: ${res.statusCode}");
+    print("res.body: ${res.body}");
+
     if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
-      return body
-          .map((dynamic item) => HelpMessageModel.fromJson(item))
-          .toList();
+      final List<HelpMessageModel> supportMessage = await Future.wait(body
+            .map((dynamic item) async => await HelpMessageModel.fromJson(item))
+            .toList(),
+      );
+      return supportMessage;
     }
-
+    debugPrint(res.body.toString());
     return [];
   }
 
