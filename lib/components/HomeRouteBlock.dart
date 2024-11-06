@@ -231,15 +231,16 @@ class HomeRouteBlock extends StatelessWidget {
                               decoration: BoxDecoration(
                                   // color: activeTheme.buttonBG,
                                   color:
-                                      const Color.fromARGB(255, 59, 140, 135),
-                                  // border:
+                                      // const Color.fromARGB(255, 59, 140, 135),
+                                      const Color.fromARGB(255, 234,244,243),                                  // border:
                                   //     Border.all(width: 1, color: Colors.green),
                                   borderRadius: BorderRadius.circular(10)),
                               child: Row(
                                 children: [
                                   Icon(
                                     Icons.route_rounded,
-                                    color: activeTheme.buttonColor,
+                                    // color: activeTheme.buttonColor,
+                                    color: Color.fromARGB(255,15,148,136)
                                   ),
                                   const SizedBox(
                                     width: 10,
@@ -249,7 +250,9 @@ class HomeRouteBlock extends StatelessWidget {
                                     style: TextStyle(
                                         fontSize: activeTheme.h6.fontSize,
                                         fontFamily: activeTheme.h6.fontFamily,
-                                        color: activeTheme.buttonColor),
+                                        // color: activeTheme.buttonColor
+                                        color: Color.fromARGB(255,15,148,136)
+                                        ),
                                   )
                                 ],
                               )))
