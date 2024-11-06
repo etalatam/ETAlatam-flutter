@@ -97,7 +97,7 @@ class _SentMessageState extends State<SendMessagePage> {
                                 "assets/svg/check.svg",
                                 width: 30,
                                 height: 30,
-                                color: activeTheme.icon_color,
+                                color: Colors.white,
                               )),
                           const SizedBox(
                             height: 20,

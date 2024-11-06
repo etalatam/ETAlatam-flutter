@@ -161,23 +161,24 @@ class HelpMessageBlock extends StatelessWidget {
                             ),
                           ]),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 12),
-                          decoration: BoxDecoration(
-                              color: activeTheme.buttonBG,
-                              border: Border.all(
-                                  width: 1, color: activeTheme.main_color),
-                              borderRadius: BorderRadius.circular(10)),
-                          child: Text(
-                            '${lang.translate("View details")}',
-                            style: TextStyle(
-                              color: activeTheme.buttonColor,
-                              fontSize: 14,
-                              // decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
+                        // Container(
+
+                        //   padding: const EdgeInsets.symmetric(
+                        //       horizontal: 14, vertical: 12),
+                        //   decoration: BoxDecoration(
+                        //       color: activeTheme.buttonBG,
+                        //       border: Border.all(
+                        //           width: 1, color: activeTheme.main_color),
+                        //       borderRadius: BorderRadius.circular(10)),
+                        //   child: Text(
+                        //     '${lang.translate("View details")}',
+                        //     style: TextStyle(
+                        //       color: activeTheme.buttonColor,
+                        //       fontSize: 14,
+                        //       // decoration: TextDecoration.underline,
+                        //     ),
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),
