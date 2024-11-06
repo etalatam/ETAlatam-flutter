@@ -261,10 +261,11 @@ class _HomePageState extends State<HomePage>
       setState(() {
         showLoader = false;
       });
-      showSuccessDialog(context, "${lang.translate('Error')} (${msg[1]})",
-          lang.translate(msg[0]), () {
-        Get.back();
-      });
+      showSuccessDialog(context, 
+        "${lang.translate('Error')} (${msg[1]})",
+        lang.translate(msg[0]), 
+        null
+      );
     }
   }
 

@@ -57,10 +57,10 @@ class HelpMessageModel {
     return HelpMessageModel(
       message_id: json['id'] as int?,
       // title: json['subject'] as String?,
-      title: "demo",
+      title: json['category_name'] as String?,
       message: json['content'] as String?,
-      status: json['status'] as String?,
-      priority: json['priority'] as String?,
+      status: "status", //json['status'] as String?,
+      priority: "${json['priority_id']}" as String?,
       user_id: json['id_driver'] as int,
       short_date: json['ts'] as String?,
       date: json['ts'] as String?,

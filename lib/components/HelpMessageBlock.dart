@@ -74,29 +74,29 @@ class HelpMessageBlock extends StatelessWidget {
                                             // height: 1,
                                           ),
                                         ),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 10, vertical: 3),
-                                          margin: const EdgeInsets.symmetric(
-                                              horizontal: 20),
-                                          decoration: BoxDecoration(
-                                              border: Border.all(
-                                                  width: 1,
-                                                  color: message.status == 'new'
-                                                      ? Colors.red
-                                                      : activeTheme.main_color),
-                                              borderRadius:
-                                                  BorderRadius.circular(50)),
-                                          child: Text(
-                                            '${message.status}',
-                                            style: TextStyle(
-                                                color: message.status == 'new'
-                                                    ? Colors.red
-                                                    : activeTheme.main_color,
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
+                                        // Container(
+                                        //   padding: const EdgeInsets.symmetric(
+                                        //       horizontal: 10, vertical: 3),
+                                        //   margin: const EdgeInsets.symmetric(
+                                        //       horizontal: 20),
+                                        //   decoration: BoxDecoration(
+                                        //       border: Border.all(
+                                        //           width: 1,
+                                        //           color: message.status == 'new'
+                                        //               ? Colors.red
+                                        //               : activeTheme.main_color),
+                                        //       borderRadius:
+                                        //           BorderRadius.circular(50)),
+                                        //   child: Text(
+                                        //     '${message.status}',
+                                        //     style: TextStyle(
+                                        //         color: message.status == 'new'
+                                        //             ? Colors.red
+                                        //             : activeTheme.main_color,
+                                        //         fontSize: 14,
+                                        //         fontWeight: FontWeight.bold),
+                                        //   ),
+                                        // ),
                                       ],
                                     ))),
                             Container(

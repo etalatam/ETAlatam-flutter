@@ -1,4 +1,3 @@
-import 'dart:ffi';
 
 import 'package:MediansSchoolDriver/Models/HelpMessageModel.dart';
 import 'package:flutter/material.dart';
@@ -312,8 +311,7 @@ class _SentMessageState extends State<SendMessagePage> {
         showLoader = false;
         showSuccessDialog(context, 
           lang.translate('Done'),
-          lang.translate("Mensaje enviado"), 
-          result);
+          lang.translate("Mensaje enviado"),null);
       });
 
     } catch (e) {
