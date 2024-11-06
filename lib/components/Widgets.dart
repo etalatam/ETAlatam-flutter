@@ -848,14 +848,15 @@ mixin MediansWidgets {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: ShapeDecoration(
-                color: activeTheme.main_color,
+                color: Color.fromARGB(255, 234,244,243),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(64),
                 ),
               ),
               child: Icon(
                 Icons.time_to_leave,
-                color: activeTheme.main_bg,
+                // color: activeTheme.main_bg,
+                color: Color.fromARGB(255,15,148,136)
               ),
             ),
             Container(
@@ -873,14 +874,14 @@ mixin MediansWidgets {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: ShapeDecoration(
-                color: activeTheme.main_color,
+                color: Color.fromARGB(255, 234,244,243),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(64),
                 ),
               ),
               child: Icon(
                 Icons.route,
-                color: activeTheme.main_bg,
+                color: Color.fromARGB(255,15,148,136),
               ),
             ),
             Container(
@@ -898,14 +899,14 @@ mixin MediansWidgets {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: ShapeDecoration(
-                color: activeTheme.main_color,
+                color: Color.fromARGB(255, 234,244,243),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(64),
                 ),
               ),
               child: Icon(
                 Icons.pin_drop,
-                color: activeTheme.main_bg,
+                color: Color.fromARGB(255,15,148,136),
               ),
             ),
             Container(
