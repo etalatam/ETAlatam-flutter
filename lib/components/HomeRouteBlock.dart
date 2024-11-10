@@ -232,7 +232,7 @@ class HomeRouteBlock extends StatelessWidget {
                                   // color: activeTheme.buttonBG,
                                   color:
                                       // const Color.fromARGB(255, 59, 140, 135),
-                                      const Color.fromARGB(255, 234,244,243),                                  // border:
+                                      const Color.fromARGB(255, 234,244,243),
                                   //     Border.all(width: 1, color: Colors.green),
                                   borderRadius: BorderRadius.circular(10)),
                               child: Row(

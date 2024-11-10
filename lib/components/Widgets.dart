@@ -665,14 +665,14 @@ mixin MediansWidgets {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Color.fromARGB(255, 223, 231, 238),
-                        Color.fromARGB(255, 246, 237, 248)
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    // gradient: LinearGradient(
+                    //   colors: [
+                    //     Color.fromARGB(255, 223, 231, 238),
+                    //     Color.fromARGB(255, 246, 237, 248)
+                    //   ],
+                    //   begin: Alignment.topLeft,
+                    //   end: Alignment.bottomRight,
+                    // ),
                   ),
                   width: double.infinity,
                   // height: 240,
