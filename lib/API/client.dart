@@ -65,7 +65,7 @@ class HttpService {
       contentType = 'application/x-www-form-urlencoded'}) async {
     final token = storage.getItem('token');
     final url = Uri.parse(apiURL + path);
-    print("$url");
+    print("[Api.url] $url");
     return await http.post(url, body: body, headers: {
       'Content-Type': contentType,
       'Authorization': useToken ? 'Bearer $token' : '',
@@ -128,14 +128,21 @@ class HttpService {
 
   /// Load Help Messages
   Future<List<HelpMessageModel>?> getHelpMessages() async {
-    http.Response res = await getQuery("/mobile_api/help_messages");
+    http.Response res = await getQuery(
+        "/rpc/support_message?order=ts.desc");
+
+    print("res.statusCode: ${res.statusCode}");
+    print("res.body: ${res.body}");
+
     if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
-      return body
-          .map((dynamic item) => HelpMessageModel.fromJson(item))
-          .toList();
+      final List<HelpMessageModel> supportMessage = await Future.wait(body
+            .map((dynamic item) async => await HelpMessageModel.fromJson(item))
+            .toList(),
+      );
+      return supportMessage;
     }
-
+    debugPrint(res.body.toString());
     return [];
   }
 
@@ -538,19 +545,20 @@ class HttpService {
 
   /// Send message
   Future <String> sendMessage(int categoryId, String message, int priority) async {
-    Map data = {
+  final  data = {
       "category_id": categoryId,
       "content": message,
-      "priority_id": priority,
-      // "status": 'new',
+      "priority_id": priority
     };
 
     http.Response res = await postQuery('/rpc/save_support_message',
       jsonEncode(data), contentType: 'application/json');
 
+    print("[sendMessage] statuscode: ${res.statusCode}");
+    print("[sendMessage] res.body: ${res.body}");
+
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
-
       return (body['success'] != null) ? body['result'] : body['error'];
     } 
 

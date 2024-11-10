@@ -1,4 +1,3 @@
-import 'dart:ffi';
 
 import 'package:MediansSchoolDriver/Models/HelpMessageModel.dart';
 import 'package:flutter/material.dart';
@@ -98,7 +97,7 @@ class _SentMessageState extends State<SendMessagePage> {
                                 "assets/svg/check.svg",
                                 width: 30,
                                 height: 30,
-                                color: activeTheme.icon_color,
+                                color: Colors.white,
                               )),
                           const SizedBox(
                             height: 20,
@@ -300,21 +299,23 @@ class _SentMessageState extends State<SendMessagePage> {
   }
 
   sendMessage() async {
+    print('[Help.sendMessage]');
     setState(() {
       showLoader = true;
     });
     try {
-      String res = await httpService.sendMessage(categoryId, message, priorities.indexOf(priority));  
+      String result = await httpService.sendMessage(categoryId, message, priorities.indexOf(priority)); 
+      print('[Help.sendMessage.result] ${result.toString()}');
+      
       setState(() {
         showLoader = false;
+        showSuccessDialog(context, 
+          lang.translate('Done'),
+          lang.translate("Mensaje enviado"),null);
       });
-      showSuccessDialog(context, 
-        lang.translate('Done'),
-        lang.translate("Mensaje enviado"), 
-        res);
 
     } catch (e) {
-      print(e.toString());
+      print('[Help.sendMessage.error] ${e.toString()}');
       setState(() {
         showLoader = false;
       });

@@ -74,29 +74,29 @@ class HelpMessageBlock extends StatelessWidget {
                                             // height: 1,
                                           ),
                                         ),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 10, vertical: 3),
-                                          margin: const EdgeInsets.symmetric(
-                                              horizontal: 20),
-                                          decoration: BoxDecoration(
-                                              border: Border.all(
-                                                  width: 1,
-                                                  color: message.status == 'new'
-                                                      ? Colors.red
-                                                      : activeTheme.main_color),
-                                              borderRadius:
-                                                  BorderRadius.circular(50)),
-                                          child: Text(
-                                            '${message.status}',
-                                            style: TextStyle(
-                                                color: message.status == 'new'
-                                                    ? Colors.red
-                                                    : activeTheme.main_color,
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
+                                        // Container(
+                                        //   padding: const EdgeInsets.symmetric(
+                                        //       horizontal: 10, vertical: 3),
+                                        //   margin: const EdgeInsets.symmetric(
+                                        //       horizontal: 20),
+                                        //   decoration: BoxDecoration(
+                                        //       border: Border.all(
+                                        //           width: 1,
+                                        //           color: message.status == 'new'
+                                        //               ? Colors.red
+                                        //               : activeTheme.main_color),
+                                        //       borderRadius:
+                                        //           BorderRadius.circular(50)),
+                                        //   child: Text(
+                                        //     '${message.status}',
+                                        //     style: TextStyle(
+                                        //         color: message.status == 'new'
+                                        //             ? Colors.red
+                                        //             : activeTheme.main_color,
+                                        //         fontSize: 14,
+                                        //         fontWeight: FontWeight.bold),
+                                        //   ),
+                                        // ),
                                       ],
                                     ))),
                             Container(
@@ -161,23 +161,24 @@ class HelpMessageBlock extends StatelessWidget {
                             ),
                           ]),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 12),
-                          decoration: BoxDecoration(
-                              color: activeTheme.buttonBG,
-                              border: Border.all(
-                                  width: 1, color: activeTheme.main_color),
-                              borderRadius: BorderRadius.circular(10)),
-                          child: Text(
-                            '${lang.translate("View details")}',
-                            style: TextStyle(
-                              color: activeTheme.buttonColor,
-                              fontSize: 14,
-                              // decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
+                        // Container(
+
+                        //   padding: const EdgeInsets.symmetric(
+                        //       horizontal: 14, vertical: 12),
+                        //   decoration: BoxDecoration(
+                        //       color: activeTheme.buttonBG,
+                        //       border: Border.all(
+                        //           width: 1, color: activeTheme.main_color),
+                        //       borderRadius: BorderRadius.circular(10)),
+                        //   child: Text(
+                        //     '${lang.translate("View details")}',
+                        //     style: TextStyle(
+                        //       color: activeTheme.buttonColor,
+                        //       fontSize: 14,
+                        //       // decoration: TextDecoration.underline,
+                        //     ),
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),

@@ -45,19 +45,25 @@ class HelpMessageModel {
   
   factory HelpMessageModel.fromJson( json) {
 
-    Iterable commentsList = json['comments'];
-    List<CommentModel>? comments = json['comments'] != null ?  List<CommentModel>.from(commentsList.map((model)=>  CommentModel.fromJson(model))) : [];
+    List<CommentModel>? comments = [];
    
+    try {
+      Iterable commentsList = json['comments'];
+      comments = json['comments'] != null ?  List<CommentModel>.from(commentsList.map((model)=>  CommentModel.fromJson(model))) : [];      
+    } catch (e) {
+      print(e.toString());
+    }
 
     return HelpMessageModel(
-      message_id: json['message_id'] as int?,
-      title: json['subject'] as String?,
-      message: json['message'] as String?,
-      status: json['status'] as String?,
-      priority: json['priority'] as String?,
-      user_id: json['user_id'] as int,
-      short_date: json['short_date'] as String?,
-      date: json['date'] as String?,
+      message_id: json['id'] as int?,
+      // title: json['subject'] as String?,
+      title: json['category_name'] as String?,
+      message: json['content'] as String?,
+      status: "status", //json['status'] as String?,
+      priority: "${json['priority_id']}" as String?,
+      user_id: json['id_driver'] as int,
+      short_date: json['ts'] as String?,
+      date: json['ts'] as String?,
       comments: comments
     );
   }

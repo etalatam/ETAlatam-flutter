@@ -141,7 +141,7 @@ PageRouteBuilder _createRoute(page) {
   );
 }
 
-void showSuccessDialog(BuildContext context, title, text, callback) {
+void showSuccessDialog(BuildContext context, title, text, Function? callback) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -152,7 +152,13 @@ void showSuccessDialog(BuildContext context, title, text, callback) {
           TextButton(
             child: const Text("OK"),
             onPressed: () {
-              callback();
+              if(callback == null){
+                  print("Using default action");
+                  Navigator.pop(context);
+              }else{
+                callback.call();
+              }
+              
               // You can add navigation or any other action here
             },
           ),

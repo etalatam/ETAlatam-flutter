@@ -26,7 +26,7 @@ class _SentMessageState extends State<HelpMessagesPage> {
 
   String email = '';
   String message = '';
-  String? status = 'new';
+  String? status;
 
   String? token;
   String? response;
@@ -56,7 +56,7 @@ class _SentMessageState extends State<HelpMessagesPage> {
                                 primary: true,
                                 child: Container(
                                     padding: const EdgeInsets.fromLTRB(
-                                        20, 180, 20, 20),
+                                        10, 110, 10, 10),
                                     color: activeTheme.main_bg,
                                     child: Column(
                                       mainAxisSize: MainAxisSize.max,
@@ -77,28 +77,28 @@ class _SentMessageState extends State<HelpMessagesPage> {
                                                 color: activeTheme.main_bg,
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                        horizontal: 20,
-                                                        vertical: 10),
+                                                        horizontal: 5,
+                                                        vertical: 5),
                                                 child: Row(children: [
-                                                  Container(
-                                                      child: SvgPicture.asset(
-                                                          "assets/svg/help.svg",
-                                                          width: 30,
-                                                          height: 30,
-                                                          color: activeTheme
-                                                              .main_color)),
-                                                  const SizedBox(width: 15),
-                                                  Text(
-                                                      lang.translate(
-                                                          'Your help messages'),
-                                                      style: TextStyle(
-                                                          fontSize: 22,
-                                                          color: activeTheme
-                                                              .main_color,
-                                                          fontWeight:
-                                                              FontWeight.w600),
-                                                      textAlign:
-                                                          TextAlign.left),
+                                                  // Container(
+                                                  //     child: SvgPicture.asset(
+                                                  //         "assets/svg/help.svg",
+                                                  //         width: 30,
+                                                  //         height: 30,
+                                                  //         color: activeTheme
+                                                  //             .main_color)),
+                                                  // const SizedBox(width: 15),
+                                                  // Text(
+                                                  //     lang.translate(
+                                                  //         'Your help messages'),
+                                                  //     style: TextStyle(
+                                                  //         fontSize: 22,
+                                                  //         color: activeTheme
+                                                  //             .main_color,
+                                                  //         fontWeight:
+                                                  //             FontWeight.w600),
+                                                  //     textAlign:
+                                                  //         TextAlign.left),
                                                 ])),
                                             const SizedBox(height: 20),
                                             for (var i = 0;
@@ -118,68 +118,68 @@ class _SentMessageState extends State<HelpMessagesPage> {
                                       ],
                                     ))),
                           ),
-                          Positioned(
-                              top: 120,
-                              left: 0,
-                              right: 0,
-                              child: Container(
-                                width: double.infinity,
-                                color: activeTheme.main_bg,
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  mainAxisSize: MainAxisSize.max,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Expanded(
-                                        child: GestureDetector(
-                                            onTap: () {
-                                              setStatus('new');
-                                            },
-                                            child: Container(
-                                                child: Text(
-                                                    lang.translate('New'),
-                                                    textAlign: TextAlign.center,
-                                                    style: status == 'new'
-                                                        ? activeTheme.h5
-                                                        : activeTheme.h6)))),
-                                    Expanded(
-                                        child: GestureDetector(
-                                            onTap: () {
-                                              setStatus('completed');
-                                            },
-                                            child: Container(
-                                                child: Text(
-                                                    lang.translate('Completed'),
-                                                    textAlign: TextAlign.center,
-                                                    style: status == 'completed'
-                                                        ? activeTheme.h5
-                                                        : activeTheme.h6)))),
-                                    Expanded(
-                                        child: GestureDetector(
-                                            onTap: () {
-                                              setStatus(null);
-                                            },
-                                            child: Container(
-                                                child: Text(
-                                                    lang.translate('All'),
-                                                    textAlign: TextAlign.center,
-                                                    style: status == null
-                                                        ? activeTheme.h5
-                                                        : activeTheme.h6)))),
-                                  ],
-                                ),
-                              )),
-                          Positioned(
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              child: Header(lang.translate('Help page'))),
-                          Positioned(
-                              bottom: 20,
-                              left: 20,
-                              right: 20,
-                              child: BottomMenu('help', openPage))
+                          // Positioned(
+                          //     top: 50,
+                          //     left: 0,
+                          //     right: 0,
+                          //     child: Container(
+                          //       width: double.infinity,
+                          //       color: activeTheme.main_bg,
+                          //       child: Row(
+                          //         mainAxisAlignment:
+                          //             MainAxisAlignment.spaceBetween,
+                          //         mainAxisSize: MainAxisSize.max,
+                          //         crossAxisAlignment: CrossAxisAlignment.center,
+                          //         children: [
+                          //           Expanded(
+                          //               child: GestureDetector(
+                          //                   onTap: () {
+                          //                     setStatus('new');
+                          //                   },
+                          //                   child: Container(
+                          //                       child: Text(
+                          //                           lang.translate('New'),
+                          //                           textAlign: TextAlign.center,
+                          //                           style: status == 'new'
+                          //                               ? activeTheme.h5
+                          //                               : activeTheme.h6)))),
+                          //           Expanded(
+                          //               child: GestureDetector(
+                          //                   onTap: () {
+                          //                     setStatus('completed');
+                          //                   },
+                          //                   child: Container(
+                          //                       child: Text(
+                          //                           lang.translate('Completed'),
+                          //                           textAlign: TextAlign.center,
+                          //                           style: status == 'completed'
+                          //                               ? activeTheme.h5
+                          //                               : activeTheme.h6)))),
+                          //           Expanded(
+                          //               child: GestureDetector(
+                          //                   onTap: () {
+                          //                     setStatus(null);
+                          //                   },
+                          //                   child: Container(
+                          //                       child: Text(
+                          //                           lang.translate('All'),
+                          //                           textAlign: TextAlign.center,
+                          //                           style: status == null
+                          //                               ? activeTheme.h5
+                          //                               : activeTheme.h6)))),
+                          //         ],
+                          //       ),
+                          //     )),
+                          // Positioned(
+                          //     top: 0,
+                          //     left: 0,
+                          //     right: 0,
+                          //     child: Header(lang.translate('Help page'))),
+                          // Positioned(
+                          //     bottom: 20,
+                          //     left: 20,
+                          //     right: 20,
+                          //     child: BottomMenu('help', openPage))
                         ],
                       )));
   }
