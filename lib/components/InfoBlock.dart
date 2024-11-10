@@ -19,8 +19,8 @@ class InfoBlock extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           decoration: BoxDecoration(
               borderRadius: const BorderRadius.all(Radius.circular(10)),
-              // color: activeTheme.main_color,
-              color: Color.fromARGB(255, 59, 140, 135),
+              color: activeTheme.buttonBG,
+              // color: Color.fromARGB(255, 59, 140, 135),
               border: Border.all(width: 2, color: Colors.black12)),
           child: SizedBox(
             width: double.infinity,
@@ -37,7 +37,7 @@ class InfoBlock extends StatelessWidget {
                       padding: const EdgeInsets.all(8),
                       clipBehavior: Clip.antiAlias,
                       decoration: ShapeDecoration(
-                        color: const Color(0xFFD1E3FF),
+                        // color: const Color(0xFFD1E3FF),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(18),
                         ),

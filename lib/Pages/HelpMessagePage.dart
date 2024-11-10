@@ -4,17 +4,15 @@ import 'package:MediansSchoolDriver/Models/HelpMessageModel.dart';
 import 'package:MediansSchoolDriver/API/client.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 import 'package:MediansSchoolDriver/methods.dart';
-import 'package:MediansSchoolDriver/components/bottom_menu.dart';
-import 'package:MediansSchoolDriver/components/header.dart';
 import 'package:MediansSchoolDriver/components/loader.dart';
 import 'package:MediansSchoolDriver/components/CommentBlock.dart';
 import 'package:MediansSchoolDriver/components/CustomRow.dart';
 import 'package:MediansSchoolDriver/components/FullTextButton.dart';
 
 class HelpMessagePage extends StatefulWidget {
-  const HelpMessagePage({super.key, this.message});
-
   final HelpMessageModel? message;
+
+  const HelpMessagePage({super.key, this.message});
 
   @override
   _SentMessageState createState() => _SentMessageState();
@@ -80,10 +78,10 @@ class _SentMessageState extends State<HelpMessagePage> {
                                 const SizedBox(height: 20),
                                 CustomRow(lang.translate('Ticket Number'),
                                     "${widget.message!.message_id}"),
-                                CustomRow(lang.translate('Department'),
+                                CustomRow(lang.translate('subject'),
                                     "${widget.message!.title}"),
-                                CustomRow(lang.translate('Status'),
-                                    "${widget.message!.status}"),
+                                // CustomRow(lang.translate('Status'),
+                                //     "${widget.message!.status}"),
                                 CustomRow(lang.translate('Priority'),
                                     "${widget.message!.priority}"),
                                 CustomRow(lang.translate('Time'),

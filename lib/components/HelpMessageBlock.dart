@@ -107,7 +107,7 @@ class HelpMessageBlock extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 5),
+                        Text("#${message.message_id}"),
                         const SizedBox(height: 20),
                         SizedBox(
                           width: double.infinity,

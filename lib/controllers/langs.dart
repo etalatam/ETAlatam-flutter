@@ -295,6 +295,10 @@ class Lang {
     'search': 'Buscar',
     'will_not_board': 'No abordará',
     'not_boarding': 'No abordó',
-    'boarding': 'Abordó'
+    'boarding': 'Abordó',
+    'ticket_number': 'Número de ticket',
+    'time': 'fecha',
+    'support_comments': 'Comemntarios y respuestas',
+    'comment': 'Comentario'
   };
 }
