@@ -67,7 +67,8 @@ mixin MediansTheme {
 class LightTheme implements DefaultTheme {
   ///
   /// Colors
-  static Color default_color = const Color(0xff1e3050);
+  // static Color default_color = const Color(0xff1e3050);
+  static Color default_color = Color.fromARGB(255, 0, 19, 17);
   static Color default_bg = Colors.white;
   @override
   Color main_color = default_color;
@@ -94,9 +95,9 @@ class LightTheme implements DefaultTheme {
 
   /// Buttons
   @override
-  Color buttonBG = const Color(0xff1e3050);
+  Color buttonBG = const Color.fromARGB(255, 59, 140, 135);
   @override
-  Color buttonColor = Colors.white.withOpacity(.9);
+  Color buttonColor = Colors.white;
   @override
   Color buttonSecondBG = Colors.deepPurple;
 
@@ -198,9 +199,9 @@ class DarkTheme implements DefaultTheme {
 
   /// Buttons
   @override
-  Color buttonBG = Colors.white.withOpacity(.9);
+  Color buttonBG = const Color.fromARGB(255, 59, 140, 135);
   @override
-  Color buttonColor = const Color(0xff1e3050);
+  Color buttonColor =  Colors.white;
   @override
   Color buttonSecondBG = Colors.deepPurple;
 
@@ -247,8 +248,8 @@ abstract class DefaultTheme {
   static Color default_color = Color.fromARGB(255, 59, 140, 135);
   
   static Color default_bg = Colors.transparent;
-  Color main_color = Color.fromARGB(0, 17, 24, 39);
-  // Color main_color = Color.fromARGB(255, 59, 140, 135);
+  // Color main_color = Color.fromARGB(0, 17, 24, 39);
+  Color main_color = Color.fromARGB(255, 59, 140, 135);
 
 
   Color main_bg = Colors.transparent;
@@ -262,8 +263,8 @@ abstract class DefaultTheme {
   Color tabColor = Colors.transparent;
 
   /// Buttons
-  Color buttonBG = Colors.transparent;
-  Color buttonColor = Colors.transparent;
+  Color buttonBG = const Color.fromARGB(255, 59, 140, 135);
+  Color buttonColor = Colors.white;
   Color buttonSecondBG = Colors.transparent;
 
   /// Test Styles

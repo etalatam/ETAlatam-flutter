@@ -14,7 +14,7 @@ class FullTextButton extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: activeTheme.main_color,
+        color: activeTheme.buttonBG,
       ),
       padding: const EdgeInsets.symmetric(
         vertical: 16,
