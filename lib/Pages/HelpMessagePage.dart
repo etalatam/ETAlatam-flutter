@@ -1,3 +1,4 @@
+import 'package:MediansSchoolDriver/components/header.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:MediansSchoolDriver/Models/HelpMessageModel.dart';
@@ -155,6 +156,11 @@ class _SentMessageState extends State<HelpMessagePage> {
                           ],
                         ))),
               ),
+              Positioned(
+                left: 0,
+                right: 0,
+                top: 0,
+                child: Header(lang.translate('sitename'))),
               // Positioned(
               //     top: 0,
               //     left: 0,
