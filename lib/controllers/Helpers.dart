@@ -243,14 +243,16 @@ abstract class DefaultTheme {
   /// Colors
   ///
 
-  static Color default_color = Colors.transparent;
+  // static Color default_color = Colors.transparent;
+  static Color default_color = Color.fromARGB(255, 59, 140, 135);
+  
   static Color default_bg = Colors.transparent;
-  // Color main_color = Color.fromARGB(0, 17, 24, 39);
-  Color main_color = Color.fromARGB(255, 59, 140, 135);
+  Color main_color = Color.fromARGB(0, 17, 24, 39);
+  // Color main_color = Color.fromARGB(255, 59, 140, 135);
 
 
   Color main_bg = Colors.transparent;
-  Color border_color = const Color.fromARGB(0, 17, 24, 39);
+  Color border_color = const Color.fromARGB(255, 59, 140, 135);
   Color icon_color = Colors.transparent;
   Color textColor = Colors.transparent;
   Color shadowColor = Colors.transparent;
