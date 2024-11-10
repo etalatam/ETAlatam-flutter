@@ -129,7 +129,7 @@ class HttpService {
   /// Load Help Messages
   Future<List<HelpMessageModel>?> getHelpMessages() async {
     http.Response res = await getQuery(
-        "/rpc/support_message?order=ts.desc");
+        "/rpc/support_message?order=id.desc");
 
     print("res.statusCode: ${res.statusCode}");
     print("res.body: ${res.body}");
