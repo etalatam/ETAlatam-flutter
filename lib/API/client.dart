@@ -576,7 +576,7 @@ class HttpService {
     final data = {"message_id": messageId, "comment": comment};
 
     http.Response res = await postQuery(
-        '/rpc/rpc/save_support_message_commemts', jsonEncode(data),
+        '/rpc/save_support_message_comment', jsonEncode(data),
         contentType: 'application/json');
 
     print("[sendMessageComment] statuscode: ${res.statusCode}");
