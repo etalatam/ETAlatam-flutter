@@ -157,10 +157,10 @@ class _SentMessageState extends State<HelpMessagePage> {
                         ))),
               ),
               Positioned(
-                left: 0,
-                right: 0,
-                top: 0,
-                child: Header(lang.translate('sitename'))),
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  child: Header(lang.translate('sitename'))),
               // Positioned(
               //     top: 0,
               //     left: 0,
@@ -214,7 +214,7 @@ class _SentMessageState extends State<HelpMessagePage> {
     setState(() {
       if (res != null) {
         showSuccessDialog(
-            context, lang.translate('Success'), lang.translate('Thanks'), res);
+            context, lang.translate('Success'), lang.translate('Thanks'), null);
         reply = '';
         replyController.clear();
         showLoader = false;

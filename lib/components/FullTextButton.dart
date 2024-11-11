@@ -20,7 +20,7 @@ class FullTextButton extends StatelessWidget {
         vertical: 16,
       ),
       child: GestureDetector(
-        onTap: () async {
+        onTap: () {
           callback();
         },
         child: Text(

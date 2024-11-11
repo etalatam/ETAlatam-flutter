@@ -253,11 +253,12 @@ class Lang {
     'recovery_password_mail_sended':
         '¡Correo de recuperación de contraseña enviado!',
     'we_can_help': 'Necesitas ayuda?',
-    'message':'Mensaje',
+    'message': 'Mensaje',
     'subject': 'Asunto',
     'your_old_sent_messages_list': 'Mensajes enviados',
-    'click_here_to_view_your_previous_sent_messages':'Haga clic aquí para ver sus mensajes enviados anteriormente',
-    'send_now':'Enviar',
+    'click_here_to_view_your_previous_sent_messages':
+        'Haga clic aquí para ver sus mensajes enviados anteriormente',
+    'send_now': 'Enviar',
     'locations': 'Paradas',
     'have_a_problem': 'Tiene un problema?',
     'send_message_if_you_need_any_help': 'Envía un mensaje si necesitas ayuda',
@@ -296,7 +297,7 @@ class Lang {
     'will_not_board': 'No abordará',
     'not_boarding': 'No abordó',
     'boarding': 'Abordó',
-    'ticket_number': 'Número de ticket',
+    'ticket_number': 'Número#',
     'time': 'fecha',
     'support_comments': 'Comemntarios y respuestas',
     'comment': 'Comentario'
