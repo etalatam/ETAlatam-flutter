@@ -212,12 +212,12 @@ class _SentMessageState extends State<HelpMessagePage> {
         reply!, widget.message!.message_id!);
 
     setState(() {
+      showLoader = false;
       if (res != null) {
         showSuccessDialog(
             context, lang.translate('Success'), lang.translate('Thanks'), null);
         reply = '';
         replyController.clear();
-        showLoader = false;
       }
     });
   }

@@ -572,7 +572,7 @@ class HttpService {
   }
 
   /// Send message
-  sendMessageComment(String comment, int messageId) async {
+  Future<String> sendMessageComment(String comment, int messageId) async {
     final data = {"message_id": messageId, "comment": comment};
 
     http.Response res = await postQuery(
