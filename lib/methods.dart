@@ -9,6 +9,8 @@ import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+import 'firebase_options.dart';
+
 void launchGoogleMaps(endLat, endLng) async {
   var currentPosition = await getCurrentLocation();
   var startLat = currentPosition.latitude;
@@ -287,10 +289,11 @@ setNotes() async {
         options: FirebaseOptions(
             deepLinkURLScheme:
                 apiURL.toString().replaceAll(RegExp(r'https://'), ''),
-            apiKey: firebaseApiKey,
-            appId: firebaseAppId,
-            messagingSenderId: firebaseSenderId,
-            projectId: firebaseProjectId));
+            apiKey: DefaultFirebaseOptions.currentPlatform.apiKey,
+            appId: DefaultFirebaseOptions.currentPlatform.appId,
+            messagingSenderId: DefaultFirebaseOptions.currentPlatform.messagingSenderId,
+            projectId: DefaultFirebaseOptions.currentPlatform.projectId
+        ));
 
     OneSignal.Debug.setLogLevel(OSLogLevel.info);
 
