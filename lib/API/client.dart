@@ -108,35 +108,38 @@ class HttpService {
   }
 
   Future<List<SupportHelpCategory>> supportHelpCategory() async {
-    http.Response res = await getQuery(
-        "/rpc/support_help_category?order=name.asc");
+    http.Response res =
+        await getQuery("/rpc/support_help_category?order=name.asc");
 
     print("res.statusCode: ${res.statusCode}");
     print("res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
-      final List<SupportHelpCategory> supportHelpCategoryList = await Future.wait(body
-            .map((dynamic item) async => await SupportHelpCategory.fromJson(item))
+      final List<SupportHelpCategory> supportHelpCategoryList =
+          await Future.wait(
+        body
+            .map((dynamic item) async =>
+                await SupportHelpCategory.fromJson(item))
             .toList(),
       );
       return supportHelpCategoryList;
     }
     debugPrint(res.body.toString());
-    return [];    
+    return [];
   }
 
   /// Load Help Messages
   Future<List<HelpMessageModel>?> getHelpMessages() async {
-    http.Response res = await getQuery(
-        "/rpc/support_message?order=id.desc");
+    http.Response res = await getQuery("/rpc/support_message?order=id.desc");
 
     print("res.statusCode: ${res.statusCode}");
     print("res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
-      final List<HelpMessageModel> supportMessage = await Future.wait(body
+      final List<HelpMessageModel> supportMessage = await Future.wait(
+        body
             .map((dynamic item) async => await HelpMessageModel.fromJson(item))
             .toList(),
       );
@@ -380,7 +383,8 @@ class HttpService {
     }
   }
 
-   Future<StudentModel> updateAttendance(TripModel trip,  StudentModel student, String statusCode) async {
+  Future<StudentModel> updateAttendance(
+      TripModel trip, StudentModel student, String statusCode) async {
     final data = jsonEncode({
       "id_school": student.schoolId,
       "id_student": student.student_id,
@@ -390,8 +394,8 @@ class HttpService {
 
     print("[client.updateAttendance] $data");
 
-    http.Response res = await postQuery('/rpc/update_attendance',  data, 
-      contentType: 'application/json');
+    http.Response res = await postQuery('/rpc/update_attendance', data,
+        contentType: 'application/json');
     print("res.statusCode ${res.statusCode}");
     print("res.body ${res.body}");
 
@@ -544,15 +548,17 @@ class HttpService {
   }
 
   /// Send message
-  Future <String> sendMessage(int categoryId, String message, int priority) async {
-  final  data = {
+  Future<String> sendMessage(
+      int categoryId, String message, int priority) async {
+    final data = {
       "category_id": categoryId,
       "content": message,
       "priority_id": priority
     };
 
-    http.Response res = await postQuery('/rpc/save_support_message',
-      jsonEncode(data), contentType: 'application/json');
+    http.Response res = await postQuery(
+        '/rpc/save_support_message', jsonEncode(data),
+        contentType: 'application/json');
 
     print("[sendMessage] statuscode: ${res.statusCode}");
     print("[sendMessage] res.body: ${res.body}");
@@ -560,27 +566,28 @@ class HttpService {
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
       return (body['success'] != null) ? body['result'] : body['error'];
-    } 
+    }
 
     return "${parseResponseMessage(res)}/${res.statusCode}";
   }
 
   /// Send message
   sendMessageComment(String comment, int messageId) async {
-    Map data = {
-      "message_id": messageId,
-      "comment": comment,
-    };
+    final data = {"message_id": messageId, "comment": comment};
 
-    http.Response res = await postQuery('/mobile_api/create',
-        {"model": "HelpMessageComment.create", "params": jsonEncode(data)});
+    http.Response res = await postQuery(
+        '/rpc/rpc/save_support_message_commemts', jsonEncode(data),
+        contentType: 'application/json');
+
+    print("[sendMessageComment] statuscode: ${res.statusCode}");
+    print("[sendMessageComment] res.body: ${res.body}");
+
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
-
-      return body['success'] != null ? body['result'] : body['error'];
-    } else {
-      throw "Unable to retrieve data.";
+      return (body['success'] != null) ? body['result'] : body['error'];
     }
+
+    return "${parseResponseMessage(res)}/${res.statusCode}";
   }
 
   /// Send message
@@ -819,12 +826,14 @@ class HttpService {
     }
   }
 
-  Future<List<StudentModel>> routeStudents({required tripId,limit = 20, offset = 0, String filter = ''}) async {
-    String url = "/rpc/route_students?order=firstname.desc&limit=$limit&offset=$offset";
+  Future<List<StudentModel>> routeStudents(
+      {required tripId, limit = 20, offset = 0, String filter = ''}) async {
+    String url =
+        "/rpc/route_students?order=firstname.desc&limit=$limit&offset=$offset";
 
     url = "$url&id_trip=eq.$tripId";
 
-    if(filter.isNotEmpty){
+    if (filter.isNotEmpty) {
       url = "$url&or=(";
       url = "${url}firstname.ilike.*$filter*";
       url = "$url,lastname.ilike.*$filter*";
@@ -833,7 +842,7 @@ class HttpService {
       url = "$url,pickup_point_name.ilike.*$filter*";
       url = "$url)";
     }
-    
+
     http.Response res = await getQuery(url);
 
     print("res.statusCode: ${res.statusCode}");
