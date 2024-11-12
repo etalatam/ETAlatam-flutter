@@ -548,7 +548,7 @@ class HttpService {
   }
 
   /// Send message
-  Future<String> sendMessage(
+  Future<HelpMessageModel> sendMessage(
       int categoryId, String message, int priority) async {
     final data = {
       "category_id": categoryId,
@@ -565,14 +565,15 @@ class HttpService {
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
-      return (body['success'] != null) ? body['result'] : body['error'];
+      //return (body['success'] != null) ? body['result'] : body['error'];
+      return HelpMessageModel.fromJson(body);
     }
 
-    return "${parseResponseMessage(res)}/${res.statusCode}";
+    throw "${parseResponseMessage(res)}/${res.statusCode}";
   }
 
   /// Send message
-  Future<String> sendMessageComment(String comment, int messageId) async {
+  Future<CommentModel> sendMessageComment(String comment, int messageId) async {
     final data = {"message_id": messageId, "comment": comment};
 
     http.Response res = await postQuery(
@@ -584,10 +585,10 @@ class HttpService {
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
-      return (body['success'] != null) ? body['result'] : body['error'];
+      return CommentModel.fromJson(body);
     }
 
-    return "${parseResponseMessage(res)}/${res.statusCode}";
+    throw "${parseResponseMessage(res)}/${res.statusCode}";
   }
 
   /// Send message

@@ -9,6 +9,7 @@ import 'package:MediansSchoolDriver/components/loader.dart';
 import 'package:MediansSchoolDriver/components/CommentBlock.dart';
 import 'package:MediansSchoolDriver/components/CustomRow.dart';
 import 'package:MediansSchoolDriver/components/FullTextButton.dart';
+import 'package:get/get.dart';
 
 class HelpMessagePage extends StatefulWidget {
   final HelpMessageModel? message;
@@ -22,7 +23,7 @@ class HelpMessagePage extends StatefulWidget {
 class _SentMessageState extends State<HelpMessagePage> {
   final HttpService httpService = HttpService();
 
-  List<CommentModel>? commentsList = [];
+  List<CommentModel> commentsList = [];
 
   String? reply;
   bool showLoader = true;
@@ -208,24 +209,31 @@ class _SentMessageState extends State<HelpMessagePage> {
     setState(() {
       showLoader = true;
     });
-    dynamic res = await httpService.sendMessageComment(
-        reply!, widget.message!.message_id!);
 
-    setState(() {
-      showLoader = false;
-      if (res != null) {
+    try {
+      final newComment = await httpService.sendMessageComment(
+          reply!, widget.message!.message_id!);
+
+      setState(() {
+        showLoader = false;
+        commentsList.add(newComment);
         showSuccessDialog(
             context, lang.translate('Success'), lang.translate('Thanks'), null);
         reply = '';
         replyController.clear();
-      }
-    });
+      });
+    } catch (e) {
+      print(e.toString());
+    }
   }
 
   @override
   void initState() {
     super.initState();
     loadMessage();
-    commentsList = widget.message!.comments;
+
+    if (widget.message!.comments != null) {
+      commentsList = widget.message!.comments!;
+    }
   }
 }
