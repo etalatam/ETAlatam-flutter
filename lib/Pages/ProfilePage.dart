@@ -108,6 +108,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                             horizontal: 20),
                                         child: CircleAvatar(
                                             radius: 50,
+                                            backgroundColor: Color(0xFF123456),
                                             foregroundImage: NetworkImage(
                                                 httpService.getAvatarUrl(driver.picture),
                                                 headers: {'Accept': 'image/png'}

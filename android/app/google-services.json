@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "889434189810",
+    "project_id": "etalatam-f1fb9",
+    "storage_bucket": "etalatam-f1fb9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:889434189810:android:2807a914770051266cc56b",
+        "android_client_info": {
+          "package_name": "com.medians.medians_driver"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6p5QAXnRocf_vTuQMSuHDSujx1vwnd4Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

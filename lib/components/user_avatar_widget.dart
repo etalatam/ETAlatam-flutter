@@ -42,6 +42,7 @@ class _UserAvatarState extends State<UserAvatar> {
             padding: const EdgeInsets.symmetric(
                 horizontal: 5),
             child: CircleAvatar(
+                backgroundColor: Color.fromARGB(255, 234,244,243),
                 radius: 50,
                 foregroundImage: NetworkImage(imageUrl,headers: {'Accept': 'image/png'})
     )));

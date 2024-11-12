@@ -1,5 +1,5 @@
-
 import 'package:MediansSchoolDriver/Models/HelpMessageModel.dart';
+import 'package:MediansSchoolDriver/Pages/HelpMessagePage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:MediansSchoolDriver/Pages/HelpMessagesPage.dart';
@@ -51,9 +51,7 @@ class _SentMessageState extends State<SendMessagePage> {
       setState(() {
         showLoader = true;
       });
-      httpService
-          .supportHelpCategory()
-          .then((result) {
+      httpService.supportHelpCategory().then((result) {
         setState(() {
           list = result;
           showLoader = false;
@@ -177,10 +175,10 @@ class _SentMessageState extends State<SendMessagePage> {
                       onChanged: (int? value) {
                         setState(() {
                           categoryId = value!;
-
                         });
                       },
-                      items: list?.map<DropdownMenuItem<int>>((SupportHelpCategory item) {
+                      items: list?.map<DropdownMenuItem<int>>(
+                          (SupportHelpCategory item) {
                         return DropdownMenuItem<int>(
                           value: item.id,
                           child: Text(item.name!),
@@ -304,16 +302,15 @@ class _SentMessageState extends State<SendMessagePage> {
       showLoader = true;
     });
     try {
-      String result = await httpService.sendMessage(categoryId, message, priorities.indexOf(priority)); 
-      print('[Help.sendMessage.result] ${result.toString()}');
-      
+      final newHelpMessageModel = await httpService.sendMessage(
+          categoryId, message, priorities.indexOf(priority));
+
       setState(() {
         showLoader = false;
-        showSuccessDialog(context, 
-          lang.translate('Done'),
-          lang.translate("Mensaje enviado"),null);
+        // showSuccessDialog(context, lang.translate('Done'),
+        //     lang.translate("Mensaje enviado"), null);
+        openNewPage(context, HelpMessagePage(message: newHelpMessageModel));
       });
-
     } catch (e) {
       print('[Help.sendMessage.error] ${e.toString()}');
       setState(() {

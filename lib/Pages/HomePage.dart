@@ -4,6 +4,7 @@ import 'package:MediansSchoolDriver/Pages/LoginPage.dart';
 import 'package:MediansSchoolDriver/Pages/TripPage.dart';
 import 'package:MediansSchoolDriver/Pages/providers/location_service_provider.dart';
 import 'package:MediansSchoolDriver/components/ActiveTrip.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
@@ -362,7 +363,35 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
+    /*
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    // Solicitar permisos en iOS
+    messaging.requestPermission();
+
+    // Obtener el token de FCM
+    messaging.getToken().then((token) {
+      print("FCM Token: $token");
+    });
+
+    // Manejar mensajes en segundo plano
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    // Manejar mensajes cuando la app está en primer plano
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Got a message whilst in the foreground!');
+      print('Message data: ${message.data}');
+      if (message.notification != null) {
+        print('Message also contained a notification: ${message.notification}');
+      }
+    });
+    */
+
     loadResources();
     
   }
+
+  Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async { 
+    print('Handling a background message: ${message.messageId}'); 
+  }  
 }

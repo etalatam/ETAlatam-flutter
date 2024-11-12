@@ -1,13 +1,11 @@
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:MediansSchoolDriver/components/header.dart';
 import 'package:flutter/material.dart';
 import 'package:MediansSchoolDriver/Models/HelpMessageModel.dart';
 import 'package:MediansSchoolDriver/API/client.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 import 'package:MediansSchoolDriver/methods.dart';
-import 'package:MediansSchoolDriver/components/bottom_menu.dart';
 import 'package:MediansSchoolDriver/components/HelpMessageBlock.dart';
 import 'package:MediansSchoolDriver/components/EmptyData.dart';
-import 'package:MediansSchoolDriver/components/header.dart';
 import 'package:MediansSchoolDriver/components/loader.dart';
 
 const List<String> list = <String>['Support', 'Human Resources', 'Other'];
@@ -118,6 +116,11 @@ class _SentMessageState extends State<HelpMessagesPage> {
                                       ],
                                     ))),
                           ),
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            top: 0,
+                            child: Header(lang.translate('sitename'))),
                           // Positioned(
                           //     top: 50,
                           //     left: 0,

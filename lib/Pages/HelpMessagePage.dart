@@ -1,20 +1,20 @@
+import 'package:MediansSchoolDriver/components/header.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:MediansSchoolDriver/Models/HelpMessageModel.dart';
 import 'package:MediansSchoolDriver/API/client.dart';
 import 'package:MediansSchoolDriver/controllers/Helpers.dart';
 import 'package:MediansSchoolDriver/methods.dart';
-import 'package:MediansSchoolDriver/components/bottom_menu.dart';
-import 'package:MediansSchoolDriver/components/header.dart';
 import 'package:MediansSchoolDriver/components/loader.dart';
 import 'package:MediansSchoolDriver/components/CommentBlock.dart';
 import 'package:MediansSchoolDriver/components/CustomRow.dart';
 import 'package:MediansSchoolDriver/components/FullTextButton.dart';
+import 'package:get/get.dart';
 
 class HelpMessagePage extends StatefulWidget {
-  const HelpMessagePage({super.key, this.message});
-
   final HelpMessageModel? message;
+
+  const HelpMessagePage({super.key, this.message});
 
   @override
   _SentMessageState createState() => _SentMessageState();
@@ -23,7 +23,7 @@ class HelpMessagePage extends StatefulWidget {
 class _SentMessageState extends State<HelpMessagePage> {
   final HttpService httpService = HttpService();
 
-  List<CommentModel>? commentsList = [];
+  List<CommentModel> commentsList = [];
 
   String? reply;
   bool showLoader = true;
@@ -80,10 +80,10 @@ class _SentMessageState extends State<HelpMessagePage> {
                                 const SizedBox(height: 20),
                                 CustomRow(lang.translate('Ticket Number'),
                                     "${widget.message!.message_id}"),
-                                CustomRow(lang.translate('Department'),
+                                CustomRow(lang.translate('subject'),
                                     "${widget.message!.title}"),
-                                CustomRow(lang.translate('Status'),
-                                    "${widget.message!.status}"),
+                                // CustomRow(lang.translate('Status'),
+                                //     "${widget.message!.status}"),
                                 CustomRow(lang.translate('Priority'),
                                     "${widget.message!.priority}"),
                                 CustomRow(lang.translate('Time'),
@@ -157,6 +157,11 @@ class _SentMessageState extends State<HelpMessagePage> {
                           ],
                         ))),
               ),
+              Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  child: Header(lang.translate('sitename'))),
               // Positioned(
               //     top: 0,
               //     left: 0,
@@ -204,24 +209,31 @@ class _SentMessageState extends State<HelpMessagePage> {
     setState(() {
       showLoader = true;
     });
-    dynamic res = await httpService.sendMessageComment(
-        reply!, widget.message!.message_id!);
 
-    setState(() {
-      if (res != null) {
+    try {
+      final newComment = await httpService.sendMessageComment(
+          reply!, widget.message!.message_id!);
+
+      setState(() {
+        showLoader = false;
+        commentsList.add(newComment);
         showSuccessDialog(
-            context, lang.translate('Success'), lang.translate('Thanks'), res);
+            context, lang.translate('Success'), lang.translate('Thanks'), null);
         reply = '';
         replyController.clear();
-        showLoader = false;
-      }
-    });
+      });
+    } catch (e) {
+      print(e.toString());
+    }
   }
 
   @override
   void initState() {
     super.initState();
     loadMessage();
-    commentsList = widget.message!.comments;
+
+    if (widget.message!.comments != null) {
+      commentsList = widget.message!.comments!;
+    }
   }
 }

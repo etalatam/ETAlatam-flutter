@@ -108,6 +108,7 @@ class _DriverPageState extends State<DriverPage> {
                                       horizontal: 20),
                                   child: CircleAvatar(
                                       radius: 50,
+                                      backgroundColor: Color.fromARGB(255, 234,244,243),
                                       foregroundImage: NetworkImage(
                                           (driver.picture != null)
                                               ? (httpService.croppedImage(

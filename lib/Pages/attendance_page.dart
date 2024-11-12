@@ -156,6 +156,7 @@ class _DriverPageState extends State<AttendancePage> {
                                 },
                             child: Card(
                                 color: _editingIndex == index ? Color.fromARGB(255, 245, 243, 236) : Colors.white,
+                                
                                 margin: EdgeInsets.all(8.0),
                                 child: Padding(
                                     padding: const EdgeInsets.symmetric(
@@ -163,6 +164,7 @@ class _DriverPageState extends State<AttendancePage> {
                                     child: Column(children: [
                                       ListTile(
                                           leading: CircleAvatar(
+                                              backgroundColor: Color.fromARGB(255, 234,244,243),
                                               backgroundImage:
                                                   CachedNetworkImageProvider(
                                                       'https://ui-avatars.com/api/?background=random&name=${item.first_name!}')),

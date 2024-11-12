@@ -172,9 +172,9 @@ class _TripPageState extends State<TripPage> with MediansWidgets, MediansTheme i
                                     Icon(
                                       Icons.list,
                                       color:
-                                          activeTheme.buttonColor,
+                                          activeTheme.buttonBG,
                                     ),
-                                    Color.fromARGB(255, 176, 175, 175)))),
+                                    activeTheme.buttonColor))),
                           ],
                         ),
                         const SizedBox(
