@@ -386,6 +386,8 @@ class _HomePageState extends State<HomePage>
           print('[FCM] Message also contained a notification: ${message.notification}');
         }
       });
+
+      messaging.subscribeToTopic('all-notifications');
     } catch (e) {
       print("[FCM] ${e.toString()}");
     }
