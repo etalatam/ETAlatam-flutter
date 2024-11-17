@@ -1,37 +1,56 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:eta_school_app/Models/TripModel.dart';
-import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/methods.dart';
+import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 
-class MapWithRoute extends StatefulWidget {
-  final LatLng origin;
-  final LatLng destination;
-  final List<TripPickupLocation>? pickup_locations;
-
-  const MapWithRoute(
+class StaticMap extends StatefulWidget {
+  const StaticMap(
       {super.key,
       required this.origin,
       required this.destination,
-      this.pickup_locations});
+      this.pickup_locations,
+      this.destinations});
+
+  final LatLng origin;
+  final LatLng destination;
+  final List<TripPickupLocation>? pickup_locations;
+  final List<TripDestinationLocation>? destinations;
 
   @override
-  _MapWithRouteState createState() => _MapWithRouteState();
+  _StaticMapState createState() => _StaticMapState();
 }
 
-class _MapWithRouteState extends State<MapWithRoute> {
+class _StaticMapState extends State<StaticMap> {
   late GoogleMapController _mapController;
   late List<LatLng> _routeCoordinates = [];
 
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
 
   @override
-  void initState() {
-    super.initState();
-    fetchRoute();
+  Widget build(BuildContext context) {
+    return GoogleMap(
+      initialCameraPosition: CameraPosition(target: widget.origin, zoom: 15.0),
+      onMapCreated: (controller) {
+        setState(() {
+          _mapController = controller;
+          setMarkers();
+          _setMapBounds();
+        });
+      },
+      markers: markers.values.toSet(),
+      polylines: {
+        Polyline(
+          polylineId: PolylineId('route'),
+          points: _routeCoordinates,
+          color: Colors.blue,
+          width: 5,
+        ),
+      },
+    );
   }
 
   void _setMapBounds() {
@@ -72,8 +91,8 @@ class _MapWithRouteState extends State<MapWithRoute> {
 
     if (response.statusCode == 200) {
       final decoded = json.decode(response.body);
-      List<LatLng> points = _decodePoly(
-          encodedString: decoded['routes'][0]['overview_polyline']['points']);
+      // List<LatLng> points = _decodePoly(
+      //     encodedString: decoded['routes'][0]['overview_polyline']['points']);
 
       Marker mark = await carMarker('car', widget.origin);
       Marker destination = await destinationMarker(widget.destination);
@@ -81,7 +100,7 @@ class _MapWithRouteState extends State<MapWithRoute> {
         markers[mark.markerId] = mark;
         markers[destination.markerId] = destination;
 
-        _routeCoordinates = points;
+        // _routeCoordinates = points;
       });
     } else {
       throw Exception('Failed to fetch route');
@@ -122,39 +141,36 @@ class _MapWithRouteState extends State<MapWithRoute> {
     return polylinePoints;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return GoogleMap(
-      initialCameraPosition: CameraPosition(target: widget.origin, zoom: 15.0),
-      onMapCreated: (controller) {
-        setState(() {
-          _mapController = controller;
-          setMarkers();
-          _setMapBounds();
-        });
-      },
-      markers: markers.values.toSet(),
-      polylines: {
-        Polyline(
-          polylineId: PolylineId('route'),
-          points: _routeCoordinates,
-          color: Colors.blue,
-          width: 5,
-        ),
-      },
-    );
-  }
-
   setMarkers() async {
     for (var i = 0; i < widget.pickup_locations!.length; i++) {
       Marker origMarker = await addMarker(
           "Pickup$i",
           LatLng(widget.pickup_locations![i].latitude!,
               widget.pickup_locations![i].longitude!),
-          "Pickup$i");
+          // widget.pickup_locations![i].student!.student_name
+          "Pickup$i"
+          );
+      // Marker destMarker = await addMarker(
+      //     "Destination$i",
+      //     LatLng(widget.destinations![i].latitude!,
+      //         widget.destinations![i].longitude!),
+      //     widget.destinations![i].student!.student_name);
       setState(() {
         markers[origMarker.markerId] = origMarker;
+        // markers[destMarker.markerId] = destMarker;
       });
     }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    fetchRoute();
   }
 }

@@ -1,41 +1,66 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:eta_school_app/Models/TripModel.dart';
-import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/methods.dart';
+import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 
-class MapWithRoute extends StatefulWidget {
+class OldTripMap extends StatefulWidget {
   final LatLng origin;
   final LatLng destination;
   final List<TripPickupLocation>? pickup_locations;
+  final TripModel trip;
 
-  const MapWithRoute(
+  const OldTripMap(
       {super.key,
       required this.origin,
       required this.destination,
+      required this.trip,
       this.pickup_locations});
 
   @override
-  _MapWithRouteState createState() => _MapWithRouteState();
+  _OldTripMapState createState() => _OldTripMapState();
 }
 
-class _MapWithRouteState extends State<MapWithRoute> {
+class _OldTripMapState extends State<OldTripMap> {
   late GoogleMapController _mapController;
   late List<LatLng> _routeCoordinates = [];
 
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
 
+  LatLng? mapDestination;
+  LatLng? mapOrigin;
+
   @override
-  void initState() {
-    super.initState();
-    fetchRoute();
+  Widget build(BuildContext context) {
+    return mapOrigin == null
+        ? const Center()
+        : GoogleMap(
+            initialCameraPosition:
+                CameraPosition(target: mapOrigin!, zoom: 15.0),
+            onMapCreated: (controller) {
+              setState(() {
+                _mapController = controller;
+                setMarkers();
+                _setMapBounds();
+              });
+            },
+            markers: markers.values.toSet(),
+            polylines: {
+              Polyline(
+                polylineId: PolylineId('route'),
+                points: _routeCoordinates,
+                color: Colors.blue,
+                width: 5,
+              ),
+            },
+          );
   }
 
   void _setMapBounds() {
-    Timer(const Duration(seconds: 2), () {
+    Timer(const Duration(seconds: 1), () {
       if (_routeCoordinates.isNotEmpty) {
         LatLngBounds bounds = _getBounds(_routeCoordinates);
         _mapController.animateCamera(CameraUpdate.newLatLngBounds(bounds, 50));
@@ -62,11 +87,27 @@ class _MapWithRouteState extends State<MapWithRoute> {
     );
   }
 
+  reloadTrip() async {
+    /// Load the trip
+    TripModel? trip_ = await httpService.getTrip(widget.trip.trip_id);
+
+    setState(() {
+      mapDestination = LatLng(trip_.route!.latitude!, trip_.route!.longitude!);
+      mapOrigin =
+          LatLng(trip_.vehicle!.last_latitude!, trip_.vehicle!.last_longitude!);
+    });
+
+    /// Calculate zoom position
+    _setMapBounds();
+  }
+
   Future<void> fetchRoute() async {
+    await reloadTrip();
+
     const String baseUrl =
         'https://maps.googleapis.com/maps/api/directions/json';
     final String url =
-        '$baseUrl?origin=${widget.origin.latitude},${widget.origin.longitude}&destination=${widget.destination.latitude},${widget.destination.longitude}&key=$googleApiKey';
+        '$baseUrl?origin=${mapOrigin!.latitude},${mapOrigin!.longitude}&destination=${mapDestination!.latitude},${mapDestination!.longitude}&key=$googleApiKey';
 
     final response = await http.get(Uri.parse(url));
 
@@ -75,8 +116,8 @@ class _MapWithRouteState extends State<MapWithRoute> {
       List<LatLng> points = _decodePoly(
           encodedString: decoded['routes'][0]['overview_polyline']['points']);
 
-      Marker mark = await carMarker('car', widget.origin);
-      Marker destination = await destinationMarker(widget.destination);
+      Marker mark = await carMarker('car', mapOrigin!);
+      Marker destination = await destinationMarker(mapDestination!);
       setState(() {
         markers[mark.markerId] = mark;
         markers[destination.markerId] = destination;
@@ -122,29 +163,6 @@ class _MapWithRouteState extends State<MapWithRoute> {
     return polylinePoints;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return GoogleMap(
-      initialCameraPosition: CameraPosition(target: widget.origin, zoom: 15.0),
-      onMapCreated: (controller) {
-        setState(() {
-          _mapController = controller;
-          setMarkers();
-          _setMapBounds();
-        });
-      },
-      markers: markers.values.toSet(),
-      polylines: {
-        Polyline(
-          polylineId: PolylineId('route'),
-          points: _routeCoordinates,
-          color: Colors.blue,
-          width: 5,
-        ),
-      },
-    );
-  }
-
   setMarkers() async {
     for (var i = 0; i < widget.pickup_locations!.length; i++) {
       Marker origMarker = await addMarker(
@@ -156,5 +174,17 @@ class _MapWithRouteState extends State<MapWithRoute> {
         markers[origMarker.markerId] = origMarker;
       });
     }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    fetchRoute();
   }
 }

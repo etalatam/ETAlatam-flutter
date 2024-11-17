@@ -1,8 +1,8 @@
-import 'package:eta_school_app/Pages/SettingsPage.dart';
-import 'package:eta_school_app/Pages/HelpPage.dart';
+import 'package:eta_school_app/Pages/settings_page.dart';
+import 'package:eta_school_app/Pages/help_page.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:flutter/material.dart';
-import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/controllers/helpers.dart';
 
 class BottomMenu extends StatelessWidget {
   const BottomMenu(this.active_menu_prefix, this.callback, {super.key});

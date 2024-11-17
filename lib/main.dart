@@ -1,6 +1,6 @@
 
-import 'package:eta_school_app/Pages/LoginPage.dart';
-import 'package:eta_school_app/Pages/SplashScreenPage.dart';
+import 'package:eta_school_app/Pages/login_page.dart';
+import 'package:eta_school_app/Pages/splash_screen_page.dart';
 import 'package:eta_school_app/Pages/home_screen.dart';
 import 'package:eta_school_app/controllers/preferences.dart';
 import 'package:firebase_core/firebase_core.dart';

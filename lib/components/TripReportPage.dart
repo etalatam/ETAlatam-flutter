@@ -1,7 +1,7 @@
 import 'package:eta_school_app/Models/TripModel.dart';
-import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/API/client.dart';
-import 'package:eta_school_app/Pages/HomePage.dart';
+import 'package:eta_school_app/Pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

@@ -1,7 +1,7 @@
 import 'package:eta_school_app/Models/DriverModel.dart';
 import 'package:flutter/material.dart';
-import '../Pages/ProfilePage.dart';
-import '../controllers/Helpers.dart';
+import '../Pages/profile_page.dart';
+import '../controllers/helpers.dart';
 import '../methods.dart';
 
 class UserAvatar extends StatefulWidget {

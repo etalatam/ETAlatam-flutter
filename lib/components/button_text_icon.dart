@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/controllers/helpers.dart';
 
 class ButtonTextIcon extends StatelessWidget {
   const ButtonTextIcon(this.text, this.icon, this.bgcolor, {super.key});

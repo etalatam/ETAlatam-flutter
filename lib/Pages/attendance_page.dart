@@ -3,8 +3,8 @@ import 'package:eta_school_app/Models/TripModel.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-import '../components/IconButtonWithText.dart';
-import '../controllers/Helpers.dart';
+import '../components/icon_button_with_text.dart';
+import '../controllers/helpers.dart';
 
 class AttendancePage extends StatefulWidget {
   TripModel trip;

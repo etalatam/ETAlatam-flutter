@@ -13,7 +13,7 @@ import 'package:eta_school_app/methods.dart';
 // import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
-import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/Models/ParentModel.dart';
 import 'package:eta_school_app/Models/DriverModel.dart';
 import 'package:eta_school_app/Models/EventModel.dart';

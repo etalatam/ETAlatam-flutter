@@ -1,37 +1,54 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:eta_school_app/Models/TripModel.dart';
-import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/methods.dart';
+import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 
-class MapWithRoute extends StatefulWidget {
+class CustomRouteMap extends StatefulWidget {
   final LatLng origin;
   final LatLng destination;
   final List<TripPickupLocation>? pickup_locations;
 
-  const MapWithRoute(
+  const CustomRouteMap(
       {super.key,
       required this.origin,
       required this.destination,
       this.pickup_locations});
 
   @override
-  _MapWithRouteState createState() => _MapWithRouteState();
+  _CustomRouteMapState createState() => _CustomRouteMapState();
 }
 
-class _MapWithRouteState extends State<MapWithRoute> {
+class _CustomRouteMapState extends State<CustomRouteMap> {
   late GoogleMapController _mapController;
   late List<LatLng> _routeCoordinates = [];
 
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
 
   @override
-  void initState() {
-    super.initState();
-    fetchRoute();
+  Widget build(BuildContext context) {
+    return GoogleMap(
+      initialCameraPosition: CameraPosition(target: widget.origin, zoom: 15.0),
+      onMapCreated: (controller) {
+        setState(() {
+          _mapController = controller;
+          setMarkers();
+          _setMapBounds();
+        });
+      },
+      markers: markers.values.toSet(),
+      polylines: {
+        Polyline(
+          polylineId: PolylineId('route'),
+          points: _routeCoordinates,
+          color: Colors.blue,
+          width: 5,
+        ),
+      },
+    );
   }
 
   void _setMapBounds() {
@@ -122,29 +139,6 @@ class _MapWithRouteState extends State<MapWithRoute> {
     return polylinePoints;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return GoogleMap(
-      initialCameraPosition: CameraPosition(target: widget.origin, zoom: 15.0),
-      onMapCreated: (controller) {
-        setState(() {
-          _mapController = controller;
-          setMarkers();
-          _setMapBounds();
-        });
-      },
-      markers: markers.values.toSet(),
-      polylines: {
-        Polyline(
-          polylineId: PolylineId('route'),
-          points: _routeCoordinates,
-          color: Colors.blue,
-          width: 5,
-        ),
-      },
-    );
-  }
-
   setMarkers() async {
     for (var i = 0; i < widget.pickup_locations!.length; i++) {
       Marker origMarker = await addMarker(
@@ -156,5 +150,17 @@ class _MapWithRouteState extends State<MapWithRoute> {
         markers[origMarker.markerId] = origMarker;
       });
     }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    fetchRoute();
   }
 }
