@@ -392,7 +392,6 @@ class _HomePageState extends State<HomePage>
           print('[FCM] Message also contained a notification: ${message.notification}');
         }
       });
-
       
       final userId = await storage.getItem('id_usu');
       messaging.subscribeToTopic('all-notifications');
@@ -400,10 +399,14 @@ class _HomePageState extends State<HomePage>
     } catch (e) {
       print("[FCM] ${e.toString()}");
     }
-
   }
 
   Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async { 
-    print('Handling a background message: ${message.messageId}'); 
+    try {
+      print('Handling a background message: ${message.messageId}');   
+    } catch (e) {
+      print("[FCM] ${e.toString()}");
+    }
+    
   }  
 }

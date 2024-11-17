@@ -1,5 +1,7 @@
 import 'dart:core';
 
+import 'package:intl/intl.dart';
+
 class SupportHelpCategory {
   int? id;
   String? name;
@@ -57,7 +59,7 @@ class HelpMessageModel {
         status: "status", //json['status'] as String?,
         priority: "${json['priority_id']}" as String?,
         user_id: json['id_driver'] as int,
-        short_date: json['ts'] as String?,
+        short_date: json['ts'],
         date: json['ts'] as String?,
         comments: comments);
   }
@@ -86,17 +88,21 @@ class CommentModel {
     CommentUserModel? user;
     try {
       user = json['user'] != null
-          ? CommentUserModel.fromJson(json['user'])
+          ? CommentUserModel.fromJson(json)
           : CommentUserModel();
     } catch (e) {
       print(e.toString());
     }
 
+    DateFormat dateFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+    DateFormat shortDateFormat = DateFormat("yyyy-MM-dd HH:mm");
+    DateTime dateTime = dateFormat.parse(json['ts']);
+
     return CommentModel(
       id: json['id'] as int?,
       comment: json['txt'] as String?,
       user_id: json['id_usu'] as int,
-      short_date: json['ts'] as String?,
+      short_date: shortDateFormat.format(dateTime),
       date: json['ts'] as String?,
       user: user,
     );
@@ -116,8 +122,8 @@ class CommentUserModel {
 
   factory CommentUserModel.fromJson(json) {
     return CommentUserModel(
-      name: json['first_name'] as String?,
-      email: json['email'] as String?,
+      name: json['user_name'] as String?,
+      email: json['user_email'] as String?,
       photo: '/uploads/images/60x60.png',
     );
   }
