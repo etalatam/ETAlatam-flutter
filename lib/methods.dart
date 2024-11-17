@@ -6,10 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:eta_school_app/controllers/Helpers.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
-import 'package:firebase_core/firebase_core.dart';
 
-import 'firebase_options.dart';
 
 void launchGoogleMaps(endLat, endLng) async {
   var currentPosition = await getCurrentLocation();

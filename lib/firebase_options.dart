@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyB6p5QAXnRocf_vTuQMSuHDSujx1vwnd4Y',
-    appId: '1:889434189810:android:d5e66c6328d506f06cc56b',
+    appId: '1:889434189810:android:37149cd6e503718d6cc56b',
     messagingSenderId: '889434189810',
     projectId: 'etalatam-f1fb9',
     storageBucket: 'etalatam-f1fb9.firebasestorage.app',
