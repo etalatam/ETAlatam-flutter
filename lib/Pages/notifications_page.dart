@@ -4,7 +4,6 @@ import 'package:eta_school_app/Pages/route_map_page.dart';
 import 'package:eta_school_app/Models/ParentModel.dart';
 import 'package:eta_school_app/Models/NotificationModel.dart';
 import 'package:eta_school_app/components/header.dart';
-import 'package:eta_school_app/components/bottom_menu.dart';
 import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/components/slide_action.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
