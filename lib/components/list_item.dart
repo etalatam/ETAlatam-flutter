@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:MediansSchoolDriver/API/client.dart';
+import 'package:eta_school_app/API/client.dart';
 
 class ListItem extends StatelessWidget {
   

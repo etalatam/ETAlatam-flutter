@@ -1,11 +1,11 @@
 
-import 'package:MediansSchoolDriver/Pages/HomePage.dart';
+import 'package:eta_school_app/Pages/HomePage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:MediansSchoolDriver/controllers/page_controller.dart' as p;
-import 'package:MediansSchoolDriver/Pages/HelpPage.dart';
-import 'package:MediansSchoolDriver/Pages/SettingsPage.dart';
-import 'package:MediansSchoolDriver/shared/widgets/custom_bottom_navigation.dart';
+import 'package:eta_school_app/controllers/page_controller.dart' as p;
+import 'package:eta_school_app/Pages/HelpPage.dart';
+import 'package:eta_school_app/Pages/SettingsPage.dart';
+import 'package:eta_school_app/shared/widgets/custom_bottom_navigation.dart';
 
 
 class HomeScreen extends StatelessWidget {

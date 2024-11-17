@@ -1,13 +1,13 @@
-import 'package:MediansSchoolDriver/Models/DriverModel.dart';
-import 'package:MediansSchoolDriver/Models/TripModel.dart';
-import 'package:MediansSchoolDriver/Pages/EventPage.dart';
-import 'package:MediansSchoolDriver/Pages/HelpMessagesPage.dart';
+import 'package:eta_school_app/Models/DriverModel.dart';
+import 'package:eta_school_app/Models/TripModel.dart';
+import 'package:eta_school_app/Pages/EventPage.dart';
+import 'package:eta_school_app/Pages/HelpMessagesPage.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
-import 'package:MediansSchoolDriver/Models/EventModel.dart';
-import 'package:MediansSchoolDriver/Models/StudentModel.dart';
-import 'package:MediansSchoolDriver/methods.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/Models/EventModel.dart';
+import 'package:eta_school_app/Models/StudentModel.dart';
+import 'package:eta_school_app/methods.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 import 'package:flutter_svg/flutter_svg.dart';

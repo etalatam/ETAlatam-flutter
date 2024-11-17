@@ -1,19 +1,19 @@
 
 import 'dart:math';
 
-import 'package:MediansSchoolDriver/Pages/attendance_page.dart';
-import 'package:MediansSchoolDriver/Pages/providers/location_service_provider.dart';
+import 'package:eta_school_app/Pages/attendance_page.dart';
+import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:MediansSchoolDriver/Models/TripModel.dart';
-import 'package:MediansSchoolDriver/components/TripReportPage.dart';
-import 'package:MediansSchoolDriver/components/Widgets.dart';
-import 'package:MediansSchoolDriver/components/button_text_icon.dart';
-import 'package:MediansSchoolDriver/methods.dart';
-import 'package:MediansSchoolDriver/components/loader.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+import 'package:eta_school_app/Models/TripModel.dart';
+import 'package:eta_school_app/components/TripReportPage.dart';
+import 'package:eta_school_app/components/Widgets.dart';
+import 'package:eta_school_app/components/button_text_icon.dart';
+import 'package:eta_school_app/methods.dart';
+import 'package:eta_school_app/components/loader.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 

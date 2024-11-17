@@ -1,13 +1,13 @@
 import 'dart:async';
-import 'package:MediansSchoolDriver/Pages/HomePage.dart';
-import 'package:MediansSchoolDriver/methods.dart';
+import 'package:eta_school_app/Pages/HomePage.dart';
+import 'package:eta_school_app/methods.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
-import 'package:MediansSchoolDriver/controllers/locale.dart';
-import 'package:MediansSchoolDriver/controllers/preferences.dart';
-import 'package:MediansSchoolDriver/Pages/LoginPage.dart';
-import 'package:MediansSchoolDriver/components/loader.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/controllers/locale.dart';
+import 'package:eta_school_app/controllers/preferences.dart';
+import 'package:eta_school_app/Pages/LoginPage.dart';
+import 'package:eta_school_app/components/loader.dart';
 import 'package:permission_handler/permission_handler.dart' as permissions;
 
 bool darkmode = false;

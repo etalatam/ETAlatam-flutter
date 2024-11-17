@@ -1,9 +1,9 @@
-import 'package:MediansSchoolDriver/Models/StudentModel.dart';
-import 'package:MediansSchoolDriver/components/Widgets.dart';
+import 'package:eta_school_app/Models/StudentModel.dart';
+import 'package:eta_school_app/components/Widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:MediansSchoolDriver/components/loader.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
-import 'package:MediansSchoolDriver/methods.dart';
+import 'package:eta_school_app/components/loader.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/methods.dart';
 
 class StudentPage extends StatefulWidget {
   const StudentPage({super.key, this.student});

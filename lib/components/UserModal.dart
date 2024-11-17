@@ -1,7 +1,7 @@
-import 'package:MediansSchoolDriver/Models/PickupLocationModel.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+import 'package:eta_school_app/Models/PickupLocationModel.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
 import 'package:flutter/material.dart';
-import 'package:MediansSchoolDriver/methods.dart';
+import 'package:eta_school_app/methods.dart';
 
 class UserModal extends StatelessWidget {
   final PickupLocationModel? pickupLocation;

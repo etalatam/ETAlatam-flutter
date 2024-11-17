@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;

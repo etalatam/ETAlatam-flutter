@@ -5,7 +5,7 @@ import 'dart:math';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -281,7 +281,7 @@ bool isRTL() {
 }
 
 bool clickListenerAdded = false;
-setNotes() async {
+/*setNotes() async {
   Timer(const Duration(seconds: 6), () async {
     String driverId = storage.getItem('driver_id').toString();
 
@@ -364,4 +364,4 @@ setNotes() async {
       OneSignal.Notifications.removeClickListener((event) {});
     }
   });
-}
+}*/

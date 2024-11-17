@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:MediansSchoolDriver/API/client.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+import 'package:eta_school_app/API/client.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
 
 class EmptyData extends StatefulWidget {
   const EmptyData({super.key, this.title, this.text});

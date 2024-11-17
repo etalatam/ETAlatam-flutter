@@ -1,5 +1,5 @@
-// import 'package:MediansSchoolDriver/Pages/NotificationsPage.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+// import 'package:eta_school_app/Pages/NotificationsPage.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
 import 'package:flutter/material.dart';
 
 import 'user_avatar_widget.dart';

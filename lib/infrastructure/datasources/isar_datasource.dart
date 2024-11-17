@@ -1,6 +1,6 @@
-import 'package:MediansSchoolDriver/domain/datasources/local_storage_datasource.dart';
-import 'package:MediansSchoolDriver/domain/entities/background_locator/background_position.dart';
-import 'package:MediansSchoolDriver/infrastructure/services/isar_services.dart';
+import 'package:eta_school_app/domain/datasources/local_storage_datasource.dart';
+import 'package:eta_school_app/domain/entities/background_locator/background_position.dart';
+import 'package:eta_school_app/infrastructure/services/isar_services.dart';
 import 'package:isar/isar.dart';
 
 class IsarDatasource extends LocalSotrageDatasource {

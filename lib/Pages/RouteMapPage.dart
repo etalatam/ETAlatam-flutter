@@ -1,14 +1,14 @@
-import 'package:MediansSchoolDriver/Models/PickupLocationModel.dart';
+import 'package:eta_school_app/Models/PickupLocationModel.dart';
 import 'package:location/location.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:MediansSchoolDriver/API/client.dart';
-import 'package:MediansSchoolDriver/Models/RouteModel.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
-import 'package:MediansSchoolDriver/components/EmptyData.dart';
-import 'package:MediansSchoolDriver/components/loader.dart';
-import 'package:MediansSchoolDriver/methods.dart';
-import 'package:MediansSchoolDriver/components/Slideable.dart';
+import 'package:eta_school_app/API/client.dart';
+import 'package:eta_school_app/Models/RouteModel.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/components/EmptyData.dart';
+import 'package:eta_school_app/components/loader.dart';
+import 'package:eta_school_app/methods.dart';
+import 'package:eta_school_app/components/Slideable.dart';
 
 class RouteMap extends StatefulWidget {
   const RouteMap({super.key, required this.route_id});

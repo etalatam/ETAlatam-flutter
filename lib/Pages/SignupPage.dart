@@ -1,10 +1,10 @@
-import 'package:MediansSchoolDriver/API/client.dart';
-import 'package:MediansSchoolDriver/components/loader.dart';
-import 'package:MediansSchoolDriver/components/header.dart';
-import 'package:MediansSchoolDriver/methods.dart';
-import 'package:MediansSchoolDriver/Pages/LoginPage.dart';
+import 'package:eta_school_app/API/client.dart';
+import 'package:eta_school_app/components/loader.dart';
+import 'package:eta_school_app/components/header.dart';
+import 'package:eta_school_app/methods.dart';
+import 'package:eta_school_app/Pages/LoginPage.dart';
 import 'package:flutter/material.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
 import 'dart:async';
 
 class SignupPage extends StatefulWidget {

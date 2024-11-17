@@ -1,11 +1,11 @@
-import 'package:MediansSchoolDriver/Models/DestinationModel.dart';
-import 'package:MediansSchoolDriver/Models/PickupLocationModel.dart';
-import 'package:MediansSchoolDriver/components/button_text_icon.dart';
+import 'package:eta_school_app/Models/DestinationModel.dart';
+import 'package:eta_school_app/Models/PickupLocationModel.dart';
+import 'package:eta_school_app/components/button_text_icon.dart';
 import 'package:location/location.dart' as Locations;
 import 'package:flutter/material.dart';
-import 'package:MediansSchoolDriver/components/loader.dart';
-import 'package:MediansSchoolDriver/methods.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+import 'package:eta_school_app/components/loader.dart';
+import 'package:eta_school_app/methods.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_svg/flutter_svg.dart';

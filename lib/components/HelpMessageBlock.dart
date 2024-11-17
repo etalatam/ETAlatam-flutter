@@ -1,8 +1,8 @@
-import 'package:MediansSchoolDriver/Pages/HelpMessagePage.dart';
-import 'package:MediansSchoolDriver/methods.dart';
-import 'package:MediansSchoolDriver/Models/HelpMessageModel.dart';
+import 'package:eta_school_app/Pages/HelpMessagePage.dart';
+import 'package:eta_school_app/methods.dart';
+import 'package:eta_school_app/Models/HelpMessageModel.dart';
 import 'package:flutter/material.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
 
 class HelpMessageBlock extends StatelessWidget {
   const HelpMessageBlock(this.message, {super.key});

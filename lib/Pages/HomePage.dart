@@ -1,22 +1,22 @@
 import 'dart:async';
-import 'package:MediansSchoolDriver/Models/RouteModel.dart';
-import 'package:MediansSchoolDriver/Pages/LoginPage.dart';
-import 'package:MediansSchoolDriver/Pages/TripPage.dart';
-import 'package:MediansSchoolDriver/Pages/providers/location_service_provider.dart';
-import 'package:MediansSchoolDriver/components/ActiveTrip.dart';
+import 'package:eta_school_app/Models/RouteModel.dart';
+import 'package:eta_school_app/Pages/LoginPage.dart';
+import 'package:eta_school_app/Pages/TripPage.dart';
+import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
+import 'package:eta_school_app/components/ActiveTrip.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
-import 'package:MediansSchoolDriver/methods.dart';
-import 'package:MediansSchoolDriver/Models/DriverModel.dart';
-import 'package:MediansSchoolDriver/Models/TripModel.dart';
-import 'package:MediansSchoolDriver/components/loader.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
-import 'package:MediansSchoolDriver/components/Widgets.dart';
-import 'package:MediansSchoolDriver/components/header.dart';
-import 'package:MediansSchoolDriver/components/HomeRouteBlock.dart';
-import 'package:MediansSchoolDriver/Models/EventModel.dart';
+import 'package:eta_school_app/methods.dart';
+import 'package:eta_school_app/Models/DriverModel.dart';
+import 'package:eta_school_app/Models/TripModel.dart';
+import 'package:eta_school_app/components/loader.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/components/Widgets.dart';
+import 'package:eta_school_app/components/header.dart';
+import 'package:eta_school_app/components/HomeRouteBlock.dart';
+import 'package:eta_school_app/Models/EventModel.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -363,29 +363,33 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-    /*
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-    // Solicitar permisos en iOS
-    messaging.requestPermission();
+    try {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-    // Obtener el token de FCM
-    messaging.getToken().then((token) {
-      print("FCM Token: $token");
-    });
+      // Solicitar permisos en iOS
+      messaging.requestPermission();
 
-    // Manejar mensajes en segundo plano
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      // Obtener el token de FCM
+      messaging.getToken().then((token) {
+        print("[FCM] Token: $token");
+      });
 
-    // Manejar mensajes cuando la app está en primer plano
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Got a message whilst in the foreground!');
-      print('Message data: ${message.data}');
-      if (message.notification != null) {
-        print('Message also contained a notification: ${message.notification}');
-      }
-    });
-    */
+      // Manejar mensajes en segundo plano
+      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+      // Manejar mensajes cuando la app está en primer plano
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        print('[FCM] Got a message whilst in the foreground!');
+        print('[FCM] Message data: ${message.data}');
+        if (message.notification != null) {
+          print('[FCM] Message also contained a notification: ${message.notification}');
+        }
+      });
+      
+    } catch (e) {
+      print("[FCM] error: ${e.toString()}");
+    }  
 
     loadResources();
     

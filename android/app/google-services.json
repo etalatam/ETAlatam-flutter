@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:889434189810:android:2807a914770051266cc56b",
+        "mobilesdk_app_id": "1:889434189810:android:d5e66c6328d506f06cc56b",
         "android_client_info": {
-          "package_name": "com.medians.medians_driver"
+          "package_name": "com.etalatam.schoolapp"
         }
       },
       "oauth_client": [],

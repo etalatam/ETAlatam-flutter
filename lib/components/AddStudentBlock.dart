@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
 import 'package:flutter/material.dart';
 
 class InfoButtonBlock extends StatelessWidget with MediansTheme {

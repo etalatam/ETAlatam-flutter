@@ -1,10 +1,10 @@
-import 'package:MediansSchoolDriver/Models/ParentModel.dart';
-import 'package:MediansSchoolDriver/Pages/ChangePasswordPage.dart';
-import 'package:MediansSchoolDriver/methods.dart';
+import 'package:eta_school_app/Models/ParentModel.dart';
+import 'package:eta_school_app/Pages/ChangePasswordPage.dart';
+import 'package:eta_school_app/methods.dart';
 import 'package:flutter/material.dart';
-import 'package:MediansSchoolDriver/components/loader.dart';
-import 'package:MediansSchoolDriver/components/CustomRow.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+import 'package:eta_school_app/components/loader.dart';
+import 'package:eta_school_app/components/CustomRow.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
 
 class ParentPage extends StatefulWidget {
   const ParentPage({super.key, this.parent});

@@ -1,8 +1,8 @@
 import 'dart:core';
-import 'package:MediansSchoolDriver/Models/VehicleModel.dart';
-import 'package:MediansSchoolDriver/Models/DriverModel.dart';
-import 'package:MediansSchoolDriver/Models/PickupLocationModel.dart';
-import 'package:MediansSchoolDriver/Models/DestinationModel.dart';
+import 'package:eta_school_app/Models/VehicleModel.dart';
+import 'package:eta_school_app/Models/DriverModel.dart';
+import 'package:eta_school_app/Models/PickupLocationModel.dart';
+import 'package:eta_school_app/Models/DestinationModel.dart';
 
 class RouteModel {
   int? route_id;

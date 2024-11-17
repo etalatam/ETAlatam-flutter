@@ -1,4 +1,4 @@
-import 'package:MediansSchoolDriver/domain/entities/background_locator/background_position.dart';
+import 'package:eta_school_app/domain/entities/background_locator/background_position.dart';
 
 abstract class LocalStorageRepository {
   Future<void> savePosition(BackgroundPosition position);

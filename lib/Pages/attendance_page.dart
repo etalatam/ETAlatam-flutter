@@ -1,5 +1,5 @@
-import 'package:MediansSchoolDriver/Models/StudentModel.dart';
-import 'package:MediansSchoolDriver/Models/TripModel.dart';
+import 'package:eta_school_app/Models/StudentModel.dart';
+import 'package:eta_school_app/Models/TripModel.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 

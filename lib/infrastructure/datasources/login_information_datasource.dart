@@ -1,6 +1,6 @@
-import 'package:MediansSchoolDriver/domain/datasources/login_datasource.dart';
-import 'package:MediansSchoolDriver/domain/entities/user/login_information.dart';
-import 'package:MediansSchoolDriver/infrastructure/services/isar_services.dart';
+import 'package:eta_school_app/domain/datasources/login_datasource.dart';
+import 'package:eta_school_app/domain/entities/user/login_information.dart';
+import 'package:eta_school_app/infrastructure/services/isar_services.dart';
 import 'package:isar/isar.dart';
 
 class LoginInformationDatasource extends LoginDatasource {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:MediansSchoolDriver/controllers/page_controller.dart' as p;
+import 'package:eta_school_app/controllers/page_controller.dart' as p;
 
 class CustomBottonNavigation extends StatelessWidget {
   const CustomBottonNavigation({super.key});

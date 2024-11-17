@@ -1,14 +1,14 @@
 import 'package:localstorage/localstorage.dart';
-import 'package:MediansSchoolDriver/Models/DriverModel.dart';
+import 'package:eta_school_app/Models/DriverModel.dart';
 import 'package:flutter/material.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
-import 'package:MediansSchoolDriver/API/client.dart';
-import 'package:MediansSchoolDriver/methods.dart';
+import 'package:eta_school_app/API/client.dart';
+import 'package:eta_school_app/methods.dart';
 import '../components/header.dart';
 import '../components/loader.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
-import 'package:MediansSchoolDriver/components/Widgets.dart';
-import 'package:MediansSchoolDriver/controllers/preferences.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/components/Widgets.dart';
+import 'package:eta_school_app/controllers/preferences.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -153,14 +153,14 @@ class _SettingsPageState extends State<SettingsPage>
                                       setState(
                                           () => allowNotifications = value);
 
-                                      if (!value) {
+                                      /*if (!value) {
                                         OneSignal.logout();
                                         OneSignal.Notifications
                                             .removePermissionObserver(
                                                 (permission) {});
                                       } else {
                                         setNotes();
-                                      }
+                                      }*/
                                     }),
                               ],
                             ),

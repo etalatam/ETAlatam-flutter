@@ -1,7 +1,7 @@
-import 'package:MediansSchoolDriver/Models/EventModel.dart';
+import 'package:eta_school_app/Models/EventModel.dart';
 import 'package:flutter/material.dart';
-import 'package:MediansSchoolDriver/components/loader.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+import 'package:eta_school_app/components/loader.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
 
 class EventPage extends StatefulWidget {
   const EventPage({super.key, this.event});

@@ -1,15 +1,15 @@
-import 'package:MediansSchoolDriver/Models/PickupLocationModel.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
-import 'package:MediansSchoolDriver/components/header.dart';
-import 'package:MediansSchoolDriver/components/loader.dart';
+import 'package:eta_school_app/Models/PickupLocationModel.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/components/header.dart';
+import 'package:eta_school_app/components/loader.dart';
 import 'package:flutter/material.dart';
-import 'package:MediansSchoolDriver/Models/TripModel.dart';
-import 'package:MediansSchoolDriver/API/client.dart';
-import 'package:MediansSchoolDriver/methods.dart';
-import 'package:MediansSchoolDriver/components/Slideable.dart';
-import 'package:MediansSchoolDriver/components/UserModal.dart';
+import 'package:eta_school_app/Models/TripModel.dart';
+import 'package:eta_school_app/API/client.dart';
+import 'package:eta_school_app/methods.dart';
+import 'package:eta_school_app/components/Slideable.dart';
+import 'package:eta_school_app/components/UserModal.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:MediansSchoolDriver/components/bottom_menu.dart';
+import 'package:eta_school_app/components/bottom_menu.dart';
 
 class PickupsPage extends StatefulWidget {
   const PickupsPage(

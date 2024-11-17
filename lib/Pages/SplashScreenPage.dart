@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:MediansSchoolDriver/Pages/LoginPage.dart';
-import 'package:MediansSchoolDriver/Pages/GetStarted.dart';
-import 'package:MediansSchoolDriver/Pages/home_screen.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+import 'package:eta_school_app/Pages/LoginPage.dart';
+import 'package:eta_school_app/Pages/GetStarted.dart';
+import 'package:eta_school_app/Pages/home_screen.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

@@ -1,4 +1,4 @@
-import 'package:MediansSchoolDriver/Models/DriverModel.dart';
+import 'package:eta_school_app/Models/DriverModel.dart';
 import 'package:flutter/material.dart';
 import '../Pages/ProfilePage.dart';
 import '../controllers/Helpers.dart';

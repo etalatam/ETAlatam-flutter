@@ -1,9 +1,9 @@
-import 'package:MediansSchoolDriver/Models/DriverModel.dart';
-import 'package:MediansSchoolDriver/Models/VehicleModel.dart';
-import 'package:MediansSchoolDriver/methods.dart';
+import 'package:eta_school_app/Models/DriverModel.dart';
+import 'package:eta_school_app/Models/VehicleModel.dart';
+import 'package:eta_school_app/methods.dart';
 import 'package:flutter/material.dart';
-import 'package:MediansSchoolDriver/components/loader.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+import 'package:eta_school_app/components/loader.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class DriverPage extends StatefulWidget {

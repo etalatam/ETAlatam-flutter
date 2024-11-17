@@ -1,7 +1,7 @@
-import 'package:MediansSchoolDriver/Models/HelpMessageModel.dart';
-import 'package:MediansSchoolDriver/methods.dart';
+import 'package:eta_school_app/Models/HelpMessageModel.dart';
+import 'package:eta_school_app/methods.dart';
 import 'package:flutter/material.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
 
 class CommentBlock extends StatelessWidget {
   const CommentBlock(this.comment, {super.key});

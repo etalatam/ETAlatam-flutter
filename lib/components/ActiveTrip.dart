@@ -1,5 +1,5 @@
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
-import 'package:MediansSchoolDriver/Models/TripModel.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/Models/TripModel.dart';
 import 'package:flutter/material.dart';
 
 class ActiveTrip extends StatelessWidget {

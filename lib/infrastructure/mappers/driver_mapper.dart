@@ -1,5 +1,5 @@
-import 'package:MediansSchoolDriver/Models/DriverModel.dart';
-import 'package:MediansSchoolDriver/domain/entities/user/driver.dart';
+import 'package:eta_school_app/Models/DriverModel.dart';
+import 'package:eta_school_app/domain/entities/user/driver.dart';
 
 class DriverMapper {
   static Driver convert(DriverModel driver) => Driver(

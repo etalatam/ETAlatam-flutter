@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
-import 'package:MediansSchoolDriver/methods.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/methods.dart';
 
 class CustomRow extends StatelessWidget {
   const CustomRow(this.title, this.value, {super.key});

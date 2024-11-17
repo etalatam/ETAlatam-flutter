@@ -1,12 +1,12 @@
-import 'package:MediansSchoolDriver/API/client.dart';
-import 'package:MediansSchoolDriver/Pages/ResetPasswordPage.dart';
-import 'package:MediansSchoolDriver/Pages/home_screen.dart';
-import 'package:MediansSchoolDriver/components/loader.dart';
-// import 'package:MediansSchoolDriver/components/header.dart';
-import 'package:MediansSchoolDriver/methods.dart';
+import 'package:eta_school_app/API/client.dart';
+import 'package:eta_school_app/Pages/ResetPasswordPage.dart';
+import 'package:eta_school_app/Pages/home_screen.dart';
+import 'package:eta_school_app/components/loader.dart';
+// import 'package:eta_school_app/components/header.dart';
+import 'package:eta_school_app/methods.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});

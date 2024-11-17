@@ -1,11 +1,12 @@
-import 'package:MediansSchoolDriver/Pages/LoginPage.dart';
-import 'package:MediansSchoolDriver/Pages/SplashScreenPage.dart';
-import 'package:MediansSchoolDriver/Pages/home_screen.dart';
-import 'package:MediansSchoolDriver/controllers/preferences.dart';
+
+import 'package:eta_school_app/Pages/LoginPage.dart';
+import 'package:eta_school_app/Pages/SplashScreenPage.dart';
+import 'package:eta_school_app/Pages/home_screen.dart';
+import 'package:eta_school_app/controllers/preferences.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
-import 'package:MediansSchoolDriver/controllers/locale.dart';
+import 'package:eta_school_app/controllers/locale.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';

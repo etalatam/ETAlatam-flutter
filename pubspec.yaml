@@ -1,4 +1,4 @@
-name: MediansSchoolDriver
+name: eta_school_app
 description: Parent APP for ETA School Routes system.
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev

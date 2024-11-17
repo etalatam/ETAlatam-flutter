@@ -1,15 +1,15 @@
-import 'package:MediansSchoolDriver/Pages/ResetPasswordPage.dart';
+import 'package:eta_school_app/Pages/ResetPasswordPage.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:MediansSchoolDriver/methods.dart';
-import 'package:MediansSchoolDriver/Models/DriverModel.dart';
-import 'package:MediansSchoolDriver/Pages/UploadPicturePage.dart';
-import 'package:MediansSchoolDriver/Pages/LoginPage.dart';
-// import 'package:MediansSchoolDriver/components/bottom_menu.dart';
-import 'package:MediansSchoolDriver/components/loader.dart';
-// import 'package:MediansSchoolDriver/components/header.dart';
-import 'package:MediansSchoolDriver/components/CustomRow.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+import 'package:eta_school_app/methods.dart';
+import 'package:eta_school_app/Models/DriverModel.dart';
+import 'package:eta_school_app/Pages/UploadPicturePage.dart';
+import 'package:eta_school_app/Pages/LoginPage.dart';
+// import 'package:eta_school_app/components/bottom_menu.dart';
+import 'package:eta_school_app/components/loader.dart';
+// import 'package:eta_school_app/components/header.dart';
+import 'package:eta_school_app/components/CustomRow.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key, this.driver});

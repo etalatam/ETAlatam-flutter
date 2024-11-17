@@ -1,8 +1,8 @@
-import 'package:MediansSchoolDriver/Pages/PickupsPage.dart';
-import 'package:MediansSchoolDriver/Pages/RouteMapPage.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
-import 'package:MediansSchoolDriver/Models/RouteModel.dart';
-import 'package:MediansSchoolDriver/methods.dart';
+import 'package:eta_school_app/Pages/PickupsPage.dart';
+import 'package:eta_school_app/Pages/RouteMapPage.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/Models/RouteModel.dart';
+import 'package:eta_school_app/methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 

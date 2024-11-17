@@ -1,14 +1,14 @@
-import 'package:MediansSchoolDriver/components/header.dart';
+import 'package:eta_school_app/components/header.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
-import 'package:MediansSchoolDriver/Models/HelpMessageModel.dart';
-import 'package:MediansSchoolDriver/API/client.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
-import 'package:MediansSchoolDriver/methods.dart';
-import 'package:MediansSchoolDriver/components/loader.dart';
-import 'package:MediansSchoolDriver/components/CommentBlock.dart';
-import 'package:MediansSchoolDriver/components/CustomRow.dart';
-import 'package:MediansSchoolDriver/components/FullTextButton.dart';
+import 'package:eta_school_app/Models/HelpMessageModel.dart';
+import 'package:eta_school_app/API/client.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/methods.dart';
+import 'package:eta_school_app/components/loader.dart';
+import 'package:eta_school_app/components/CommentBlock.dart';
+import 'package:eta_school_app/components/CustomRow.dart';
+import 'package:eta_school_app/components/FullTextButton.dart';
 import 'package:get/get.dart';
 
 class HelpMessagePage extends StatefulWidget {

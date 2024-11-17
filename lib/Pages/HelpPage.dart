@@ -1,15 +1,15 @@
-import 'package:MediansSchoolDriver/Models/HelpMessageModel.dart';
-import 'package:MediansSchoolDriver/Pages/HelpMessagePage.dart';
+import 'package:eta_school_app/Models/HelpMessageModel.dart';
+import 'package:eta_school_app/Pages/HelpMessagePage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:MediansSchoolDriver/Pages/HelpMessagesPage.dart';
-import 'package:MediansSchoolDriver/Models/DriverModel.dart';
-import 'package:MediansSchoolDriver/API/client.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
-import 'package:MediansSchoolDriver/methods.dart';
-import 'package:MediansSchoolDriver/components/header.dart';
-import 'package:MediansSchoolDriver/components/InfoBlock.dart';
-import 'package:MediansSchoolDriver/components/loader.dart';
+import 'package:eta_school_app/Pages/HelpMessagesPage.dart';
+import 'package:eta_school_app/Models/DriverModel.dart';
+import 'package:eta_school_app/API/client.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/methods.dart';
+import 'package:eta_school_app/components/header.dart';
+import 'package:eta_school_app/components/InfoBlock.dart';
+import 'package:eta_school_app/components/loader.dart';
 
 class SendMessagePage extends StatefulWidget {
   const SendMessagePage({super.key, this.driver});

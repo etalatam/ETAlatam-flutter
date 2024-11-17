@@ -1,4 +1,4 @@
-import 'package:MediansSchoolDriver/domain/entities/user/driver.dart';
+import 'package:eta_school_app/domain/entities/user/driver.dart';
 
 abstract class DriverDatasource {
   Future<void> save(Driver driver);
