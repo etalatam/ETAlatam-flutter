@@ -364,6 +364,12 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
+    configureFirebaseMessaging();
+    loadResources();
+    
+  }
+
+  configureFirebaseMessaging () async {
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
 
@@ -387,13 +393,14 @@ class _HomePageState extends State<HomePage>
         }
       });
 
+      
+      final userId = await storage.getItem('id_usu');
       messaging.subscribeToTopic('all-notifications');
+      messaging.subscribeToTopic("user-$userId");
     } catch (e) {
       print("[FCM] ${e.toString()}");
     }
 
-    loadResources();
-    
   }
 
   Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async { 
