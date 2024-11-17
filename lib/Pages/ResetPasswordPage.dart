@@ -153,7 +153,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                           width: double.infinity,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
-                            color: const Color(0xff1e3050),
+                            color: activeTheme.buttonBG,
                           ),
                           padding: const EdgeInsets.symmetric(
                             vertical: 16,
