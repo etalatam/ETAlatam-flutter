@@ -3,6 +3,7 @@ import 'package:eta_school_app/Pages/LoginPage.dart';
 import 'package:eta_school_app/Pages/SplashScreenPage.dart';
 import 'package:eta_school_app/Pages/home_screen.dart';
 import 'package:eta_school_app/controllers/preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
@@ -15,7 +16,7 @@ import 'shared/location/location_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await Firebase.initializeApp();
   final localeController = Get.put(LocaleController());
   await localeController.loadSavedLocale();
   Get.put(PreferencesSetting());

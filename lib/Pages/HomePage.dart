@@ -4,6 +4,7 @@ import 'package:eta_school_app/Pages/LoginPage.dart';
 import 'package:eta_school_app/Pages/TripPage.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/components/ActiveTrip.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -363,7 +364,6 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
 
@@ -386,10 +386,9 @@ class _HomePageState extends State<HomePage>
           print('[FCM] Message also contained a notification: ${message.notification}');
         }
       });
-      
     } catch (e) {
-      print("[FCM] error: ${e.toString()}");
-    }  
+      print("[FCM] ${e.toString()}");
+    }
 
     loadResources();
     
