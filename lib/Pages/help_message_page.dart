@@ -111,8 +111,8 @@ class _SentMessageState extends State<HelpMessagePage> {
                                       textAlign: TextAlign.left),
                                 ]),
                                 const SizedBox(height: 15),
-                                for (var i = 0; i < commentsList!.length; i++)
-                                  CommentBlock(commentsList![i])
+                                for (var i = 0; i < commentsList.length; i++)
+                                  CommentBlock(commentsList[i])
                               ],
                             ),
                             const SizedBox(height: 48),

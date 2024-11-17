@@ -87,11 +87,9 @@ class CommentModel {
   factory CommentModel.fromJson(json) {
     CommentUserModel? user;
     try {
-      user = json['user'] != null
-          ? CommentUserModel.fromJson(json)
-          : CommentUserModel();
+      user = CommentUserModel.fromJson(json);
     } catch (e) {
-      print(e.toString());
+      print("[CommentModel] ${e.toString()}");
     }
 
     DateFormat dateFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");

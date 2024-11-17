@@ -61,33 +61,31 @@ class CommentBlock extends StatelessWidget {
                                     onTap: (() => {}),
                                     child: Row(
                                       children: [
-                                        Container(
-                                          width: 40,
-                                          height: 40,
-                                          decoration: ShapeDecoration(
-                                            image: DecorationImage(
-                                              image: NetworkImage(loadImage(
-                                                  "${comment.user!.photo}")),
-                                              fit: BoxFit.fill,
-                                            ),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(50),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
+                                        // Container(
+                                        //   width: 40,
+                                        //   height: 40,
+                                        //   decoration: ShapeDecoration(
+                                        //     image: DecorationImage(
+                                        //       image: NetworkImage(loadImage(
+                                        //           "${comment.user!.photo}")),
+                                        //       fit: BoxFit.fill,
+                                        //     ),
+                                        //     shape: RoundedRectangleBorder(
+                                        //       borderRadius:
+                                        //           BorderRadius.circular(50),
+                                        //     ),
+                                        //   ),
+                                        // ),
+                                        // const SizedBox(width: 10),
                                         Text(
                                           "${comment.user!.name}",
                                           style: activeTheme.normalText,
                                         ),
                                       ],
                                     )))),
-                        Container(
-                          child: Text(
-                            "${comment.short_date}",
-                            style: activeTheme.smallText,
-                          ),
+                        Text(
+                          "${comment.short_date}",
+                          style: activeTheme.smallText,
                         ),
                       ],
                     ),
