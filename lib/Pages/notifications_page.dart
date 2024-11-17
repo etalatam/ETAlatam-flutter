@@ -6,7 +6,6 @@ import 'package:eta_school_app/Models/NotificationModel.dart';
 import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/bottom_menu.dart';
 import 'package:eta_school_app/components/loader.dart';
-import 'package:eta_school_app/components/empty_data.dart';
 import 'package:eta_school_app/components/slide_action.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/methods.dart';
@@ -28,14 +27,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return (notificationsList.isEmpty)
-        ? (showLoader
-            ? Loader()
-            : EmptyData(
-                title: lang.translate('🥱'),
-                text: lang.translate('No notification yet!'),
-              ))
-        : ((showLoader
+    return showLoader
             ? Loader()
             : Material(
                 type: MaterialType.transparency,
@@ -55,20 +47,20 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 padding: const EdgeInsets.all(20),
                                 child: Column(
                                   children: [
-                                    Container(
-                                      margin: const EdgeInsets.only(left: 30),
-                                      child: SizedBox(
-                                          width: double.infinity,
-                                          child: Text(
-                                            "Medians Trips",
-                                            style: TextStyle(
-                                              color: activeTheme.textColor,
-                                              fontSize: 26,
-                                              // height: 1,
-                                            ),
-                                          )),
-                                    ),
-                                    const SizedBox(height: 40),
+                                    // Container(
+                                    //   margin: const EdgeInsets.only(left: 30),
+                                    //   child: SizedBox(
+                                    //       width: double.infinity,
+                                    //       child: Text(
+                                    //         "Medians Trips",
+                                    //         style: TextStyle(
+                                    //           color: activeTheme.textColor,
+                                    //           fontSize: 26,
+                                    //           // height: 1,
+                                    //         ),
+                                    //       )),
+                                    // ),
+                                    const SizedBox(height: 60),
                                     SizedBox(
                                         width: double.infinity,
                                         child: Row(children: [
@@ -345,12 +337,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
                               left: 0,
                               right: 0,
                               child: Header(lang.translate('sitename'))),
-                          Positioned(
-                              bottom: 20,
-                              left: 20,
-                              right: 20,
-                              child: BottomMenu('notifications', openPage))
-                        ]))))));
+                          // Positioned(
+                          //     bottom: 20,
+                          //     left: 20,
+                          //     right: 20,
+                          //     child: BottomMenu('notifications', openPage))
+                        ]))));
   }
 
   ///

@@ -95,15 +95,22 @@ class HttpService {
 
   /// Load Latest Notifications
   Future<List<NotificationModel>?> getNotifications() async {
-    http.Response res = await getQuery("/mobile_api/notifications");
+    http.Response res = await getQuery(
+        "/rpc/notifications");
+
+    print("res.statusCode: ${res.statusCode}");
+    print("res.body: ${res.body}");
 
     if (res.statusCode == 200) {
-      dynamic resObject = jsonDecode(res.body);
-      List<dynamic> body = jsonDecode(jsonEncode(resObject['items']));
-      return body
-          .map((dynamic item) => NotificationModel.fromJson(item))
-          .toList();
+      List<dynamic> body = jsonDecode(res.body);
+      final List<NotificationModel> notificactions = await Future.wait(
+        body
+            .map((dynamic item) async => await NotificationModel.fromJson(item))
+            .toList(),
+      );
+      return notificactions;
     }
+    debugPrint(res.body.toString());
     return [];
   }
 
