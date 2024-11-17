@@ -50,7 +50,7 @@ class _EmptyDataState extends State<EmptyData> with MediansTheme {
                     const SizedBox(height: 20),
                     Text(widget.text,
                         style: TextStyle(
-                            color: activeTheme.main_color, fontSize: 16)),
+                            color: activeTheme.buttonColor, fontSize: 16)),
                     const SizedBox(height: 20),
                   ])),
               const SizedBox(height: 20),

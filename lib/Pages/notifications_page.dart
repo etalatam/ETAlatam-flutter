@@ -32,8 +32,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
         ? (showLoader
             ? Loader()
             : EmptyData(
-                title: lang.translate('No notification yet!') + '🥱',
-                text: lang.translate(''),
+                title: lang.translate('🥱'),
+                text: lang.translate('No notification yet!'),
               ))
         : ((showLoader
             ? Loader()

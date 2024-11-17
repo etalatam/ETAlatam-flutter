@@ -17,7 +17,6 @@ class HomeScreen extends StatelessWidget {
   final viewRoutes = const <Widget>[
     SettingsPage(),
     HomePage(),
-    // MapView(),
     NotificationsPage(),
     SendMessagePage(),
   ];
