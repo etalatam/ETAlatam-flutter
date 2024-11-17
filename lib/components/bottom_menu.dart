@@ -1,3 +1,4 @@
+import 'package:eta_school_app/Pages/notifications_page.dart';
 import 'package:eta_school_app/Pages/settings_page.dart';
 import 'package:eta_school_app/Pages/help_page.dart';
 import 'package:eta_school_app/methods.dart';
@@ -32,10 +33,10 @@ class BottomMenu extends StatelessWidget {
       //     iconData: Icons.map_rounded,
       //     active: checkTrue('home'),
       //     page: MapView()),
-      // MenuModel(
-      //     iconData: Icons.notifications_on_outlined,
-      //     active: checkTrue('notifications'),
-      //     page: NotificationsPage()),
+      MenuModel(
+          iconData: Icons.notifications_on_outlined,
+          active: checkTrue('notifications'),
+          page: NotificationsPage()),
       MenuModel(
           iconData: Icons.help_outline,
           active: checkTrue('help'),

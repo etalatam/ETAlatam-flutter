@@ -1,5 +1,6 @@
 
 import 'package:eta_school_app/Pages/home_page.dart';
+import 'package:eta_school_app/Pages/notifications_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:eta_school_app/controllers/page_controller.dart' as p;
@@ -17,6 +18,7 @@ class HomeScreen extends StatelessWidget {
     SettingsPage(),
     HomePage(),
     // MapView(),
+    NotificationsPage(),
     SendMessagePage(),
   ];
 

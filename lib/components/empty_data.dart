@@ -28,7 +28,7 @@ class _EmptyDataState extends State<EmptyData> with MediansTheme {
               Container(
                   width: MediaQuery.of(context).size.width - 100,
                   decoration: ShapeDecoration(
-                    color: activeTheme.main_color,
+                    color: activeTheme.buttonBG,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
@@ -44,7 +44,7 @@ class _EmptyDataState extends State<EmptyData> with MediansTheme {
                     const SizedBox(height: 20),
                     Text(widget.title,
                         style: TextStyle(
-                            color: activeTheme.main_color,
+                            color: activeTheme.buttonColor,
                             fontSize: 20,
                             fontWeight: FontWeight.bold)),
                     const SizedBox(height: 20),
