@@ -300,6 +300,8 @@ class Lang {
     'ticket_number': 'Número#',
     'time': 'fecha',
     'support_comments': 'Comemntarios y respuestas',
-    'comment': 'Comentario'
+    'comment': 'Comentario',
+    'no_notification_yet!': 'No hay notificaciones aún!',
+    'list_of_your_notifications': 'Lista de notificaciones'
   };
 }

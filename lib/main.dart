@@ -1,11 +1,13 @@
-import 'package:MediansSchoolDriver/Pages/LoginPage.dart';
-import 'package:MediansSchoolDriver/Pages/SplashScreenPage.dart';
-import 'package:MediansSchoolDriver/Pages/home_screen.dart';
-import 'package:MediansSchoolDriver/controllers/preferences.dart';
+
+import 'package:eta_school_app/Pages/login_page.dart';
+import 'package:eta_school_app/Pages/splash_screen_page.dart';
+import 'package:eta_school_app/Pages/home_screen.dart';
+import 'package:eta_school_app/controllers/preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
-import 'package:MediansSchoolDriver/controllers/locale.dart';
+import 'package:eta_school_app/controllers/locale.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -14,7 +16,7 @@ import 'shared/location/location_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await Firebase.initializeApp();
   final localeController = Get.put(LocaleController());
   await localeController.loadSavedLocale();
   Get.put(PreferencesSetting());
@@ -41,7 +43,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       // transitionDuration: const Duration(seconds: 2), // agrega la duracion de la transición
-      title: 'Medians',
+      title: 'ETA',
       locale: localeController.selectedLocale.value,
       debugShowCheckedModeBanner: false,
       initialRoute: '/splash',

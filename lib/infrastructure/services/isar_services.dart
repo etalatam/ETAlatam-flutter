@@ -1,8 +1,8 @@
-import 'package:MediansSchoolDriver/domain/entities/user/driver.dart';
+import 'package:eta_school_app/domain/entities/user/driver.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:MediansSchoolDriver/domain/entities/user/login_information.dart';
-import 'package:MediansSchoolDriver/domain/entities/background_locator/background_position.dart';
+import 'package:eta_school_app/domain/entities/user/login_information.dart';
+import 'package:eta_school_app/domain/entities/background_locator/background_position.dart';
 
 class IsarService {
   static Future<Isar> openDB() async {

@@ -1,6 +1,6 @@
-import 'package:MediansSchoolDriver/domain/datasources/driver_datasource.dart';
-import 'package:MediansSchoolDriver/domain/entities/user/driver.dart';
-import 'package:MediansSchoolDriver/domain/repositories/driver_repository.dart';
+import 'package:eta_school_app/domain/datasources/driver_datasource.dart';
+import 'package:eta_school_app/domain/entities/user/driver.dart';
+import 'package:eta_school_app/domain/repositories/driver_repository.dart';
 
 class DriverRepositoryImpl extends DriverRepository {
   final DriverDatasource datasource;

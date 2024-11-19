@@ -1,5 +1,5 @@
-import 'package:MediansSchoolDriver/Models/background_position_model.dart';
-import 'package:MediansSchoolDriver/domain/entities/background_locator/background_position.dart';
+import 'package:eta_school_app/Models/background_position_model.dart';
+import 'package:eta_school_app/domain/entities/background_locator/background_position.dart';
 
 class BackgroundPositionMapper {
   static BackgroundPosition position(BackgroundLocation ldto) => BackgroundPosition(

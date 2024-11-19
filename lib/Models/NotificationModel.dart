@@ -29,14 +29,14 @@ class NotificationModel {
   factory NotificationModel.fromJson( json) {
     return NotificationModel(
       id: json['id'] as int?,
-      title: json['subject'] as String?,
+      title: json['title'] as String?,
       status: json['status'] as String?,
       picture: json['picture'] as String?,
-      body: json['body_text'] as String?,
-      short_date: json['short_date'] as String?,
+      body: json['body'] as String?,
+      short_date: json['ts'] as String?,
       model_type: json['model_type'] as String?,
       model_id: json['model_id'] as int?,
-      date: json['date'] as String?,
+      date: json['ts'] as String?,
       notification_model: json['notification_model'] as String?,
     );
   }

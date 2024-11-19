@@ -1,6 +1,6 @@
-import 'package:MediansSchoolDriver/domain/datasources/local_storage_datasource.dart';
-import 'package:MediansSchoolDriver/domain/entities/background_locator/background_position.dart';
-import 'package:MediansSchoolDriver/domain/repositories/local_storage_repository.dart';
+import 'package:eta_school_app/domain/datasources/local_storage_datasource.dart';
+import 'package:eta_school_app/domain/entities/background_locator/background_position.dart';
+import 'package:eta_school_app/domain/repositories/local_storage_repository.dart';
 
 class LocalStorageRepositoryImpl extends LocalStorageRepository {
   final LocalSotrageDatasource datasource;

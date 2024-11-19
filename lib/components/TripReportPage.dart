@@ -1,7 +1,7 @@
-import 'package:MediansSchoolDriver/Models/TripModel.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
-import 'package:MediansSchoolDriver/API/client.dart';
-import 'package:MediansSchoolDriver/Pages/HomePage.dart';
+import 'package:eta_school_app/Models/TripModel.dart';
+import 'package:eta_school_app/controllers/helpers.dart';
+import 'package:eta_school_app/API/client.dart';
+import 'package:eta_school_app/Pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

@@ -1,6 +1,6 @@
-import 'package:MediansSchoolDriver/domain/datasources/login_datasource.dart';
-import 'package:MediansSchoolDriver/domain/entities/user/login_information.dart';
-import 'package:MediansSchoolDriver/domain/repositories/login_information_repository.dart';
+import 'package:eta_school_app/domain/datasources/login_datasource.dart';
+import 'package:eta_school_app/domain/entities/user/login_information.dart';
+import 'package:eta_school_app/domain/repositories/login_information_repository.dart';
 
 class LoginInformationRepositoryImpl extends LoginInformationRepository {
   final LoginDatasource datasource;

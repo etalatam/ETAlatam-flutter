@@ -1,13 +1,14 @@
-import 'package:MediansSchoolDriver/Models/DriverModel.dart';
-import 'package:MediansSchoolDriver/Models/TripModel.dart';
-import 'package:MediansSchoolDriver/Pages/EventPage.dart';
-import 'package:MediansSchoolDriver/Pages/HelpMessagesPage.dart';
+import 'package:eta_school_app/Models/DriverModel.dart';
+import 'package:eta_school_app/Models/TripModel.dart';
+import 'package:eta_school_app/Pages/event_page.dart';
+import 'package:eta_school_app/Pages/help_messages_page.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
-import 'package:MediansSchoolDriver/Models/EventModel.dart';
-import 'package:MediansSchoolDriver/Models/StudentModel.dart';
-import 'package:MediansSchoolDriver/methods.dart';
+import 'package:eta_school_app/controllers/helpers.dart';
+import 'package:eta_school_app/Models/EventModel.dart';
+import 'package:eta_school_app/Models/StudentModel.dart';
+import 'package:eta_school_app/methods.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 import 'package:flutter_svg/flutter_svg.dart';
@@ -689,10 +690,16 @@ mixin MediansWidgets {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Text(
-                            "${lang.translate('Trip')} #${tripInfo.trip_id} (${tripInfo.route?.route_name})",
-                            style: activeTheme.h6,
+                          SizedBox(
+                            width: 190,
+                            child: Text(
+                              "${lang.translate('Trip')} #${tripInfo.trip_id} (${tripInfo.route?.route_name})",
+                              maxLines: 1, 
+                              overflow: TextOverflow.ellipsis,
+                              style: activeTheme.h6,
+                            ),
                           ),
+                          
                           Row(children: [
                             SvgPicture.asset("assets/svg/bus.svg",
                                 width: 20, color: activeTheme.main_color),

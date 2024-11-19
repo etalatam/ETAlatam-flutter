@@ -1,7 +1,7 @@
 import 'dart:core';
-import 'package:MediansSchoolDriver/Models/DestinationModel.dart';
-import 'package:MediansSchoolDriver/Models/PickupLocationModel.dart';
-import 'package:MediansSchoolDriver/Models/RouteModel.dart';
+import 'package:eta_school_app/Models/DestinationModel.dart';
+import 'package:eta_school_app/Models/PickupLocationModel.dart';
+import 'package:eta_school_app/Models/RouteModel.dart';
 
 
 class StudentModel {

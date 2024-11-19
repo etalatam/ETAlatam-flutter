@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:localstorage/localstorage.dart';
-import 'package:MediansSchoolDriver/controllers/preferences.dart';
-import 'package:MediansSchoolDriver/API/client.dart';
-import 'package:MediansSchoolDriver/controllers/locale.dart';
-import 'package:MediansSchoolDriver/controllers/langs.dart';
+import 'package:eta_school_app/controllers/preferences.dart';
+import 'package:eta_school_app/API/client.dart';
+import 'package:eta_school_app/controllers/locale.dart';
+import 'package:eta_school_app/controllers/langs.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Main API configuration options

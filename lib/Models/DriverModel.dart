@@ -1,6 +1,5 @@
 import 'dart:core';
-import 'package:MediansSchoolDriver/Models/VehicleModel.dart';
-import 'package:get/get.dart';
+import 'package:eta_school_app/Models/VehicleModel.dart';
 
 class DriverModel {
   int? driver_id;

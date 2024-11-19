@@ -1,11 +1,12 @@
 
-import 'package:MediansSchoolDriver/Pages/HomePage.dart';
+import 'package:eta_school_app/Pages/home_page.dart';
+import 'package:eta_school_app/Pages/notifications_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:MediansSchoolDriver/controllers/page_controller.dart' as p;
-import 'package:MediansSchoolDriver/Pages/HelpPage.dart';
-import 'package:MediansSchoolDriver/Pages/SettingsPage.dart';
-import 'package:MediansSchoolDriver/shared/widgets/custom_bottom_navigation.dart';
+import 'package:eta_school_app/controllers/page_controller.dart' as p;
+import 'package:eta_school_app/Pages/help_page.dart';
+import 'package:eta_school_app/Pages/settings_page.dart';
+import 'package:eta_school_app/shared/widgets/custom_bottom_navigation.dart';
 
 
 class HomeScreen extends StatelessWidget {
@@ -16,14 +17,14 @@ class HomeScreen extends StatelessWidget {
   final viewRoutes = const <Widget>[
     SettingsPage(),
     HomePage(),
-    // MapView(),
+    NotificationsPage(),
     SendMessagePage(),
   ];
 
   @override
   Widget build(BuildContext context) {
     // return WillPopScopeWidget(
-    //   onWillPop: _handlePop,
+    //   onWillPop: _hwandlePop,
       // child: 
       return Scaffold(
       body: Obx(() => IndexedStack(

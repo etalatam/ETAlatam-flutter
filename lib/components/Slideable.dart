@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:MediansSchoolDriver/methods.dart';
+import 'package:eta_school_app/methods.dart';
 
 class Slideable extends StatelessWidget {
   const Slideable(

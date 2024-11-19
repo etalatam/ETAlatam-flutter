@@ -1,4 +1,4 @@
-package com.medians.medians_driver
+package com.etalatam.schoolapp
 
 import io.flutter.embedding.android.FlutterActivity
 

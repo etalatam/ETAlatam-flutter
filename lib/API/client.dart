@@ -1,27 +1,27 @@
 import 'dart:convert';
 import 'dart:math';
-import 'package:MediansSchoolDriver/Models/PickupLocationModel.dart';
-import 'package:MediansSchoolDriver/Models/login_information_model.dart';
-import 'package:MediansSchoolDriver/Pages/providers/driver_provider.dart';
-import 'package:MediansSchoolDriver/domain/entities/user/driver.dart';
-import 'package:MediansSchoolDriver/domain/entities/user/login_information.dart';
-import 'package:MediansSchoolDriver/infrastructure/datasources/login_information_datasource.dart';
-import 'package:MediansSchoolDriver/infrastructure/mappers/driver_mapper.dart';
-import 'package:MediansSchoolDriver/infrastructure/mappers/login_information_mapper.dart';
-import 'package:MediansSchoolDriver/infrastructure/repositories/login_information_repository_impl.dart';
-import 'package:MediansSchoolDriver/methods.dart';
+import 'package:eta_school_app/Models/PickupLocationModel.dart';
+import 'package:eta_school_app/Models/login_information_model.dart';
+import 'package:eta_school_app/Pages/providers/driver_provider.dart';
+import 'package:eta_school_app/domain/entities/user/driver.dart';
+import 'package:eta_school_app/domain/entities/user/login_information.dart';
+import 'package:eta_school_app/infrastructure/datasources/login_information_datasource.dart';
+import 'package:eta_school_app/infrastructure/mappers/driver_mapper.dart';
+import 'package:eta_school_app/infrastructure/mappers/login_information_mapper.dart';
+import 'package:eta_school_app/infrastructure/repositories/login_information_repository_impl.dart';
+import 'package:eta_school_app/methods.dart';
 // import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
-import 'package:MediansSchoolDriver/Models/ParentModel.dart';
-import 'package:MediansSchoolDriver/Models/DriverModel.dart';
-import 'package:MediansSchoolDriver/Models/EventModel.dart';
-import 'package:MediansSchoolDriver/Models/HelpMessageModel.dart';
-import 'package:MediansSchoolDriver/Models/StudentModel.dart';
-import 'package:MediansSchoolDriver/Models/RouteModel.dart';
-import 'package:MediansSchoolDriver/Models/TripModel.dart';
-import 'package:MediansSchoolDriver/Models/NotificationModel.dart';
+import 'package:eta_school_app/controllers/helpers.dart';
+import 'package:eta_school_app/Models/ParentModel.dart';
+import 'package:eta_school_app/Models/DriverModel.dart';
+import 'package:eta_school_app/Models/EventModel.dart';
+import 'package:eta_school_app/Models/HelpMessageModel.dart';
+import 'package:eta_school_app/Models/StudentModel.dart';
+import 'package:eta_school_app/Models/RouteModel.dart';
+import 'package:eta_school_app/Models/TripModel.dart';
+import 'package:eta_school_app/Models/NotificationModel.dart';
 import 'package:location/location.dart';
 import 'package:flutter/foundation.dart';
 
@@ -95,15 +95,22 @@ class HttpService {
 
   /// Load Latest Notifications
   Future<List<NotificationModel>?> getNotifications() async {
-    http.Response res = await getQuery("/mobile_api/notifications");
+    http.Response res = await getQuery(
+        "/rpc/notifications?order=ts.desc");
+
+    print("res.statusCode: ${res.statusCode}");
+    print("res.body: ${res.body}");
 
     if (res.statusCode == 200) {
-      dynamic resObject = jsonDecode(res.body);
-      List<dynamic> body = jsonDecode(jsonEncode(resObject['items']));
-      return body
-          .map((dynamic item) => NotificationModel.fromJson(item))
-          .toList();
+      List<dynamic> body = jsonDecode(res.body);
+      final List<NotificationModel> notificactions = await Future.wait(
+        body
+            .map((dynamic item) async => await NotificationModel.fromJson(item))
+            .toList(),
+      );
+      return notificactions;
     }
+    debugPrint(res.body.toString());
     return [];
   }
 

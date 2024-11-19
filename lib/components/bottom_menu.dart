@@ -1,8 +1,9 @@
-import 'package:MediansSchoolDriver/Pages/SettingsPage.dart';
-import 'package:MediansSchoolDriver/Pages/HelpPage.dart';
-import 'package:MediansSchoolDriver/methods.dart';
+import 'package:eta_school_app/Pages/notifications_page.dart';
+import 'package:eta_school_app/Pages/settings_page.dart';
+import 'package:eta_school_app/Pages/help_page.dart';
+import 'package:eta_school_app/methods.dart';
 import 'package:flutter/material.dart';
-import 'package:MediansSchoolDriver/controllers/Helpers.dart';
+import 'package:eta_school_app/controllers/helpers.dart';
 
 class BottomMenu extends StatelessWidget {
   const BottomMenu(this.active_menu_prefix, this.callback, {super.key});
@@ -32,10 +33,10 @@ class BottomMenu extends StatelessWidget {
       //     iconData: Icons.map_rounded,
       //     active: checkTrue('home'),
       //     page: MapView()),
-      // MenuModel(
-      //     iconData: Icons.notifications_on_outlined,
-      //     active: checkTrue('notifications'),
-      //     page: NotificationsPage()),
+      MenuModel(
+          iconData: Icons.notifications_on_outlined,
+          active: checkTrue('notifications'),
+          page: NotificationsPage()),
       MenuModel(
           iconData: Icons.help_outline,
           active: checkTrue('help'),

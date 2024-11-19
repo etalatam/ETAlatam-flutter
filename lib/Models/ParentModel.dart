@@ -1,5 +1,5 @@
 import 'dart:core';
-import 'package:MediansSchoolDriver/Models/StudentModel.dart';
+import 'package:eta_school_app/Models/StudentModel.dart';
 
 
 class ParentModel {

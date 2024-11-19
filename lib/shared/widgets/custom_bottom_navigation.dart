@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:MediansSchoolDriver/controllers/page_controller.dart' as p;
+import 'package:eta_school_app/controllers/page_controller.dart' as p;
 
 class CustomBottonNavigation extends StatelessWidget {
   const CustomBottonNavigation({super.key});
@@ -23,6 +23,8 @@ class CustomBottonNavigation extends StatelessWidget {
                 icon: Icon(Icons.settings), label: 'Configuración'),
             BottomNavigationBarItem(
                 icon: Icon(Icons.home_outlined), label: "Inicio"),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.notifications), label: "Notificaciones"),                
             BottomNavigationBarItem(
                 icon: Icon(Icons.help_outline_outlined), label: 'Ayuda'),
           ],
