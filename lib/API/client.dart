@@ -96,7 +96,7 @@ class HttpService {
   /// Load Latest Notifications
   Future<List<NotificationModel>?> getNotifications() async {
     http.Response res = await getQuery(
-        "/rpc/notifications");
+        "/rpc/notifications?order=ts.desc");
 
     print("res.statusCode: ${res.statusCode}");
     print("res.body: ${res.body}");

@@ -363,49 +363,7 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-    configureFirebaseMessaging();
     loadResources();
     
   }
-
-  configureFirebaseMessaging () async {
-    try {
-      FirebaseMessaging messaging = FirebaseMessaging.instance;
-
-      // Solicitar permisos en iOS
-      messaging.requestPermission();
-
-      // Obtener el token de FCM
-      messaging.getToken().then((token) {
-        print("[FCM] Token: $token");
-      });
-
-      // Manejar mensajes en segundo plano
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-      // Manejar mensajes cuando la app está en primer plano
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        print('[FCM] Got a message whilst in the foreground!');
-        print('[FCM] Message data: ${message.data}');
-        if (message.notification != null) {
-          print('[FCM] Message also contained a notification: ${message.notification}');
-        }
-      });
-      
-      final userId = await storage.getItem('id_usu');
-      messaging.subscribeToTopic('all-notifications');
-      messaging.subscribeToTopic("user-$userId");
-    } catch (e) {
-      print("[FCM] ${e.toString()}");
-    }
-  }
-
-  Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async { 
-    try {
-      print('Handling a background message: ${message.messageId}');   
-    } catch (e) {
-      print("[FCM] ${e.toString()}");
-    }
-    
-  }  
 }

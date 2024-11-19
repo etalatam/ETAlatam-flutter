@@ -301,6 +301,7 @@ class Lang {
     'time': 'fecha',
     'support_comments': 'Comemntarios y respuestas',
     'comment': 'Comentario',
-    'no_notification_yet!': 'No hay notificaciones aún!'
+    'no_notification_yet!': 'No hay notificaciones aún!',
+    'list_of_your_notifications': 'Lista de notificaciones'
   };
 }

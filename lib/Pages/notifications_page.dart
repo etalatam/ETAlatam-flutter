@@ -8,6 +8,7 @@ import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/components/slide_action.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/methods.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -77,7 +78,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                           const SizedBox(width: 5),
                                           Text(
                                             lang.translate(
-                                                "Notifications list"),
+                                                "Notifications"),
                                             style: activeTheme.h3,
                                           )
                                         ])),
@@ -348,6 +349,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
   /// Load devices through API
   ///
   loadNotifications() async {
+    setState(() {
+      showLoader = true;
+    });
     final notificationslist = await httpService.getNotifications();
 
     setState(() {
@@ -400,6 +404,55 @@ class _NotificationsPageState extends State<NotificationsPage> {
     setState(() {
       showLoader = true;
     });
+    configureFirebaseMessaging();
     loadNotifications();
   }
+  
+  configureFirebaseMessaging () async {
+    try {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+      // Solicitar permisos en iOS
+      messaging.requestPermission();
+
+      // Obtener el token de FCM
+      messaging.getToken().then((token) {
+        print("[FCM] Token: $token");
+      });
+
+      // Manejar mensajes en segundo plano
+      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+      // Manejar mensajes cuando la app está en primer plano
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        print('[FCM] Got a message whilst in the foreground!');
+        print('[FCM] Message data: ${message.data}');
+        if (message.notification != null) {
+          print('[FCM] Message also contained a notification: ${message.notification}');
+        }
+        loadNotifications();
+      });
+      
+      messaging.subscribeToTopic('all-notifications');
+
+      try {
+        final userId = await storage.getItem('id_usu');
+        messaging.subscribeToTopic("user-$userId");
+      } catch (e) {
+        print(e.toString());
+      }
+    } catch (e) {
+      print("[FCM] ${e.toString()}");
+    }
+  }
+
+  Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async { 
+    try {
+      print('[FCM] Handling a background message: ${message.messageId}');
+      loadNotifications(); 
+    } catch (e) {
+      print("[FCM] ${e.toString()}");
+    }
+    
+  }  
 }
