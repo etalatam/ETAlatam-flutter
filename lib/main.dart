@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       // transitionDuration: const Duration(seconds: 2), // agrega la duracion de la transición
-      title: 'Medians',
+      title: 'ETA',
       locale: localeController.selectedLocale.value,
       debugShowCheckedModeBanner: false,
       initialRoute: '/splash',
