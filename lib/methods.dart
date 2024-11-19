@@ -5,8 +5,7 @@ import 'dart:math';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
-import 'package:eta_school_app/controllers/Helpers.dart';
-
+import 'package:eta_school_app/controllers/helpers.dart';
 
 void launchGoogleMaps(endLat, endLng) async {
   var currentPosition = await getCurrentLocation();
@@ -115,27 +114,25 @@ PageRouteBuilder _createRoute(page) {
   return PageRouteBuilder(
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionDuration: const Duration(milliseconds: 50),
-    transitionsBuilder: (BuildContext context,
-              Animation<double> animation,
-              Animation<double> secondaryAnimation,
-              Widget child) {
-            return FadeTransition(
-              opacity: CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOut,
-              ),
-              child: child,
-            );
-    // transitionsBuilder: (context, animation, secondaryAnimation, child) {
-    //   const begin = Offset(1.0, 0.0);
-    //   const end = Offset(0.0, 0.0);
-    //   const curve = Curves.easeInOut;
-    //   var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-    //   var offsetAnimation = animation.drive(tween);
-    //   return SlideTransition(
-    //     position: offsetAnimation,
-    //     child: child,
-    //   );
+    transitionsBuilder: (BuildContext context, Animation<double> animation,
+        Animation<double> secondaryAnimation, Widget child) {
+      return FadeTransition(
+        opacity: CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOut,
+        ),
+        child: child,
+      );
+      // transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      //   const begin = Offset(1.0, 0.0);
+      //   const end = Offset(0.0, 0.0);
+      //   const curve = Curves.easeInOut;
+      //   var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      //   var offsetAnimation = animation.drive(tween);
+      //   return SlideTransition(
+      //     position: offsetAnimation,
+      //     child: child,
+      //   );
     },
   );
 }
@@ -151,13 +148,13 @@ void showSuccessDialog(BuildContext context, title, text, Function? callback) {
           TextButton(
             child: const Text("OK"),
             onPressed: () {
-              if(callback == null){
-                  print("Using default action");
-                  Navigator.pop(context);
-              }else{
+              if (callback == null) {
+                print("Using default action");
+                Navigator.pop(context);
+              } else {
                 callback.call();
               }
-              
+
               // You can add navigation or any other action here
             },
           ),

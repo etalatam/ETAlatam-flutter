@@ -2,7 +2,7 @@ import 'package:eta_school_app/Pages/help_message_page.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/Models/HelpMessageModel.dart';
 import 'package:flutter/material.dart';
-import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/controllers/helpers.dart';
 
 class HelpMessageBlock extends StatelessWidget {
   const HelpMessageBlock(this.message, {super.key});

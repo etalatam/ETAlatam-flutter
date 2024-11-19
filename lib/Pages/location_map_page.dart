@@ -5,7 +5,7 @@ import 'package:location/location.dart' as Locations;
 import 'package:flutter/material.dart';
 import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/methods.dart';
-import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_svg/flutter_svg.dart';

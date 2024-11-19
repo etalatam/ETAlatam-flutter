@@ -12,7 +12,7 @@ import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/Models/DriverModel.dart';
 import 'package:eta_school_app/Models/TripModel.dart';
 import 'package:eta_school_app/components/loader.dart';
-import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/home_route_block.dart';
@@ -27,7 +27,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with MediansWidgets, MediansTheme, WidgetsBindingObserver {
-
   final widgets = MediansWidgets;
 
   // late GoogleMapController mapController;
@@ -262,11 +261,8 @@ class _HomePageState extends State<HomePage>
       setState(() {
         showLoader = false;
       });
-      showSuccessDialog(context, 
-        "${lang.translate('Error')} (${msg[1]})",
-        lang.translate(msg[0]), 
-        null
-      );
+      showSuccessDialog(context, "${lang.translate('Error')} (${msg[1]})",
+          lang.translate(msg[0]), null);
     }
   }
 
@@ -345,10 +341,9 @@ class _HomePageState extends State<HomePage>
       hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
     });
 
-      if(hasActiveTrip){
-        await locationServiceProvider.startLocationService();
-      }
-
+    if (hasActiveTrip) {
+      await locationServiceProvider.startLocationService();
+    }
   }
 
   openTrip(TripModel trip) {
@@ -364,6 +359,5 @@ class _HomePageState extends State<HomePage>
   void initState() {
     super.initState();
     loadResources();
-    
   }
 }
