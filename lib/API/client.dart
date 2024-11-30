@@ -96,7 +96,7 @@ class HttpService {
   /// Load Latest Notifications
   Future<List<NotificationModel>?> getNotifications() async {
     http.Response res = await getQuery(
-        "/rpc/notifications?order=ts.desc");
+        "/rpc/notifications?order=id.desc");
 
     print("res.statusCode: ${res.statusCode}");
     print("res.body: ${res.body}");
@@ -331,7 +331,7 @@ class HttpService {
   /// Load Trip
   Future<TripModel> getTrip(id) async {
     http.Response res =
-        await getQuery("/rpc/driver_trips?select=*&limit=1&id_trip=eq.$id");
+        await getQuery("/rpc/driver_trips?select=*&limit=1&id_trip=eq.$id&order=id.desc");
 
     print("res.statusCode: ${res.statusCode}");
     print("res.body: ${res.body}");
