@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:eta_school_app/Pages/home_page.dart';
+import 'package:eta_school_app/Pages/driver_home.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
@@ -102,7 +102,7 @@ class _GetStartedAppState extends State<GetStartedApp> {
     final started = await preferences.getBool('started');
 
     if (started == true) {
-      return Get.to(HomePage());
+      return Get.to(DriverHome());
     }
 
     String? sessionLang = await storage.getItem('lang');

@@ -5,7 +5,7 @@ import 'package:eta_school_app/methods.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
-import 'package:eta_school_app/Pages/home_page.dart';
+import 'package:eta_school_app/Pages/driver_home.dart';
 import 'dart:async';
 
 class ChangePasswordPage extends StatefulWidget {
@@ -328,14 +328,14 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     final driverId_ = await storage.getItem('driver_id');
     if (token_ != null && driverId_ != null) {
       Timer(const Duration(seconds: 1), () {
-        openNewPage(context, HomePage());
+        openNewPage(context, DriverHome());
       });
     } else {
       Timer(const Duration(seconds: 1), () {
         if (storage.getItem('token') == null) {
           showLoader = false;
         } else {
-          openNewPage(context, HomePage());
+          openNewPage(context, DriverHome());
         }
       });
     }

@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/Models/DriverModel.dart';
-import 'package:eta_school_app/Pages/upload_picture_page.dart';
 import 'package:eta_school_app/Pages/login_page.dart';
 // import 'package:eta_school_app/components/bottom_menu.dart';
 import 'package:eta_school_app/components/loader.dart';

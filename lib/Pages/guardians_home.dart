@@ -4,7 +4,6 @@ import 'package:eta_school_app/Pages/login_page.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/components/active_trip.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
@@ -18,14 +17,14 @@ import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/home_route_block.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class GuardiansHome extends StatefulWidget {
+  const GuardiansHome({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<GuardiansHome> createState() => _GuardiansHomeState();
 }
 
-class _HomePageState extends State<HomePage>
+class _GuardiansHomeState extends State<GuardiansHome>
     with MediansWidgets, MediansTheme, WidgetsBindingObserver {
   final widgets = MediansWidgets;
 
