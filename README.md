@@ -71,3 +71,4 @@ In Visual Studio Code, navigate to `Preferences` -> `Settings` and search for `F
 **/*.inject.dart
 **/*.g.dart
 ```
+
