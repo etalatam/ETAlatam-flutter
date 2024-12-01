@@ -18,7 +18,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage>
-    with MediansWidgets, MediansTheme {
+    with ETAWidgets, MediansTheme {
   final HttpService httpService = HttpService();
 
   final LocalStorage storage = LocalStorage('tokens.json');

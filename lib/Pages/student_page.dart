@@ -1,206 +1,320 @@
-import 'package:eta_school_app/Models/StudentModel.dart';
+import 'dart:async';
+import 'package:eta_school_app/Models/RouteModel.dart';
+// import 'package:eta_school_app/Pages/AddStudentPage.dart';
+import 'package:eta_school_app/Pages/StudentPage.dart';
+import 'package:eta_school_app/Pages/trip_page.dart';
+import 'package:eta_school_app/components/active_trip.dart';
+import 'package:eta_school_app/components/home_route_block.dart';
 import 'package:eta_school_app/components/widgets.dart';
+// import 'package:eta_school_app/Pages/TripPage.dart';
 import 'package:flutter/material.dart';
-import 'package:eta_school_app/components/loader.dart';
-import 'package:eta_school_app/controllers/helpers.dart';
+import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
 import 'package:eta_school_app/methods.dart';
+import 'package:eta_school_app/Models/ParentModel.dart';
+import 'package:eta_school_app/Models/TripModel.dart';
+import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/components/loader.dart';
+import 'package:eta_school_app/components/Header.dart';
+// import 'package:eta_school_app/components/AddStudentBlock.dart';
+// import 'package:eta_school_app/components/HomeRouteBlock.dart';
+// import 'package:eta_school_app/components/ActiveTrip.dart';
+import 'package:eta_school_app/Models/EventModel.dart';
 
-class StudentPage extends StatefulWidget {
-  const StudentPage({super.key, this.student});
 
-  final StudentModel? student;
+
+
+class StudentHome extends StatefulWidget {
 
   @override
-  State<StudentPage> createState() => _StudentPageState();
+  State<StudentHome> createState() => _StudentHomeState();
 }
 
-class _StudentPageState extends State<StudentPage> {
+class _StudentHomeState extends State<StudentHome> with ETAWidgets, MediansTheme, WidgetsBindingObserver
+{
+
+  final widgets =  ETAWidgets;
+
+  late GoogleMapController mapController;
+
+  bool hasActiveTrip = false;
+
+  ParentModel? parentModel =
+      ParentModel(parent_id: 0, first_name: '', contact_number: "", students: []);
+
+  Location location = Location();
+
   bool showLoader = true;
+
+  List<EventModel> eventsList = [];
+  List<RouteModel> routesList = [];
+  List<TripModel> oldTripsList = [];
+  
+  TripModel? activeTrip;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      child: showLoader
-          ? Loader()
-          : Scaffold(
-              body: Stack(children: <Widget>[
-                Container(
-                  decoration: ShapeDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage((widget.student!.picture != null)
-                          ? (httpService.croppedImage(
-                              widget.student!.picture!, 800, 1200))
-                          : httpService.croppedImage(
-                              "/uploads/images/60x60.png", 200, 200)),
-                      fit: BoxFit.fitHeight,
+    
+    activeTheme = storage.getItem('darkmode') == true ? DarkTheme() : LightTheme();
+    return showLoader 
+        ? Loader() 
+        : Material(
+          type: MaterialType.transparency,
+          child: Scaffold(
+            body: RefreshIndicator(
+              triggerMode: RefreshIndicatorTriggerMode.onEdge,
+              onRefresh: _refreshData, // Function to be called on pull-to-refresh
+              child: 
+              Stack(
+                children: [
+                  Container(
+                    color: activeTheme.main_bg,
+                    height: MediaQuery.of(context).size.height,
+                    child:
+                 SingleChildScrollView(
+                  padding: EdgeInsets.only(bottom:100),
+                  physics: AlwaysScrollableScrollPhysics(),
+                  child: Stack(children: <Widget>[
+                    Container(
+                  color: activeTheme.main_bg,
+                  margin: EdgeInsets.only(top: 120),
+                  child: Column(children: [
+                    
+
+                    // Row(children:[ Container(
+                    //   padding: EdgeInsets.symmetric(horizontal: 20),
+                    //   child: Text(
+                    //   "${lang.translate('welcome')}  ${parentModel!.first_name!}",
+                    //   style: activeTheme.h4,
+                    //   textAlign: TextAlign.start,
+                    // ))]),
+                    
+                    /// Parent profile
+                    parentProfileInfoBlock(parentModel!, context),
+                    
+                    /// Last Trips
+                    hasActiveTrip ? ActiveTrip(openTrip, activeTrip) : Center() ,
+
+                    ETAWidgets.svgTitle("assets/svg/fire.svg", lang.translate("List of your added children")),
+
+                    SizedBox( height: 10),
+
+                    /// Students list
+                    parentModel!.students.isEmpty ? Center() :  SizedBox(
+                      height: 280,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: parentModel!.students.length, // Replace with the total number of items
+                        itemBuilder: (BuildContext context, int index) {
+
+                          /// Student block
+                          return GestureDetector(
+                            onTap: () {
+                              openNewPage(context, StudentPage(student: parentModel!.students[index]));
+                            },
+                            child: ETAWidgets.homeStudentBlock(context, parentModel!.students[index])
+                          );
+                        },
+                      ),
                     ),
-                    shape: const RoundedRectangleBorder(),
-                  ),
+                    SizedBox(height: 40,),
+                    ETAWidgets.svgTitle("assets/svg/route.svg", lang.translate('Available routes')),
+  
+                    /// Available Routes
+                    Container(
+                      height: 300,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: routesList.length, // Replace with the total number of items
+                        itemBuilder: (BuildContext context, int index) {
+
+                          return Container(
+                            width: 400,
+                            height: 400,
+                            child: HomeRouteBlock(route: routesList[index]),
+                          );
+                        }
+                      ) 
+                    ),
+
+                    /// Add student block
+                    // !hasPending() 
+                    // ? InfoButtonBlock(
+                    //   addStudent, 
+                    //   lang.translate('Add new student now'), 
+                    //   lang.translate('Start now with filling new student information'), 
+                    //   lang.translate('Add student') ,
+                    //   SvgPicture.asset("assets/svg/multi.svg",
+                    //     width: 30,
+                    //     height: 30,
+                    //     color: activeTheme.icon_color,
+                    //   ))
+                    // : InfoButtonBlock(
+                    //   addStudent, 
+                    //   lang.translate('Required information'), 
+                    //   lang.translate('You need to complete some required information'), 
+                    //   lang.translate('Complete information') ,
+                    //   SvgPicture.asset("assets/svg/multi.svg",
+                    //     width: 30,
+                    //     height: 30,
+                    //     color: activeTheme.icon_color,
+                    //   )
+                    // ) ,
+
+                    SizedBox(height: 30,),
+                    ETAWidgets.svgTitle("assets/svg/bus.svg", lang.translate('trips_history')),
+                    
+                    /// Last Trips
+                    oldTripsList.length < 1 ? Center () : Container(
+                      height: 330,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: oldTripsList.length, // Replace with the total number of items
+                        itemBuilder: (BuildContext context, int index) {
+                          return GestureDetector(
+                            onTap: () {
+                              openNewPage(context, TripPage(trip: oldTripsList[index]));
+                            },
+                            child: 
+                            ETAWidgets.homeTripBlock(context, oldTripsList[index])
+                          );
+                        }
+                      ) 
+                    ),
+                    SizedBox(height: 30,),
+                    
+                    
+                    Container(
+                      padding: EdgeInsets.all(20),
+                      child: Text(
+                      "${lang.translate('Events and News')}",
+                      style: activeTheme.h3,
+                      textAlign: TextAlign.start,
+                    )),
+                    
+                    /// Events carousel
+                    Container(
+                      width: MediaQuery.of(context).size.width,
+                      alignment: Alignment.center,
+                      child:  ETAWidgets.eventCarousel(eventsList, context),
+                    ),
+
+                    
+                    /// Help / Support Block
+                    ETAWidgets.homeHelpBlock(),
+                    
+                  ]),
                 ),
-                DraggableScrollableSheet(
-                  snapAnimationDuration: const Duration(seconds: 1),
-                  initialChildSize:
-                      .7, // The initial size of the sheet (0.2 means 20% of the screen)
-                  minChildSize:
-                      0.7, // Minimum size of the sheet (10% of the screen)
-                  maxChildSize:
-                      0.8, // Maximum size of the sheet (80% of the screen)
-                  builder: (BuildContext context,
-                      ScrollController scrollController) {
-                    return Container(
-                        child: Stack(children: [
-                      Container(
-                        width: double.infinity,
-                        height: 75,
-                        clipBehavior: Clip.antiAlias,
-                        decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withOpacity(0),
-                            Colors.black.withOpacity(.5),
-                          ],
-                        )),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 50),
-                        height: double.infinity,
-                        decoration: BoxDecoration(
-                          color: activeTheme.main_bg,
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(20.0),
-                            topRight: Radius.circular(20.0),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              offset: const Offset(0.0, -3.0),
-                              blurRadius: 5.0,
-                            ),
-                          ],
-                        ),
-                      ),
-                      SingleChildScrollView(
-                        controller: scrollController,
-                        child: Container(
-                            child: Stack(children: [
-                          Container(
-                              child: Row(
-                            textDirection:
-                                isRTL() ? TextDirection.rtl : TextDirection.ltr,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              GestureDetector(
-                                onTap: () {},
-                                child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 20),
-                                    child: CircleAvatar(
-                                        radius: 50,
-                                        foregroundImage: NetworkImage(
-                                            (widget.student!.picture != null)
-                                                ? (httpService.croppedImage(
-                                                    widget.student!.picture!,
-                                                    200,
-                                                    200))
-                                                : httpService.croppedImage(
-                                                    "/uploads/images/60x60.png",
-                                                    200,
-                                                    200)))),
-                              ),
-                              Column(
-                                textDirection: isRTL()
-                                    ? TextDirection.rtl
-                                    : TextDirection.ltr,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.only(top: 15),
-                                    child: Text("${widget.student!.first_name}",
-                                        style: TextStyle(
-                                            fontSize: activeTheme.h5.fontSize,
-                                            fontWeight:
-                                                activeTheme.h4.fontWeight,
-                                            color: Colors.white)),
-                                  ),
-                                  Row(
-                                    textDirection: isRTL()
-                                        ? TextDirection.rtl
-                                        : TextDirection.ltr,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(
-                                            color: activeTheme.buttonBG,
-                                            borderRadius:
-                                                const BorderRadius.all(
-                                                    Radius.circular(10))),
-                                        margin: const EdgeInsets.only(top: 15),
-                                        child: Text(
-                                            "${lang.translate("${widget.student!.transfer_status}")}",
-                                            style: TextStyle(
-                                              color: activeTheme.buttonColor,
-                                              fontWeight: FontWeight.bold,
-                                            )),
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(
-                                            color: activeTheme.buttonBG,
-                                            borderRadius:
-                                                const BorderRadius.all(
-                                                    Radius.circular(10))),
-                                        margin: const EdgeInsets.only(top: 15),
-                                        child: Text(
-                                            "${widget.student!.route!.route_name}",
-                                            style: TextStyle(
-                                              color: activeTheme.buttonColor,
-                                              fontWeight: FontWeight.bold,
-                                            )),
-                                      ),
-                                    ],
-                                  )
-                                ],
-                              ),
-                              const Expanded(child: Center()),
-                              // Expanded(child: Icon(Icons.edit, color: activeTheme.icon_color,)),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    top: 10, right: 20, left: 20),
-                                child: Icon(
-                                  Icons.edit,
-                                  color: activeTheme.icon_color,
-                                ),
-                              )
-                            ],
-                          )),
-                          Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 20),
-                            height: 1,
-                            color: activeTheme.main_color.withOpacity(.2),
-                          ),
-                          MediansWidgets.studentMenuWidget(widget.student),
-                        ])),
-                      )
-                    ]));
-                  },
-                ),
+
               ]),
+            )),
+
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              child: Header(lang.translate('sitename'))
             ),
-    );
+            // Positioned(
+            //   bottom: 20,
+            //   left: 20,
+            //   right: 20,
+            //   child: BottomMenu('home', openNewPage)
+            // )
+          ],
+        )
+    )));
+
   }
 
+  // Function to simulate data retrieval or refresh
+  Future<void> _refreshData() async {
+    setState(() {
+      showLoader = true;
+    });
+
+    await Future.delayed(Duration(seconds: 2));
+    setState(() {
+      loadParent();
+    });
+  }
+
+  
+  ///
+  /// Load devices through API
+  ///
+  loadParent() async {
+
+    Timer(Duration(seconds: 2), ()  async {
+      await storage.getItem('darkmode');
+      setState(()  {
+        darkMode = storage.getItem('darkmode') == true ? true : false;
+        showLoader = false;
+      });
+    });
+
+    final parentId = await storage.getItem('parent_id');
+    final eventsQuery = await httpService.getEvents();
+    setState(()  {
+        eventsList = eventsQuery;
+    });
+
+    final parentQuery = await httpService.getParent(parentId);
+    setState(()  {
+        parentModel = parentQuery; 
+    });
+
+    final routesQuery = await httpService.getRoutes();
+    setState(()  {
+        routesList = routesQuery;
+    });
+    
+    TripModel? activeTrip_ = await httpService.getActiveTrip();
+    setState(()  {
+        activeTrip = activeTrip_;
+        hasActiveTrip = activeTrip_.trip_id! > 0 ? true : false;
+    });
+
+    List<TripModel>? oldTrips = await httpService.getStudentTrips(parentModel!.students[0].student_id, 0);
+    setState(()  {
+        oldTripsList = oldTrips;
+    });
+  }
+
+
+  // addStudent()
+  // {
+  //   Get.to(AddStudentPage(parent: parentModel));
+  // }
+
+  openTrip(trip)
+  {
+    Get.to(TripPage(trip: trip,));
+  }
+
+
+  /// Check if the parent has pending student
+  /// and needs to complete the info
+  bool hasPending()
+  {
+    final pending = parentModel!.pending_student;
+
+    return (
+      (pending != null  && pending.first_name != null )
+      && 
+      (
+        pending.pickup_location!.pickup_id == null 
+        || pending.destination!.destination_id == null
+        )
+      );
+  }
+  
   @override
   void initState() {
     super.initState();
-    showLoader = false;
+    loadParent();
+
   }
 }
+

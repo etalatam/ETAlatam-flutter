@@ -28,7 +28,7 @@ class TripPage extends StatefulWidget {
 }
 
 class _TripPageState extends State<TripPage>
-    with MediansWidgets, MediansTheme
+    with ETAWidgets, MediansTheme
     implements OnPointAnnotationClickListener {
   bool showLoader = false;
 
@@ -187,7 +187,7 @@ class _TripPageState extends State<TripPage>
                                   height: 20,
                                 ),
                                 trip.trip_status == 'Completed'
-                                    ? MediansWidgets.tripInfoRow(trip)
+                                    ? ETAWidgets.tripInfoRow(trip)
                                     : const Center(),
                                 Row(children: [
                                   (trip.waiting_locations_count != 0 ||

@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:eta_school_app/Models/DriverModel.dart';
 import 'package:eta_school_app/Models/PickupLocationModel.dart';
+import 'package:eta_school_app/Models/UserModel.dart';
 import 'package:eta_school_app/Models/login_information_model.dart';
 import 'package:eta_school_app/Pages/providers/driver_provider.dart';
 import 'package:eta_school_app/domain/entities/user/driver.dart';
@@ -15,7 +17,6 @@ import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/Models/ParentModel.dart';
-import 'package:eta_school_app/Models/DriverModel.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
 import 'package:eta_school_app/Models/HelpMessageModel.dart';
 import 'package:eta_school_app/Models/StudentModel.dart';
@@ -73,7 +74,7 @@ class HttpService {
   }
 
   /// Load Trips
-  Future<List<TripModel>> getTrips(int lastId) async {
+  Future<List<TripModel>> getDriverTrips(int lastId) async {
     http.Response res = await getQuery(
         "/rpc/driver_trips?select=*&running=eq.false&limit=10&order=start_ts.desc");
 
@@ -185,7 +186,7 @@ class HttpService {
     return RouteModel(route_id: 0, route_name: '', pickup_locations: []);
   }
 
-  /// Load Driver
+  // /// Load Driver
   Future<DriverModel> getDriver(id) async {
     http.Response res = await getQuery("/rpc/driver_info");
 
@@ -204,11 +205,16 @@ class HttpService {
 
   /// Load Parent
   Future<ParentModel> getParent(id) async {
-    http.Response res = await getQuery("/parent/$id");
-    var body = jsonDecode(res.body);
-    return body == null
-        ? ParentModel(parent_id: 0, students: [])
-        : ParentModel.fromJson(body);
+    try {
+      http.Response res = await postQuery('/rpc/parent_info', null,
+          contentType: 'application/json');
+      if (res.statusCode == 200) {
+        return ParentModel.fromJson(res.body);
+      } 
+    } catch (e) {
+      print("sendTracking error: ${e.toString()}");
+    }
+    return ParentModel(parent_id: 0, students: []);
   }
 
   /// Load Student pickup
@@ -555,6 +561,23 @@ class HttpService {
     return requestAccessRes;
   }
 
+  Future<List<TripModel>> getStudentTrips(int? studentId, int lastId) async {
+    print(studentId);
+    print(lastId);
+    var res = await getQuery("mobile_api/student_trips?student_id=$studentId&lastId=$lastId");
+    List<dynamic> body =  jsonDecode(res.body);
+      return body .map( (dynamic item) => TripModel.fromJson(item) ) .toList();
+  }
+
+  /// Load student
+  Future<StudentModel> loadStudent(int? studentId) async {
+    http.Response res = await postQuery('mobile_api', {"model":'student_locations', "params":jsonEncode({ "student_id" : studentId})});
+    dynamic body =  jsonDecode(res.body);
+    return body == null ? StudentModel(student_id: 0,parent_id: 0) : StudentModel.fromJson(body);
+  }
+
+
+
   /// Send message
   Future<HelpMessageModel> sendMessage(
       int categoryId, String message, int priority) async {
@@ -871,22 +894,7 @@ class HttpService {
   }
 
   Future<dynamic> driverInfo() async {
-    // final driverID = await storage.getItem('driver_id');
-    // final data = {
-    //   'driver_id': driverID ?? driver,
-    //   'latitude': position.latitude,
-    //   'longitude': position.longitude,
-    //   'speed': position.speed,
-    //   'heading': position.heading,
-    //   'time': position.time,
-    //   'accuracy': position.accuracy,
-    //   'altitude': position.altitude,
-    //   'speedAccuracy': position.speedAccuracy,
-    //   'isMocked': position.isMocked
-    // };
-    // final jsonData = jsonEncode(data);
     try {
-      // var requestAccessRes = await requestAccess();
       http.Response res = await postQuery('/rpc/driver_info', null,
           contentType: 'application/json');
       if (res.statusCode == 200) {
@@ -895,8 +903,23 @@ class HttpService {
         return res;
       }
     } catch (e) {
-      print("sendTracking error: ${e.toString()}");
+      print("driverInfo error: ${e.toString()}");
       return null;
     }
+  }
+
+  Future<UserModel?> userInfo() async {
+    try {
+      http.Response res = await postQuery('/rpc/user_info', null,
+          contentType: 'application/json');
+      
+      if (res.statusCode == 200) {
+        return UserModel.fromJson(res.body);
+      } 
+    } catch (e) {
+      print("userInfo error: ${e.toString()}");
+      
+    }
+    return null;
   }
 }

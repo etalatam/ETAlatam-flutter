@@ -28,22 +28,31 @@ class ParentModel {
 
   });
 
-  factory ParentModel.fromJson(Map<String, dynamic> json) {
+  factory ParentModel.fromJson(json) {
 
-    StudentModel? pendingStudent = json['pending_student'] != null ? StudentModel.fromJson(json['pending_student']) : StudentModel(student_id: 0, parent_id: json['parent_id']);
-    // List<TripPickupLocation>.from(l.map((model)=> TripPickupLocation.fromJson(model)))
-    Iterable studentsList = json['students'];
-    List<StudentModel>? students = json['students'] != null ?  List<StudentModel>.from(studentsList.map((model)=>  StudentModel.fromJson(model))) : [];
+    StudentModel? pendingStudent;
+    try {
+     pendingStudent = json['pending_student'] != null ? StudentModel.fromJson(json['pending_student']) : StudentModel(student_id: 0, parent_id: json['parent_id']); 
+    } catch (e) {
+      print("ParentModel.fromJson.pendingStudentParseError: ${e.toString()}");
+    }
 
+    List<StudentModel> students = [];
+    try {
+      Iterable studentsList = json['students'];
+      students = json['students'] != null ?  List<StudentModel>.from(studentsList.map((model)=>  StudentModel.fromJson(model))) : [];      
+    } catch (e) {
+      print("ParentModel.fromJson.studentsParseError: ${e.toString()}");
+    }
 
     return ParentModel(
-      parent_id: json['parent_id'] as int?,
-      first_name: json['first_name'] as String?,
-      last_name: json['last_name'] as String?,
-      parent_name: json['parent_name'] as String?,
-      email: json['email'] as String?,
+      parent_id: json['guardian_id'] as int?,
+      first_name: json['guardian_firstname'] as String?,
+      last_name: json['guardian_lastname'] as String?,
+      parent_name: "${json['guardian_firstname']} ${json['guardian_lastname']}",
+      email: json['guardian_email'] as String?,
       picture: json['picture'] as String?,
-      contact_number: json['contact_number'] as String?,
+      contact_number: json['guardian_phonenumber'] as String?,
       status: json['status'] as String?,
       students: students,
       pending_student: pendingStudent,

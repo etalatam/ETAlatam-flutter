@@ -25,8 +25,8 @@ class DriverHome extends StatefulWidget {
 }
 
 class _DriverHomeState extends State<DriverHome>
-    with MediansWidgets, MediansTheme, WidgetsBindingObserver {
-  final widgets = MediansWidgets;
+    with ETAWidgets, MediansTheme, WidgetsBindingObserver {
+  final widgets = ETAWidgets;
 
   // late GoogleMapController mapController;
 
@@ -124,7 +124,7 @@ class _DriverHomeState extends State<DriverHome>
                                                 )))
                                         : ActiveTrip(openTrip, activeTrip),
 
-                                    MediansWidgets.svgTitle(
+                                    ETAWidgets.svgTitle(
                                         "assets/svg/fire.svg",
                                         lang.translate("Routes")),
 
@@ -157,7 +157,7 @@ class _DriverHomeState extends State<DriverHome>
                                               );
                                             })),
 
-                                    MediansWidgets.svgTitle(
+                                    ETAWidgets.svgTitle(
                                         "assets/svg/bus.svg",
                                         lang.translate('trips_history')),
 
@@ -183,7 +183,7 @@ class _DriverHomeState extends State<DriverHome>
                                                                     oldTripsList[
                                                                         index]));
                                                       },
-                                                      child: MediansWidgets
+                                                      child: ETAWidgets
                                                           .homeTripBlock(
                                                               context,
                                                               oldTripsList[
@@ -205,11 +205,11 @@ class _DriverHomeState extends State<DriverHome>
                                     // Container(
                                     //   width: MediaQuery.of(context).size.width,
                                     //   alignment: Alignment.center,
-                                    //   child:  MediansWidgets.eventCarousel(eventsList, context),
+                                    //   child:  ETAWidgets.eventCarousel(eventsList, context),
                                     // ),
 
                                     /// Help / Support Block
-                                    // MediansWidgets.homeHelpBlock(),
+                                    // ETAWidgets.homeHelpBlock(),
                                   ]),
                                 ),
                               ]),
@@ -329,7 +329,7 @@ class _DriverHomeState extends State<DriverHome>
       routesList = routesQuery;
     });
 
-    List<TripModel>? oldTrips = await httpService.getTrips(0);
+    List<TripModel>? oldTrips = await httpService.getDriverTrips(0);
     setState(() {
       oldTripsList = oldTrips;
     });

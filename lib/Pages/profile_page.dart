@@ -1,3 +1,4 @@
+import 'package:eta_school_app/Models/UserModel.dart';
 import 'package:eta_school_app/Pages/reset_password_page.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
@@ -21,8 +22,8 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   bool showLoader = true;
-
-  DriverModel driver = DriverModel(driver_id: 0, first_name: '');
+ 
+  UserModel user = UserModel(id: 0, firstName: '');
 
   final String profilePicture = "assets/profile.avif";
 
@@ -109,7 +110,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                             radius: 50,
                                             backgroundColor: Color(0xFF123456),
                                             foregroundImage: NetworkImage(
-                                                httpService.getAvatarUrl(driver.picture),
+                                                httpService.getAvatarUrl(user.id),
                                                 headers: {'Accept': 'image/png'}
                                             )
                                 ))),
@@ -121,7 +122,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   children: [
                                     Container(
                                       padding: const EdgeInsets.only(top: 15),
-                                      child: Text("${driver.first_name}",
+                                      child: Text("${user.firstName}",
                                           style: TextStyle(
                                               fontSize: activeTheme.h5.fontSize,
                                               fontWeight:
@@ -136,7 +137,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     //       borderRadius: const BorderRadius.all(
                                     //           Radius.circular(10))),
                                     //   margin: const EdgeInsets.only(top: 15),
-                                    //   child: Text("${driver.contact_number}",
+                                    //   child: Text("${user.contact_number}",
                                     //       style: TextStyle(
                                     //         color: activeTheme.buttonColor,
                                     //         fontWeight: FontWeight.bold,
@@ -157,7 +158,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 //         children: [
                                 //           GestureDetector(
                                 //             onTap: () {
-                                //               launchCall(driver.contact_number);
+                                //               launchCall(user.contact_number);
                                 //             },
                                 //             child: Padding(
                                 //               padding: const EdgeInsets.only(
@@ -170,7 +171,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 //           ),
                                 //           GestureDetector(
                                 //             onTap: () {
-                                //               launchWP(driver.contact_number);
+                                //               launchWP(user.contact_number);
                                 //             },
                                 //             child: Padding(
                                 //               padding: const EdgeInsets.only(
@@ -201,25 +202,25 @@ class _ProfilePageState extends State<ProfilePage> {
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 CustomRow(lang.translate('First Name'),
-                                    driver.first_name),
+                                    user.firstName),
                                 Container(
                                   height: 1,
                                   color: activeTheme.main_color.withOpacity(.3),
                                 ),
                                 CustomRow(lang.translate('Last Name'),
-                                    driver.last_name),
+                                    user.lastName),
                                 Container(
                                   height: 1,
                                   color: activeTheme.main_color.withOpacity(.3),
                                 ),
                                 CustomRow(
-                                    lang.translate('email'), driver.email),
+                                    lang.translate('email'), user.email),
                                 Container(
                                   height: 1,
                                   color: activeTheme.main_color.withOpacity(.3),
                                 ),
                                 CustomRow(lang.translate('Contact number'),
-                                    driver.contact_number),
+                                    user.contactNumber),
                                 Container(
                                   height: 1,
                                   color: activeTheme.main_color.withOpacity(.3),
@@ -228,7 +229,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     onTap: () {
                                       // openNewPage(
                                       //     context, ChangePasswordPage());
-                                      openNewPage(context, ResetPasswordPage(defaultMail: driver.email,));
+                                      openNewPage(context, ResetPasswordPage(defaultMail: user.email,));
                                     },
                                     child: CustomRow(
                                         lang.translate('Change password'), '')),
@@ -280,11 +281,11 @@ class _ProfilePageState extends State<ProfilePage> {
   ///
   /// Load devices through API
   ///
-  loadDriver() async {
-    final driverQuery =
-        await httpService.getDriver(storage.getItem('driver_id'));
+  loadUser() async {
+    final userQuery =
+        await httpService.userInfo();
     setState(() {
-      driver = driverQuery;
+      user = userQuery!;
       showLoader = false;
     });
   }
@@ -294,13 +295,13 @@ class _ProfilePageState extends State<ProfilePage> {
   //   await Navigator.push(
   //       context, MaterialPageRoute(builder: (context) => UploadPicturePage()));
   //   setState(() {
-  //     loadDriver();
+  //     loadUser();
   //   });
   // }
 
   @override
   void initState() {
     super.initState();
-    loadDriver();
+    loadUser();
   }
 }

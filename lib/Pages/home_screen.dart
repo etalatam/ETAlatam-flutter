@@ -33,8 +33,8 @@ class HomeScreen extends StatelessWidget {
     ],
     "eta.guardians": [
       SettingsPage(),
-      // GuardiansHome(),
-      BlankPage(),
+      GuardiansHome(),
+      // BlankPage(),
       NotificationsPage(),
       SendMessagePage()
     ]
