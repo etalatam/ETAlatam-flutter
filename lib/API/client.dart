@@ -16,7 +16,7 @@ import 'package:eta_school_app/methods.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
-import 'package:eta_school_app/Models/ParentModel.dart';
+import 'package:eta_school_app/Models/parent_model.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
 import 'package:eta_school_app/Models/HelpMessageModel.dart';
 import 'package:eta_school_app/Models/student_model.dart';

@@ -1,5 +1,5 @@
 import 'package:eta_school_app/Models/driver_model.dart';
-import 'package:eta_school_app/Models/ParentModel.dart';
+import 'package:eta_school_app/Models/parent_model.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/Pages/event_page.dart';
 import 'package:eta_school_app/Pages/help_messages_page.dart';

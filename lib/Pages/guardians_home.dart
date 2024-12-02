@@ -12,7 +12,7 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:eta_school_app/methods.dart';
-import 'package:eta_school_app/Models/ParentModel.dart';
+import 'package:eta_school_app/Models/parent_model.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/controllers/Helpers.dart';
 import 'package:eta_school_app/components/loader.dart';

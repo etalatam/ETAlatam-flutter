@@ -1,4 +1,4 @@
-import 'package:eta_school_app/Models/ParentModel.dart';
+import 'package:eta_school_app/Models/parent_model.dart';
 import 'package:eta_school_app/Pages/change_password_page.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:flutter/material.dart';
