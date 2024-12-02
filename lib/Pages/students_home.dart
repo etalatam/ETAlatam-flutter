@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Models/student_model.dart';
-import 'package:eta_school_app/Pages/login_page.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/components/active_trip.dart';
@@ -14,7 +13,6 @@ import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/components/header.dart';
-import 'package:eta_school_app/components/home_route_block.dart';
 
 class StudentsHome extends StatefulWidget {
   const StudentsHome({super.key});

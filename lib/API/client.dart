@@ -85,7 +85,7 @@ class HttpService {
       List<dynamic> body = jsonDecode(res.body);
       final List<TripModel> trips = await Future.wait(
         body
-            .map((dynamic item) async => await TripModel.fromJson(item))
+            .map((dynamic item) async => TripModel.fromJson(item))
             .toList(),
       );
       return trips;
@@ -106,7 +106,7 @@ class HttpService {
       List<dynamic> body = jsonDecode(res.body);
       final List<TripModel> trips = await Future.wait(
         body
-            .map((dynamic item) async => await TripModel.fromJson(item))
+            .map((dynamic item) async => TripModel.fromJson(item))
             .toList(),
       );
       return trips;
@@ -127,7 +127,7 @@ class HttpService {
       List<dynamic> body = jsonDecode(res.body);
       final List<NotificationModel> notificactions = await Future.wait(
         body
-            .map((dynamic item) async => await NotificationModel.fromJson(item))
+            .map((dynamic item) async => NotificationModel.fromJson(item))
             .toList(),
       );
       return notificactions;
@@ -149,7 +149,7 @@ class HttpService {
           await Future.wait(
         body
             .map((dynamic item) async =>
-                await SupportHelpCategory.fromJson(item))
+                SupportHelpCategory.fromJson(item))
             .toList(),
       );
       return supportHelpCategoryList;
@@ -169,7 +169,7 @@ class HttpService {
       List<dynamic> body = jsonDecode(res.body);
       final List<HelpMessageModel> supportMessage = await Future.wait(
         body
-            .map((dynamic item) async => await HelpMessageModel.fromJson(item))
+            .map((dynamic item) async => HelpMessageModel.fromJson(item))
             .toList(),
       );
       return supportMessage;
@@ -188,8 +188,9 @@ class HttpService {
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
-      if (body == null)
+      if (body == null) {
         return RouteModel(route_id: 0, route_name: '', pickup_locations: []);
+      }
       final RouteModel trips = RouteModel.fromJson(body[0]);
       return trips;
     }
@@ -866,7 +867,7 @@ class HttpService {
   }
 
   Future<dynamic> sendTracking({required position, int driver = 18}) async {
-    print('sendTracking.position ${position}');
+    print('sendTracking.position $position');
     final userId = await storage.getItem('id_usu');
     final data = {
       'user_id': userId,
@@ -919,7 +920,7 @@ class HttpService {
       List<dynamic> body = jsonDecode(res.body);
       final List<StudentModel> students = await Future.wait(
         body
-            .map((dynamic item) async => await StudentModel.fromJson(item))
+            .map((dynamic item) async => StudentModel.fromJson(item))
             .toList(),
       );
       return students;

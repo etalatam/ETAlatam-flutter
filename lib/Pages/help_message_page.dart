@@ -9,7 +9,6 @@ import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/components/comment_block.dart';
 import 'package:eta_school_app/components/custom_row.dart';
 import 'package:eta_school_app/components/full_text_button.dart';
-import 'package:get/get.dart';
 
 class HelpMessagePage extends StatefulWidget {
   final HelpMessageModel? message;

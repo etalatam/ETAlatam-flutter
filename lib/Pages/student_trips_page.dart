@@ -191,7 +191,7 @@ class _StudentTripsPageState extends State<StudentTripsPage> {
   }
 
   Widget tripsList() {
-    return trips!.length < 1
+    return trips!.isEmpty
         ? Center()
         : Container(
             height: MediaQuery.of(context).size.height / 2.2,

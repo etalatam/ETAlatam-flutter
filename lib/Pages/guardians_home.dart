@@ -136,7 +136,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                         lang.translate('Available routes')),
 
                                     /// Available Routes
-                                    Container(
+                                    SizedBox(
                                         height: 300,
                                         child: ListView.builder(
                                             scrollDirection: Axis.horizontal,
@@ -144,7 +144,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                                 .length, // Replace with the total number of items
                                             itemBuilder: (BuildContext context,
                                                 int index) {
-                                              return Container(
+                                              return SizedBox(
                                                 width: 400,
                                                 height: 400,
                                                 child: HomeRouteBlock(

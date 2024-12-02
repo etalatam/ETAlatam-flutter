@@ -2,7 +2,6 @@
 import 'package:eta_school_app/Pages/driver_home.dart';
 import 'package:eta_school_app/Pages/guardians_home.dart';
 import 'package:eta_school_app/Pages/notifications_page.dart';
-import 'package:eta_school_app/Pages/student_page.dart';
 import 'package:eta_school_app/Pages/students_home.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:flutter/material.dart';

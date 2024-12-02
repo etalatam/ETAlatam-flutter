@@ -4,7 +4,6 @@ import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/Pages/event_page.dart';
 import 'package:eta_school_app/Pages/help_messages_page.dart';
 import 'package:eta_school_app/Pages/parent_page.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
