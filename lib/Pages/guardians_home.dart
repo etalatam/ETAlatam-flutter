@@ -49,7 +49,7 @@ class _GuardiansHomeState extends State<GuardiansHome> with ETAWidgets, MediansT
 
   // List<EventModel> eventsList = [];
   List<RouteModel> routesList = [];
-  List<TripModel> oldTripsList = [];
+  // List<TripModel> oldTripsList = [];
   
   TripModel? activeTrip;
 
@@ -162,26 +162,26 @@ class _GuardiansHomeState extends State<GuardiansHome> with ETAWidgets, MediansT
                     //   )
                     // ) ,
 
-                    SizedBox(height: 30,),
-                    ETAWidgets.svgTitle("assets/svg/bus.svg", lang.translate('trips_history')),
+                    // SizedBox(height: 30,),
+                    // ETAWidgets.svgTitle("assets/svg/bus.svg", lang.translate('trips_history')),
                     
-                    /// Last Trips
-                    oldTripsList.length < 1 ? Center () : Container(
-                      height: 230,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: oldTripsList.length, // Replace with the total number of items
-                        itemBuilder: (BuildContext context, int index) {
-                          return GestureDetector(
-                            onTap: () {
-                              openNewPage(context, TripPage(trip: oldTripsList[index]));
-                            },
-                            child: 
-                            ETAWidgets.homeTripBlock(context, oldTripsList[index])
-                          );
-                        }
-                      ) 
-                    ),
+                    // /// Last Trips
+                    // oldTripsList.length < 1 ? Center () : Container(
+                    //   height: 230,
+                    //   child: ListView.builder(
+                    //     scrollDirection: Axis.horizontal,
+                    //     itemCount: oldTripsList.length, // Replace with the total number of items
+                    //     itemBuilder: (BuildContext context, int index) {
+                    //       return GestureDetector(
+                    //         onTap: () {
+                    //           openNewPage(context, TripPage(trip: oldTripsList[index]));
+                    //         },
+                    //         child: 
+                    //         ETAWidgets.homeTripBlock(context, oldTripsList[index])
+                    //       );
+                    //     }
+                    //   ) 
+                    // ),
                     // SizedBox(height: 30,),
                     
                     
@@ -272,10 +272,10 @@ class _GuardiansHomeState extends State<GuardiansHome> with ETAWidgets, MediansT
         hasActiveTrip = activeTrip_.trip_id! > 0 ? true : false;
     });
 
-    List<TripModel>? oldTrips = await httpService.getStudentTrips(parentModel!.students[0].student_id, 0);
-    setState(()  {
-        oldTripsList = oldTrips;
-    });
+    // List<TripModel>? oldTrips = await httpService.getStudentTrips(parentModel!.students[0].student_id, 0);
+    // setState(()  {
+    //     oldTripsList = oldTrips;
+    // });
   }
 
   // addStudent()

@@ -94,6 +94,27 @@ class HttpService {
     return [];
   }
 
+  /// Load Trips
+  Future<List<TripModel>> getStudentTrips(studentId) async {
+    http.Response res = await getQuery(
+        "/rpc/student_trips?select=*&running=eq.false&limit=10&order=start_ts.desc&student_id=$studentId");
+
+    print("res.statusCode: ${res.statusCode}");
+    print("res.body: ${res.body}");
+
+    if (res.statusCode == 200) {
+      List<dynamic> body = jsonDecode(res.body);
+      final List<TripModel> trips = await Future.wait(
+        body
+            .map((dynamic item) async => await TripModel.fromJson(item))
+            .toList(),
+      );
+      return trips;
+    }
+    debugPrint(res.body.toString());
+    return [];
+  }
+
   /// Load Latest Notifications
   Future<List<NotificationModel>?> getNotifications() async {
     http.Response res = await getQuery(
@@ -201,6 +222,20 @@ class HttpService {
       return driverModel;
     }
     return DriverModel(driver_id: 0, first_name: '');
+  }
+
+  Future<StudentModel> getStudent() async {
+    try {
+      http.Response res = await postQuery('/rpc/student_info', null,
+          contentType: 'application/json');
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        return StudentModel.fromJson(json);
+      } 
+    } catch (e) {
+      print("sendTracking error: ${e.toString()}");
+    }
+    return StudentModel(student_id: 0, parent_id: 0);
   }
 
   /// Load Parent
@@ -544,6 +579,7 @@ class HttpService {
         await storage.setItem('driver_id', body['id_usu'] ?? body['id_usu']);
         await storage.setItem('id_usu', body['id_usu'] ?? body['id_usu']);
         await storage.setItem('user_relation_name', body['relation_name'] ?? body['relation_name']);
+        await storage.setItem('user_relation_id', body['user_relation_id'] ?? body['user_relation_id']);
         try {
           final LoginInformation login =
               LoginInformationMapper.information(LoginInfo.fromJson(body));
@@ -562,11 +598,11 @@ class HttpService {
     return requestAccessRes;
   }
 
-  Future<List<TripModel>> getStudentTrips(int? studentId, int lastId) async {
-    var res = await getQuery("mobile_api/student_trips?student_id=$studentId&lastId=$lastId");
-    List<dynamic> body =  jsonDecode(res.body);
-      return body .map( (dynamic item) => TripModel.fromJson(item) ) .toList();
-  }
+  // Future<List<TripModel>> getStudentTrips(int? studentId, int lastId) async {
+  //   var res = await getQuery("mobile_api/student_trips?student_id=$studentId&lastId=$lastId");
+  //   List<dynamic> body =  jsonDecode(res.body);
+  //     return body .map( (dynamic item) => TripModel.fromJson(item) ) .toList();
+  // }
 
   /// Load student
   Future<StudentModel> loadStudent(int? studentId) async {
