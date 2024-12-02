@@ -1,8 +1,8 @@
 import 'dart:core';
 import 'package:eta_school_app/Models/DestinationModel.dart';
-import 'package:eta_school_app/Models/DriverModel.dart';
-import 'package:eta_school_app/Models/StudentModel.dart';
-import 'package:eta_school_app/Models/RouteModel.dart';
+import 'package:eta_school_app/Models/driver_model.dart';
+import 'package:eta_school_app/Models/student_model.dart';
+import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Models/PickupLocationModel.dart';
 import 'package:eta_school_app/Models/VehicleModel.dart';
 import 'package:intl/intl.dart';

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:eta_school_app/Models/TripModel.dart';
+import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:flutter/material.dart';

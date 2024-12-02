@@ -3,7 +3,7 @@ import 'package:eta_school_app/Pages/help_message_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:eta_school_app/Pages/help_messages_page.dart';
-import 'package:eta_school_app/Models/DriverModel.dart';
+import 'package:eta_school_app/Models/driver_model.dart';
 import 'package:eta_school_app/API/client.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/methods.dart';

@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:eta_school_app/Models/RouteModel.dart';
+import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Pages/login_page.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
 import 'package:eta_school_app/methods.dart';
-import 'package:eta_school_app/Models/DriverModel.dart';
-import 'package:eta_school_app/Models/TripModel.dart';
+import 'package:eta_school_app/Models/driver_model.dart';
+import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/components/widgets.dart';

@@ -1,5 +1,5 @@
 import 'dart:core';
-import 'package:eta_school_app/Models/StudentModel.dart';
+import 'package:eta_school_app/Models/student_model.dart';
 
 
 class ParentModel {

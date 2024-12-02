@@ -1,4 +1,4 @@
-import 'package:eta_school_app/Models/TripModel.dart';
+import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/API/client.dart';
 import 'package:eta_school_app/Pages/driver_home.dart';

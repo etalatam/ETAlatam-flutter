@@ -1,6 +1,6 @@
 import 'package:eta_school_app/Models/PickupLocationModel.dart';
-import 'package:eta_school_app/Models/StudentModel.dart';
-import 'package:eta_school_app/Models/TripModel.dart';
+import 'package:eta_school_app/Models/student_model.dart';
+import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/components/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:eta_school_app/components/loader.dart';

@@ -3,7 +3,7 @@ import 'package:location/location.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:eta_school_app/API/client.dart';
-import 'package:eta_school_app/Models/RouteModel.dart';
+import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/components/empty_data.dart';
 import 'package:eta_school_app/components/loader.dart';

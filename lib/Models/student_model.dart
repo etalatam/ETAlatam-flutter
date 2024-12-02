@@ -1,7 +1,7 @@
 import 'dart:core';
 import 'package:eta_school_app/Models/DestinationModel.dart';
 import 'package:eta_school_app/Models/PickupLocationModel.dart';
-import 'package:eta_school_app/Models/RouteModel.dart';
+import 'package:eta_school_app/Models/route_model.dart';
 
 
 class StudentModel {

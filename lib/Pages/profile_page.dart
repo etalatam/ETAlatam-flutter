@@ -1,20 +1,17 @@
-import 'package:eta_school_app/Models/UserModel.dart';
+import 'package:eta_school_app/Models/user_model.dart';
 import 'package:eta_school_app/Pages/reset_password_page.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:eta_school_app/methods.dart';
-import 'package:eta_school_app/Models/DriverModel.dart';
 import 'package:eta_school_app/Pages/login_page.dart';
-// import 'package:eta_school_app/components/bottom_menu.dart';
 import 'package:eta_school_app/components/loader.dart';
-// import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/custom_row.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key, this.driver});
+  const ProfilePage({super.key});
 
-  final DriverModel? driver;
+  // final UserModel? user;
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -278,9 +275,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  ///
-  /// Load devices through API
-  ///
   loadUser() async {
     final userQuery =
         await httpService.userInfo();
@@ -289,15 +283,6 @@ class _ProfilePageState extends State<ProfilePage> {
       showLoader = false;
     });
   }
-
-  /// Open map to set location
-  // uploadPicture() async {
-  //   await Navigator.push(
-  //       context, MaterialPageRoute(builder: (context) => UploadPicturePage()));
-  //   setState(() {
-  //     loadUser();
-  //   });
-  // }
 
   @override
   void initState() {

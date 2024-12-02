@@ -1,5 +1,5 @@
 import 'package:localstorage/localstorage.dart';
-import 'package:eta_school_app/Models/DriverModel.dart';
+import 'package:eta_school_app/Models/driver_model.dart';
 import 'package:flutter/material.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:eta_school_app/API/client.dart';

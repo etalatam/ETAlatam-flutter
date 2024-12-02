@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:eta_school_app/Models/RouteModel.dart';
+import 'package:eta_school_app/Models/route_model.dart';
 // import 'package:eta_school_app/Pages/AddStudentPage.dart';
 import 'package:eta_school_app/Pages/StudentPage.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
@@ -13,7 +13,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/Models/ParentModel.dart';
-import 'package:eta_school_app/Models/TripModel.dart';
+import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/controllers/Helpers.dart';
 import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/components/Header.dart';
