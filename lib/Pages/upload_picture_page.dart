@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:eta_school_app/controllers/Helpers.dart';
+import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
@@ -8,7 +8,7 @@ class UploadPicturePage extends StatefulWidget {
   UploadPicturePage({this.student_id});
 
   final int? student_id;
-  
+
   @override
   _UploadPicturePageState createState() => _UploadPicturePageState();
 }
@@ -33,31 +33,32 @@ class _UploadPicturePageState extends State<UploadPicturePage> {
       return;
     }
 
-    final url = Uri.parse("${apiURL}mobile_api"); // Replace with your server's upload endpoint
+    final url = Uri.parse(
+        "${apiURL}mobile_api"); // Replace with your server's upload endpoint
     var request = http.MultipartRequest('POST', url)
-    ..fields['token'] = storage.getItem('token')
-    ..fields['student_id'] = widget.student_id.toString()
-    ..fields['model'] = 'Student.upload_picture';
-    request.files.add(await http.MultipartFile.fromPath('image', _imageFile!.path));
+      ..fields['token'] = storage.getItem('token')
+      ..fields['student_id'] = widget.student_id.toString()
+      ..fields['model'] = 'Student.upload_picture';
+    request.files
+        .add(await http.MultipartFile.fromPath('image', _imageFile!.path));
 
     try {
       final response = await request.send();
       if (response.statusCode == 200) {
-          String responseText = await response.stream.bytesToString();
-          goback(responseText);
-          return responseText;
+        String responseText = await response.stream.bytesToString();
+        goback(responseText);
+        return responseText;
       } else {
         // Handle error
         return lang.translate('Error');
       }
     } catch (error) {
-        return lang.translate('Error $error');
+      return lang.translate('Error $error');
     }
   }
 
-  goback(response)
-  {
-      Navigator.pop(context, response);
+  goback(response) {
+    Navigator.pop(context, response);
   }
 
   void _onWillPop(BuildContext context) async {
@@ -76,45 +77,43 @@ class _UploadPicturePageState extends State<UploadPicturePage> {
           ),
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(true); // User confirmed, proceed with back navigation
+              Navigator.of(context)
+                  .pop(true); // User confirmed, proceed with back navigation
             },
             child: Text('Yes'),
           ),
         ],
       ),
     );
-
   }
-
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
-        onPopInvoked: (oldPop) => _onWillPop(context),
-        child: Scaffold(
-      
-      body: Center(
+      onPopInvoked: (oldPop) => _onWillPop(context),
+      child: Scaffold(
+        body: Center(
           child: _imageFile == null
               ? Text('No image selected.')
               : Image.file(_imageFile!),
         ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            onPressed: getImage,
-            tooltip: 'Pick Image',
-            child: Icon(Icons.photo_library),
-          ),
-          SizedBox(height: 16),
-          FloatingActionButton(
-            onPressed: uploadImage,
-            tooltip: 'Upload Image',
-            child: Icon(Icons.upload),
-          ),
-        ],
+        floatingActionButton: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            FloatingActionButton(
+              onPressed: getImage,
+              tooltip: 'Pick Image',
+              child: Icon(Icons.photo_library),
+            ),
+            SizedBox(height: 16),
+            FloatingActionButton(
+              onPressed: uploadImage,
+              tooltip: 'Upload Image',
+              child: Icon(Icons.upload),
+            ),
+          ],
+        ),
       ),
-    ),
     );
   }
 }
