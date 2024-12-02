@@ -922,7 +922,8 @@ class HttpService {
       
       if (res.statusCode == 200) {
         final json  = jsonDecode(res.body);
-        return UserModel.fromJson(json[0]);
+        // print("res.body.json: $json");
+        return UserModel.fromJson(json);
       } 
     } catch (e) {
       print("userInfo error: ${e.toString()}");
