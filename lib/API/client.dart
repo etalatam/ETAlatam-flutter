@@ -206,7 +206,7 @@ class HttpService {
   /// Load Parent
   Future<ParentModel> getParent() async {
     try {
-      http.Response res = await postQuery('/rpc/parent_info', null,
+      http.Response res = await postQuery('/rpc/guardian_info', null,
           contentType: 'application/json');
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
@@ -563,8 +563,6 @@ class HttpService {
   }
 
   Future<List<TripModel>> getStudentTrips(int? studentId, int lastId) async {
-    print(studentId);
-    print(lastId);
     var res = await getQuery("mobile_api/student_trips?student_id=$studentId&lastId=$lastId");
     List<dynamic> body =  jsonDecode(res.body);
       return body .map( (dynamic item) => TripModel.fromJson(item) ) .toList();

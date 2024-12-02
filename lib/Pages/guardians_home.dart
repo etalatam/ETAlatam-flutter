@@ -20,7 +20,7 @@ import 'package:eta_school_app/components/Header.dart';
 // import 'package:eta_school_app/components/AddStudentBlock.dart';
 // import 'package:eta_school_app/components/HomeRouteBlock.dart';
 // import 'package:eta_school_app/components/ActiveTrip.dart';
-import 'package:eta_school_app/Models/EventModel.dart';
+// import 'package:eta_school_app/Models/EventModel.dart';
 
 
 
@@ -47,7 +47,7 @@ class _GuardiansHomeState extends State<GuardiansHome> with ETAWidgets, MediansT
 
   bool showLoader = true;
 
-  List<EventModel> eventsList = [];
+  // List<EventModel> eventsList = [];
   List<RouteModel> routesList = [];
   List<TripModel> oldTripsList = [];
   
@@ -91,7 +91,7 @@ class _GuardiansHomeState extends State<GuardiansHome> with ETAWidgets, MediansT
                     // ))]),
                     
                     /// Parent profile
-                    parentProfileInfoBlock(parentModel!, context),
+                    // parentProfileInfoBlock(parentModel!, context),
                     
                     /// Last Trips
                     hasActiveTrip ? ActiveTrip(openTrip, activeTrip) : Center() ,
@@ -167,7 +167,7 @@ class _GuardiansHomeState extends State<GuardiansHome> with ETAWidgets, MediansT
                     
                     /// Last Trips
                     oldTripsList.length < 1 ? Center () : Container(
-                      height: 330,
+                      height: 230,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         itemCount: oldTripsList.length, // Replace with the total number of items
@@ -182,27 +182,27 @@ class _GuardiansHomeState extends State<GuardiansHome> with ETAWidgets, MediansT
                         }
                       ) 
                     ),
-                    SizedBox(height: 30,),
+                    // SizedBox(height: 30,),
                     
                     
-                    Container(
-                      padding: EdgeInsets.all(20),
-                      child: Text(
-                      "${lang.translate('Events and News')}",
-                      style: activeTheme.h3,
-                      textAlign: TextAlign.start,
-                    )),
+                    // Container(
+                    //   padding: EdgeInsets.all(20),
+                    //   child: Text(
+                    //   "${lang.translate('Events and News')}",
+                    //   style: activeTheme.h3,
+                    //   textAlign: TextAlign.start,
+                    // )),
                     
                     /// Events carousel
-                    Container(
-                      width: MediaQuery.of(context).size.width,
-                      alignment: Alignment.center,
-                      child:  ETAWidgets.eventCarousel(eventsList, context),
-                    ),
+                    // Container(
+                    //   width: MediaQuery.of(context).size.width,
+                    //   alignment: Alignment.center,
+                    //   child:  ETAWidgets.eventCarousel(eventsList, context),
+                    // ),
 
                     
                     /// Help / Support Block
-                    ETAWidgets.homeHelpBlock(),
+                    // ETAWidgets.homeHelpBlock(),
                     
                   ]),
                 ),
