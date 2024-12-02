@@ -235,10 +235,10 @@ class _StudentsHomeState extends State<StudentsHome>
   loadResources() async {
     final studentId = await storage.getItem('user_relation_id');
 
-    if (studentId == null) {
-      Get.offAll(Login());
-      return;
-    }
+    // if (studentId == null) {
+    //   Get.offAll(Login());
+    //   return;
+    // }
 
     await locationServiceProvider.init();
 
