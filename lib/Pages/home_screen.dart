@@ -1,5 +1,4 @@
 
-import 'package:eta_school_app/Pages/blank_page.dart';
 import 'package:eta_school_app/Pages/driver_home.dart';
 import 'package:eta_school_app/Pages/guardians_home.dart';
 import 'package:eta_school_app/Pages/notifications_page.dart';
@@ -25,8 +24,7 @@ class HomeScreen extends StatelessWidget {
     ],
     "eta.students": [
       SettingsPage(),
-      // StudentPage(),
-      BlankPage(),
+      StudentPage(),
       NotificationsPage(),
       SendMessagePage()
     ],

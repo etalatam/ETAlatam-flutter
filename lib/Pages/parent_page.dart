@@ -7,9 +7,9 @@ import 'package:eta_school_app/components/custom_row.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 
 class ParentPage extends StatefulWidget {
-  const ParentPage({super.key, this.parent});
+  const ParentPage({super.key});
 
-  final ParentModel? parent;
+  // final ParentModel? parent;
 
   @override
   State<ParentPage> createState() => _ParentPageState();
@@ -18,7 +18,7 @@ class ParentPage extends StatefulWidget {
 class _ParentPageState extends State<ParentPage> {
   bool showLoader = true;
 
-  ParentModel parent = ParentModel(parent_id: 0, students: []);
+  ParentModel parent = ParentModel(parentId: 0, students: []);
 
   final String profilePicture = "${apiURL}uploads/images/parent.gif";
 
@@ -111,7 +111,7 @@ class _ParentPageState extends State<ParentPage> {
                                   children: [
                                     Container(
                                       padding: const EdgeInsets.only(top: 15),
-                                      child: Text("${parent.first_name}",
+                                      child: Text("${parent.firstName}",
                                           style: TextStyle(
                                               fontSize: activeTheme.h5.fontSize,
                                               fontWeight:
@@ -148,7 +148,7 @@ class _ParentPageState extends State<ParentPage> {
                                         children: [
                                           GestureDetector(
                                             onTap: () {
-                                              launchCall(parent.contact_number);
+                                              launchCall(parent.contactNumber);
                                             },
                                             child: Padding(
                                               padding: const EdgeInsets.only(
@@ -161,7 +161,7 @@ class _ParentPageState extends State<ParentPage> {
                                           ),
                                           GestureDetector(
                                             onTap: () {
-                                              launchWP(parent.contact_number);
+                                              launchWP(parent.contactNumber);
                                             },
                                             child: Padding(
                                               padding: const EdgeInsets.only(
@@ -193,13 +193,13 @@ class _ParentPageState extends State<ParentPage> {
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 CustomRow(lang.translate('First Name'),
-                                    parent.first_name),
+                                    parent.firstName),
                                 Container(
                                   height: 1,
                                   color: activeTheme.main_color.withOpacity(.3),
                                 ),
                                 CustomRow(lang.translate('last Name'),
-                                    parent.last_name),
+                                    parent.lastName),
                                 Container(
                                   height: 1,
                                   color: activeTheme.main_color.withOpacity(.3),
@@ -211,7 +211,7 @@ class _ParentPageState extends State<ParentPage> {
                                   color: activeTheme.main_color.withOpacity(.3),
                                 ),
                                 CustomRow(lang.translate('Contact number'),
-                                    parent.contact_number),
+                                    parent.contactNumber),
                                 Container(
                                   height: 1,
                                   color: activeTheme.main_color.withOpacity(.3),
@@ -247,8 +247,8 @@ class _ParentPageState extends State<ParentPage> {
   /// Load devices through API
   ///
   loadParent() async {
-    final parentId = widget.parent != null ? widget.parent!.parent_id : 0;
-    final parentQuery = await httpService.getParent(parentId);
+    // final parentId = widget.parent != null ? widget.parent!.parentId : 0;
+    final parentQuery = await httpService.getParent();
     setState(() {
       parent = parentQuery;
       showLoader = false;

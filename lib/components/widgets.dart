@@ -1202,7 +1202,7 @@ mixin ETAWidgets {
                 children: [
                   TextButton(
               onPressed: () {
-                Get.to(ParentPage(parent: parentModel));
+                Get.to(ParentPage());
               },
               child: Container(
                     width: double.infinity,
@@ -1277,7 +1277,7 @@ mixin ETAWidgets {
                                           children: [
                                             Text(
                                               parentModel
-                                                  .first_name!,
+                                                  .firstName!,
                                               style: activeTheme.h5,
                                             ),
                                             SizedBox(height: 10),
@@ -1286,7 +1286,7 @@ mixin ETAWidgets {
                                                   double.infinity,
                                               child: Text(
                                                 parentModel
-                                                    .contact_number!,
+                                                    .contactNumber!,
                                                 style: activeTheme.normalText,
                                               ),
                                             ),

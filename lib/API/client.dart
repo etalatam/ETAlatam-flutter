@@ -204,17 +204,18 @@ class HttpService {
   }
 
   /// Load Parent
-  Future<ParentModel> getParent(id) async {
+  Future<ParentModel> getParent() async {
     try {
       http.Response res = await postQuery('/rpc/parent_info', null,
           contentType: 'application/json');
       if (res.statusCode == 200) {
-        return ParentModel.fromJson(res.body);
+        final json = jsonDecode(res.body);
+        return ParentModel.fromJson(json);
       } 
     } catch (e) {
       print("sendTracking error: ${e.toString()}");
     }
-    return ParentModel(parent_id: 0, students: []);
+    return ParentModel(parentId: 0, students: []);
   }
 
   /// Load Student pickup

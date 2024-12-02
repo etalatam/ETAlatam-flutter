@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:eta_school_app/Models/route_model.dart';
+import 'package:eta_school_app/Pages/student_page.dart';
 // import 'package:eta_school_app/Pages/AddStudentPage.dart';
-import 'package:eta_school_app/Pages/StudentPage.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/components/active_trip.dart';
 import 'package:eta_school_app/components/home_route_block.dart';
@@ -41,7 +41,7 @@ class _GuardiansHomeState extends State<GuardiansHome> with ETAWidgets, MediansT
   bool hasActiveTrip = false;
 
   ParentModel? parentModel =
-      ParentModel(parent_id: 0, first_name: '', contact_number: "", students: []);
+      ParentModel(parentId: 0, firstName: '', contactNumber: "", students: []);
 
   Location location = Location();
 
@@ -240,10 +240,6 @@ class _GuardiansHomeState extends State<GuardiansHome> with ETAWidgets, MediansT
     });
   }
 
-  
-  ///
-  /// Load devices through API
-  ///
   loadParent() async {
 
     Timer(Duration(seconds: 2), ()  async {
@@ -254,13 +250,13 @@ class _GuardiansHomeState extends State<GuardiansHome> with ETAWidgets, MediansT
       });
     });
 
-    final parentId = await storage.getItem('parent_id');
-    final eventsQuery = await httpService.getEvents();
-    setState(()  {
-        eventsList = eventsQuery;
-    });
+    // final parentId = await storage.getItem('parent_id');
+    // final eventsQuery = await httpService.getEvents();
+    // setState(()  {
+    //     eventsList = eventsQuery;
+    // });
 
-    final parentQuery = await httpService.getParent(parentId);
+    final parentQuery = await httpService.getParent();
     setState(()  {
         parentModel = parentQuery; 
     });
@@ -282,7 +278,6 @@ class _GuardiansHomeState extends State<GuardiansHome> with ETAWidgets, MediansT
     });
   }
 
-
   // addStudent()
   // {
   //   Get.to(AddStudentPage(parent: parentModel));
@@ -293,28 +288,11 @@ class _GuardiansHomeState extends State<GuardiansHome> with ETAWidgets, MediansT
     Get.to(TripPage(trip: trip,));
   }
 
-
-  /// Check if the parent has pending student
-  /// and needs to complete the info
-  bool hasPending()
-  {
-    final pending = parentModel!.pending_student;
-
-    return (
-      (pending != null  && pending.first_name != null )
-      && 
-      (
-        pending.pickup_location!.pickup_id == null 
-        || pending.destination!.destination_id == null
-        )
-      );
-  }
   
   @override
   void initState() {
     super.initState();
     loadParent();
-
   }
 }
 
