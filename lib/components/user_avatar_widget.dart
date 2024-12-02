@@ -16,11 +16,7 @@ class _UserAvatarState extends State<UserAvatar> {
   void initState() {
     super.initState();
     
-    storage.getItem('id_usu').then((value) => {
-      setState(() {
-        userId = value;
-      })
-    });
+    userId = "${storage.getItem('id_usu')}";
   }
 
   @override

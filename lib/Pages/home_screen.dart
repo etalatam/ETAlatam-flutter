@@ -19,8 +19,7 @@ class HomeScreen extends StatelessWidget {
   final Map<String, List<Widget>> widgetMap = {
     "eta.drivers": [
       SettingsPage(),
-      // DriverHome(),
-      BlankPage(),
+      DriverHome(),
       NotificationsPage(),
       SendMessagePage()
     ],
