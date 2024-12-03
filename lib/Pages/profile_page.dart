@@ -22,8 +22,8 @@ class _ProfilePageState extends State<ProfilePage> {
  
   UserModel user = UserModel(id: 0, firstName: '');
 
-  final String profilePicture = "assets/profile.avif";
-
+  String? profilePicture;
+  
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -35,7 +35,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   height: MediaQuery.of(context).size.height / 2,
                   decoration: ShapeDecoration(
                     image: DecorationImage(
-                      image: AssetImage(profilePicture),
+                      image: AssetImage(profilePicture!),
                       fit: BoxFit.fitHeight,
                     ),
                     shape: const RoundedRectangleBorder(),
@@ -276,11 +276,18 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   loadUser() async {
-    final userQuery =
-        await httpService.userInfo();
-    setState(() {
+    final userQuery = await httpService.userInfo();
+    setState(()  {
       user = userQuery!;
       showLoader = false;
+    });
+  }
+
+  Future updateProfileBGImage() async {
+    final relationName = await storage.getItem('relation_name');
+
+    setState(() {
+      profilePicture = "assets/$relationName.jpg";
     });
   }
 
@@ -288,5 +295,6 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     loadUser();
+    updateProfileBGImage();
   }
 }
