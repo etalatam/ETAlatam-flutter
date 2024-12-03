@@ -17,8 +17,8 @@ class _UserAvatarState extends State<UserAvatar> {
   void initState() {
     super.initState();
     
-    relationId = "${storage.getItem('relation_name')}";
-    relationName = "${storage.getItem('relation_id')}";
+    relationId = "${storage.getItem('relation_id')}";
+    relationName = "${storage.getItem('relation_name')}";
   }
 
   @override
