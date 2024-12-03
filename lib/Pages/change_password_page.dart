@@ -33,8 +33,6 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    // int? driverid = storage.getItem('driver_id');
-
     return showLoader
         ? Loader()
         : Material(
@@ -311,9 +309,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         showLoader = false;
       });
 
-      dynamic driverId = await storage.getItem('driver_id');
+      dynamic userId = await storage.getItem('user_id');
       setState(() {
-        driverId = driverId ?? storage.getItem('driver_id');
+        userId = userId ?? storage.getItem('user_id');
         goHome();
       });
     });
@@ -325,8 +323,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   ///
   goHome() async {
     final token_ = await storage.getItem('token');
-    final driverId_ = await storage.getItem('driver_id');
-    if (token_ != null && driverId_ != null) {
+    final userId_ = await storage.getItem('user_id');
+    if (token_ != null && userId_ != null) {
       Timer(const Duration(seconds: 1), () {
         openNewPage(context, DriverHome());
       });

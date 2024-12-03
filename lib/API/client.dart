@@ -35,8 +35,8 @@ class HttpService {
 
   Map? headers;
 
-  String getAvatarUrl(userId) {
-    return "$apiURL/rpc/get_reource_image?_relation_name=eta.usuarios&_relation_id=$userId";
+  String getAvatarUrl(relationId, relationName) {
+    return "$apiURL/rpc/get_reource_image?_relation_name=$relationName&_relation_id=$relationId";
   }
 
   String getImageUrl() {
@@ -209,7 +209,7 @@ class HttpService {
   }
 
   // /// Load Driver
-  Future<DriverModel> getDriver(id) async {
+  Future<DriverModel> getDriver() async {
     http.Response res = await getQuery("/rpc/driver_info");
 
     print("res.statusCode: ${res.statusCode}");
@@ -573,14 +573,11 @@ class HttpService {
 
       if (res.statusCode == 200) {
         dynamic body = jsonDecode(res.body);
-
-        debugPrint(body.toString());
-        await storage.setItem(
-            'token', body['token'].isEmpty ? '' : body['token']);
-        await storage.setItem('driver_id', body['id_usu'] ?? body['id_usu']);
+        await storage.setItem('token', body['token'].isEmpty ? '' : body['token']);
         await storage.setItem('id_usu', body['id_usu'] ?? body['id_usu']);
-        await storage.setItem('user_relation_name', body['relation_name'] ?? body['relation_name']);
-        await storage.setItem('user_relation_id', body['user_relation_id'] ?? body['user_relation_id']);
+        await storage.setItem('relation_name', body['relation_name'] ?? body['relation_name']);
+        await storage.setItem('relation_id', body['relation_id'] ?? body['relation_id']);
+
         try {
           final LoginInformation login =
               LoginInformationMapper.information(LoginInfo.fromJson(body));

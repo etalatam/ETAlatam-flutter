@@ -107,7 +107,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                             radius: 50,
                                             backgroundColor: Color(0xFF123456),
                                             foregroundImage: NetworkImage(
-                                                httpService.getAvatarUrl(user.id),
+                                                httpService.getAvatarUrl(user.relationId, user.relationName),
                                                 headers: {'Accept': 'image/png'}
                                             )
                                 ))),

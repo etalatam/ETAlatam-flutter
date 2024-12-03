@@ -7,6 +7,8 @@ class UserModel {
   String? name;
   String? email;
   String? contactNumber;
+  String? relationName;
+  String? relationId;
 
   UserModel({
     required this.id,
@@ -15,6 +17,8 @@ class UserModel {
     this.name,
     this.email,
     this.contactNumber,
+    this.relationName,
+    this.relationId
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +30,8 @@ class UserModel {
       name: "${json['user_firstname']} ${json['user_lastname']}",
       email: "${json['user_email']}",
       contactNumber: "${json['user_phone']}",
+      relationName: "${json['relation_name']}",
+      relationId: "${json['relation_id']}"
     );
   }
 

@@ -349,15 +349,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
   /// Load devices through API
   ///
   loadNotifications() async {
-    setState(() {
-      showLoader = true;
-    });
-    final notificationslist = await httpService.getNotifications();
+    if(mounted){
+      setState(() {
+        showLoader = true;
+      });
+      final notificationslist = await httpService.getNotifications();
 
-    setState(() {
-      notificationsList = notificationslist!;
-      showLoader = false;
-    });
+      setState(() {
+        notificationsList = notificationslist!;
+        showLoader = false;
+      });
+    }
   }
 
   bool showLoader = true;
@@ -401,11 +403,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   void initState() {
     super.initState();
-    setState(() {
-      showLoader = true;
-    });
-    configureFirebaseMessaging();
-    loadNotifications();
+    showLoader = true;
+    if (mounted) {
+      configureFirebaseMessaging();
+      loadNotifications();
+    }
   }
   
   configureFirebaseMessaging () async {

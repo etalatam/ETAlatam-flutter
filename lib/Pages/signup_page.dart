@@ -32,7 +32,6 @@ class _SignupPageState extends State<SignupPage> {
 
   @override
   Widget build(BuildContext context) {
-    // int? driverid = storage.getItem('driver_id');
 
     return showLoader
         ? Loader()
@@ -384,11 +383,11 @@ class _SignupPageState extends State<SignupPage> {
   /// Check if already logged in
   ///
   checkSession() async {
-    dynamic driverId = await storage.getItem('driver_id');
+    dynamic userId = await storage.getItem('user_id');
 
     Timer(const Duration(seconds: 1), () async {
       setState(() {
-        driverId = driverId ?? storage.getItem('driver_id');
+        userId = userId ?? storage.getItem('user_id');
         goHome();
       });
     });
@@ -400,8 +399,8 @@ class _SignupPageState extends State<SignupPage> {
   ///
   goHome() {
     if (storage.getItem('token') != null &&
-        storage.getItem('driver_id') != null) {
-      // openNewPage(context, HomePage(driverId: storage.getItem('driver_id').toString()));
+        storage.getItem('user_id') != null) {
+      // openNewPage(context, HomePage(userId: storage.getItem('user_id').toString()));
     } else {
       showLoader = false;
     }

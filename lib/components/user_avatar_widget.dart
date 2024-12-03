@@ -10,18 +10,20 @@ class UserAvatar extends StatefulWidget {
 
 class _UserAvatarState extends State<UserAvatar> {
 
-  String? userId;
+  String? relationId;
+  String? relationName;
 
   @override
   void initState() {
     super.initState();
     
-    userId = "${storage.getItem('id_usu')}";
+    relationId = "${storage.getItem('relation_name')}";
+    relationName = "${storage.getItem('relation_id')}";
   }
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = httpService.getAvatarUrl(userId);
+    final imageUrl = httpService.getAvatarUrl(relationId, relationName);
     print (imageUrl);
 
     return GestureDetector(

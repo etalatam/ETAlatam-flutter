@@ -236,24 +236,17 @@ class _SettingsPageState extends State<SettingsPage>
                 ])));
   }
 
-  // DriverModel? driver;
-
-  // loadDriver() async {
-  //   final driverModel =
-  //       await httpService.getDriver(storage.getItem('driver_id'));
-
-  //   setState(() {
-  //     driver = driverModel;      
-  //     showLoader = false;
-  //   });
-  // }
-
   @override
   void initState() {
     super.initState();
     getLang().then((value) => selectedLang = value);
     getDarkMode().then((value) => darkMode = value);
-    // loadDriver();
+
+    Future.delayed(const Duration(seconds: 1)).then((value) => {
+      setState(() {
+        showLoader = false;    
+      })
+    });
   }
 
   Future <bool> getDarkMode() async {

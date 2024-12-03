@@ -243,7 +243,7 @@ class _DriverHomeState extends State<DriverHome>
     setState(() {
       showLoader = true;
     });
-    final driverId = await storage.getItem('driver_id');
+
     try {
       trip = await httpService.startTrip(routeId);
       if (trip.trip_id != 0) {
@@ -298,7 +298,7 @@ class _DriverHomeState extends State<DriverHome>
   /// Load resources through API
   ///
   loadResources() async {
-    final check = await storage.getItem('driver_id');
+    final check = await storage.getItem('user_id');
 
     if (check == null) {
       Get.offAll(Login());
@@ -313,13 +313,8 @@ class _DriverHomeState extends State<DriverHome>
       showLoader = false;
     });
 
-    // final eventsQuery = await httpService.getEvents();
-    // setState(()  {
-    //     eventsList = eventsQuery;
-    // });
 
-    final driverId = await storage.getItem('driver_id');
-    final driverQuery = await httpService.getDriver(driverId);
+    final driverQuery = await httpService.getDriver();
     setState(() {
       driverModel = driverQuery;
     });

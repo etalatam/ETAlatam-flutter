@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Models/student_model.dart';
+import 'package:eta_school_app/Pages/login_page.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/components/active_trip.dart';
@@ -231,12 +232,13 @@ class _StudentsHomeState extends State<StudentsHome>
   /// Load resources through API
   ///
   loadResources() async {
-    final studentId = await storage.getItem('user_relation_id');
+    final studentId = await storage.getItem('relation_id');
+    final check = await storage.getItem('id_usu');
 
-    // if (studentId == null) {
-    //   Get.offAll(Login());
-    //   return;
-    // }
+    if (check == null) {
+      Get.offAll(Login());
+      return;
+    }
 
     await locationServiceProvider.init();
 

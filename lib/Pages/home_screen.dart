@@ -46,7 +46,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Future<String> fetchStoredValue() async {
-    return await storage.getItem('user_relation_name');
+    return await storage.getItem('relation_name');
   }
 
   @override
