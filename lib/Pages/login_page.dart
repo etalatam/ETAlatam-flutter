@@ -249,7 +249,7 @@ class _LoginState extends State<Login> {
     });
 
     final token_ = await storage.getItem('token');
-    final userId = storage.getItem('id_usu');
+    final userId = await storage.getItem('id_usu');
 
     print("LoginPage.userId: $userId");
 

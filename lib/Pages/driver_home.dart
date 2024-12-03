@@ -298,7 +298,7 @@ class _DriverHomeState extends State<DriverHome>
   /// Load resources through API
   ///
   loadResources() async {
-    final check = await storage.getItem('user_id');
+    final check = await storage.getItem('id_usu');
 
     if (check == null) {
       Get.offAll(Login());

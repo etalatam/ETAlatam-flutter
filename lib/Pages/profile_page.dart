@@ -239,7 +239,11 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                                 GestureDetector(
                                     onTap: () async {
+                                      setState(() {
+                                        showLoader = true;
+                                      });
                                       await httpService.logout();
+                                      await Future.delayed(const Duration(seconds: 1));
                                       Get.offAll(Login());
                                     },
                                     child: Text(lang.translate('Logout'),
