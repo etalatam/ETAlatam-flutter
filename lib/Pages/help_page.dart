@@ -34,7 +34,7 @@ class _SentMessageState extends State<SendMessagePage> {
   bool showLoader = true;
 
   List<SupportHelpCategory>? list;
-  int categoryId = 1;
+  int categoryId = 0;
 
   List<String> priorities = <String>['Normal', 'High', 'Low'];
   String priority = 'Normal';
@@ -54,6 +54,10 @@ class _SentMessageState extends State<SendMessagePage> {
       httpService.supportHelpCategory().then((result) {
         setState(() {
           list = result;
+          if(result.length > 0) {
+            categoryId = result[0].id!;
+          }
+          
           showLoader = false;
         });
       });
@@ -159,6 +163,7 @@ class _SentMessageState extends State<SendMessagePage> {
                   style: activeTheme.normalText,
                 ),
                 const SizedBox(height: 8),
+                if(categoryId > 0)
                 Container(
                     padding:
                         const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
