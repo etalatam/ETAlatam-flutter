@@ -28,7 +28,6 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-    // int? driverid = storage.getItem('driver_id');
 
     return showLoader
         ? Loader()
@@ -184,8 +183,7 @@ class _LoginState extends State<Login> {
                                           showLoader = true;
                                         });
                                         
-                                        loginResponse = await httpService.login(
-                                            email, password);
+                                        loginResponse = await httpService.login(email, password);
                                         var msg =loginResponse?.split('/');
                                         
                                         setState(() {
@@ -197,7 +195,7 @@ class _LoginState extends State<Login> {
                                               context, 
                                               "${lang.translate('Error')} (${msg![1]})",
                                               lang.translate(msg[0]),
-                                              callback);
+                                              null);
                                           }
                                         });
                                       },
@@ -245,53 +243,36 @@ class _LoginState extends State<Login> {
             ]));
   }
 
-  callback() {
-    Get.back();
-  }
-
-  ///
-  /// Check if already logged in
-  ///
-  checkSession() async {
+  Future<bool> checkSession() async {
     setState(() {
       showLoader = false;
     });
 
-    // Timer(const Duration(seconds: 1), () async {
-    //   dynamic driverId = await storage.getItem('driver_id');
-    //   setState(() {
-    //     driverId = storage.getItem('driver_id');
-    //     if (driverId != null) {
-    //       goHome();
-    //     }
-    //   });
-    // });
+    final token_ = await storage.getItem('token');
+    final userId = await storage.getItem('id_usu');
+
+    print("LoginPage.userId: $userId");
+
+    if (token_ != null && userId != null) {
+      return true;
+    }
+
+    return false;
   }
 
   ///
   /// Redirect to home page
-  /// if already logged in
-  ///
   goHome() async {
-    final token_ = await storage.getItem('token');
-    final driverId_ = storage.getItem('driver_id');
+      final hasSession = await checkSession();
 
-    if (token_ != null && driverId_ != null) {
-      Get.offAll(HomeScreen());
-    } else {
-      // Timer(const Duration(seconds: 1), () {
-      //   if (storage.getItem('token') == null) {
-      //     showLoader = false;
-      //   } else {
-      //     Get.offAll(HomePage());
-      //   }
-      // });
-    }
+      if(hasSession){
+        Get.offAll(HomeScreen());
+      }
   }
 
   @override
   void initState() {
     super.initState();
-    checkSession();
+    goHome();
   }
 }

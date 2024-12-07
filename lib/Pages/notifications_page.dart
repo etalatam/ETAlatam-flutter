@@ -1,7 +1,7 @@
 import 'package:eta_school_app/Pages/driver_page.dart';
 import 'package:eta_school_app/Pages/help_messages_page.dart';
 import 'package:eta_school_app/Pages/route_map_page.dart';
-import 'package:eta_school_app/Models/ParentModel.dart';
+import 'package:eta_school_app/Models/parent_model.dart';
 import 'package:eta_school_app/Models/NotificationModel.dart';
 import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/loader.dart';
@@ -349,15 +349,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
   /// Load devices through API
   ///
   loadNotifications() async {
-    setState(() {
-      showLoader = true;
-    });
-    final notificationslist = await httpService.getNotifications();
+    if(mounted){
+      setState(() {
+        showLoader = true;
+      });
+      final notificationslist = await httpService.getNotifications();
 
-    setState(() {
-      notificationsList = notificationslist!;
-      showLoader = false;
-    });
+      setState(() {
+        notificationsList = notificationslist!;
+        showLoader = false;
+      });
+    }
   }
 
   bool showLoader = true;
@@ -401,11 +403,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   void initState() {
     super.initState();
-    setState(() {
-      showLoader = true;
-    });
-    configureFirebaseMessaging();
-    loadNotifications();
+    showLoader = true;
+    if (mounted) {
+      configureFirebaseMessaging();
+      loadNotifications();
+    }
   }
   
   configureFirebaseMessaging () async {

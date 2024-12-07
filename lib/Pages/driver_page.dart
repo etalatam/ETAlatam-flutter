@@ -1,4 +1,4 @@
-import 'package:eta_school_app/Models/DriverModel.dart';
+import 'package:eta_school_app/Models/driver_model.dart';
 import 'package:eta_school_app/Models/VehicleModel.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:flutter/material.dart';

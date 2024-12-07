@@ -1,9 +1,6 @@
 import 'package:localstorage/localstorage.dart';
-import 'package:eta_school_app/Models/DriverModel.dart';
 import 'package:flutter/material.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:eta_school_app/API/client.dart';
-import 'package:eta_school_app/methods.dart';
 import '../components/header.dart';
 import '../components/loader.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
@@ -18,7 +15,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage>
-    with MediansWidgets, MediansTheme {
+    with ETAWidgets, MediansTheme {
   final HttpService httpService = HttpService();
 
   final LocalStorage storage = LocalStorage('tokens.json');
@@ -239,24 +236,17 @@ class _SettingsPageState extends State<SettingsPage>
                 ])));
   }
 
-  DriverModel? driver;
-
-  loadDriver() async {
-    final driverModel =
-        await httpService.getDriver(storage.getItem('driver_id'));
-
-    setState(() {
-      driver = driverModel;      
-      showLoader = false;
-    });
-  }
-
   @override
   void initState() {
     super.initState();
     getLang().then((value) => selectedLang = value);
     getDarkMode().then((value) => darkMode = value);
-    loadDriver();
+
+    Future.delayed(const Duration(seconds: 1)).then((value) => {
+      setState(() {
+        showLoader = false;    
+      })
+    });
   }
 
   Future <bool> getDarkMode() async {

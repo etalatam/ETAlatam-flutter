@@ -3,7 +3,7 @@ import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/loader.dart';
 import 'package:flutter/material.dart';
-import 'package:eta_school_app/Models/TripModel.dart';
+import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/API/client.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/components/slideable.dart';

@@ -1,7 +1,7 @@
 import 'package:eta_school_app/Pages/pickups_page.dart';
 import 'package:eta_school_app/Pages/route_map_page.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
-import 'package:eta_school_app/Models/RouteModel.dart';
+import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';

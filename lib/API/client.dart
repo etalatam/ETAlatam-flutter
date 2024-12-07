@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:eta_school_app/Models/driver_model.dart';
 import 'package:eta_school_app/Models/PickupLocationModel.dart';
+import 'package:eta_school_app/Models/user_model.dart';
 import 'package:eta_school_app/Models/login_information_model.dart';
 import 'package:eta_school_app/Pages/providers/driver_provider.dart';
 import 'package:eta_school_app/domain/entities/user/driver.dart';
@@ -14,13 +16,12 @@ import 'package:eta_school_app/methods.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
-import 'package:eta_school_app/Models/ParentModel.dart';
-import 'package:eta_school_app/Models/DriverModel.dart';
+import 'package:eta_school_app/Models/parent_model.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
 import 'package:eta_school_app/Models/HelpMessageModel.dart';
-import 'package:eta_school_app/Models/StudentModel.dart';
-import 'package:eta_school_app/Models/RouteModel.dart';
-import 'package:eta_school_app/Models/TripModel.dart';
+import 'package:eta_school_app/Models/student_model.dart';
+import 'package:eta_school_app/Models/route_model.dart';
+import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/Models/NotificationModel.dart';
 import 'package:location/location.dart';
 import 'package:flutter/foundation.dart';
@@ -34,8 +35,8 @@ class HttpService {
 
   Map? headers;
 
-  String getAvatarUrl(userId) {
-    return "$apiURL/rpc/get_reource_image?_relation_name=eta.usuarios&_relation_id=$userId";
+  String getAvatarUrl(relationId, relationName) {
+    return "$apiURL/rpc/get_reource_image?_relation_name=$relationName&_relation_id=$relationId";
   }
 
   String getImageUrl() {
@@ -73,7 +74,7 @@ class HttpService {
   }
 
   /// Load Trips
-  Future<List<TripModel>> getTrips(int lastId) async {
+  Future<List<TripModel>> getDriverTrips(int lastId) async {
     http.Response res = await getQuery(
         "/rpc/driver_trips?select=*&running=eq.false&limit=10&order=start_ts.desc");
 
@@ -84,7 +85,28 @@ class HttpService {
       List<dynamic> body = jsonDecode(res.body);
       final List<TripModel> trips = await Future.wait(
         body
-            .map((dynamic item) async => await TripModel.fromJson(item))
+            .map((dynamic item) async => TripModel.fromJson(item))
+            .toList(),
+      );
+      return trips;
+    }
+    debugPrint(res.body.toString());
+    return [];
+  }
+
+  /// Load Trips
+  Future<List<TripModel>> getStudentTrips(studentId) async {
+    http.Response res = await getQuery(
+        "/rpc/student_trips?select=*&running=eq.false&limit=10&order=start_ts.desc&student_id=$studentId");
+
+    print("res.statusCode: ${res.statusCode}");
+    print("res.body: ${res.body}");
+
+    if (res.statusCode == 200) {
+      List<dynamic> body = jsonDecode(res.body);
+      final List<TripModel> trips = await Future.wait(
+        body
+            .map((dynamic item) async => TripModel.fromJson(item))
             .toList(),
       );
       return trips;
@@ -105,7 +127,7 @@ class HttpService {
       List<dynamic> body = jsonDecode(res.body);
       final List<NotificationModel> notificactions = await Future.wait(
         body
-            .map((dynamic item) async => await NotificationModel.fromJson(item))
+            .map((dynamic item) async => NotificationModel.fromJson(item))
             .toList(),
       );
       return notificactions;
@@ -127,7 +149,7 @@ class HttpService {
           await Future.wait(
         body
             .map((dynamic item) async =>
-                await SupportHelpCategory.fromJson(item))
+                SupportHelpCategory.fromJson(item))
             .toList(),
       );
       return supportHelpCategoryList;
@@ -147,7 +169,7 @@ class HttpService {
       List<dynamic> body = jsonDecode(res.body);
       final List<HelpMessageModel> supportMessage = await Future.wait(
         body
-            .map((dynamic item) async => await HelpMessageModel.fromJson(item))
+            .map((dynamic item) async => HelpMessageModel.fromJson(item))
             .toList(),
       );
       return supportMessage;
@@ -166,8 +188,9 @@ class HttpService {
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
-      if (body == null)
+      if (body == null) {
         return RouteModel(route_id: 0, route_name: '', pickup_locations: []);
+      }
       final RouteModel trips = RouteModel.fromJson(body[0]);
       return trips;
     }
@@ -185,8 +208,8 @@ class HttpService {
     return RouteModel(route_id: 0, route_name: '', pickup_locations: []);
   }
 
-  /// Load Driver
-  Future<DriverModel> getDriver(id) async {
+  // /// Load Driver
+  Future<DriverModel> getDriver() async {
     http.Response res = await getQuery("/rpc/driver_info");
 
     print("res.statusCode: ${res.statusCode}");
@@ -202,13 +225,33 @@ class HttpService {
     return DriverModel(driver_id: 0, first_name: '');
   }
 
+  Future<StudentModel> getStudent() async {
+    try {
+      http.Response res = await postQuery('/rpc/student_info', null,
+          contentType: 'application/json');
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        return StudentModel.fromJson(json);
+      } 
+    } catch (e) {
+      print("sendTracking error: ${e.toString()}");
+    }
+    return StudentModel(student_id: 0, parent_id: 0);
+  }
+
   /// Load Parent
-  Future<ParentModel> getParent(id) async {
-    http.Response res = await getQuery("/parent/$id");
-    var body = jsonDecode(res.body);
-    return body == null
-        ? ParentModel(parent_id: 0, students: [])
-        : ParentModel.fromJson(body);
+  Future<ParentModel> getParent() async {
+    try {
+      http.Response res = await postQuery('/rpc/guardian_info', null,
+          contentType: 'application/json');
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        return ParentModel.fromJson(json);
+      } 
+    } catch (e) {
+      print("sendTracking error: ${e.toString()}");
+    }
+    return ParentModel(parentId: 0, students: []);
   }
 
   /// Load Student pickup
@@ -530,12 +573,11 @@ class HttpService {
 
       if (res.statusCode == 200) {
         dynamic body = jsonDecode(res.body);
-
-        debugPrint(body.toString());
-        await storage.setItem(
-            'token', body['token'].isEmpty ? '' : body['token']);
-        await storage.setItem('driver_id', body['id_usu'] ?? body['id_usu']);
+        await storage.setItem('token', body['token'].isEmpty ? '' : body['token']);
         await storage.setItem('id_usu', body['id_usu'] ?? body['id_usu']);
+        await storage.setItem('relation_name', body['relation_name'] ?? body['relation_name']);
+        await storage.setItem('relation_id', body['relation_id'] ?? body['relation_id']);
+
         try {
           final LoginInformation login =
               LoginInformationMapper.information(LoginInfo.fromJson(body));
@@ -553,6 +595,21 @@ class HttpService {
 
     return requestAccessRes;
   }
+
+  // Future<List<TripModel>> getStudentTrips(int? studentId, int lastId) async {
+  //   var res = await getQuery("mobile_api/student_trips?student_id=$studentId&lastId=$lastId");
+  //   List<dynamic> body =  jsonDecode(res.body);
+  //     return body .map( (dynamic item) => TripModel.fromJson(item) ) .toList();
+  // }
+
+  /// Load student
+  Future<StudentModel> loadStudent(int? studentId) async {
+    http.Response res = await postQuery('mobile_api', {"model":'student_locations', "params":jsonEncode({ "student_id" : studentId})});
+    dynamic body =  jsonDecode(res.body);
+    return body == null ? StudentModel(student_id: 0,parent_id: 0) : StudentModel.fromJson(body);
+  }
+
+
 
   /// Send message
   Future<HelpMessageModel> sendMessage(
@@ -807,7 +864,7 @@ class HttpService {
   }
 
   Future<dynamic> sendTracking({required position, int driver = 18}) async {
-    print('sendTracking.position ${position}');
+    print('sendTracking.position $position');
     final userId = await storage.getItem('id_usu');
     final data = {
       'user_id': userId,
@@ -860,7 +917,7 @@ class HttpService {
       List<dynamic> body = jsonDecode(res.body);
       final List<StudentModel> students = await Future.wait(
         body
-            .map((dynamic item) async => await StudentModel.fromJson(item))
+            .map((dynamic item) async => StudentModel.fromJson(item))
             .toList(),
       );
       return students;
@@ -870,32 +927,41 @@ class HttpService {
   }
 
   Future<dynamic> driverInfo() async {
-    // final driverID = await storage.getItem('driver_id');
-    // final data = {
-    //   'driver_id': driverID ?? driver,
-    //   'latitude': position.latitude,
-    //   'longitude': position.longitude,
-    //   'speed': position.speed,
-    //   'heading': position.heading,
-    //   'time': position.time,
-    //   'accuracy': position.accuracy,
-    //   'altitude': position.altitude,
-    //   'speedAccuracy': position.speedAccuracy,
-    //   'isMocked': position.isMocked
-    // };
-    // final jsonData = jsonEncode(data);
     try {
-      // var requestAccessRes = await requestAccess();
       http.Response res = await postQuery('/rpc/driver_info', null,
           contentType: 'application/json');
+
+      print("res.statusCode: ${res.statusCode}");
+      print("res.body: ${res.body}");
+
       if (res.statusCode == 200) {
         return res.body;
       } else {
         return res;
       }
     } catch (e) {
-      print("sendTracking error: ${e.toString()}");
+      print("driverInfo error: ${e.toString()}");
       return null;
     }
+  }
+
+  Future<UserModel?> userInfo() async {
+    try {
+      http.Response res = await postQuery('/rpc/user_info', null,
+          contentType: 'application/json');
+
+      print("res.statusCode: ${res.statusCode}");
+      print("res.body: ${res.body}");
+      
+      if (res.statusCode == 200) {
+        final json  = jsonDecode(res.body);
+        // print("res.body.json: $json");
+        return UserModel.fromJson(json);
+      } 
+    } catch (e) {
+      print("userInfo error: ${e.toString()}");
+      
+    }
+    return null;
   }
 }

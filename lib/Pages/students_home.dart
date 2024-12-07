@@ -1,39 +1,35 @@
 import 'dart:async';
-import 'package:eta_school_app/Models/RouteModel.dart';
+import 'package:eta_school_app/Models/route_model.dart';
+import 'package:eta_school_app/Models/student_model.dart';
 import 'package:eta_school_app/Pages/login_page.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/components/active_trip.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
 import 'package:eta_school_app/methods.dart';
-import 'package:eta_school_app/Models/DriverModel.dart';
-import 'package:eta_school_app/Models/TripModel.dart';
+import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/components/header.dart';
-import 'package:eta_school_app/components/home_route_block.dart';
-import 'package:eta_school_app/Models/EventModel.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class StudentsHome extends StatefulWidget {
+  const StudentsHome({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<StudentsHome> createState() => _StudentsHomeState();
 }
 
-class _HomePageState extends State<HomePage>
-    with MediansWidgets, MediansTheme, WidgetsBindingObserver {
-  final widgets = MediansWidgets;
-
-  // late GoogleMapController mapController;
+class _StudentsHomeState extends State<StudentsHome>
+    with ETAWidgets, MediansTheme, WidgetsBindingObserver {
+  final widgets = ETAWidgets;
 
   bool hasActiveTrip = false;
 
-  DriverModel driverModel = DriverModel(driver_id: 0, first_name: '');
+  // DriverModel driverModel = DriverModel(driver_id: 0, first_name: '');
+  StudentModel student = StudentModel(student_id: 0, parent_id: 0);
 
   TripModel? activeTrip;
 
@@ -41,7 +37,7 @@ class _HomePageState extends State<HomePage>
 
   bool showLoader = true;
 
-  List<EventModel> eventsList = [];
+  // List<EventModel> eventsList = [];
   List<RouteModel> routesList = [];
   List<TripModel> oldTripsList = [];
 
@@ -125,40 +121,7 @@ class _HomePageState extends State<HomePage>
                                                 )))
                                         : ActiveTrip(openTrip, activeTrip),
 
-                                    MediansWidgets.svgTitle(
-                                        "assets/svg/fire.svg",
-                                        lang.translate("Routes")),
-
-                                    const SizedBox(height: 10),
-
-                                    /// Available Routes
-                                    SizedBox(
-                                        height: 260,
-                                        child: ListView.builder(
-                                            scrollDirection: Axis.horizontal,
-                                            itemCount: routesList
-                                                .length, // Replace with the total number of items
-                                            itemBuilder: (BuildContext context,
-                                                int index) {
-                                              return Container(
-                                                padding: EdgeInsets.symmetric(
-                                                    horizontal:
-                                                        routesList.length < 2
-                                                            ? 20
-                                                            : 0),
-                                                width: routesList.length < 2
-                                                    ? MediaQuery.of(context)
-                                                        .size
-                                                        .width
-                                                    : 400,
-                                                // height: 400,
-                                                child: HomeRouteBlock(
-                                                    route: routesList[index],
-                                                    callback: createTrip),
-                                              );
-                                            })),
-
-                                    MediansWidgets.svgTitle(
+                                    ETAWidgets.svgTitle(
                                         "assets/svg/bus.svg",
                                         lang.translate('trips_history')),
 
@@ -184,7 +147,7 @@ class _HomePageState extends State<HomePage>
                                                                     oldTripsList[
                                                                         index]));
                                                       },
-                                                      child: MediansWidgets
+                                                      child: ETAWidgets
                                                           .homeTripBlock(
                                                               context,
                                                               oldTripsList[
@@ -206,11 +169,11 @@ class _HomePageState extends State<HomePage>
                                     // Container(
                                     //   width: MediaQuery.of(context).size.width,
                                     //   alignment: Alignment.center,
-                                    //   child:  MediansWidgets.eventCarousel(eventsList, context),
+                                    //   child:  ETAWidgets.eventCarousel(eventsList, context),
                                     // ),
 
                                     /// Help / Support Block
-                                    // MediansWidgets.homeHelpBlock(),
+                                    // ETAWidgets.homeHelpBlock(),
                                   ]),
                                 ),
                               ]),
@@ -237,36 +200,6 @@ class _HomePageState extends State<HomePage>
                     ))));
   }
 
-  /// Create trip
-  createTrip(routeId, vehicleId) async {
-    TripModel? trip;
-
-    setState(() {
-      showLoader = true;
-    });
-    final driverId = await storage.getItem('driver_id');
-    try {
-      trip = await httpService.startTrip(routeId);
-      if (trip.trip_id != 0) {
-        await locationServiceProvider.startLocationService();
-        await Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => TripPage(trip: trip)),
-        );
-        loadResources();
-      }
-    } catch (e) {
-      print(e.toString());
-      var msg = e.toString().split('/');
-      setState(() {
-        showLoader = false;
-      });
-      showSuccessDialog(context, "${lang.translate('Error')} (${msg[1]})",
-          lang.translate(msg[0]), null);
-    }
-  }
-
-  void tracking() async {}
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -299,7 +232,8 @@ class _HomePageState extends State<HomePage>
   /// Load resources through API
   ///
   loadResources() async {
-    final check = await storage.getItem('driver_id');
+    final studentId = await storage.getItem('relation_id');
+    final check = await storage.getItem('id_usu');
 
     if (check == null) {
       Get.offAll(Login());
@@ -314,23 +248,13 @@ class _HomePageState extends State<HomePage>
       showLoader = false;
     });
 
-    // final eventsQuery = await httpService.getEvents();
-    // setState(()  {
-    //     eventsList = eventsQuery;
-    // });
-
-    final driverId = await storage.getItem('driver_id');
-    final driverQuery = await httpService.getDriver(driverId);
+    final studentQuery = await httpService.getStudent();
     setState(() {
-      driverModel = driverQuery;
+      student = studentQuery;
     });
 
-    final routesQuery = await httpService.getRoutes();
-    setState(() {
-      routesList = routesQuery;
-    });
 
-    List<TripModel>? oldTrips = await httpService.getTrips(0);
+    List<TripModel>? oldTrips = await httpService.getStudentTrips(studentId);
     setState(() {
       oldTripsList = oldTrips;
     });

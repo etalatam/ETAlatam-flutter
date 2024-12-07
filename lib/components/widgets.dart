@@ -1,13 +1,14 @@
-import 'package:eta_school_app/Models/DriverModel.dart';
-import 'package:eta_school_app/Models/TripModel.dart';
+import 'package:eta_school_app/Models/driver_model.dart';
+import 'package:eta_school_app/Models/parent_model.dart';
+import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/Pages/event_page.dart';
 import 'package:eta_school_app/Pages/help_messages_page.dart';
-import 'package:flutter/widgets.dart';
+import 'package:eta_school_app/Pages/parent_page.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
-import 'package:eta_school_app/Models/StudentModel.dart';
+import 'package:eta_school_app/Models/student_model.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
@@ -37,7 +38,7 @@ Widget buttonText(callback, index, text) {
           )));
 }
 
-mixin MediansWidgets {
+mixin ETAWidgets {
   static Widget eventCarousel(List<EventModel> events, context) {
     List<Widget> list = [];
 
@@ -393,143 +394,6 @@ mixin MediansWidgets {
         ));
   }
 
-  static Widget homeStudentBlock(context, StudentModel student) {
-    activeTheme =
-        storage.getItem('darkmode') == true ? DarkTheme() : LightTheme();
-
-    return Container(
-      width: MediaQuery.of(context).size.width / 1.6,
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: Stack(children: [
-        Container(
-            margin: const EdgeInsets.only(top: 45),
-            width: double.infinity,
-            height: 50,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              color: activeTheme.main_color,
-              borderRadius: BorderRadius.circular(30),
-            )),
-        Container(
-            child: Stack(
-          alignment: Alignment.topCenter,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 50, bottom: 10),
-              width: double.infinity,
-              height: double.infinity,
-              padding: const EdgeInsets.only(
-                  top: 60, left: 10, right: 10, bottom: 20),
-              decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: shadowColor.withOpacity(.15),
-                      blurRadius: 15,
-                      offset: const Offset(0, 5),
-                      spreadRadius: 0,
-                    )
-                  ],
-                  color: activeTheme.main_bg,
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      activeTheme.main_bg,
-
-                      activeTheme.main_bg,
-                      // darkMode == false ? Color.fromRGBO(255, 255, 255, .95) : Color.fromRGBO(201, 206, 223, .95),
-                      darkMode == true
-                          ? activeTheme.main_bg.withOpacity(.2)
-                          : const Color.fromRGBO(201, 206, 223, 1),
-                    ],
-                  ),
-                  border: Border.all(
-                      width: 1,
-                      color: activeTheme.border_color.withOpacity(.5)),
-                  borderRadius: BorderRadius.circular(20)),
-              child: Column(
-                children: [
-                  Container(
-                    child: Text(
-                      "${student.first_name}",
-                      style: activeTheme.h3,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                          flex: 1,
-                          child: Container(
-                            child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Icon(
-                                    Icons.arrow_right_alt,
-                                    color: activeTheme.icon_color,
-                                  ),
-                                  Text(lang.translate('View details'),
-                                      style: activeTheme.h6),
-                                ]),
-                          )),
-                      Container(
-                        transformAlignment: Alignment.center,
-                        padding: const EdgeInsets.symmetric(horizontal: 5),
-                        decoration: BoxDecoration(
-                            color: student.transfer_status
-                                        .toString()
-                                        .toLowerCase() ==
-                                    'approved'
-                                ? activeTheme.main_color
-                                : Colors.red,
-                            borderRadius: BorderRadius.circular(10)),
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.arrow_right_alt,
-                                color: activeTheme.buttonColor,
-                              ),
-                              Text(lang.translate("${student.transfer_status}"),
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      fontFamily: activeTheme.h6.fontFamily,
-                                      color: activeTheme.buttonColor,
-                                      fontSize: activeTheme.h6.fontSize)),
-                            ]),
-                      ),
-                    ],
-                  )
-                ],
-              ),
-            ),
-            Container(
-              width: 100,
-              height: 100,
-              decoration: ShapeDecoration(
-                shape: RoundedRectangleBorder(
-                  side: BorderSide(
-                      width: 1,
-                      color: activeTheme.border_color.withOpacity(1),
-                      strokeAlign: 10),
-                  borderRadius: BorderRadius.circular(50),
-                ),
-              ),
-              child: CircleAvatar(
-                maxRadius: 50,
-                backgroundColor: Colors.white,
-                foregroundImage: NetworkImage((student.picture != null)
-                    ? (httpService.croppedImage(student.picture, 200, 200))
-                    : httpService.croppedImage(
-                        "/uploads/images/60x60.png", 200, 200)),
-              ),
-            )
-          ],
-        ))
-      ]),
-    );
-  }
-
   static Widget homeHelpBlock() {
     return GestureDetector(
       onTap: (() => {Get.to(HelpMessagesPage())}),
@@ -779,7 +643,7 @@ mixin MediansWidgets {
               ],
             ),
             // Container(
-            //   child: MediansWidgets.sectioEndShadow(context),
+            //   child: ETAWidgets.sectioEndShadow(context),
             // )
           ])),
     );
@@ -966,4 +830,485 @@ mixin MediansWidgets {
       ),
     );
   }
+
+  static Widget homeStudentBlock(context, StudentModel student)
+  {
+    activeTheme = storage.getItem('darkmode') == true ? DarkTheme() : LightTheme();
+
+    return 
+    Container(
+        width: MediaQuery.of(context).size.width / 1.6,
+        margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: Stack( children: [
+          Container(
+            margin: EdgeInsets.only(top:45),
+            width: double.infinity,
+            height: 50,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: activeTheme.main_color,
+              borderRadius: BorderRadius.circular(30),
+            )
+          ),
+          Container(
+              child: Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  Container(
+                    margin: EdgeInsets.only(top: 50, bottom: 10),
+                    width: double.infinity,
+                    height: double.infinity,
+                    padding: EdgeInsets.only(top: 60, left: 10, right: 10, bottom: 20),
+                    decoration: 
+                    BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                            color: shadowColor.withOpacity(.15),
+                            blurRadius: 15,
+                            offset: Offset(0, 5),
+                            spreadRadius: 0,
+                        )
+                      ],
+                      color: activeTheme.main_bg,
+                      gradient:  LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          activeTheme.main_bg,
+ 
+                          activeTheme.main_bg,
+                          // darkMode == false ? Color.fromRGBO(255, 255, 255, .95) : Color.fromRGBO(201, 206, 223, .95),
+                          darkMode == true ? activeTheme.main_bg.withOpacity(.2) : Color.fromRGBO(201, 206, 223, 1),
+                        ],
+                      ),
+                      border: Border.all(width: 1, color: activeTheme.border_color.withOpacity(.5)),
+                      borderRadius: BorderRadius.circular(20)
+                    ),
+                    child: Column(children: [
+                      
+                      Container(
+                        child: Text("${student.first_name}", style: activeTheme.h3,),
+                      ),
+                      SizedBox(height: 20),
+                      Row(children: [
+                        Expanded(
+                          flex: 1,
+                          child: Container(
+                        child: Row(mainAxisAlignment: MainAxisAlignment.start, 
+                        children: [
+                          Icon(Icons.arrow_right_alt, color: activeTheme.icon_color,),
+                          Text(lang.translate('View details'), style: activeTheme.h6), 
+                          ]),
+                      )),
+                      Container(
+                        transformAlignment: Alignment.center,
+                        padding: EdgeInsets.symmetric(horizontal: 5),
+                        decoration: BoxDecoration(
+                          color: student.transfer_status.toString().toLowerCase() == 'approved' ? activeTheme.main_color : Colors.red,
+                          borderRadius: BorderRadius.circular(10)
+                        ),
+                        child: Row(mainAxisAlignment: MainAxisAlignment.center, 
+                        children: [
+                          Icon(Icons.arrow_right_alt, color: activeTheme.buttonColor,),
+                          Text(lang.translate("${student.transfer_status}"), textAlign: TextAlign.center, style: TextStyle( fontFamily: activeTheme.h6.fontFamily, color: activeTheme.buttonColor,fontSize: activeTheme.h6.fontSize)), 
+                          ]),
+                      ),
+                      ],)
+                    ],),
+                  ),
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: ShapeDecoration(
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(width: 1, color: activeTheme.border_color.withOpacity(1), ),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                    ),
+                    child: CircleAvatar(
+                      maxRadius: 50,
+                      backgroundColor: Colors.white,
+                      foregroundImage: NetworkImage( (student.picture != null)
+                        ? (httpService.croppedImage(student.picture ,200, 200))
+                        : httpService.croppedImage("/uploads/images/60x60.png" ,200, 200)
+                      ),
+                    ),
+                )
+              ],
+          )
+        )]
+      ),
+    );
+  }
+
+
+  static Widget studentTripBlock(context, TripModel tripInfo)
+  {
+
+    return Container(
+          width: MediaQuery.of(context).size.width/1.2,
+          clipBehavior: Clip.antiAlias,
+          margin: EdgeInsets.all(10),
+          decoration: ShapeDecoration(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+            side: BorderSide(width: 1, color: activeTheme.main_color.withOpacity(.2))
+          ),
+          color: activeTheme.main_bg,
+          shadows: [
+            BoxShadow(
+              color: activeTheme.shadowColor,
+              blurRadius: 10,
+              offset: Offset(0, 5),
+              spreadRadius: 0,
+            )
+          ]),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        TextButton(
+                            onPressed: (() => {
+                              
+                              }),
+                            child: Text(
+                              lang.translate('Trip') +' # ' + tripInfo.trip_id.toString(),
+                              style: activeTheme.h3,
+                            )),
+                          
+                          Text(tripInfo.trip_date!),
+                            
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.max,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Column(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(10),
+                                    decoration: ShapeDecoration(
+                                      color: activeTheme.main_color,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(64),
+                                      ),
+                                    ),
+                                    child: Icon(
+                                      Icons.time_to_leave,
+                                      color: activeTheme.main_bg,
+                                    ),
+                                  ),
+                                  Container(
+                                      padding: EdgeInsets.all(5),
+                                      child: Text(
+                                          lang.translate(tripInfo.trip_status!.toString().toLowerCase() == 'completed' ?  'Trip duration' : 'Estimated time'),
+                                          style: activeTheme.smallText)),
+                                  Text(
+                                    tripInfo.duration.toString(),
+                                    style: activeTheme.h6,
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                width: 40,
+                              ),
+                              Column(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(10),
+                                    decoration: ShapeDecoration(
+                                      color: activeTheme.main_color,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(64),
+                                      ),
+                                    ),
+                                    child: Icon(
+                                      Icons.merge_type_sharp,
+                                      color: activeTheme.main_bg,
+                                    ),
+                                  ),
+                                  Container(
+                                      padding: EdgeInsets.all(5),
+                                      child: Text(
+                                          lang.translate('Distance'),
+                                          style: activeTheme.smallText)),
+                                  Text(
+                                    "${tripInfo.distance.toString()} M",
+                                    style: activeTheme.h6,
+                                  ),
+                                ],
+                              ),
+                            ]),
+                                
+                        ],
+                      )
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                clipBehavior: Clip.antiAlias,
+                decoration:BoxDecoration(
+                gradient:  LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.white.withOpacity(0),
+                    darkMode == false ? Color.fromRGBO(249, 250, 254, 1) : Color.fromRGBO(249, 250, 254, .15),
+                  ],
+                )),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(),
+                      child: Stack(children: [
+                        Container(
+                          padding: EdgeInsets.only(top: 5, right: isRTL() ? 70 : 0, left: isRTL() ? 0 : 70),
+                          child: Text("${tripInfo.driver!.first_name}",style: activeTheme.h5,),
+                        ),
+                        Positioned(
+                          child: 
+                          Container(
+                            width: 50,
+                            height: 50,
+                            margin: EdgeInsets.all(5),
+                            decoration: ShapeDecoration(
+                              shape: RoundedRectangleBorder(
+                                side: BorderSide(width: 1, color: activeTheme.border_color.withOpacity(1), ),
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              maxRadius: 40,
+                              backgroundColor: Colors.white,
+                              foregroundImage: NetworkImage( (tripInfo.driver!.picture != null)
+                                ? (httpService.croppedImage(tripInfo.driver!.picture ,200, 200))
+                                : httpService.croppedImage("/uploads/images/60x60.png" ,200, 200)
+                              ),
+                            )
+                          )
+                        ),
+                      ]),
+                    ),
+                    const SizedBox(width: 30),
+                    Container(
+                      padding: EdgeInsets.only(top: 10),
+                      child: 
+                      Row(
+                        children: [
+                        SvgPicture.asset(
+                          "assets/svg/bus.svg",
+                          color: activeTheme.main_color,
+                          width: 20,
+                        ),
+                        SizedBox(width: 10),
+                        Text(
+                          "${tripInfo.vehicle!.plate_number}",
+                          style: activeTheme.largeText,
+                        )
+                      ]),
+                    )
+                  
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+  }
+
+  Widget parentProfileInfoBlock(ParentModel parentModel ,context)
+  {
+      activeTheme =  storage.getItem('darkmode') == true ? DarkTheme() : LightTheme();
+
+      return 
+        Container(
+        width: double.infinity,
+        margin: EdgeInsets.fromLTRB(30, 20, 30, 20),
+        child: Stack( children: [
+          // Container(
+          //   margin: EdgeInsets.symmetric(horizontal: 2),
+          //   width: double.infinity,
+          //   height: 50,
+          //   clipBehavior: Clip.antiAlias,
+          //   decoration: BoxDecoration(
+          //     color: activeTheme.main_color,
+          //     borderRadius: BorderRadius.circular(30),
+          //   )
+          // ),
+          Container(
+          width: double.infinity,
+          margin: EdgeInsets.only(top: 5),
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: activeTheme.main_bg, 
+            borderRadius: BorderRadius.circular(30),
+            boxShadow:  [
+              BoxShadow(
+                color: shadowColor,
+                blurRadius: 10,
+                offset: Offset(0, 5),
+                spreadRadius: 0,
+            )],
+          ),
+        child:  Column(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(15),
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(color: activeTheme.main_bg),
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextButton(
+              onPressed: () {
+                Get.to(ParentPage());
+              },
+              child: Container(
+                    width: double.infinity,
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment:
+                          CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Container(
+                            clipBehavior: Clip.antiAlias,
+                            decoration: BoxDecoration(),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment:
+                                  MainAxisAlignment.start,
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.center,
+                              children: [
+                                GestureDetector(
+                                  onTap: (() => {}),
+                                  child:  Row(
+                                      mainAxisSize:
+                                          MainAxisSize.min,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment
+                                              .center,
+                                      children: [
+                                        Container(
+                                          width: 60,
+                                          height: 60,
+                                          decoration:
+                                              ShapeDecoration(
+                                            image:
+                                                DecorationImage(
+                                              image: NetworkImage(httpService.croppedImage("/uploads/images/60x60.png" ,200, 200)),
+                                              fit: BoxFit.fill,
+                                            ),
+                                            shape:
+                                                RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius
+                                                      .circular(
+                                                          50),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Container(
+                                        clipBehavior:
+                                            Clip.antiAlias,
+                                        decoration:
+                                            BoxDecoration(),
+                                        child: Column(
+                                          mainAxisSize:
+                                              MainAxisSize.max,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment
+                                                  .center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment
+                                                  .start,
+                                          children: [
+                                            Text(
+                                              parentModel
+                                                  .firstName!,
+                                              style: activeTheme.h5,
+                                            ),
+                                            SizedBox(height: 10),
+                                            SizedBox(
+                                              width:
+                                                  double.infinity,
+                                              child: Text(
+                                                parentModel
+                                                    .contactNumber!,
+                                                style: activeTheme.normalText,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      )),
+                              ],
+                            ),
+                          ),
+                        ),
+                        
+                      ],
+                    ),
+                  ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      )],)
+    );
+                    
+}
+
 }

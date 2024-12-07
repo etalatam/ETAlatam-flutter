@@ -1,7 +1,7 @@
-import 'package:eta_school_app/Models/TripModel.dart';
+import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/API/client.dart';
-import 'package:eta_school_app/Pages/home_page.dart';
+import 'package:eta_school_app/Pages/driver_home.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -329,7 +329,7 @@ class _TripReport extends State<TripReport> {
             ),
           ),
           GestureDetector(
-            onTap: () => {Get.offAll(HomePage())},
+            onTap: () => {Get.offAll(DriverHome())},
             child: Container(
                 child: Container(
               width: 100,

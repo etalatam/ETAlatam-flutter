@@ -72,14 +72,14 @@ class MapWiewState extends State<MapWiew> {
             pitch: 80,
             center: Point(
                 coordinates: Position(
-                    locationData?['longitude'], locationData?['latitude'])),
+                    locationData['longitude'], locationData['latitude'])),
           ));
           _firstLocationUpdate = false;
         } else {
           mapboxMap?.setCamera(CameraOptions(
             center: Point(
                 coordinates: Position(
-                    locationData?['longitude'], locationData?['latitude'])),
+                    locationData['longitude'], locationData['latitude'])),
           ));
         }
       }

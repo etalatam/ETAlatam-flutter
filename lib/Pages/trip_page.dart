@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:eta_school_app/Models/TripModel.dart';
+import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/components/tripReportPage.dart';
 import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/components/button_text_icon.dart';
@@ -28,7 +28,7 @@ class TripPage extends StatefulWidget {
 }
 
 class _TripPageState extends State<TripPage>
-    with MediansWidgets, MediansTheme
+    with ETAWidgets, MediansTheme
     implements OnPointAnnotationClickListener {
   bool showLoader = false;
 
@@ -38,21 +38,13 @@ class _TripPageState extends State<TripPage>
 
   TripModel trip = TripModel(trip_id: 0);
 
-  // Object? customRoute;
-
-  // LatLng? mapDestination;
-
-  // LatLng? mapOrigin;
-
-  // String currentPicture = "";
-
   bool showTripReportModal = false;
-
-  // bool hasCustomRoute = false;
 
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
 
   MapboxMap? _mapboxMapController;
+
+  String? relationName;
 
   CoordinateBounds getCoordinateBounds(List<Position> points) {
     double minLat = double.infinity;
@@ -160,7 +152,7 @@ class _TripPageState extends State<TripPage>
                                       "${trip.trip_date}",
                                       style: activeTheme.normalText,
                                     ),
-                                    if (trip.trip_status == 'Completed')
+                                    if (trip.trip_status == 'Completed' && relationName == 'eta.drivers')
                                       GestureDetector(
                                           onTap: (() {
                                             openNewPage(context,
@@ -187,7 +179,7 @@ class _TripPageState extends State<TripPage>
                                   height: 20,
                                 ),
                                 trip.trip_status == 'Completed'
-                                    ? MediansWidgets.tripInfoRow(trip)
+                                    ? ETAWidgets.tripInfoRow(trip)
                                     : const Center(),
                                 Row(children: [
                                   (trip.waiting_locations_count != 0 ||
@@ -213,7 +205,7 @@ class _TripPageState extends State<TripPage>
                                     const SizedBox(
                                       width: 20,
                                     ),
-                                  if (trip.trip_status == 'Running')
+                                  if (trip.trip_status == 'Running' && relationName == 'eta.drivers')
                                     GestureDetector(
                                         onTap: (() {
                                           openNewPage(context,
@@ -508,6 +500,7 @@ class _TripPageState extends State<TripPage>
     TripModel? trip_ = await httpService.getTrip(trip.trip_id);
     final LocalStorage storage = LocalStorage('tokens.json');
     final userId = await storage.getItem('id_usu');
+    relationName ??= await storage.getItem('relation_name');
     print("[TipPage.loadTrip.usrId] $userId");
 
     if (trip_.trip_id != 0) {

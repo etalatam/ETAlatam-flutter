@@ -5,7 +5,7 @@ import 'package:eta_school_app/methods.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
-import 'package:eta_school_app/Pages/home_page.dart';
+import 'package:eta_school_app/Pages/driver_home.dart';
 import 'dart:async';
 
 class ChangePasswordPage extends StatefulWidget {
@@ -33,8 +33,6 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    // int? driverid = storage.getItem('driver_id');
-
     return showLoader
         ? Loader()
         : Material(
@@ -311,9 +309,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         showLoader = false;
       });
 
-      dynamic driverId = await storage.getItem('driver_id');
+      dynamic userId = await storage.getItem('user_id');
       setState(() {
-        driverId = driverId ?? storage.getItem('driver_id');
+        userId = userId ?? storage.getItem('user_id');
         goHome();
       });
     });
@@ -325,17 +323,17 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   ///
   goHome() async {
     final token_ = await storage.getItem('token');
-    final driverId_ = await storage.getItem('driver_id');
-    if (token_ != null && driverId_ != null) {
+    final userId_ = await storage.getItem('user_id');
+    if (token_ != null && userId_ != null) {
       Timer(const Duration(seconds: 1), () {
-        openNewPage(context, HomePage());
+        openNewPage(context, DriverHome());
       });
     } else {
       Timer(const Duration(seconds: 1), () {
         if (storage.getItem('token') == null) {
           showLoader = false;
         } else {
-          openNewPage(context, HomePage());
+          openNewPage(context, DriverHome());
         }
       });
     }

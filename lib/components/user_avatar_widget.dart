@@ -1,4 +1,3 @@
-import 'package:eta_school_app/Models/DriverModel.dart';
 import 'package:flutter/material.dart';
 import '../Pages/profile_page.dart';
 import '../controllers/helpers.dart';
@@ -10,26 +9,21 @@ class UserAvatar extends StatefulWidget {
 }
 
 class _UserAvatarState extends State<UserAvatar> {
-  DriverModel? driver;
 
-  Future<DriverModel> getDriver() async {
-    final driverId = await storage.getItem('driver_id');
-    return await httpService.getDriver(driverId);
-  }
+  String? relationId;
+  String? relationName;
 
   @override
   void initState() {
     super.initState();
-    getDriver().then((value) => {
-      setState(() {
-        driver = value;
-      })
-    });
+    
+    relationId = "${storage.getItem('relation_id')}";
+    relationName = "${storage.getItem('relation_name')}";
   }
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = httpService.getAvatarUrl(driver?.picture);
+    final imageUrl = httpService.getAvatarUrl(relationId, relationName);
     print (imageUrl);
 
     return GestureDetector(

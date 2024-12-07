@@ -1,4 +1,4 @@
-import 'package:eta_school_app/Models/DriverModel.dart';
+import 'package:eta_school_app/Models/driver_model.dart';
 import 'package:eta_school_app/domain/entities/user/driver.dart';
 
 class DriverMapper {

@@ -1,7 +1,7 @@
 import 'dart:core';
 import 'package:eta_school_app/Models/DestinationModel.dart';
 import 'package:eta_school_app/Models/PickupLocationModel.dart';
-import 'package:eta_school_app/Models/RouteModel.dart';
+import 'package:eta_school_app/Models/route_model.dart';
 
 
 class StudentModel {
@@ -74,20 +74,32 @@ class StudentModel {
 
   factory StudentModel.fromJson(Map<String, dynamic> json) {
 
-    PickupLocationModel? pickupLocation = json['pickup_location'] != null ? PickupLocationModel.fromJson(json['pickup_location']) : PickupLocationModel();
-    DestinationModel? destination = json['destination'] != null ? DestinationModel.fromJson(json['destination']) : DestinationModel();
+    PickupLocationModel? pickupLocation;
+
+    try {
+      pickupLocation  = json['pickup_location'] != null ? PickupLocationModel.fromJson(json['pickup_location']) : PickupLocationModel();  
+    } catch (e) {
+      print("StudentModel.fromJson.parsePickupLocation.error: ${e.toString()}");
+    }
+    
+    DestinationModel? destination;
+    try {
+      destination = json['destination'] != null ? DestinationModel.fromJson(json['destination']) : DestinationModel(); 
+    } catch (e) {
+      print("StudentModel.fromJson.parseDestination.error: ${e.toString()}");
+    }
     
     // RouteModel? route = json['route'] != null ? RouteModel.fromJson(json['route']) : RouteModel(pickup_locations: [],route_id: 0, route_name: '');
 
     return StudentModel(
-      student_id: json['id_student'] as int?,
-      parent_id: json['parent_id'] as int?,
-      first_name: json['firstname'] as String?,
-      last_name: json['lastname'] as String?,
-      student_name: ("${json['firstname']} ${json['lastname']}") as String?,
-      date_of_birth: json['birthday'] as String?,
+      student_id: json['student'] as int?,
+      parent_id: json['guardian_id'] as int?,
+      first_name: json['student_firstname'] as String?,
+      last_name: json['student_lastname'] as String?,
+      student_name: ("${json['student_firstname']} ${json['student_lastname']}") as String?,
+      date_of_birth: json['student_birthday'] as String?,
       picture: json['picture'] as String?,
-      contact_number: json['phonenumber'] as String?,
+      contact_number: json['student_phonenumber'] as String?,
       transfer_status: json['transfer_status'] as String?,
       gender: json['gender'] as String?,
       trips_count: json['trips_count'] as int?,
