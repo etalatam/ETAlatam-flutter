@@ -14,6 +14,7 @@ class RouteModel {
   List<DestinationModel>? destinations;
   DriverModel? driver;
   VehicleModel? vehicle;
+  int? schedule_id;
 
   RouteModel({
     required this.route_id,
@@ -25,7 +26,7 @@ class RouteModel {
     this.destinations,
     this.driver,
     this.vehicle,
-
+    this.schedule_id
   });
 
   factory RouteModel.fromJson(Map<String, dynamic> json) {
@@ -79,6 +80,7 @@ class RouteModel {
       driver: driver,
       vehicle: vehicle,
       destinations: destinations,
+      schedule_id: json['schedule_id'] as int?,
     );
   }
 }

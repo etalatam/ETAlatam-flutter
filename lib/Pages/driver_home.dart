@@ -237,7 +237,7 @@ class _DriverHomeState extends State<DriverHome>
   }
 
   /// Create trip
-  createTrip(routeId, vehicleId) async {
+  createTrip(RouteModel route) async {
     TripModel? trip;
 
     setState(() {
@@ -245,7 +245,7 @@ class _DriverHomeState extends State<DriverHome>
     });
 
     try {
-      trip = await httpService.startTrip(routeId);
+      trip = await httpService.startTrip(route);
       if (trip.trip_id != 0) {
         await locationServiceProvider.startLocationService();
         await Navigator.push(

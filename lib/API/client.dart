@@ -410,9 +410,11 @@ class HttpService {
   }
 
   /// Submit form to update data through API
-  Future<TripModel> startTrip(int routeId) async {
+  Future<TripModel> startTrip(RouteModel route) async {
+    
     Map data = {
-      "_route_id": "$routeId",
+      "_route_id": "${route.route_id}",
+      "_schedule_id": "${route.schedule_id}"
       // "driver_id": driverId,
       // "route_id": routeId,
       // "vehicle_id": vehicleId,
