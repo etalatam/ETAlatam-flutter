@@ -374,7 +374,7 @@ class HttpService {
   /// Load Trip
   Future<TripModel> getTrip(id) async {
     http.Response res =
-        await getQuery("/rpc/driver_trips?select=*&limit=1&id_trip=eq.$id&order=id.desc");
+        await getQuery("/rpc/driver_trips?select=*&limit=1&id_trip=eq.$id");
 
     print("res.statusCode: ${res.statusCode}");
     print("res.body: ${res.body}");
@@ -414,7 +414,7 @@ class HttpService {
     
     Map data = {
       "_route_id": "${route.route_id}",
-      "_schedule_id": "${route.schedule_id}"
+      "_id_schedule": "${route.schedule_id}"
       // "driver_id": driverId,
       // "route_id": routeId,
       // "vehicle_id": vehicleId,
