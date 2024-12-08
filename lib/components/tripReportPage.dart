@@ -236,7 +236,7 @@ class _TripReport extends State<TripReport> {
                                       Container(
                                         padding: const EdgeInsets.all(20),
                                         decoration: ShapeDecoration(
-                                          color: activeTheme.main_color,
+                                          color: activeTheme.buttonBG,
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
                                                 BorderRadius.circular(64),
@@ -264,7 +264,7 @@ class _TripReport extends State<TripReport> {
                                       Container(
                                         padding: const EdgeInsets.all(20),
                                         decoration: ShapeDecoration(
-                                          color: activeTheme.main_color,
+                                          color: activeTheme.buttonBG,
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
                                                 BorderRadius.circular(64),
@@ -292,7 +292,7 @@ class _TripReport extends State<TripReport> {
                                       Container(
                                         padding: const EdgeInsets.all(20),
                                         decoration: ShapeDecoration(
-                                          color: activeTheme.main_color,
+                                          color: activeTheme.buttonBG,
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
                                                 BorderRadius.circular(64),
