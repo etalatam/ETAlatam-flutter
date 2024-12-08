@@ -44,7 +44,7 @@ class _TripPageState extends State<TripPage>
 
   MapboxMap? _mapboxMapController;
 
-  String? relationName;
+  String relationName = '';
 
   CoordinateBounds getCoordinateBounds(List<Position> points) {
     double minLat = double.infinity;
@@ -152,7 +152,8 @@ class _TripPageState extends State<TripPage>
                                       "${trip.trip_date}",
                                       style: activeTheme.normalText,
                                     ),
-                                    if (trip.trip_status == 'Completed' && relationName == 'eta.drivers')
+                                    if (trip.trip_status == 'Completed' && 
+                                      relationName.contains('eta.drivers'))
                                       GestureDetector(
                                           onTap: (() {
                                             openNewPage(context,
@@ -205,7 +206,8 @@ class _TripPageState extends State<TripPage>
                                     const SizedBox(
                                       width: 20,
                                     ),
-                                  if (trip.trip_status == 'Running' && relationName == 'eta.drivers')
+                                  if (trip.trip_status == 'Running' && 
+                                    relationName.contains('eta.drivers'))
                                     GestureDetector(
                                         onTap: (() {
                                           openNewPage(context,
@@ -500,17 +502,17 @@ class _TripPageState extends State<TripPage>
     TripModel? trip_ = await httpService.getTrip(trip.trip_id);
     final LocalStorage storage = LocalStorage('tokens.json');
     final userId = await storage.getItem('id_usu');
-    relationName ??= await storage.getItem('relation_name');
-    print("[TipPage.loadTrip.usrId] $userId");
+    final relationNameLocal = await storage.getItem('relation_name');
+    print("[TipPage.loadTrip.userId] $userId");
+    print("[TipPage.loadTrip.relationName] $relationName");
 
     if (trip_.trip_id != 0) {
-      trip = trip_;
-      // currentPicture = "$userId";
-      // currentPicture = "${trip.driver!.picture}";
-      // mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
-      // mapOrigin = LatLng(trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
-      isActiveTrip = true;
-      showLoader = false;
+      setState(() {
+        trip = trip_;
+        isActiveTrip = true;
+        showLoader = false;
+        relationName = relationNameLocal;        
+      });
     }
   }
 
