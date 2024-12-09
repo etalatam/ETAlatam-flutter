@@ -8,6 +8,7 @@ import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/home_route_block.dart';
 import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 // import 'package:eta_school_app/Pages/TripPage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -247,6 +248,15 @@ class _GuardiansHomeState extends State<GuardiansHome>
     });
   }
 
+  notificationSubcribe(String topic) {
+    try {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+      messaging.subscribeToTopic(topic);
+    } catch (e) {
+      print("GuardianHome.notificationSubcribe.error: ${e.toString()}");
+    }
+  }
+
   loadParent() async {
     Timer(Duration(seconds: 2), () async {
       await storage.getItem('darkmode');
@@ -270,6 +280,10 @@ class _GuardiansHomeState extends State<GuardiansHome>
     final routesQuery = await httpService.getRoutes();
     setState(() {
       routesList = routesQuery;
+      for (var route in routesList) {
+        notificationSubcribe("start-trip-${route.route_id}");
+        notificationSubcribe("end-trip-${route.route_id}");
+      }
     });
 
     TripModel? activeTrip_ = await httpService.getActiveTrip();
