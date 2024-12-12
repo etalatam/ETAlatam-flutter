@@ -11,7 +11,7 @@ class NotificationModel {
   String? date;
   String? notification_model;
   String? model_type;
-  int? model_id;
+  double? model_id;
 
   NotificationModel({
     required this.id,
@@ -35,7 +35,7 @@ class NotificationModel {
       body: json['body'] as String?,
       short_date: json['ts'] as String?,
       model_type: json['model_type'] as String?,
-      model_id: json['model_id'] as int?,
+      model_id: json['model_id'] as double?,
       date: json['ts'] as String?,
       notification_model: json['notification_model'] as String?,
     );
