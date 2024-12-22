@@ -302,6 +302,9 @@ class Lang {
     'support_comments': 'Comemntarios y respuestas',
     'comment': 'Comentario',
     'no_notification_yet!': 'No hay notificaciones aún!',
-    'list_of_your_notifications': 'Lista de notificaciones'
+    'list_of_your_notifications': 'Lista de notificaciones',
+    "list_of_your_added_children": "Estudiantes vinculados a tu cuenta",
+    "available_routes": "Rutas disponibles",
+    "view_details": "Ver detalles"
   };
 }

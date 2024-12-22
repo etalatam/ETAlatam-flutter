@@ -114,12 +114,12 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                                 /// Student block
                                                 return GestureDetector(
                                                     onTap: () {
-                                                      openNewPage(
-                                                          context,
-                                                          StudentPage(
-                                                              student: parentModel!
-                                                                      .students[
-                                                                  index]));
+                                                      // openNewPage(
+                                                      //     context,
+                                                      //     StudentPage(
+                                                      //         student: parentModel!
+                                                      //                 .students[
+                                                      //             index]));
                                                     },
                                                     child: ETAWidgets
                                                         .homeStudentBlock(

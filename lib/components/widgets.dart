@@ -887,7 +887,7 @@ mixin ETAWidgets {
                     child: Column(children: [
                       
                       Container(
-                        child: Text("${student.first_name}", style: activeTheme.h3,),
+                        child: Text("${student.first_name} ${student.last_name}", style: activeTheme.h4,),
                       ),
                       SizedBox(height: 20),
                       Row(children: [
@@ -900,19 +900,19 @@ mixin ETAWidgets {
                           Text(lang.translate('View details'), style: activeTheme.h6), 
                           ]),
                       )),
-                      Container(
-                        transformAlignment: Alignment.center,
-                        padding: EdgeInsets.symmetric(horizontal: 5),
-                        decoration: BoxDecoration(
-                          color: student.transfer_status.toString().toLowerCase() == 'approved' ? activeTheme.main_color : Colors.red,
-                          borderRadius: BorderRadius.circular(10)
-                        ),
-                        child: Row(mainAxisAlignment: MainAxisAlignment.center, 
-                        children: [
-                          Icon(Icons.arrow_right_alt, color: activeTheme.buttonColor,),
-                          Text(lang.translate("${student.transfer_status}"), textAlign: TextAlign.center, style: TextStyle( fontFamily: activeTheme.h6.fontFamily, color: activeTheme.buttonColor,fontSize: activeTheme.h6.fontSize)), 
-                          ]),
-                      ),
+                      // Container(
+                      //   transformAlignment: Alignment.center,
+                      //   padding: EdgeInsets.symmetric(horizontal: 5),
+                      //   decoration: BoxDecoration(
+                      //     color: student.transfer_status.toString().toLowerCase() == 'approved' ? activeTheme.main_color : Colors.red,
+                      //     borderRadius: BorderRadius.circular(10)
+                      //   ),
+                      //   child: Row(mainAxisAlignment: MainAxisAlignment.center, 
+                      //   children: [
+                      //     Icon(Icons.arrow_right_alt, color: activeTheme.buttonColor,),
+                      //     Text(lang.translate("${student.transfer_status}"), textAlign: TextAlign.center, style: TextStyle( fontFamily: activeTheme.h6.fontFamily, color: activeTheme.buttonColor,fontSize: activeTheme.h6.fontSize)), 
+                      //     ]),
+                      // ),
                       ],)
                     ],),
                   ),
