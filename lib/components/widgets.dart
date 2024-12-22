@@ -886,20 +886,16 @@ mixin ETAWidgets {
                     ),
                     child: Column(children: [
                       
-                      Container(
-                        child: Text("${student.first_name} ${student.last_name}", style: activeTheme.h4,),
-                      ),
+                      Text("${student.first_name} ${student.last_name}", style: activeTheme.h4,),
                       SizedBox(height: 20),
                       Row(children: [
                         Expanded(
                           flex: 1,
-                          child: Container(
-                        child: Row(mainAxisAlignment: MainAxisAlignment.start, 
-                        children: [
-                          // Icon(Icons.arrow_right_alt, color: activeTheme.icon_color,),
-                          // Text(lang.translate('View details'), style: activeTheme.h6), 
-                          ]),
-                      )),
+                          child: Row(mainAxisAlignment: MainAxisAlignment.start, 
+                          children: [
+                            // Icon(Icons.arrow_right_alt, color: activeTheme.icon_color,),
+                            // Text(lang.translate('View details'), style: activeTheme.h6), 
+                            ])),
                       // Container(
                       //   transformAlignment: Alignment.center,
                       //   padding: EdgeInsets.symmetric(horizontal: 5),
@@ -928,9 +924,9 @@ mixin ETAWidgets {
                     child: CircleAvatar(
                       maxRadius: 50,
                       backgroundColor: Colors.white,
-                      foregroundImage: NetworkImage( (student.picture != null)
-                        ? (httpService.croppedImage(student.picture ,200, 200))
-                        : httpService.croppedImage("/uploads/images/60x60.png" ,200, 200)
+                      foregroundImage: NetworkImage( 
+                        httpService.getAvatarUrl(student.student_id,'eta.students'),
+                        headers: {'Accept': 'image/png'}
                       ),
                     ),
                 )

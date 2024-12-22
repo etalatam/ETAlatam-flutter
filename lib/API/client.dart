@@ -36,12 +36,14 @@ class HttpService {
   Map? headers;
 
   String getAvatarUrl(relationId, relationName) {
-    return "$apiURL/rpc/get_reource_image?_relation_name=$relationName&_relation_id=$relationId";
+    final url = "$apiURL/rpc/get_reource_image?_relation_name=$relationName&_relation_id=$relationId";
+    print("getAvatarUrl: $url");
+    return url;
   }
 
-  String getImageUrl() {
+  String getImageUrl({relationName = "eta.usuarios", relationId = 0}) {
     // return "$apiURL/app/image.php?src=";
-    return "$apiURL/rpc/get_reource_image?_relation_name=eta.usuarios&_relation_id=";
+    return "$apiURL/rpc/get_reource_image?_relation_name=$relationName&_relation_id=$relationId";
   }
 
   String croppedImage(path, int? width, int? height) {
