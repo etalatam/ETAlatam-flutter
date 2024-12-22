@@ -279,6 +279,25 @@ class HttpService {
     return [];
   }
 
+  Future<List<TripModel>> getParentTrips() async {
+      var res = await getQuery("/rpc/guardian_trips?running=eq.true&limit=10");
+      print("res.statusCode: ${res.statusCode}");
+      print("res.body: ${res.body}");
+
+      if (res.statusCode == 200) {
+        try {
+          List<dynamic> body = jsonDecode(res.body);
+          return body.map((dynamic item) => TripModel.fromJson(item)).toList();          
+        } catch (e) {
+          print("getRoutes error: ${e.toString()}");
+          return [];
+        }
+      }
+
+      return [];
+
+  }
+
   /// Load Routes
   Future<List<RouteModel>> getRoutes() async {
     var res = await getQuery("/rpc/driver_routes?limit=10");

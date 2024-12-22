@@ -896,8 +896,8 @@ mixin ETAWidgets {
                           child: Container(
                         child: Row(mainAxisAlignment: MainAxisAlignment.start, 
                         children: [
-                          Icon(Icons.arrow_right_alt, color: activeTheme.icon_color,),
-                          Text(lang.translate('View details'), style: activeTheme.h6), 
+                          // Icon(Icons.arrow_right_alt, color: activeTheme.icon_color,),
+                          // Text(lang.translate('View details'), style: activeTheme.h6), 
                           ]),
                       )),
                       // Container(

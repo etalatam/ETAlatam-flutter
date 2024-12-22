@@ -45,7 +45,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
   bool showLoader = true;
 
   // List<EventModel> eventsList = [];
-  List<RouteModel> routesList = [];
+  List<TripModel> tripsList = [];
   // List<TripModel> oldTripsList = [];
 
   TripModel? activeTrip;
@@ -134,22 +134,26 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                       height: 40,
                                     ),
                                     ETAWidgets.svgTitle("assets/svg/route.svg",
-                                        lang.translate('Available routes')),
+                                        lang.translate('Active routes')),
 
                                     /// Available Routes
                                     SizedBox(
                                         height: 300,
                                         child: ListView.builder(
                                             scrollDirection: Axis.horizontal,
-                                            itemCount: routesList
+                                            itemCount: tripsList
                                                 .length, // Replace with the total number of items
                                             itemBuilder: (BuildContext context,
                                                 int index) {
-                                              return SizedBox(
-                                                width: 400,
-                                                height: 400,
-                                                child: HomeRouteBlock(
-                                                    route: routesList[index]),
+                                              return GestureDetector(
+                                                      onTap: () {
+                                                        openNewPage(
+                                                            context,
+                                                            TripPage(
+                                                                trip: tripsList[index])
+                                                        );
+                                                      },
+                                                  child: ETAWidgets.homeTripBlock(context,tripsList[index])
                                               );
                                             })),
 
@@ -277,12 +281,12 @@ class _GuardiansHomeState extends State<GuardiansHome>
       parentModel = parentQuery;
     });
 
-    final routesQuery = await httpService.getRoutes();
+    final trips = await httpService.getParentTrips();
     setState(() {
-      routesList = routesQuery;
-      for (var route in routesList) {
-        notificationSubcribe("start-trip-${route.route_id}");
-        notificationSubcribe("end-trip-${route.route_id}");
+      tripsList = trips;
+      for (var trip in tripsList) {
+        notificationSubcribe("start-trip-${trip.route_id}");
+        notificationSubcribe("end-trip-${trip.route_id}");
       }
     });
 

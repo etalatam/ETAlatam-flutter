@@ -146,7 +146,7 @@ class Lang {
     'view': 'عرض',
     'updated': 'تم التحديث',
     'updated_successfully': 'تم التحديث بنجاح',
-    'available_routes': 'خطوط السير المتاحة',
+    'active_routes': 'خطوط السير المتاحة',
     'list_of_your_added_children': 'قائمة بالأطفال الذين تم إضافتهم',
     'view_details': 'عرض التفاصيل',
     'add_student': 'إضافة طالب',
@@ -304,7 +304,7 @@ class Lang {
     'no_notification_yet!': 'No hay notificaciones aún!',
     'list_of_your_notifications': 'Lista de notificaciones',
     "list_of_your_added_children": "Estudiantes vinculados a tu cuenta",
-    "available_routes": "Rutas disponibles",
+    "active_routes": "Rutas activas",
     "view_details": "Ver detalles"
   };
 }

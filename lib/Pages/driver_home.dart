@@ -4,6 +4,7 @@ import 'package:eta_school_app/Pages/login_page.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/components/active_trip.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
@@ -293,6 +294,15 @@ class _DriverHomeState extends State<DriverHome>
   openPage(context, page) {
     setState(() => openNewPage(context, page));
   }
+ 
+  notificationSubcribe(String topic) {
+    try {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+      messaging.subscribeToTopic(topic);
+    } catch (e) {
+      print("DriverHome.notificationSubcribe.error: ${e.toString()}");
+    }
+  }  
 
   ///
   /// Load resources through API
@@ -322,6 +332,10 @@ class _DriverHomeState extends State<DriverHome>
     final routesQuery = await httpService.getRoutes();
     setState(() {
       routesList = routesQuery;
+      for (var route in routesList) {
+        notificationSubcribe("start-trip-${route.route_id}");
+        notificationSubcribe("end-trip-${route.route_id}");
+      }
     });
 
     List<TripModel>? oldTrips = await httpService.getDriverTrips(0);
