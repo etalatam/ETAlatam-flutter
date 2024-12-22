@@ -303,7 +303,7 @@ class Lang {
     'comment': 'Comentario',
     'no_notification_yet!': 'No hay notificaciones aún!',
     'list_of_your_notifications': 'Lista de notificaciones',
-    "list_of_your_added_children": "Estudiantes vinculados a tu cuenta",
+    "list_of_your_added_children": "Estudiantes",
     "active_routes": "Rutas activas",
     "view_details": "Ver detalles"
   };

@@ -870,17 +870,17 @@ mixin ETAWidgets {
                         )
                       ],
                       color: activeTheme.main_bg,
-                      gradient:  LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          activeTheme.main_bg,
+                      // gradient:  LinearGradient(
+                      //   begin: Alignment.topCenter,
+                      //   end: Alignment.bottomCenter,
+                      //   colors: [
+                      //     activeTheme.main_bg,
  
-                          activeTheme.main_bg,
-                          // darkMode == false ? Color.fromRGBO(255, 255, 255, .95) : Color.fromRGBO(201, 206, 223, .95),
-                          darkMode == true ? activeTheme.main_bg.withOpacity(.2) : Color.fromRGBO(201, 206, 223, 1),
-                        ],
-                      ),
+                      //     // activeTheme.main_bg,
+                      //     // darkMode == false ? Color.fromRGBO(255, 255, 255, .95) : Color.fromRGBO(201, 206, 223, .95),
+                      //     darkMode == true ? activeTheme.main_bg.withOpacity(.2) : Color.fromRGBO(201, 206, 223, 1),
+                      //   ],
+                      // ),
                       border: Border.all(width: 1, color: activeTheme.border_color.withOpacity(.5)),
                       borderRadius: BorderRadius.circular(20)
                     ),

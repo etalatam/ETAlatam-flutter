@@ -183,13 +183,9 @@ class _TripPageState extends State<TripPage>
                                     ? ETAWidgets.tripInfoRow(trip)
                                     : const Center(),
                                 Row(children: [
-                                  (trip.waiting_locations_count != 0 ||
-                                          trip.trip_status
-                                                  .toString()
-                                                  .toLowerCase() ==
-                                              'completed')
-                                      ? const Center()
-                                      : GestureDetector(
+                                  if (trip.trip_status == 'Running' && 
+                                    relationName.contains('eta.drivers'))
+                                   GestureDetector(
                                           onTap: (() {
                                             endTrip();
                                           }),
