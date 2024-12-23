@@ -9,14 +9,13 @@ class UserAvatar extends StatefulWidget {
 }
 
 class _UserAvatarState extends State<UserAvatar> {
-
   String? relationId;
-  String? relationName;
+  String? relationName = "eta.usuarios";
 
   @override
   void initState() {
     super.initState();
-    
+
     relationId = "${storage.getItem('relation_id')}";
     relationName = "${storage.getItem('relation_name')}";
   }
@@ -24,7 +23,7 @@ class _UserAvatarState extends State<UserAvatar> {
   @override
   Widget build(BuildContext context) {
     final imageUrl = httpService.getAvatarUrl(relationId, relationName);
-    print (imageUrl);
+    print(imageUrl);
 
     return GestureDetector(
         onTap: () {
@@ -33,13 +32,12 @@ class _UserAvatarState extends State<UserAvatar> {
         child: Container(
             width: 60,
             height: 60,
-            padding: const EdgeInsets.symmetric(
-                horizontal: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
             child: CircleAvatar(
-                backgroundColor: Color.fromARGB(255, 234,244,243),
+                backgroundColor: Color.fromARGB(255, 234, 244, 243),
                 radius: 50,
-                foregroundImage: NetworkImage(imageUrl,headers: {'Accept': 'image/png'})
-    )));
+                foregroundImage:
+                    NetworkImage(imageUrl, headers: {'Accept': 'image/png'}))));
     // return  GestureDetector(
     //   onTap: (() => {
     //     openNewPage(context, ProfilePage())
@@ -64,7 +62,7 @@ class _UserAvatarState extends State<UserAvatar> {
     //                 ?
     //                 NetworkImage('${httpService.getImageUrl()}${driver?.picture}',
     //                   headers: {'Accept': 'image/png'})
-    //                 : 
+    //                 :
     //                 // AssetImage('assets/logo.png')
     //                 NetworkImage('https://ui-avatars.com/api/?name=${driver?.first_name}')
 

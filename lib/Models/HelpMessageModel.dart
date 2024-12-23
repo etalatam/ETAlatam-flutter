@@ -58,7 +58,7 @@ class HelpMessageModel {
         message: json['content'] as String?,
         status: "status", //json['status'] as String?,
         priority: "${json['priority_id']}" as String?,
-        user_id: json['id_driver'] as int,
+        user_id: json['id_usu'] as int,
         short_date: json['ts'],
         date: json['ts'] as String?,
         comments: comments);

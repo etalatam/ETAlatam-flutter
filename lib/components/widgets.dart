@@ -846,7 +846,7 @@ mixin ETAWidgets {
             height: 50,
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
-              color: activeTheme.main_color,
+              color: activeTheme.buttonBG,
               borderRadius: BorderRadius.circular(30),
             )
           ),
@@ -870,49 +870,45 @@ mixin ETAWidgets {
                         )
                       ],
                       color: activeTheme.main_bg,
-                      gradient:  LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          activeTheme.main_bg,
+                      // gradient:  LinearGradient(
+                      //   begin: Alignment.topCenter,
+                      //   end: Alignment.bottomCenter,
+                      //   colors: [
+                      //     activeTheme.main_bg,
  
-                          activeTheme.main_bg,
-                          // darkMode == false ? Color.fromRGBO(255, 255, 255, .95) : Color.fromRGBO(201, 206, 223, .95),
-                          darkMode == true ? activeTheme.main_bg.withOpacity(.2) : Color.fromRGBO(201, 206, 223, 1),
-                        ],
-                      ),
+                      //     // activeTheme.main_bg,
+                      //     // darkMode == false ? Color.fromRGBO(255, 255, 255, .95) : Color.fromRGBO(201, 206, 223, .95),
+                      //     darkMode == true ? activeTheme.main_bg.withOpacity(.2) : Color.fromRGBO(201, 206, 223, 1),
+                      //   ],
+                      // ),
                       border: Border.all(width: 1, color: activeTheme.border_color.withOpacity(.5)),
                       borderRadius: BorderRadius.circular(20)
                     ),
                     child: Column(children: [
                       
-                      Container(
-                        child: Text("${student.first_name}", style: activeTheme.h3,),
-                      ),
+                      Text("${student.first_name} ${student.last_name}", style: activeTheme.h4,),
                       SizedBox(height: 20),
                       Row(children: [
                         Expanded(
                           flex: 1,
-                          child: Container(
-                        child: Row(mainAxisAlignment: MainAxisAlignment.start, 
-                        children: [
-                          Icon(Icons.arrow_right_alt, color: activeTheme.icon_color,),
-                          Text(lang.translate('View details'), style: activeTheme.h6), 
-                          ]),
-                      )),
-                      Container(
-                        transformAlignment: Alignment.center,
-                        padding: EdgeInsets.symmetric(horizontal: 5),
-                        decoration: BoxDecoration(
-                          color: student.transfer_status.toString().toLowerCase() == 'approved' ? activeTheme.main_color : Colors.red,
-                          borderRadius: BorderRadius.circular(10)
-                        ),
-                        child: Row(mainAxisAlignment: MainAxisAlignment.center, 
-                        children: [
-                          Icon(Icons.arrow_right_alt, color: activeTheme.buttonColor,),
-                          Text(lang.translate("${student.transfer_status}"), textAlign: TextAlign.center, style: TextStyle( fontFamily: activeTheme.h6.fontFamily, color: activeTheme.buttonColor,fontSize: activeTheme.h6.fontSize)), 
-                          ]),
-                      ),
+                          child: Row(mainAxisAlignment: MainAxisAlignment.start, 
+                          children: [
+                            // Icon(Icons.arrow_right_alt, color: activeTheme.icon_color,),
+                            // Text(lang.translate('View details'), style: activeTheme.h6), 
+                            ])),
+                      // Container(
+                      //   transformAlignment: Alignment.center,
+                      //   padding: EdgeInsets.symmetric(horizontal: 5),
+                      //   decoration: BoxDecoration(
+                      //     color: student.transfer_status.toString().toLowerCase() == 'approved' ? activeTheme.main_color : Colors.red,
+                      //     borderRadius: BorderRadius.circular(10)
+                      //   ),
+                      //   child: Row(mainAxisAlignment: MainAxisAlignment.center, 
+                      //   children: [
+                      //     Icon(Icons.arrow_right_alt, color: activeTheme.buttonColor,),
+                      //     Text(lang.translate("${student.transfer_status}"), textAlign: TextAlign.center, style: TextStyle( fontFamily: activeTheme.h6.fontFamily, color: activeTheme.buttonColor,fontSize: activeTheme.h6.fontSize)), 
+                      //     ]),
+                      // ),
                       ],)
                     ],),
                   ),
@@ -928,9 +924,9 @@ mixin ETAWidgets {
                     child: CircleAvatar(
                       maxRadius: 50,
                       backgroundColor: Colors.white,
-                      foregroundImage: NetworkImage( (student.picture != null)
-                        ? (httpService.croppedImage(student.picture ,200, 200))
-                        : httpService.croppedImage("/uploads/images/60x60.png" ,200, 200)
+                      foregroundImage: NetworkImage( 
+                        httpService.getAvatarUrl(student.student_id,'eta.students'),
+                        headers: {'Accept': 'image/png'}
                       ),
                     ),
                 )
