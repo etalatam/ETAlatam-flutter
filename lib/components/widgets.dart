@@ -846,7 +846,7 @@ mixin ETAWidgets {
             height: 50,
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
-              color: activeTheme.main_color,
+              color: activeTheme.buttonBG,
               borderRadius: BorderRadius.circular(30),
             )
           ),
