@@ -388,10 +388,15 @@ class _TripPageState extends State<TripPage>
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            SizedBox(
+              width: 300,
+              child: Text(
               // '${pickupLocation.student!.student_name}',
               '${pickupLocation.location?.location_name}',
               style: activeTheme.h5,
+              softWrap: true,
+              maxLines: 2,
+            ),
             ),
             SizedBox(
                 width: 300,
