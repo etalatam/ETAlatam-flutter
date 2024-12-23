@@ -894,8 +894,8 @@ class HttpService {
       'latitude': position['latitude'],
       'longitude': position['longitude'],
       'speed': position['speed'],
-      'heading': position['heading'],
-      'time': position['time'],
+      // 'heading': position['heading'],
+      // 'time': position['time'],
       'accuracy': position['accuracy'],
       'altitude': position['altitude']
     };

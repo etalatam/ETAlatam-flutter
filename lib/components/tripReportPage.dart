@@ -307,6 +307,7 @@ class _TripReport extends State<TripReport> {
                                           padding: const EdgeInsets.all(5),
                                           child: Text(lang
                                               .translate('Pickup locations'))),
+                                      if(trip!.pickup_locations != null)
                                       Text(
                                         trip!.pickup_locations!.length
                                             .toString(),
