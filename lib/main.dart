@@ -3,7 +3,7 @@ import 'package:eta_school_app/Pages/login_page.dart';
 import 'package:eta_school_app/Pages/splash_screen_page.dart';
 import 'package:eta_school_app/Pages/home_screen.dart';
 import 'package:eta_school_app/controllers/preferences.dart';
-import 'package:eta_school_app/shared/emitter_client_cervice.dart';
+import 'package:eta_school_app/shared/emitter_client_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,17 +19,14 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   final localeController = Get.put(LocaleController());
+
   await localeController.loadSavedLocale();
   Get.put(PreferencesSetting());
+
   MapboxOptions.setAccessToken(
       "sk.eyJ1IjoiZWxpZ2FiYXkiLCJhIjoiY20xMm1nYTA4MHV1cjJscXlocXA0MW5zciJ9.N3pZgESYISIcM3dlWrdgTQ");
-  // runApp(ChangeNotifierProvider(
-  //   create: (context) => LocationService(),
-  //   child: MaterialApp(
-  //     home: MyApp(),
-  //   ),
-  // ));
-    runApp(
+
+  runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => EmitterClientService()..connect()),

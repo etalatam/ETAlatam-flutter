@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 
@@ -100,9 +99,8 @@ class EmitterClient {
     }
 
     final formattedChannel = _formatChannel(channel, publisherKey);
-    final payload = utf8.encode(json.encode(message));
     final builder = MqttClientPayloadBuilder()
-      ..addBuffer(payload);
+      ..addString(message);
 
     _client.publishMessage(
       formattedChannel,
