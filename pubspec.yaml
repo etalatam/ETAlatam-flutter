@@ -3,7 +3,7 @@ description: Parent APP for ETA School Routes system.
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 1.6.30
+version: 1.7.30
 
 environment:
   sdk: ">=3.2.0 <4.0.0"
@@ -36,6 +36,7 @@ dependencies:
   localstorage: ^4.0.1+2
   location: ^5.0.3
   mapbox_maps_flutter: ^2.0.0
+  mqtt_client: ^10.3.0
   onesignal_flutter: ^5.0.3
   path_provider: ^2.1.4
   permission_handler: ^11.3.1
