@@ -221,8 +221,7 @@ class HomeRouteBlock extends StatelessWidget {
                       GestureDetector(
                           onTap: () {
                             // return;
-                            callback!(
-                                route.route_id, route.vehicle!.vehicle_id);
+                            callback!(route);
                             // openNewPage(context, DriverPage(driver: route.driver, vehicle: route.vehicle,));
                           },
                           child: Container(

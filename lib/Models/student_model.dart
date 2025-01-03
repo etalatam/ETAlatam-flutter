@@ -89,10 +89,16 @@ class StudentModel {
       print("StudentModel.fromJson.parseDestination.error: ${e.toString()}");
     }
     
-    // RouteModel? route = json['route'] != null ? RouteModel.fromJson(json['route']) : RouteModel(pickup_locations: [],route_id: 0, route_name: '');
+
+    RouteModel? route;
+    try {
+      route = json['route'] != null ? RouteModel.fromJson(json['route']) : RouteModel(pickup_locations: [],route_id: 0, route_name: '');
+    } catch (e) {
+      print("StudentModel.fromJson.parseRoute.error: ${e.toString()}");
+    }
 
     return StudentModel(
-      student_id: json['student'] as int?,
+      student_id: json['student_id'] as int?,
       parent_id: json['guardian_id'] as int?,
       first_name: json['student_firstname'] as String?,
       last_name: json['student_lastname'] as String?,
@@ -106,8 +112,8 @@ class StudentModel {
       pickup_location: pickupLocation,
       destination: destination,
       schoolId: json['school_id'],
-      statusCode: json['status_code']
-      // route: route,
+      statusCode: json['status_code'],
+      route: route,
     );
   }
 

@@ -36,12 +36,14 @@ class HttpService {
   Map? headers;
 
   String getAvatarUrl(relationId, relationName) {
-    return "$apiURL/rpc/get_reource_image?_relation_name=$relationName&_relation_id=$relationId";
+    final url = "$apiURL/rpc/get_reource_image?_relation_name=$relationName&_relation_id=$relationId";
+    print("getAvatarUrl: $url");
+    return url;
   }
 
-  String getImageUrl() {
+  String getImageUrl({relationName = "eta.usuarios", relationId = 0}) {
     // return "$apiURL/app/image.php?src=";
-    return "$apiURL/rpc/get_reource_image?_relation_name=eta.usuarios&_relation_id=";
+    return "$apiURL/rpc/get_reource_image?_relation_name=$relationName&_relation_id=$relationId";
   }
 
   String croppedImage(path, int? width, int? height) {
@@ -279,6 +281,25 @@ class HttpService {
     return [];
   }
 
+  Future<List<TripModel>> getParentTrips() async {
+      var res = await getQuery("/rpc/guardian_trips?running=eq.true&limit=10");
+      print("res.statusCode: ${res.statusCode}");
+      print("res.body: ${res.body}");
+
+      if (res.statusCode == 200) {
+        try {
+          List<dynamic> body = jsonDecode(res.body);
+          return body.map((dynamic item) => TripModel.fromJson(item)).toList();          
+        } catch (e) {
+          print("getRoutes error: ${e.toString()}");
+          return [];
+        }
+      }
+
+      return [];
+
+  }
+
   /// Load Routes
   Future<List<RouteModel>> getRoutes() async {
     var res = await getQuery("/rpc/driver_routes?limit=10");
@@ -374,7 +395,7 @@ class HttpService {
   /// Load Trip
   Future<TripModel> getTrip(id) async {
     http.Response res =
-        await getQuery("/rpc/driver_trips?select=*&limit=1&id_trip=eq.$id&order=id.desc");
+        await getQuery("/rpc/driver_trips?select=*&limit=1&id_trip=eq.$id");
 
     print("res.statusCode: ${res.statusCode}");
     print("res.body: ${res.body}");
@@ -410,9 +431,11 @@ class HttpService {
   }
 
   /// Submit form to update data through API
-  Future<TripModel> startTrip(int routeId) async {
+  Future<TripModel> startTrip(RouteModel route) async {
+    
     Map data = {
-      "_route_id": "$routeId",
+      "_route_id": "${route.route_id}",
+      "_id_schedule": "${route.schedule_id}"
       // "driver_id": driverId,
       // "route_id": routeId,
       // "vehicle_id": vehicleId,
@@ -871,8 +894,8 @@ class HttpService {
       'latitude': position['latitude'],
       'longitude': position['longitude'],
       'speed': position['speed'],
-      'heading': position['heading'],
-      'time': position['time'],
+      // 'heading': position['heading'],
+      // 'time': position['time'],
       'accuracy': position['accuracy'],
       'altitude': position['altitude']
     };
@@ -894,15 +917,15 @@ class HttpService {
   Future<List<StudentModel>> routeStudents(
       {required tripId, limit = 20, offset = 0, String filter = ''}) async {
     String url =
-        "/rpc/route_students?order=firstname.desc&limit=$limit&offset=$offset";
+        "/rpc/route_students?order=student_firstname.desc&limit=$limit&offset=$offset";
 
     url = "$url&id_trip=eq.$tripId";
 
     if (filter.isNotEmpty) {
       url = "$url&or=(";
-      url = "${url}firstname.ilike.*$filter*";
-      url = "$url,lastname.ilike.*$filter*";
-      url = "$url,address.ilike.*$filter*";
+      url = "${url}student_firstname.ilike.*$filter*";
+      url = "$url,student_lastname.ilike.*$filter*";
+      url = "$url,student_address.ilike.*$filter*";
       url = "$url,school_name.ilike.*$filter*";
       url = "$url,pickup_point_name.ilike.*$filter*";
       url = "$url)";
