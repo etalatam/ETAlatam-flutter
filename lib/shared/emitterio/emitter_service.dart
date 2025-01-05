@@ -18,24 +18,27 @@ class EmitterService extends ChangeNotifier {
   Future<void> connect() async {
 
     client ??= EmitterClient(
-      key: 'KAys6f2KhxK2aCnaCRGNUiCBB0Tbqa3m',
+      // key: 'KAys6f2KhxK2aCnaCRGNUiCBB0Tbqa3m',
       host: 'emitter.etalatam.com',
+      port: 443,
       secure: true
     );
     
+    print("[EmitterService.connect] isConnected ${client?.isConnected}");
+
     if (client?.isConnected == false) {
       try {
-        await client?.connect();
+        print("[EmitterService.connecting]...");
         client?.onMessage = _onMessage;
         client?.onError = _onError;
         client?.onConnect = _onConnect;
         client?.onDisconnect = _onDisconnect;
+        await client?.connect();
       } on Exception catch (e) {
         print("[EmitterService.connect.error] ${e.toString()}");
         client?.disconnect();
       }
     }
-    print("[EmitterService.connect] isConnected ${client?.isConnected}");
   }
   
   void _onMessage(String message) {
