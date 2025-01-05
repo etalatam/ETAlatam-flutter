@@ -3,7 +3,7 @@ import 'package:eta_school_app/Pages/login_page.dart';
 import 'package:eta_school_app/Pages/splash_screen_page.dart';
 import 'package:eta_school_app/Pages/home_screen.dart';
 import 'package:eta_school_app/controllers/preferences.dart';
-import 'package:eta_school_app/shared/emitter_client_service.dart';
+import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,7 +29,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => EmitterClientService()..connect()),
+        ChangeNotifierProvider(create: (context) => EmitterService()),
         ChangeNotifierProvider(create: (context) => LocationService()),
       ],
       child: MyApp(),
