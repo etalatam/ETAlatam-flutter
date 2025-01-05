@@ -47,26 +47,24 @@ class EmitterClient {
       ..onSubscribed = _onSubscribed
       ..onUnsubscribed = _onUnsubscribed;
 
-    _client.logging(on: false);
+    _client.logging(on: true);
     _client.onBadCertificate = (cert) => true;
-
-    _client.published!.listen((MqttPublishMessage message) {
-      final payload = MqttPublishPayload.bytesToStringAsString(message.payload.message);
-      if (onMessage != null) {
-        onMessage!(payload);
-      }
-    });
   }
 
   Future<void> connect() async {
     try {
       await _client.connect();
+      _client.published!.listen((MqttPublishMessage message) {
+        final payload = MqttPublishPayload.bytesToStringAsString(message.payload.message);
+        if (onMessage != null) {
+          onMessage!(payload);
+        }
+      });
     } catch (e) {
       _connected = false;
       if (onError != null) {
         onError!(e.toString());
       }
-      rethrow;
     }
   }
 

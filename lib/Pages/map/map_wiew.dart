@@ -55,6 +55,8 @@ class MapWiewState extends State<MapWiew> {
 
     await locationService.init();
 
+    await emitterService.connect();
+
     await widget.onMapReady(mapboxMap);
   }
 
@@ -114,13 +116,6 @@ class MapWiewState extends State<MapWiew> {
     super.initState();
     locationService = Provider.of<LocationService>(context, listen: false);
     emitterService = Provider.of<EmitterService>(context, listen: false);
-  }
-
-  @override
-  void dispose() {
-    // locationService.dispose(); 
-    // emitterService.dispose();
-    super.dispose();
   }
 
 }
