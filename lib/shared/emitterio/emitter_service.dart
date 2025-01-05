@@ -18,7 +18,7 @@ class EmitterService extends ChangeNotifier {
   Future<void> connect() async {
 
     client ??= EmitterClient(
-      host: 'emitter.etalatam.com',
+      host: 'wss://emitter.etalatam.com',
       port: 443,
       secure: true
     );

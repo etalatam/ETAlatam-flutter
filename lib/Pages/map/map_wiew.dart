@@ -118,4 +118,10 @@ class MapWiewState extends State<MapWiew> {
     emitterService = Provider.of<EmitterService>(context, listen: false);
   }
 
+  @override
+  void dispose() {
+    emitterService.client!.unsubscribe('test/');
+    super.dispose();
+  }
+
 }
