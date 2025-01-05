@@ -37,22 +37,17 @@ class EmitterClient {
   }
 
   void _initializeClient() {
-    final clientId = 'emitter_${DateTime.now().millisecondsSinceEpoch}';
-    _client = MqttServerClient(_host!, clientId, maxConnectionAttempts: 3)
-      ..port = _port!
-      ..secure = _secure
-      ..useWebSocket = true
-      ..autoReconnect = true
-      ..resubscribeOnAutoReconnect = true
-      ..keepAlivePeriod = defaultKeepAlive
-      ..websocketProtocols = MqttClientConstants.protocolsSingleDefault
-      ..onConnected = _onConnected
-      ..onDisconnected = _onDisconnected
-      ..onSubscribed = _onSubscribed
-      ..onUnsubscribed = _onUnsubscribed;
-
+    _client = MqttServerClient(_host!, '');
+    _client.useWebSocket = true;
+    _client.port = _port!;
+    _client.websocketProtocols = MqttClientConstants.protocolsSingleDefault;
+    _client.setProtocolV311();
+    _client.keepAlivePeriod = 20;
+    _client.onConnected = _onConnected;
+    _client.onDisconnected = _onDisconnected;
+    _client.onSubscribed = _onSubscribed;
+    _client.onUnsubscribed = _onUnsubscribed;
     _client.logging(on: true);
-    // _client.onBadCertificate = (cert) => true;
   }
 
   Future<void> connect() async {
@@ -176,7 +171,7 @@ class EmitterClient {
     };
 
     final uri = Uri(
-      scheme: _secure ? 'wss' : 'ws',
+      scheme: _secure ? 'wss://' : 'ws://',
       host: _host,
       port: _port,
       queryParameters: queryParams,
