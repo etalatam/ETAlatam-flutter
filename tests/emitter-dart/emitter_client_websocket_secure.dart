@@ -4,7 +4,7 @@ import 'package:eta_school_app/shared/emitterio/emitter_client.dart';
 
 const chanelKey = "Us3JQzMD037hjc-pQsOHhCuD_VxFRTEV";
 
-const testChannel = 'test';
+const testChannel = 'test/';
 
 final client = EmitterClient(
   host: 'wss://emitter.etalatam.com',
@@ -17,15 +17,15 @@ Future<int> main() async {
     
     if (client.isConnected == false) {
       try {
-        print("[EmitterService.connecting]...");
+        print("\n>>>>>>>>>>>>>>>>>>>>> connecting... \n");
         client.onMessage = _onMessage;
         client.onError = _onError;
         client.onConnect = _onConnect;
         client.onDisconnect = _onDisconnect;
         await client.connect();
-        print("\n########################################################\n");
       } on Exception catch (e) {
-        print("[EmitterService.connect.error] ${e.toString()}");
+        print("\n>>>>>>>>>>>>>>>>>>>>> connection exception \n");
+        print(e.toString());
         client.disconnect();
       }
     }
@@ -33,24 +33,21 @@ Future<int> main() async {
     return 0;
 }
 
-  void _onMessage(String message) {
-    print("\n########################################################\n");
-    print("[EmitterService.onMessage] $message");
-  }
+void _onConnect() {
+  print("\n>>>>>>>>>>>>>>>>>>>>> Connected OK\n");
+  client.subscribe(testChannel, key: chanelKey);
+}
 
-  void _onError(String error) {
-    print("\n########################################################\n");
-    print("[EmitterService.onError] $error");
-  }
+void _onMessage(String message) {
+  print("\n>>>>>>>>>>>>>>>>>>>>> onMessage \n");
+  print("$message \n");
+}
 
-  void _onConnect() {
-    print("\n########################################################\n");
-    print("[EmitterService._onConnect]");
+void _onError(String error) {
+  print("\n>>>>>>>>>>>>>>>>>>>>> onError \n");
+  print("$error \n");
+}
 
-    client.subscribe(testChannel, key: chanelKey);
-  }
-
-  void _onDisconnect() {
-    print("########################################################");
-    print("[EmitterService._onDisconnect]");
-  }
+void _onDisconnect() {
+  print("\n>>>>>>>>>>>>>>>>>>>>> onDisconnect \n");
+}

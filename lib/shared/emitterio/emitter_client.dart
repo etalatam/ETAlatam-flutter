@@ -37,7 +37,9 @@ class EmitterClient {
   }
 
   void _initializeClient() {
-    _client = MqttServerClient(_host!, '');
+    final clientId = 'emitter_${DateTime.now().millisecondsSinceEpoch}';
+    _client = MqttServerClient(_host!, clientId, maxConnectionAttempts: 1);
+    // _client = MqttServerClient(_host!, '');
     _client.useWebSocket = true;
     _client.port = _port!;
     _client.websocketProtocols = MqttClientConstants.protocolsSingleDefault;
@@ -47,7 +49,8 @@ class EmitterClient {
     _client.onDisconnected = _onDisconnected;
     _client.onSubscribed = _onSubscribed;
     _client.onUnsubscribed = _onUnsubscribed;
-    _client.logging(on: true);
+    _client.onBadCertificate = (cert) => true;
+    _client.logging(on: false);
   }
 
   Future<void> connect() async {
@@ -122,8 +125,21 @@ class EmitterClient {
   }
 
   String _formatChannel(String channel, String key) {
-    return '$key/$channel';
+    // Prefix with the key if any
+    var formatted = channel;
+    if (key.isNotEmpty) {
+        formatted = channel.endsWith("/") ? "$key/$channel" :  "$key/channel";
+    }
+
+    // Add trailing slash
+    if (!channel.endsWith("/")) {
+        formatted += "/";
+    }
+
+    // We're done compiling the channel name
+    return formatted;
   }
+
 
   void _onConnected() {
     _connected = true;
