@@ -1,4 +1,6 @@
+import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../Pages/profile_page.dart';
 import '../controllers/helpers.dart';
 import '../methods.dart';
@@ -23,58 +25,39 @@ class _UserAvatarState extends State<UserAvatar> {
   @override
   Widget build(BuildContext context) {
     final imageUrl = httpService.getAvatarUrl(relationId, relationName);
-    print(imageUrl);
+    bool isConnected = Provider.of<EmitterService>(context).client!.isConnected;
 
     return GestureDetector(
         onTap: () {
           openNewPage(context, ProfilePage());
         },
-        child: Container(
-            width: 60,
-            height: 60,
-            padding: const EdgeInsets.symmetric(horizontal: 5),
-            child: CircleAvatar(
-                backgroundColor: Color.fromARGB(255, 234, 244, 243),
-                radius: 50,
-                foregroundImage:
-                    NetworkImage(imageUrl, headers: {'Accept': 'image/png'}))));
-    // return  GestureDetector(
-    //   onTap: (() => {
-    //     openNewPage(context, ProfilePage())
-    //   }),
-    //   child: Row(
-    //     mainAxisSize: MainAxisSize.min,
-    //     mainAxisAlignment:
-    //         MainAxisAlignment.start,
-    //     crossAxisAlignment:
-    //         CrossAxisAlignment.center,
-    //     children: [
-    //       Container(
-    //         width: 60,
-    //         height: 60,
-    //         decoration: ShapeDecoration(
-    //           image: DecorationImage(
-    //             fit: BoxFit.fill,
-    //             image: driver?.picture !=
-    //                         null &&
-    //                     driver!.picture
-    //                         !.isNotEmpty
-    //                 ?
-    //                 NetworkImage('${httpService.getImageUrl()}${driver?.picture}',
-    //                   headers: {'Accept': 'image/png'})
-    //                 :
-    //                 // AssetImage('assets/logo.png')
-    //                 NetworkImage('https://ui-avatars.com/api/?name=${driver?.first_name}')
-
-    //           ),
-    //           shape: RoundedRectangleBorder(
-    //             borderRadius:
-    //                 BorderRadius.circular(50),
-    //           ),
-    //         ),
-    //       ),
-    //     ],
-    //   ),
-    // );
+        child:  Stack(
+          children: [
+            Container(
+                width: 60,
+                height: 60,
+                padding: const EdgeInsets.symmetric(horizontal: 5),
+                child: CircleAvatar(
+                    backgroundColor: Color.fromARGB(255, 234, 244, 243),
+                    radius: 50,
+                    foregroundImage:
+                        NetworkImage(imageUrl, headers: {'Accept': 'image/png'}
+            ))),
+            Consumer<EmitterService>(builder: (context, emitterService, child) {
+              return Positioned(
+                bottom: 5,
+                right: 5,
+                child: Container(
+                  width: 15,
+                  height: 15,
+                  decoration: BoxDecoration(
+                    color: emitterService.client!.isConnected? Colors.green : Colors.red,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                ),
+              );
+            }),
+          ]));
   }
 }

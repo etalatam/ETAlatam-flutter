@@ -9,7 +9,9 @@ class EmitterService extends ChangeNotifier {
   
   factory EmitterService() => _instance;
   
-  EmitterService._internal();
+  EmitterService._internal() {
+    connect();
+  }
 
   EmitterClient? client;
 
@@ -29,6 +31,8 @@ class EmitterService extends ChangeNotifier {
       try {
         print("[EmitterService.connecting]...");
         client?.onMessage = _onMessage;
+        client?.onSubscribed = _onSubscribed;
+        client?.onUnsubscribed = _onUnsubscribed;
         client?.onError = _onError;
         client?.onConnect = _onConnect;
         client?.onDisconnect = _onDisconnect;
@@ -56,5 +60,13 @@ class EmitterService extends ChangeNotifier {
 
   void _onDisconnect() {
     print("[EmitterService._onDisconnect]");
+  }
+
+  void _onSubscribed(String topic) {
+    print("[EmitterService.onSubscribed] $topic");
+  }
+
+  void _onUnsubscribed(String topic) {
+    print("[EmitterService.onUnsubscribed] $topic");
   }
 }

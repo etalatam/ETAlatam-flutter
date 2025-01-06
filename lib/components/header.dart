@@ -56,18 +56,6 @@ class Header extends StatelessWidget {
               width: 120,
               height: 120,
             )
-            // TextButton(
-            //   style: TextButton.styleFrom(
-            //       padding: const EdgeInsets.symmetric(horizontal: 55)),
-            //   onPressed: () {
-            //     Get.to(NotificationsPage());
-            //   },
-            //   child: Icon(
-            //     Icons.notifications_active,
-            //     color: activeTheme.main_bg,
-            //     size: 30,
-            //   ),
-            // )
           ],
         ),
       ),
@@ -82,27 +70,7 @@ class Header extends StatelessWidget {
         widthFactor: 1,
         child: Container(
           clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-              // color: darkMode ? activeTheme.main_bg : activeTheme.main_color,
-              //borderRadius: BorderRadius.circular(15),
-              // gradient: LinearGradient(
-              //   colors: [
-              //     darkMode ? activeTheme.main_bg : activeTheme.main_color,
-              //     //Color.fromARGB(255, 169, 199, 226)
-              //     Color.fromARGB(255, 17, 24, 39)
-              //   ],
-              //   begin: Alignment.topLeft,
-              //   end: Alignment.bottomRight,
-              // ),
-              // boxShadow: [
-              //   BoxShadow(
-              //     color: shadowColor,
-              //     blurRadius: 10,
-              //     offset: const Offset(0, 5),
-              //     spreadRadius: 0,
-              //   )
-              // ],
-              ),
+          decoration: BoxDecoration(),
           padding:
               const EdgeInsets.only(left: 20, right: 20, top: 40, bottom: 10),
           child: Row(
@@ -123,15 +91,7 @@ class Header extends StatelessWidget {
                   style: activeTheme.h4,
                 ),
               ),
-              UserAvatar() // TextButton(
-              //   onPressed: () {
-              //     Get.to(NotificationsPage());
-              //   },
-              //   child: Icon(
-              //     Icons.notifications_active,
-              //     color: activeTheme.main_color,
-              //   ),
-              // )
+              UserAvatar() 
             ],
           ),
         ));

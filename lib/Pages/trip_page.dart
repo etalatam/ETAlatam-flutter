@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:eta_school_app/Pages/attendance_page.dart';
+import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -71,9 +72,7 @@ class _TripPageState extends State<TripPage>
 
   @override
   Widget build(BuildContext context) {
-    // print("[TripPage:build] ${widget.trip?.vehicle?.last_latitude}");
-    // mapDestination = LatLng(trip.route!.latitude!, trip.route!.longitude!);
-    // mapOrigin = LatLng(trip.vehicle!.last_latitude!, trip.vehicle!.last_longitude!);
+
     return Material(
       child: showLoader
           ? Loader()
@@ -232,27 +231,6 @@ class _TripPageState extends State<TripPage>
                                           tripUser(trip.pickup_locations![i]),
                                         ])
                                       : const Center(),
-                                // for (var i = 0;
-                                //     i < trip.destinations!.length;
-                                //     i++)
-                                //   activeTab == 'destination'
-                                //       ? Slideable(
-                                //           model: trip.destinations![i],
-                                //           hasLeft: true,
-                                //           hasRight:
-                                //               trip.destinations![i].status ==
-                                //                       'waiting'
-                                //                   ? true
-                                //                   : false,
-                                //           widget: Container(
-                                //             margin: const EdgeInsets.only(
-                                //                 bottom: 10, top: 10),
-                                //             child:
-                                //                 tripUser(trip.destinations![i]),
-                                //           ),
-                                //           finishCallback: finishDestination,
-                                //         )
-                                //       : const Center()
                               ],
                             ),
                           )
@@ -264,88 +242,6 @@ class _TripPageState extends State<TripPage>
                 showTripReportModal ? TripReport(trip: trip) : const Center(),
               ]),
             ),
-    );
-  }
-
-  Widget headWidget(item) {
-    // final user = hasCustomRoute ? item.student : item;
-    // currentPicture = user?.picture ?? ' ';
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        // Container(
-        //     padding: const EdgeInsets.symmetric(horizontal: 20),
-        //     child: CircleAvatar(
-        //         radius: 50,
-        //         foregroundImage:
-        //             NetworkImage(httpService.getAvatarUrl(currentPicture)))),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Container(
-            //   padding: const EdgeInsets.only(top: 15),
-            //   child: Text("${user.first_name}",
-            //       style: TextStyle(
-            //           fontSize: activeTheme.h5.fontSize,
-            //           fontWeight: activeTheme.h4.fontWeight,
-            //           color: Colors.white)),
-            // ),
-            // Container(
-            //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            //   decoration: BoxDecoration(
-            //       color: activeTheme.buttonBG,
-            //       borderRadius: const BorderRadius.all(Radius.circular(10))),
-            //   margin: const EdgeInsets.only(top: 15),
-            //   child: Text("${user.contact_number}",
-            //       style: TextStyle(
-            //         color: activeTheme.buttonColor,
-            //         fontWeight: FontWeight.bold,
-            //       )),
-            // ),
-          ],
-        ),
-        // const Expanded(child: Center()),
-        // Column(
-        //   children: [
-        //     const SizedBox(height: 50),
-        //     Row(
-        //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        //         crossAxisAlignment: CrossAxisAlignment.start,
-        //         mainAxisSize: MainAxisSize.max,
-        //         children: [
-        //           GestureDetector(
-        //             onTap: () {
-        //               launchCall(user.contact_number);
-        //             },
-        //             child: Padding(
-        //               padding:
-        //                   const EdgeInsets.only(top: 10, right: 20, left: 20),
-        //               child: Icon(
-        //                 Icons.call,
-        //                 color: activeTheme.icon_color,
-        //               ),
-        //             ),
-        //           ),
-        //           GestureDetector(
-        //             onTap: () {
-        //               launchWP(user.contact_number);
-        //             },
-        //             child: Padding(
-        //               padding:
-        //                   const EdgeInsets.only(top: 10, right: 20, left: 20),
-        //               child: Icon(
-        //                 Icons.maps_ugc_outlined,
-        //                 color: activeTheme.icon_color,
-        //               ),
-        //             ),
-        //           ),
-        //         ])
-        //   ],
-        // )
-      ],
     );
   }
 
@@ -391,7 +287,6 @@ class _TripPageState extends State<TripPage>
             SizedBox(
               width: 300,
               child: Text(
-              // '${pickupLocation.student!.student_name}',
               '${pickupLocation.location?.location_name}',
               style: activeTheme.h5,
               softWrap: true,
@@ -401,7 +296,6 @@ class _TripPageState extends State<TripPage>
             SizedBox(
                 width: 300,
                 child: Text(
-                  // '${pickupLocation.student!.student_name}',
                   '${pickupLocation.location?.address}',
                   softWrap: true,
                   maxLines: 2,
@@ -409,62 +303,17 @@ class _TripPageState extends State<TripPage>
                       fontSize: activeTheme.smallText.fontSize,
                       color: activeTheme.smallText.color),
                 )),
-            // pickupLocation.student == null
-            //     ? const Text("")
-            //     : Text(
-            //         // '${pickupLocation.student!.student_name}',
-            //         '${pickupLocation.location_name}',
-            //         style: activeTheme.h5,
-            //       ),
-            const SizedBox(
-              height: 5,
-            ),
-            // pickupLocation.status == 'waiting'
-            //     ? Text(lang.translate('Waiting'),
-            //         style: const TextStyle(color: Colors.red))
-            //     : Text(
-            //         '${pickupLocation.status}',
-            //         style: TextStyle(
-            //             fontSize: activeTheme.smallText.fontSize,
-            //             color: activeTheme.smallText.color),
-            //       )
           ],
         )
       ]),
     );
   }
 
-  // Widget? MapWiew(location) {
-  //   if (trip.trip_status == 'Completed') {
-  //     return StaticMap(
-  //         origin: LatLng(trip.pickup_locations![0].latitude!,
-  //             trip.pickup_locations![0].longitude!),
-  //         destination: mapDestination!,
-  //         pickup_locations: trip.pickup_locations,
-  //         destinations: trip.destinations);
-  //   }
-
-  //   if (hasCustomRoute) {
-  //     return CustomRouteMap(
-  //         origin: mapOrigin!,
-  //         destination: mapDestination!,
-  //         pickup_locations: trip.pickup_locations);
-  //   }
-
-  //   if (mapOrigin == null) {
-  //     return null;
-  //   }
-  //   return MapWithRoute(
-  //       origin: mapOrigin!,
-  //       destination: mapDestination!,
-  //       pickup_locations: trip.pickup_locations,
-  //       trip: trip);
-  // }
-
   endTrip() async {
     try {
       await httpService.endTrip(widget.trip!.trip_id.toString());
       locationServiceProvider.stopLocationService();
+      emitterServiceProvider.client!.unsubscribe("trip/${trip.trip_id}/event");
       setState(() {
         showTripReportModal = true;
       });
@@ -515,15 +364,6 @@ class _TripPageState extends State<TripPage>
         relationName = relationNameLocal;        
       });
     }
-  }
-
-  Map<MarkerId, Marker> loadMarkers() {
-    // for (var i = 0; i < trip.pickup_locations!.length; i++) {
-    //   final a = trip.pickup_locations![i];
-    //   addMarker(a.location!.address!, LatLng(a.latitude!, a.longitude!),
-    //       a.location!.address);
-    // }
-    return markers;
   }
 
   @override

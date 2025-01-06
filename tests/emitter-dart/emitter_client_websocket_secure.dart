@@ -2,9 +2,9 @@
 
 import 'package:eta_school_app/shared/emitterio/emitter_client.dart';
 
-const chanelKey = "Us3JQzMD037hjc-pQsOHhCuD_VxFRTEV";
+const chanelKey = "If2s1YIv1IFdr8G3_vst4G8pDDiDjWdb";
 
-const testChannel = 'test/';
+const testChannel = 'trip/109/event/#/';
 
 final client = EmitterClient(
   host: 'wss://emitter.etalatam.com',
@@ -19,6 +19,7 @@ Future<int> main() async {
       try {
         print("\n>>>>>>>>>>>>>>>>>>>>> connecting... \n");
         client.onMessage = _onMessage;
+        client.onSubscribed = _onSubscribed;
         client.onError = _onError;
         client.onConnect = _onConnect;
         client.onDisconnect = _onDisconnect;
@@ -50,4 +51,8 @@ void _onError(String error) {
 
 void _onDisconnect() {
   print("\n>>>>>>>>>>>>>>>>>>>>> onDisconnect \n");
+}
+
+void _onSubscribed(String topic) {
+    print("\n>>>>>>>>>>>>>>>>>>>>> onSubscribed $topic\n");
 }

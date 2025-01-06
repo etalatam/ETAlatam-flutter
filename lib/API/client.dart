@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:eta_school_app/Models/driver_model.dart';
 import 'package:eta_school_app/Models/PickupLocationModel.dart';
+import 'package:eta_school_app/Models/emitter_keygen.dart';
 import 'package:eta_school_app/Models/user_model.dart';
 import 'package:eta_school_app/Models/login_information_model.dart';
 import 'package:eta_school_app/Pages/providers/driver_provider.dart';
@@ -320,6 +321,26 @@ class HttpService {
     }
 
     return [];
+  }
+
+  Future<EmitterKeyGenModel?> emitterKeyGen(String channel) async {
+    http.Response res =
+        await getQuery("/rpc/emitter_keygen?order=ts.asc&channel=ilike.*$channel*&limit=1");
+
+    print("res.statusCode: ${res.statusCode}");
+    print("res.body: ${res.body}");
+
+    try {
+      if (res.statusCode == 200) {
+        List<dynamic> body = jsonDecode(res.body);
+        if(body.isNotEmpty){
+          return EmitterKeyGenModel.fromJson(body[0]);
+        }
+      }
+    } catch (e) {
+      print("emitterKeyGen.error ${e.toString()}");
+    }
+    return null;
   }
 
   ///

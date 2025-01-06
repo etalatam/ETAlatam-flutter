@@ -23,7 +23,9 @@ class EmitterClient {
   void Function()? onConnect;
   void Function()? onDisconnect;
   void Function(String)? onError;
-
+  void Function(String)? onSubscribed;
+  void Function(String)? onUnsubscribed;
+  
   EmitterClient({
     String? host,
     int? port,
@@ -156,11 +158,15 @@ class EmitterClient {
   }
 
   void _onSubscribed(String topic) {
-    // Handle subscription confirmation
+    if (onSubscribed != null) {
+      onSubscribed!(topic);
+    }
   }
 
   void _onUnsubscribed(String? topic) {
-    // Handle unsubscription confirmation
+    if (onUnsubscribed != null) {
+      onUnsubscribed!(topic!);
+    }
   }
 
   // Presence-related methods

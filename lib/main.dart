@@ -1,5 +1,6 @@
 
 import 'package:eta_school_app/Pages/login_page.dart';
+import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/Pages/splash_screen_page.dart';
 import 'package:eta_school_app/Pages/home_screen.dart';
 import 'package:eta_school_app/controllers/preferences.dart';
@@ -25,6 +26,9 @@ void main() async {
 
   MapboxOptions.setAccessToken(
       "sk.eyJ1IjoiZWxpZ2FiYXkiLCJhIjoiY20xMm1nYTA4MHV1cjJscXlocXA0MW5zciJ9.N3pZgESYISIcM3dlWrdgTQ");
+
+  final emitterisConnected = emitterServiceProvider.client!.isConnected;
+  print("[Main.emitterisConnected]: $emitterisConnected");
 
   runApp(
     MultiProvider(
