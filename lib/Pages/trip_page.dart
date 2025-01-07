@@ -311,9 +311,8 @@ class _TripPageState extends State<TripPage>
 
   endTrip() async {
     try {
-      await httpService.endTrip(widget.trip!.trip_id.toString());
+      await trip.endTrip();
       locationServiceProvider.stopLocationService();
-      emitterServiceProvider.client!.unsubscribe("trip/${trip.trip_id}/event");
       setState(() {
         showTripReportModal = true;
       });

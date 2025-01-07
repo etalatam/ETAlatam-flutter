@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:eta_school_app/Models/route_model.dart';
+import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/Pages/student_page.dart';
 // import 'package:eta_school_app/Pages/AddStudentPage.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
@@ -301,11 +302,6 @@ class _GuardiansHomeState extends State<GuardiansHome>
     //     oldTripsList = oldTrips;
     // });
   }
-
-  // addStudent()
-  // {
-  //   Get.to(AddStudentPage(parent: parentModel));
-  // }
 
   openTrip(trip) {
     Get.to(TripPage(

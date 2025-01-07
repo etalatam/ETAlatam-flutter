@@ -316,16 +316,7 @@ class _DriverHomeState extends State<DriverHome>
     });
 
     TripModel? activeTrip_ = await httpService.getActiveTrip();
-    
-    final emitterKeyGenModel = await httpService.emitterKeyGen("trip/${activeTrip_.trip_id}/event");
-    if (emitterKeyGenModel != null &&
-      emitterServiceProvider.client!.isConnected) {
-      emitterServiceProvider.client!.subscribe(
-        "trip/${activeTrip_.trip_id}/event/",
-        key: emitterKeyGenModel.key
-      );
-    }
-    
+
     setState(() {
       activeTrip = activeTrip_;
       hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;

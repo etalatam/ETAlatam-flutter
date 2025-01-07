@@ -1,10 +1,13 @@
 import 'dart:core';
 import 'package:eta_school_app/Models/DestinationModel.dart';
 import 'package:eta_school_app/Models/driver_model.dart';
+import 'package:eta_school_app/Models/emitter_keygen.dart';
 import 'package:eta_school_app/Models/student_model.dart';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Models/PickupLocationModel.dart';
 import 'package:eta_school_app/Models/VehicleModel.dart';
+import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
+import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:intl/intl.dart';
 
 class TripModel {
@@ -26,6 +29,7 @@ class TripModel {
   RouteModel? route;
   VehicleModel? vehicle;
   DriverModel? driver;
+  EmitterKeyGenModel? emitterKeyGenModel;
 
   TripModel({
     required this.trip_id,
@@ -46,7 +50,11 @@ class TripModel {
     this.route,
     this.vehicle,
     this.driver,
-  });
+  }){
+    if(trip_status == "Running"){
+      subscribeToTripEvents();
+    }
+  }
 
   factory TripModel.fromJson(Map<String, dynamic> json) {
     // print('[TripModel.fromJson] $json');
@@ -124,6 +132,33 @@ class TripModel {
       vehicle: vehicle,
       driver: driver,
     );
+  }
+
+  endTrip() async{
+    await httpService.endTrip(trip_id.toString());
+    unSubscribeToTripEvents();
+  }
+
+  unSubscribeToTripEvents() async {
+    try {
+      emitterServiceProvider.client!.unsubscribe(
+        "trip/$trip_id/event",
+        key: emitterKeyGenModel!.key
+      );
+    } catch (e) {
+      print("[TripModel.unSubscribeToTripEvents.error] ${e.toString()}");
+    }
+  }
+
+  subscribeToTripEvents() async {
+    emitterKeyGenModel = await httpService.emitterKeyGen("trip/$trip_id/event");
+    if (emitterKeyGenModel != null &&
+      emitterServiceProvider.client!.isConnected) {
+      emitterServiceProvider.client!.subscribe(
+        "trip/$trip_id/event/",
+        key: emitterKeyGenModel!.key
+      );
+    }
   }
 }
 

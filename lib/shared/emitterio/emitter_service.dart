@@ -36,6 +36,8 @@ class EmitterService extends ChangeNotifier {
         client?.onError = _onError;
         client?.onConnect = _onConnect;
         client?.onDisconnect = _onDisconnect;
+        client?.onAutoReconnect = _onAutoReconnect;
+        client?.onAutoReconnected = _onAutoReconnected;
         await client?.connect();
       } on Exception catch (e) {
         print("[EmitterService.connect.error] ${e.toString()}");
@@ -68,5 +70,13 @@ class EmitterService extends ChangeNotifier {
 
   void _onUnsubscribed(String topic) {
     print("[EmitterService.onUnsubscribed] $topic");
+  }
+
+  void _onAutoReconnect() {
+    print("[EmitterService.onAutoReconnect]");
+  }
+
+  void _onAutoReconnected() {
+    print("[EmitterService.onAutoReconnected]");
   }
 }

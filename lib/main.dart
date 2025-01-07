@@ -28,7 +28,7 @@ void main() async {
       "sk.eyJ1IjoiZWxpZ2FiYXkiLCJhIjoiY20xMm1nYTA4MHV1cjJscXlocXA0MW5zciJ9.N3pZgESYISIcM3dlWrdgTQ");
 
   final emitterisConnected = emitterServiceProvider.client!.isConnected;
-  print("[Main.emitterisConnected]: $emitterisConnected");
+  print("[Main.emitterServiceProvider]: $emitterisConnected");
 
   runApp(
     MultiProvider(

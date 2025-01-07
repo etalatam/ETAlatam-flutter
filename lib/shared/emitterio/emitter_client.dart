@@ -25,6 +25,8 @@ class EmitterClient {
   void Function(String)? onError;
   void Function(String)? onSubscribed;
   void Function(String)? onUnsubscribed;
+  void Function()? onAutoReconnect;
+  void Function()? onAutoReconnected;
   
   EmitterClient({
     String? host,
@@ -46,11 +48,15 @@ class EmitterClient {
     _client.port = _port!;
     _client.websocketProtocols = MqttClientConstants.protocolsSingleDefault;
     _client.setProtocolV311();
+    _client.autoReconnect = true;
+    _client.resubscribeOnAutoReconnect = true;
     _client.keepAlivePeriod = 20;
     _client.onConnected = _onConnected;
     _client.onDisconnected = _onDisconnected;
     _client.onSubscribed = _onSubscribed;
     _client.onUnsubscribed = _onUnsubscribed;
+    _client.onAutoReconnect = _onAutoReconnect;
+    _client.onAutoReconnected = _onAutoReconnected;
     _client.onBadCertificate = (cert) => true;
     _client.logging(on: false);
   }
@@ -59,6 +65,7 @@ class EmitterClient {
     try {
       await _client.connect();
       _client.published!.listen((MqttPublishMessage message) {
+        print("Message receiver");
         final payload = MqttPublishPayload.bytesToStringAsString(message.payload.message);
         if (onMessage != null) {
           onMessage!(payload);
@@ -130,7 +137,7 @@ class EmitterClient {
     // Prefix with the key if any
     var formatted = channel;
     if (key.isNotEmpty) {
-        formatted = channel.endsWith("/") ? "$key/$channel" :  "$key/channel";
+        formatted = "$key/$channel";
     }
 
     // Add trailing slash
@@ -200,5 +207,17 @@ class EmitterClient {
     );
 
     return uri.toString();
+  }
+
+  void _onAutoReconnect() {
+    if (onAutoReconnect != null) {
+      onAutoReconnect!();
+    }
+  }
+
+  void _onAutoReconnected() {
+    if (onAutoReconnected != null) {
+      onAutoReconnected!();
+    }
   }
 }
