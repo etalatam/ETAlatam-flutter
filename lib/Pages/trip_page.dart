@@ -1,7 +1,7 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:eta_school_app/Pages/attendance_page.dart';
-import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -47,29 +47,6 @@ class _TripPageState extends State<TripPage>
 
   String relationName = '';
 
-  CoordinateBounds getCoordinateBounds(List<Position> points) {
-    double minLat = double.infinity;
-    double minLng = double.infinity;
-    double maxLat = -double.infinity;
-    double maxLng = -double.infinity;
-
-    for (var point in points) {
-      minLat = min(minLat, point.lat as double);
-      minLng = min(minLng, point.lng as double);
-      maxLat = max(maxLat, point.lat as double);
-      maxLng = max(maxLng, point.lng as double);
-    }
-
-    print('[trip.getCoordinateBounds] $minLng, $minLat');
-    print('[trip.getCoordinateBounds] $maxLng, $maxLat');
-
-    return CoordinateBounds(
-      southwest: Point(coordinates: Position(minLng, minLat)),
-      northeast: Point(coordinates: Position(maxLng, maxLat)),
-      infiniteBounds: true,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
 
@@ -85,7 +62,10 @@ class _TripPageState extends State<TripPage>
                         trip.trip_status == 'Running' ? true : false,
                     onMapReady: (MapboxMap mapboxMap) async {
                       _mapboxMapController = mapboxMap;
-                      _showPickupLocations();
+                    },
+                    onStyleLoadedListener: (MapboxMap mapboxMap) async {
+                      showTripGeoJson(mapboxMap);
+                      showPickupLocations(mapboxMap);
                     },
                   ),
                 ),
@@ -245,8 +225,31 @@ class _TripPageState extends State<TripPage>
     );
   }
 
+  CoordinateBounds getCoordinateBounds(List<Position> points) {
+    double minLat = double.infinity;
+    double minLng = double.infinity;
+    double maxLat = -double.infinity;
+    double maxLng = -double.infinity;
+
+    for (var point in points) {
+      minLat = min(minLat, point.lat as double);
+      minLng = min(minLng, point.lng as double);
+      maxLat = max(maxLat, point.lat as double);
+      maxLng = max(maxLng, point.lng as double);
+    }
+
+    print('[TripPage.getCoordinateBounds] $minLng, $minLat');
+    print('[TripPage.getCoordinateBounds] $maxLng, $maxLat');
+
+    return CoordinateBounds(
+      southwest: Point(coordinates: Position(minLng, minLat)),
+      northeast: Point(coordinates: Position(maxLng, maxLat)),
+      infiniteBounds: true,
+    );
+  }
+
   Widget tripUser(TripPickupLocation pickupLocation) {
-    print('[TripPage.tripUser.pickupLocation] ${pickupLocation.toString()}');
+    print('[TripPage.tripUser.pickupLocation]');
     return GestureDetector(
       onTap: () {
         _mapboxMapController?.setCamera(CameraOptions(
@@ -317,7 +320,7 @@ class _TripPageState extends State<TripPage>
         showTripReportModal = true;
       });
     } catch (e) {
-      print(e.toString());
+      print("[TripPage.endTrip.error] ${e.toString()}");
       var msg = e.toString().split('/');
       setState(() {
         showLoader = false;
@@ -408,15 +411,35 @@ class _TripPageState extends State<TripPage>
     );
   }
 
-  void _showPickupLocations() async {
+  void showTripGeoJson(MapboxMap mapboxMap) async {
+    print("[TripPage.showTripGeoJson]");
+
+    Map<String, dynamic> data = trip.geoJson!;
+
+    await mapboxMap.style.addSource(GeoJsonSource(
+      id: "trip_source", 
+      data: jsonEncode(data)
+    ));
+
+    await mapboxMap.style.addLayer(LineLayer(
+      id: "line_layer",
+      sourceId: "trip_source",
+      lineJoin: LineJoin.ROUND,
+      lineCap: LineCap.ROUND,
+      lineColor: Colors.blue.value,
+      lineWidth: 10.0));
+  }
+  
+  void showPickupLocations(MapboxMap mapboxMap) async {
+    print("[TripPage.showPickupLocations]");
     final ByteData bytes =
         await rootBundle.load('assets/markers/marker-start-route.png');
     final Uint8List imageData = bytes.buffer.asUint8List();
 
     final pointAnnotationManager =
-        await _mapboxMapController?.annotations.createPointAnnotationManager();
+        await mapboxMap.annotations.createPointAnnotationManager();
 
-    pointAnnotationManager?.addOnPointAnnotationClickListener(this);
+    pointAnnotationManager.addOnPointAnnotationClickListener(this);
 
     List<Position> points = [];
 
@@ -434,12 +457,12 @@ class _TripPageState extends State<TripPage>
           symbolSortKey: 10,
           geometry: Point(coordinates: position),
           image: imageData);
-      pointAnnotationManager?.create(point);
+      pointAnnotationManager.create(point);
       points.add(position);
     }
 
     final coordinateBounds = getCoordinateBounds(points);
-    _mapboxMapController?.setCamera(CameraOptions(
+    mapboxMap.setCamera(CameraOptions(
         center: coordinateBounds.southwest, zoom: 15.5, pitch: 70));
   }
 }

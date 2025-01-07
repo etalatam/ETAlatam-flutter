@@ -30,6 +30,7 @@ class TripModel {
   VehicleModel? vehicle;
   DriverModel? driver;
   EmitterKeyGenModel? emitterKeyGenModel;
+  Map<String, dynamic>? geoJson;
 
   TripModel({
     required this.trip_id,
@@ -50,6 +51,7 @@ class TripModel {
     this.route,
     this.vehicle,
     this.driver,
+    this.geoJson
   }){
     if(trip_status == "Running"){
       subscribeToTripEvents();
@@ -78,32 +80,40 @@ class TripModel {
           : List<TripDestinationLocation>.from(
               o.map((model) => TripDestinationLocation.fromJson(model)));
     } catch (e) {
-      print(e.toString());
+      print("[TripModel.TripDestinationLocation.error] ${e.toString()}");
     }
 
     RouteModel? route;
     try {
       route = RouteModel.fromJson(json);
     } catch (e) {
-      print(e.toString());
+      print("[TripModel.RouteModel.error] ${e.toString()}");
     }
 
     VehicleModel? vehicle;
     try {
       vehicle = VehicleModel.fromJson(json);
     } catch (e) {
-      print(e.toString());
+      print("[TripModel.VehicleModel.error] ${e.toString()}");
     }
 
     DriverModel? driver;
     try {
       driver = DriverModel.fromJson(json);
     } catch (e) {
-      print(e.toString());
+      print("[TripModel.DriverModel.error] ${e.toString()}");
     }
 
     DateFormat format = DateFormat('HH:mm');
     json['done_locations_count'] = pickupLocations.length;
+
+    Map<String, dynamic>? routeGeom;
+    try {
+      routeGeom = json['route_geom'];
+      print("[TripModel.routeGeom] ${routeGeom.toString()}");
+    } catch (e) {
+      print("[TripModel.routeGeom.error] ${e.toString()}");
+    }
 
     return TripModel(
       trip_id: json['id_trip'] as int?,
@@ -131,6 +141,7 @@ class TripModel {
       route: route,
       vehicle: vehicle,
       driver: driver,
+      geoJson: routeGeom
     );
   }
 

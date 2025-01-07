@@ -11,8 +11,12 @@ class MapWiew extends StatefulWidget {
 
   // callback para iniclizar elementos sobre el mapa
   Future<void> Function(MapboxMap) onMapReady;
+  Future<void> Function(MapboxMap) onStyleLoadedListener;
 
-  MapWiew({this.navigationMode = false, required this.onMapReady}){
+  MapWiew({
+    this.navigationMode = false, 
+    required this.onMapReady, 
+    required this.onStyleLoadedListener}){
     print('[MapWiew.navigationMode] $navigationMode');
   }
 
@@ -51,9 +55,13 @@ class MapWiewState extends State<MapWiew> {
         enabled: true, position: OrnamentPosition.BOTTOM_RIGHT));
 
     await locationService?.init();
-
     await widget.onMapReady(mapboxMap);
   }
+  
+  void _onStyleLoadedListener(StyleLoadedEventData styleLoadedEventData) async{
+    await widget.onStyleLoadedListener(mapboxMap!);
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +94,7 @@ class MapWiewState extends State<MapWiew> {
       return MapWidget(
           styleUri: MapboxStyles.MAPBOX_STREETS,
           onMapCreated: _onMapCreated,
+          onStyleLoadedListener: _onStyleLoadedListener,
           cameraOptions: CameraOptions(
               center: Point(
                   coordinates: Position(-79.50451720694494, 9.055044879215595)),
@@ -99,5 +108,4 @@ class MapWiewState extends State<MapWiew> {
     super.initState();
     locationService = Provider.of<LocationService>(context, listen: false);
   }
-
 }
