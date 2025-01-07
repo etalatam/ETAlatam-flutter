@@ -25,7 +25,6 @@ class _UserAvatarState extends State<UserAvatar> {
   @override
   Widget build(BuildContext context) {
     final imageUrl = httpService.getAvatarUrl(relationId, relationName);
-    bool isConnected = Provider.of<EmitterService>(context).client!.isConnected;
 
     return GestureDetector(
         onTap: () {
