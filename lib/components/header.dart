@@ -1,7 +1,6 @@
 // import 'package:eta_school_app/Pages/NotificationsPage.dart';
-import 'package:eta_school_app/Pages/providers/login_information_provider.dart';
+import 'package:eta_school_app/Models/user_model.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
-import 'package:eta_school_app/domain/entities/user/login_information.dart';
 import 'package:flutter/material.dart';
 import 'user_avatar_widget.dart';
 
@@ -15,7 +14,7 @@ class Header extends StatefulWidget {
 
 class _HeaderState extends State<Header>{
 
-  LoginInformation? loginInformation;
+  UserModel? user;
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +39,8 @@ class _HeaderState extends State<Header>{
                 flex: 1,
                 child: Center(
                   child: Text(
-                    "${loginInformation?.nomUsu} ${loginInformation?.apeUsu}",
-                    style: activeTheme.h5,
+                    "${user?.firstName} ${user?.lastName}",
+                    style: activeTheme.h6,
                   ),
                 )                
               ),
@@ -58,9 +57,9 @@ class _HeaderState extends State<Header>{
   }
   
   void fetchLoginInfo() async {
-    final info = await loginInformationProvider.loadLoginInformation(); 
+    final info = await httpService.userInfo();
     setState(() {
-      loginInformation  =  info;
+      user  =  info;
     });
   }
 
