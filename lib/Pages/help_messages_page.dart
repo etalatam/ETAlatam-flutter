@@ -120,7 +120,7 @@ class _SentMessageState extends State<HelpMessagesPage> {
                             left: 0,
                             right: 0,
                             top: 0,
-                            child: Header(lang.translate('sitename'))),
+                            child: Header()),
                           // Positioned(
                           //     top: 50,
                           //     left: 0,

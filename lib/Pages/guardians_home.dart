@@ -230,7 +230,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
                             left: 0,
                             right: 0,
                             top: 0,
-                            child: Header(lang.translate('sitename'))),
+                            child: Header()),
                         // Positioned(
                         //   bottom: 20,
                         //   left: 20,

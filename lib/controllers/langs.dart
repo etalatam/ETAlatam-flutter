@@ -44,7 +44,7 @@ class Lang {
   }
 
   Map<String, dynamic> arLangs = {
-    'sitename': 'Medians Trips',
+    'sitename': 'Eta',
     'error': 'خطأ',
     'first_name': 'الإسم الأول',
     'last_name': 'الإسم الاخير',
@@ -186,7 +186,7 @@ class Lang {
   };
 
   Map<String, dynamic> enLangs = {
-    'sitename': 'Medians Trips',
+    'sitename': 'ETA',
     'trips_history': 'Trips log history',
     'show_map': 'Show map route',
     'login_intro_message':
