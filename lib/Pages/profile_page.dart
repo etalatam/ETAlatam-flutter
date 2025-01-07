@@ -79,7 +79,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                     padding: const EdgeInsets.symmetric(horizontal: 5),
                                                     child: CircleAvatar(
                                                         radius: 50,
-                                                        backgroundColor: Color(0xFF123456),
+                                                        backgroundColor: Color.fromARGB(255, 234, 244, 243),
                                                         foregroundImage: NetworkImage(
                                                             httpService.getAvatarUrl(user.relationId, user.relationName),
                                                             headers: {'Accept': 'image/png'}
