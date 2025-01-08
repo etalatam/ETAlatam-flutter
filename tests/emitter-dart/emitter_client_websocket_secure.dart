@@ -2,9 +2,9 @@
 
 import 'package:eta_school_app/shared/emitterio/emitter_client.dart';
 
-const chanelKey = "RfGExgeus825S0N5uHsQid_xO_2FfBli";
+const chanelKey = "amhPRP-Qg30XfnmRh1WAeI3G4ByfI1Y6";
 
-const testChannel = 'trip/116/event/';
+const testChannel = 'trip/121/event';
 
 final client = EmitterClient(
   host: 'wss://emitter.etalatam.com',

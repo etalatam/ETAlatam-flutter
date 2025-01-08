@@ -295,7 +295,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
       tripsList = trips;
     });
 
-    TripModel? activeTrip_ = await httpService.getActiveTrip();
+    TripModel? activeTrip_ = await httpService.getGuardianTrip();
     setState(() {
       activeTrip = activeTrip_;
       hasActiveTrip = activeTrip_.trip_id! > 0 ? true : false;

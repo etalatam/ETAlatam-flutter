@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
 import 'package:eta_school_app/Pages/attendance_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
+import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -16,6 +18,7 @@ import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:provider/provider.dart';
 
 import 'map/map_wiew.dart';
 
@@ -47,6 +50,10 @@ class _TripPageState extends State<TripPage>
 
   String relationName = '';
 
+  PointAnnotation? busPointAnnotation;
+  
+  PointAnnotationManager? busPointAnnotationManager;
+
   @override
   Widget build(BuildContext context) {
 
@@ -62,6 +69,10 @@ class _TripPageState extends State<TripPage>
                         trip.trip_status == 'Running' ? true : false,
                     onMapReady: (MapboxMap mapboxMap) async {
                       _mapboxMapController = mapboxMap;
+
+                      mapboxMap.annotations.createPointAnnotationManager().then((value) async {
+                        busPointAnnotationManager = value;
+                      });
                     },
                     onStyleLoadedListener: (MapboxMap mapboxMap) async {
                       showTripGeoJson(mapboxMap);
@@ -376,6 +387,7 @@ class _TripPageState extends State<TripPage>
       trip = widget.trip!;
     });
     loadTrip();
+    Provider.of<EmitterService>(context, listen: false).addListener(onEmitterMessage);
   }
 
   @override
@@ -468,5 +480,71 @@ class _TripPageState extends State<TripPage>
     final coordinateBounds = getCoordinateBounds(points);
     mapboxMap.setCamera(CameraOptions(
         center: coordinateBounds.southwest, zoom: 15.5, pitch: 70));
+  }
+
+  Future<void> _updateBusIcon() async {
+    final dynamic lastMessage = Provider.of<EmitterService>(context, listen: false).lastMessage;
+    // final position = lastMessage["position"];
+
+    print("[TripPage._updateBusIcon] $lastMessage");
+    
+    // if (position != null) {
+    //   if(busPointAnnotation == null){
+    //     await createBusAnnotation(position);
+    //   }else{
+    //     busPointAnnotation?.geometry = position;
+    //     busPointAnnotationManager?.update(busPointAnnotation!);
+    //   }
+    // }
+  }
+
+  Future<PointAnnotation?> createBusAnnotation(Position position) async {
+    final ByteData bytes =
+        await rootBundle.load('assets/markers/marker-start-route.png');
+    final Uint8List imageData = bytes.buffer.asUint8List();
+
+    return await busPointAnnotationManager
+        ?.create(PointAnnotationOptions(
+            geometry: Point(
+                coordinates: position),
+            textField: "Bus",
+            textOffset: [0.0, -2.0],
+            textColor: Colors.black.value,
+            iconSize: 1.3,
+            iconOffset: [0.0, -5.0],
+            symbolSortKey: 10,
+            image: imageData));
+  }
+
+  //  void _animateIcon(LatLng start, LatLng end) {
+  //   const int animationDuration = 1000; // Duración en milisegundos
+  //   const int frameRate = 60; // Frames por segundo
+  //   final int totalFrames = (animationDuration / (1000 / frameRate)).round();
+
+  //   double latDiff = end.latitude - start.latitude;
+  //   double lonDiff = end.longitude - start.longitude;
+
+  //   Timer.periodic(Duration(milliseconds: (1000 / frameRate).round()), (timer) {
+  //     double t = timer.tick / totalFrames;
+  //     if (t > 1.0) {
+  //       t = 1.0;
+  //       timer.cancel();
+  //     }
+  //     double latitude = start.latitude + latDiff * t;
+  //     double longitude = start.longitude + lonDiff * t;
+  //     _mapboxMapController.updateSymbol(
+  //       _symbol!,
+  //       SymbolOptions(
+  //         geometry: LatLng(latitude, longitude),
+  //       ),
+  //     );
+  //   });
+  // } 
+
+  void onEmitterMessage() async {
+    if (mounted) { 
+      final String? message = Provider.of<EmitterService>(context, listen: false).lastMessage;
+      print("[TripPage.onEmitterMessage] $message");
+    }
   }
 }

@@ -31,6 +31,7 @@ class TripModel {
   DriverModel? driver;
   EmitterKeyGenModel? emitterKeyGenModel;
   Map<String, dynamic>? geoJson;
+  bool isEmitterSubcribed = false;
 
   TripModel({
     required this.trip_id,
@@ -151,6 +152,9 @@ class TripModel {
   }
 
   unSubscribeToTripEvents() async {
+    
+    if( ! isEmitterSubcribed) return;
+
     try {
       emitterServiceProvider.client!.unsubscribe(
         "trip/$trip_id/event",
@@ -162,13 +166,16 @@ class TripModel {
   }
 
   subscribeToTripEvents() async {
-    emitterKeyGenModel = await httpService.emitterKeyGen("trip/$trip_id/event");
-    if (emitterKeyGenModel != null &&
-      emitterServiceProvider.client!.isConnected) {
-      emitterServiceProvider.client!.subscribe(
-        "trip/$trip_id/event/",
-        key: emitterKeyGenModel!.key
-      );
+    if ( ! isEmitterSubcribed ) {
+        emitterKeyGenModel = await httpService.emitterKeyGen("trip/$trip_id/event");
+        if (emitterKeyGenModel != null &&
+          emitterServiceProvider.client!.isConnected) {
+                emitterServiceProvider.client!.subscribe(
+            "trip/$trip_id/event",
+            key: emitterKeyGenModel!.key
+          );
+          isEmitterSubcribed = true;
+        }
     }
   }
 }

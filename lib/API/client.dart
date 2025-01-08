@@ -13,7 +13,6 @@ import 'package:eta_school_app/infrastructure/mappers/driver_mapper.dart';
 import 'package:eta_school_app/infrastructure/mappers/login_information_mapper.dart';
 import 'package:eta_school_app/infrastructure/repositories/login_information_repository_impl.dart';
 import 'package:eta_school_app/methods.dart';
-// import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
@@ -438,11 +437,36 @@ class HttpService {
 
   /// Load Tripd
   Future<TripModel> getActiveTrip() async {
+    const endpoint = "/rpc/driver_trips";
     http.Response res =
-        await getQuery("/rpc/driver_trips?select=*&limit=1&running=eq.true");
+        await getQuery("$endpoint?select=*&limit=1&running=eq.true");
 
-    print("res.statusCode: ${res.statusCode}");
-    print("res.body: ${res.body}");
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
+
+    if (res.statusCode == 200) {
+      try {
+        var body = jsonDecode(res.body);
+        if (body == null) return TripModel(trip_id: 0);
+        if(body.isNullOrBlank){
+          final TripModel trips = TripModel.fromJson(body[0]);
+          return trips;
+        }
+        
+      } catch (e) {
+        print(e.toString());
+      }
+    }
+    return TripModel(trip_id: 0);
+  }
+
+  Future<TripModel> getGuardianTrip() async {
+    const endpoint = "/rpc/guardian_trips";
+    http.Response res =
+        await getQuery("$endpoint?select=*&limit=1&running=eq.true");
+
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint]res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       try {
@@ -451,7 +475,7 @@ class HttpService {
         final TripModel trips = TripModel.fromJson(body[0]);
         return trips;
       } catch (e) {
-        print(e.toString());
+        print("[$endpoint] ${e.toString()}");
       }
     }
     return TripModel(trip_id: 0);
@@ -459,22 +483,18 @@ class HttpService {
 
   /// Submit form to update data through API
   Future<TripModel> startTrip(RouteModel route) async {
-    
+    const endpoint = "/rpc/driver_start_trip";    
     Map data = {
       "_route_id": "${route.route_id}",
       "_id_schedule": "${route.schedule_id}"
-      // "driver_id": driverId,
-      // "route_id": routeId,
-      // "vehicle_id": vehicleId,
-      // "trip_status": 'Scheduled',
     };
 
     // Map? body = {"model": 'create_trip', "params": jsonEncode(data)};
     // http.Response res = await postQuery('/mobile_api', body);
 
-    http.Response res = await postQuery('/rpc/driver_start_trip', data);
-    print("res.statusCode ${res.statusCode}");
-    print("res.body ${res.body}");
+    http.Response res = await postQuery(endpoint, data);
+    print("[$endpoint] res.statusCode ${res.statusCode}");
+    print("[$endpoint] res.body ${res.body}");
 
     if (res.statusCode == 200) {
       return TripModel.fromJson(jsonDecode(res.body));
@@ -485,6 +505,7 @@ class HttpService {
 
   Future<StudentModel> updateAttendance(
       TripModel trip, StudentModel student, String statusCode) async {
+    const endpoint = "/rpc/update_attendance";
     final data = jsonEncode({
       "id_school": student.schoolId,
       "id_student": student.student_id,
@@ -494,10 +515,10 @@ class HttpService {
 
     print("[client.updateAttendance] $data");
 
-    http.Response res = await postQuery('/rpc/update_attendance', data,
+    http.Response res = await postQuery(endpoint, data,
         contentType: 'application/json');
-    print("res.statusCode ${res.statusCode}");
-    print("res.body ${res.body}");
+    print("[$endpoint] res.statusCode ${res.statusCode}");
+    print("[$endpoint] res.body ${res.body}");
 
     if (res.statusCode == 200) {
       return StudentModel.fromJson(jsonDecode(res.body));
@@ -584,16 +605,17 @@ class HttpService {
   // request access to api
   requestAccess() async {
     debugPrint('requestAccess');
+    const endpoint = "/rpc/request_access";
     final data = {
       '_client_id': '4926212245183',
       '_access_token': '8725ca59-71be-46c6-a364-eaac57f1786d'
     };
 
     final http.Response res =
-        await postQuery('/rpc/request_access', data, useToken: false);
+        await postQuery(endpoint, data, useToken: false);
 
-    print("statuscode: ${res.statusCode}");
-    print("res.body: ${res.body}");
+    print("[$endpoint] statuscode: ${res.statusCode}");
+    print("[$endpoint]res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
@@ -609,6 +631,7 @@ class HttpService {
   /// Login with email & password
   login(String email, String password) async {
     debugPrint('login');
+    const endpoint = '/rpc/login';
     final data = {
       "_email": email,
       "_pass": password,
@@ -616,10 +639,10 @@ class HttpService {
 
     var requestAccessRes = await requestAccess();
     if (requestAccessRes == '1') {
-      http.Response res = await postQuery('/rpc/login', data);
+      http.Response res = await postQuery(endpoint, data);
 
-      print("statuscode: ${res.statusCode}");
-      print("res.body: ${res.body}");
+      print("[$endpoint] statuscode: ${res.statusCode}");
+      print("[$endpoint] res.body: ${res.body}");
 
       if (res.statusCode == 200) {
         dynamic body = jsonDecode(res.body);
@@ -664,6 +687,7 @@ class HttpService {
   /// Send message
   Future<HelpMessageModel> sendMessage(
       int categoryId, String message, int priority) async {
+    const endpoint = '/rpc/save_support_message';
     final data = {
       "category_id": categoryId,
       "content": message,
@@ -671,11 +695,11 @@ class HttpService {
     };
 
     http.Response res = await postQuery(
-        '/rpc/save_support_message', jsonEncode(data),
+        endpoint, jsonEncode(data),
         contentType: 'application/json');
 
-    print("[sendMessage] statuscode: ${res.statusCode}");
-    print("[sendMessage] res.body: ${res.body}");
+    print("[$endpoint] statuscode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
@@ -688,14 +712,15 @@ class HttpService {
 
   /// Send message
   Future<CommentModel> sendMessageComment(String comment, int messageId) async {
+    const endpoint = '/rpc/save_support_message_comment';
     final data = {"message_id": messageId, "comment": comment};
 
     http.Response res = await postQuery(
-        '/rpc/save_support_message_comment', jsonEncode(data),
+        endpoint, jsonEncode(data),
         contentType: 'application/json');
 
-    print("[sendMessageComment] statuscode: ${res.statusCode}");
-    print("[sendMessageComment] res.body: ${res.body}");
+    print("[$endpoint] statuscode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
@@ -707,16 +732,17 @@ class HttpService {
 
   /// Send message
   Future<String> resetPassword(String email) async {
+    const endpoint = '/rpc/update_password_request';
     Map data = {
       "email": email,
     };
 
     var requestAccessRes = await requestAccess();
     if (requestAccessRes == '1') {
-      http.Response res = await postQuery('/rpc/update_password_request', data);
+      http.Response res = await postQuery(endpoint, data);
 
-      print("res.statusCode: ${res.statusCode}");
-      print("res.body: ${res.body}");
+      print("[$endpoint] res.statusCode: ${res.statusCode}");
+      print("[$endpoint] res.body: ${res.body}");
 
       if (res.statusCode == 200) {
         return '1';
@@ -978,11 +1004,12 @@ class HttpService {
 
   Future<dynamic> driverInfo() async {
     try {
-      http.Response res = await postQuery('/rpc/driver_info', null,
+      const endpoint = '/rpc/driver_info';
+      http.Response res = await postQuery(endpoint, null,
           contentType: 'application/json');
 
-      print("res.statusCode: ${res.statusCode}");
-      print("res.body: ${res.body}");
+      print("[$endpoint] res.statusCode: ${res.statusCode}");
+      print("[$endpoint] res.body: ${res.body}");
 
       if (res.statusCode == 200) {
         return res.body;
@@ -997,15 +1024,15 @@ class HttpService {
 
   Future<UserModel?> userInfo() async {
     try {
-      http.Response res = await postQuery('/rpc/user_info', null,
+      const endpoint = '/rpc/user_info';
+      http.Response res = await postQuery(endpoint, null,
           contentType: 'application/json');
 
-      print("res.statusCode: ${res.statusCode}");
-      print("res.body: ${res.body}");
+      print("[$endpoint] res.statusCode: ${res.statusCode}");
+      print("[$endpoint] res.body: ${res.body}");
       
       if (res.statusCode == 200) {
         final json  = jsonDecode(res.body);
-        // print("res.body.json: $json");
         return UserModel.fromJson(json);
       } 
     } catch (e) {
