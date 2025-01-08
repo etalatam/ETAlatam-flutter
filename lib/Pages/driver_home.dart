@@ -301,12 +301,15 @@ class _DriverHomeState extends State<DriverHome>
     });
 
     final routesQuery = await httpService.getRoutes();
+    List<String> routeTopics = [];
+    for (var route in routesQuery) {
+      notificationSubcribe("route-${route.route_id}");
+      routeTopics.add("route-${route.route_id}");
+    }
+    storage.setItem('route-topics',routeTopics.toString());
+
     setState(() {
       routesList = routesQuery;
-      for (var route in routesList) {
-        notificationSubcribe("start-trip-${route.route_id}");
-        notificationSubcribe("end-trip-${route.route_id}");
-      }
     });
 
     List<TripModel>? oldTrips = await httpService.getDriverTrips(0);

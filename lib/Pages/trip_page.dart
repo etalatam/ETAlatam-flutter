@@ -427,7 +427,11 @@ class _TripPageState extends State<TripPage>
       lineJoin: LineJoin.ROUND,
       lineCap: LineCap.ROUND,
       lineColor: Colors.blue.value,
-      lineWidth: 10.0));
+      lineBlur: 1.0,
+      lineDasharray: [1.0, 2.0],
+      lineWidth: 6.0,
+      
+      ));
   }
   
   void showPickupLocations(MapboxMap mapboxMap) async {

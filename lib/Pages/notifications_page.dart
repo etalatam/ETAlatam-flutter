@@ -353,7 +353,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
       setState(() {
         showLoader = true;
       });
-      final notificationslist = await httpService.getNotifications();
+
+      String? routeTopics = await storage.getItem('route-topics');
+      print("[loadNotifications.routeTopic] $routeTopics");
+
+      final notificationslist = await httpService.getNotifications(routeTopics);
 
       setState(() {
         notificationsList = notificationslist!;
@@ -442,7 +446,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         messaging.subscribeToTopic("user-$userId");
       } catch (e) {
         print(e.toString());
-      }
+      }      
     } catch (e) {
       print("[FCM] ${e.toString()}");
     }

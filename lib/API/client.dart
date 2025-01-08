@@ -119,9 +119,15 @@ class HttpService {
   }
 
   /// Load Latest Notifications
-  Future<List<NotificationModel>?> getNotifications() async {
-    http.Response res = await getQuery(
-        "/rpc/notifications?order=id.desc&limit=20");
+  Future<List<NotificationModel>?> getNotifications(String? topics) async {
+    var query = "/rpc/notifications?order=id.desc&limit=20";
+
+    if(topics != null){
+      topics = topics.replaceAll("[", "(").replaceAll("]", ")").replaceAll(" ", "");
+      query += "&topic=in.$topics";
+    }
+    
+    http.Response res = await getQuery(query);
 
     print("res.statusCode: ${res.statusCode}");
     print("res.body: ${res.body}");

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Models/student_model.dart';
 import 'package:eta_school_app/Pages/login_page.dart';
@@ -6,6 +7,7 @@ import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/components/active_trip.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
@@ -268,8 +270,23 @@ class _StudentsHomeState extends State<StudentsHome>
 
     if (hasActiveTrip) {
       await locationServiceProvider.startLocationService();
+
+      String routeTopics = "";
+      notificationSubcribe("route-${activeTrip?.route_id}");
+      routeTopics += "route-${activeTrip?.route_id}";
+      storage.setItem('route-topics', routeTopics);
     }
   }
+
+  notificationSubcribe(String topic) {
+    try {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+      messaging.subscribeToTopic(topic);
+    } catch (e) {
+      print("StudentsHome.notificationSubcribe.error: ${e.toString()}");
+    }
+  }
+
 
   openTrip(TripModel trip) {
     Get.to(TripPage(trip: trip));

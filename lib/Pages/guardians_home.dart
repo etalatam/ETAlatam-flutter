@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/Pages/student_page.dart';
@@ -283,12 +284,15 @@ class _GuardiansHomeState extends State<GuardiansHome>
     });
 
     final trips = await httpService.getParentTrips();
+    List<String> routeTopics = [];
+    for (var trip in trips) {
+      notificationSubcribe("route-${trip.route_id}");
+      routeTopics.add("route-${trip.route_id}");
+    }
+    storage.setItem('route-topics',routeTopics.toString());
+
     setState(() {
       tripsList = trips;
-      for (var trip in tripsList) {
-        notificationSubcribe("start-trip-${trip.route_id}");
-        notificationSubcribe("end-trip-${trip.route_id}");
-      }
     });
 
     TripModel? activeTrip_ = await httpService.getActiveTrip();
