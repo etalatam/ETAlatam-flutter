@@ -22,19 +22,19 @@ class _EventPageState extends State<EventPage> {
           ? Loader()
           : Scaffold(
               body: Stack(children: <Widget>[
-                Container(
-                  decoration: ShapeDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage((widget.event!.picture != null)
-                          ? (httpService.croppedImage(
-                              widget.event!.picture!, 800, 1200))
-                          : httpService.croppedImage(
-                              "/uploads/images/60x60.png", 200, 200)),
-                      fit: BoxFit.fitHeight,
-                    ),
-                    shape: const RoundedRectangleBorder(),
-                  ),
-                ),
+                // Container(
+                //   decoration: ShapeDecoration(
+                //     image: DecorationImage(
+                //       image: NetworkImage((widget.event!.picture != null)
+                //           ? (httpService.croppedImage(
+                //               widget.event!.picture!, 800, 1200))
+                //           : httpService.croppedImage(
+                //               "/uploads/images/60x60.png", 200, 200)),
+                //       fit: BoxFit.fitHeight,
+                //     ),
+                //     shape: const RoundedRectangleBorder(),
+                //   ),
+                // ),
                 DraggableScrollableSheet(
                   snapAnimationDuration: const Duration(seconds: 1),
                   initialChildSize:
@@ -76,7 +76,7 @@ class _EventPageState extends State<EventPage> {
                                         Expanded(
                                             flex: 10,
                                             child: Text(
-                                                "${widget.event!.title}",
+                                                "${widget.event!.description}",
                                                 textAlign: TextAlign.left,
                                                 style: activeTheme.h3)),
                                         Expanded(
@@ -92,21 +92,21 @@ class _EventPageState extends State<EventPage> {
                                   height: 1,
                                   color: activeTheme.main_color.withOpacity(.2),
                                 ),
-                                Center(
-                                  child: Image(
-                                      width: MediaQuery.of(context).size.width -
-                                          40,
-                                      image: NetworkImage(
-                                          (widget.event!.picture != null)
-                                              ? (httpService.croppedImage(
-                                                  widget.event!.picture!,
-                                                  800,
-                                                  0))
-                                              : httpService.croppedImage(
-                                                  "/uploads/images/60x60.png",
-                                                  200,
-                                                  200))),
-                                ),
+                                // Center(
+                                //   child: Image(
+                                //       width: MediaQuery.of(context).size.width -
+                                //           40,
+                                //       image: NetworkImage(
+                                //           (widget.event!.picture != null)
+                                //               ? (httpService.croppedImage(
+                                //                   widget.event!.picture!,
+                                //                   800,
+                                //                   0))
+                                //               : httpService.croppedImage(
+                                //                   "/uploads/images/60x60.png",
+                                //                   200,
+                                //                   200))),
+                                // ),
                                 Container(
                                     padding: const EdgeInsets.all(20),
                                     child: Text("${widget.event!.description}",

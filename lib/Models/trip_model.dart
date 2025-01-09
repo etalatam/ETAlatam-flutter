@@ -29,9 +29,12 @@ class TripModel {
   RouteModel? route;
   VehicleModel? vehicle;
   DriverModel? driver;
-  EmitterKeyGenModel? emitterKeyGenModel;
+  EmitterKeyGenModel? emitterKeyGenModelEvents;
+  EmitterKeyGenModel? emitterKeyGenModelTracking;
   Map<String, dynamic>? geoJson;
-  bool isEmitterSubcribed = false;
+  bool isEmitterSubcribedToEvents = false;
+  bool isEmitterSubcribedToTracking = false;
+  int? school_id;
 
   TripModel({
     required this.trip_id,
@@ -52,10 +55,12 @@ class TripModel {
     this.route,
     this.vehicle,
     this.driver,
-    this.geoJson
+    this.geoJson,
+    this.school_id
   }){
     if(trip_status == "Running"){
       subscribeToTripEvents();
+      subscribeToTripTracking();
     }
   }
 
@@ -142,39 +147,69 @@ class TripModel {
       route: route,
       vehicle: vehicle,
       driver: driver,
-      geoJson: routeGeom
+      geoJson: routeGeom,
+      school_id: json['school_id']
     );
   }
 
   endTrip() async{
     await httpService.endTrip(trip_id.toString());
     unSubscribeToTripEvents();
+    unSubscribeToTripTracking();
   }
 
   unSubscribeToTripEvents() async {
     
-    if( ! isEmitterSubcribed) return;
+    if( isEmitterSubcribedToEvents ) return;
 
     try {
       emitterServiceProvider.client!.unsubscribe(
-        "trip/$trip_id/event",
-        key: emitterKeyGenModel!.key
+        "school/$school_id/$trip_id/event",
+        key: emitterKeyGenModelEvents!.key
       );
     } catch (e) {
       print("[TripModel.unSubscribeToTripEvents.error] ${e.toString()}");
     }
   }
 
+  unSubscribeToTripTracking() async {
+    
+    if( isEmitterSubcribedToTracking ) return;
+
+    try {
+      emitterServiceProvider.client!.unsubscribe(
+        "school/$school_id/$trip_id/tracking",
+        key: emitterKeyGenModelTracking!.key
+      );
+    } catch (e) {
+      print("[TripModel.unSubscribeToTripTracking.error] ${e.toString()}");
+    }
+  } 
+
   subscribeToTripEvents() async {
-    if ( ! isEmitterSubcribed ) {
-        emitterKeyGenModel = await httpService.emitterKeyGen("trip/$trip_id/event");
-        if (emitterKeyGenModel != null &&
+    if ( ! isEmitterSubcribedToEvents ) {
+        emitterKeyGenModelEvents = await httpService.emitterKeyGen("school/$school_id/trip/$trip_id/event");
+        if (emitterKeyGenModelEvents != null &&
           emitterServiceProvider.client!.isConnected) {
                 emitterServiceProvider.client!.subscribe(
-            "trip/$trip_id/event",
-            key: emitterKeyGenModel!.key
+            "school/$school_id/trip/$trip_id/event",
+            key: emitterKeyGenModelEvents!.key
           );
-          isEmitterSubcribed = true;
+          isEmitterSubcribedToEvents = true;
+        }
+    }
+  }
+
+  subscribeToTripTracking() async {
+    if ( ! isEmitterSubcribedToTracking ) {
+        emitterKeyGenModelTracking = await httpService.emitterKeyGen("school/$school_id/trip/$trip_id/tracking");
+        if (emitterKeyGenModelTracking != null &&
+          emitterServiceProvider.client!.isConnected) {
+                emitterServiceProvider.client!.subscribe(
+            "school/$school_id/trip/$trip_id/tracking",
+            key: emitterKeyGenModelTracking!.key
+          );
+          isEmitterSubcribedToTracking = true;
         }
     }
   }

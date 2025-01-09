@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:eta_school_app/Models/EventModel.dart';
 import 'package:eta_school_app/Pages/attendance_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
@@ -543,8 +544,14 @@ class _TripPageState extends State<TripPage>
 
   void onEmitterMessage() async {
     if (mounted) { 
-      final String? message = Provider.of<EmitterService>(context, listen: false).lastMessage;
-      print("[TripPage.onEmitterMessage] $message");
+      try {
+        final String? message = Provider.of<EmitterService>(context, listen: false).lastMessage;
+        final event = EventModel.fromJson(jsonDecode(message!));
+        await event.requestData();        
+      } catch (e) {
+        print("[TripPage.onEmitterMessage.error] ${e.toString()}");
+      }
+      
     }
   }
 }

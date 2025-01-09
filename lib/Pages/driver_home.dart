@@ -317,11 +317,10 @@ class _DriverHomeState extends State<DriverHome>
       oldTripsList = oldTrips;
     });
 
-    TripModel? activeTrip_ = await httpService.getActiveTrip();
-
+    TripModel? activeTripWrapper = await httpService.getActiveTrip();
     setState(() {
-      activeTrip = activeTrip_;
-      hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
+      activeTrip = activeTripWrapper;
+      hasActiveTrip = (activeTripWrapper.trip_id != 0) ? true : false;
     });
 
     if (hasActiveTrip) {

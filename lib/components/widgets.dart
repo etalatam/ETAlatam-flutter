@@ -380,13 +380,13 @@ mixin ETAWidgets {
                 blurStyle: BlurStyle.normal,
               )
             ],
-            image: DecorationImage(
-              image: NetworkImage((item.picture != null)
-                  ? (httpService.croppedImage(item.picture!, 800, 600))
-                  : httpService.croppedImage(
-                      "/uploads/images/60x60.png", 200, 200)),
-              fit: BoxFit.fill,
-            ),
+            // image: DecorationImage(
+            //   image: NetworkImage((item.. != null)
+            //       ? (httpService.croppedImage(item.picture!, 800, 600))
+            //       : httpService.croppedImage(
+            //           "/uploads/images/60x60.png", 200, 200)),
+            //   fit: BoxFit.fill,
+            // ),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(50),
             ),

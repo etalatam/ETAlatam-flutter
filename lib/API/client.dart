@@ -13,6 +13,7 @@ import 'package:eta_school_app/infrastructure/mappers/driver_mapper.dart';
 import 'package:eta_school_app/infrastructure/mappers/login_information_mapper.dart';
 import 'package:eta_school_app/infrastructure/repositories/login_information_repository_impl.dart';
 import 'package:eta_school_app/methods.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
@@ -308,17 +309,15 @@ class HttpService {
 
   /// Load Routes
   Future<List<RouteModel>> getRoutes() async {
-    var res = await getQuery("/rpc/driver_routes?limit=10");
-    print("res.statusCode: ${res.statusCode}");
-    print("res.body: ${res.body}");
+    const endpoint = "/rpc/driver_routes";
+    var res = await getQuery("$endpoint?limit=10");
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       try {
         List<dynamic> body = jsonDecode(res.body);
         return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
-        // await Future.wait(body
-        //       .map((dynamic item) async => RouteModel.fromJson(item))
-        //       .toList());
       } catch (e) {
         print("getRoutes error: ${e.toString()}");
         return [];
@@ -329,11 +328,12 @@ class HttpService {
   }
 
   Future<EmitterKeyGenModel?> emitterKeyGen(String channel) async {
+    const endpoint = "/rpc/emitter_keygen";
     http.Response res =
-        await getQuery("/rpc/emitter_keygen?order=ts.asc&channel=ilike.*$channel*&limit=1");
+        await getQuery("$endpoint?order=ts.asc&channel=ilike.*$channel*&limit=1");
 
-    print("res.statusCode: ${res.statusCode}");
-    print("res.body: ${res.body}");
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
 
     try {
       if (res.statusCode == 200) {
@@ -348,54 +348,26 @@ class HttpService {
     return null;
   }
 
-  ///
-  // Future<List<RouteModel>> getRoutes() async {
-  //   http.Response res = await getQuery(
-  //     "/rpc/driver_routes?limit=10",
-  //   );
+  Future<EventModel?> getEvent(int eventId) async {
+    const endpoint = "/rpc/trips_events";
+    http.Response res =
+        await getQuery("$endpoint?limit1&id_event=$eventId");
 
-  //   print("res.statusCode: ${res.statusCode}");
-  //   print("res.body: ${res.body}");
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
 
-  //   if (res.statusCode == 200) {
-  //     try {
-  //       final pickUpLocation = await getPickUpLocationPoint();
-  //       final List<Map<String, dynamic>> body = jsonDecode(res.body);
-
-  //       if (res.body.isEmpty) return [];
-  //       // Recorrer la lista de pickUpLocation
-  //       for (var route in body) {
-  //         for (var location in pickUpLocation) {
-  //           if (route["route_id"] == location["route_id"]) {
-  //             route["pickup_location"] = {
-  //               "schedule_start_time": location["schedule_start_time"],
-  //               "schedule_end_time": location["schedule_end_time"],
-  //               "bus_plate": location["bus_plate"],
-  //               "bus_model": location["bus_model"],
-  //               "bus_year": location["bus_year"],
-  //               "driver_id": location["driver_id"],
-  //               "monitor_id": location["monitor_id"]
-  //             };
-  //           }
-  //         }
-  //       }
-
-  //       // Convertir todo el arreglo de forma asíncrona
-  //       final List<RouteModel> routes = await Future.wait(body
-  //             .map((dynamic item) async => await RouteModel.fromJson(item))
-  //             .toList(),
-  //       );
-  //       return routes;
-  //     } catch (e) {
-  //       print("getRoutes error: ${e.toString()}");
-  //       return [];
-  //     }
-  //   } else {
-  //     print("erorr en peticion: ${res.toString()}");
-  //   }
-
-  //   return [];
-  // }
+    try {
+      if (res.statusCode == 200) {
+        List<dynamic> body = jsonDecode(res.body);
+        if(body.isNotEmpty){
+          return EventModel.fromJson(body[0]);
+        }
+      }
+    } catch (e) {
+      print("emitterKeyGen.error ${e.toString()}");
+    }
+    return null;
+  }
 
   Future<List<Map<String, dynamic>>> getPickUpLocationPoint() async {
     http.Response res = await getQuery(
@@ -448,13 +420,12 @@ class HttpService {
       try {
         var body = jsonDecode(res.body);
         if (body == null) return TripModel(trip_id: 0);
-        if(body.isNullOrBlank){
-          final TripModel trips = TripModel.fromJson(body[0]);
-          return trips;
-        }
+        
+        final TripModel trips = TripModel.fromJson(body[0]);
+        return trips;
         
       } catch (e) {
-        print(e.toString());
+        print("[getActiveTrip] ${e.toString()}");
       }
     }
     return TripModel(trip_id: 0);
@@ -947,8 +918,6 @@ class HttpService {
       'latitude': position['latitude'],
       'longitude': position['longitude'],
       'speed': position['speed'],
-      // 'heading': position['heading'],
-      // 'time': position['time'],
       'accuracy': position['accuracy'],
       'altitude': position['altitude']
     };
