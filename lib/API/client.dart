@@ -434,7 +434,7 @@ class HttpService {
   Future<List<TripModel>> getGuardianTrips(String active) async {
     const endpoint = "/rpc/guardian_trips";
     http.Response res =
-        await getQuery("$endpoint?select=*&limit=1&running=eq.$active");
+        await getQuery("$endpoint?select=*&limit=10&running=eq.$active");
 
     print("[$endpoint] res.statusCode: ${res.statusCode}");
     print("[$endpoint]res.body: ${res.body}");

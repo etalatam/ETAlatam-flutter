@@ -125,7 +125,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
 
                                     /// Old trips
                                     SizedBox(
-                                        height: 300,
+                                        height: 250,
                                         child: ListView.builder(
                                             scrollDirection: Axis.horizontal,
                                             itemCount: oldTripsList
