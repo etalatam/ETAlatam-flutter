@@ -30,7 +30,9 @@ class LocationService extends ChangeNotifier {
   final LocalStorage storage = LocalStorage('tokens.json');
 
   static final LocationService _instance = LocationService._internal();
+  
   factory LocationService() => _instance;
+  
   LocationService._internal();
 
   init() async {
@@ -63,7 +65,12 @@ class LocationService extends ChangeNotifier {
             _locationData = data;
             await storage.setItem('lastPosition', data);
             await tracking(_locationData);
-            notifyListeners();
+            try {
+              notifyListeners();  
+            } catch (e) {
+              print('[ETALocationService.notifyListeners.error] ${e.toString()}');
+            }
+            
           }
         });
 
@@ -90,7 +97,7 @@ class LocationService extends ChangeNotifier {
         autoStop: false,
         androidSettings: const AndroidSettings(
             accuracy: LocationAccuracy.NAVIGATION,
-            interval: 30,
+            interval: 5,
             distanceFilter: 0,
             client: LocationClient.google,
             androidNotificationSettings: AndroidNotificationSettings(

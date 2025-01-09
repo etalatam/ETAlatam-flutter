@@ -1,28 +1,17 @@
 import 'dart:async';
-import 'package:eta_school_app/Models/route_model.dart';
-import 'package:eta_school_app/Pages/student_page.dart';
-// import 'package:eta_school_app/Pages/AddStudentPage.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/components/active_trip.dart';
 import 'package:eta_school_app/components/header.dart';
-import 'package:eta_school_app/components/home_route_block.dart';
 import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-// import 'package:eta_school_app/Pages/TripPage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/Models/parent_model.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/components/loader.dart';
-
-// import 'package:eta_school_app/components/AddStudentBlock.dart';
-// import 'package:eta_school_app/components/HomeRouteBlock.dart';
-// import 'package:eta_school_app/components/ActiveTrip.dart';
-// import 'package:eta_school_app/Models/EventModel.dart';
 
 class GuardiansHome extends StatefulWidget {
   @override
@@ -35,20 +24,14 @@ class _GuardiansHomeState extends State<GuardiansHome>
 
   late GoogleMapController mapController;
 
-  bool hasActiveTrip = false;
-
   ParentModel? parentModel =
       ParentModel(parentId: 0, firstName: '', contactNumber: "", students: []);
 
-  Location location = Location();
-
   bool showLoader = true;
 
-  // List<EventModel> eventsList = [];
-  List<TripModel> tripsList = [];
-  // List<TripModel> oldTripsList = [];
+  List<TripModel> oldTripsList = [];
 
-  TripModel? activeTrip;
+  List<TripModel> activeTrips = [];
 
   @override
   Widget build(BuildContext context) {
@@ -76,28 +59,30 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                   color: activeTheme.main_bg,
                                   margin: EdgeInsets.only(top: 120),
                                   child: Column(children: [
-                                    // Row(children:[ Container(
-                                    //   padding: EdgeInsets.symmetric(horizontal: 20),
-                                    //   child: Text(
-                                    //   "${lang.translate('welcome')}  ${parentModel!.first_name!}",
-                                    //   style: activeTheme.h4,
-                                    //   textAlign: TextAlign.start,
-                                    // ))]),
+                                    
+                                      ETAWidgets.svgTitle("assets/svg/route.svg",
+                                        lang.translate('Active routes')),
 
-                                    /// Parent profile
-                                    // parentProfileInfoBlock(parentModel!, context),
+                                      SizedBox(
+                                        height: 150,
+                                        child: ListView.builder(
+                                            shrinkWrap: true,
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: activeTrips.length,
+                                            itemBuilder: (BuildContext context, int index) {
+                                              return SizedBox( 
+                                                width: 400,
+                                                child: ActiveTrip(openTrip, activeTrips[index])
+                                                // child: Text("Maldito"),
+                                              );
+                                            })),
+                                            
+                                      ETAWidgets.svgTitle(
+                                          "assets/svg/fire.svg",
+                                          lang.translate(
+                                              "List of your added children")),
 
-                                    /// Last Trips
-                                    hasActiveTrip
-                                        ? ActiveTrip(openTrip, activeTrip)
-                                        : Center(),
-
-                                    ETAWidgets.svgTitle(
-                                        "assets/svg/fire.svg",
-                                        lang.translate(
-                                            "List of your added children")),
-
-                                    SizedBox(height: 10),
+                                      SizedBox(height: 10),
 
                                     /// Students list
                                     parentModel!.students.isEmpty
@@ -130,18 +115,20 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                               },
                                             ),
                                           ),
-                                    SizedBox(
-                                      height: 40,
-                                    ),
-                                    ETAWidgets.svgTitle("assets/svg/route.svg",
-                                        lang.translate('Active routes')),
 
-                                    /// Available Routes
                                     SizedBox(
-                                        height: 300,
+                                      height: 10,
+                                    ),
+                                    
+                                    ETAWidgets.svgTitle("assets/svg/route.svg",
+                                        lang.translate('trips_history')),
+
+                                    /// Old trips
+                                    SizedBox(
+                                        height: 250,
                                         child: ListView.builder(
                                             scrollDirection: Axis.horizontal,
-                                            itemCount: tripsList
+                                            itemCount: oldTripsList
                                                 .length, // Replace with the total number of items
                                             itemBuilder: (BuildContext context,
                                                 int index) {
@@ -150,76 +137,13 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                                         openNewPage(
                                                             context,
                                                             TripPage(
-                                                                trip: tripsList[index])
+                                                                trip: oldTripsList[index],
+                                                            )
                                                         );
                                                       },
-                                                  child: ETAWidgets.homeTripBlock(context,tripsList[index])
+                                                  child: ETAWidgets.homeTripBlock(context,oldTripsList[index])
                                               );
                                             })),
-
-                                    /// Add student block
-                                    // !hasPending()
-                                    // ? InfoButtonBlock(
-                                    //   addStudent,
-                                    //   lang.translate('Add new student now'),
-                                    //   lang.translate('Start now with filling new student information'),
-                                    //   lang.translate('Add student') ,
-                                    //   SvgPicture.asset("assets/svg/multi.svg",
-                                    //     width: 30,
-                                    //     height: 30,
-                                    //     color: activeTheme.icon_color,
-                                    //   ))
-                                    // : InfoButtonBlock(
-                                    //   addStudent,
-                                    //   lang.translate('Required information'),
-                                    //   lang.translate('You need to complete some required information'),
-                                    //   lang.translate('Complete information') ,
-                                    //   SvgPicture.asset("assets/svg/multi.svg",
-                                    //     width: 30,
-                                    //     height: 30,
-                                    //     color: activeTheme.icon_color,
-                                    //   )
-                                    // ) ,
-
-                                    // SizedBox(height: 30,),
-                                    // ETAWidgets.svgTitle("assets/svg/bus.svg", lang.translate('trips_history')),
-
-                                    // /// Last Trips
-                                    // oldTripsList.length < 1 ? Center () : Container(
-                                    //   height: 230,
-                                    //   child: ListView.builder(
-                                    //     scrollDirection: Axis.horizontal,
-                                    //     itemCount: oldTripsList.length, // Replace with the total number of items
-                                    //     itemBuilder: (BuildContext context, int index) {
-                                    //       return GestureDetector(
-                                    //         onTap: () {
-                                    //           openNewPage(context, TripPage(trip: oldTripsList[index]));
-                                    //         },
-                                    //         child:
-                                    //         ETAWidgets.homeTripBlock(context, oldTripsList[index])
-                                    //       );
-                                    //     }
-                                    //   )
-                                    // ),
-                                    // SizedBox(height: 30,),
-
-                                    // Container(
-                                    //   padding: EdgeInsets.all(20),
-                                    //   child: Text(
-                                    //   "${lang.translate('Events and News')}",
-                                    //   style: activeTheme.h3,
-                                    //   textAlign: TextAlign.start,
-                                    // )),
-
-                                    /// Events carousel
-                                    // Container(
-                                    //   width: MediaQuery.of(context).size.width,
-                                    //   alignment: Alignment.center,
-                                    //   child:  ETAWidgets.eventCarousel(eventsList, context),
-                                    // ),
-
-                                    /// Help / Support Block
-                                    // ETAWidgets.homeHelpBlock(),
                                   ]),
                                 ),
                               ]),
@@ -229,13 +153,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
                             left: 0,
                             right: 0,
                             top: 0,
-                            child: Header(lang.translate('sitename'))),
-                        // Positioned(
-                        //   bottom: 20,
-                        //   left: 20,
-                        //   right: 20,
-                        //   child: BottomMenu('home', openNewPage)
-                        // )
+                            child: Header()),
                       ],
                     ))));
   }
@@ -270,42 +188,29 @@ class _GuardiansHomeState extends State<GuardiansHome>
       });
     });
 
-    // final parentId = await storage.getItem('parent_id');
-    // final eventsQuery = await httpService.getEvents();
-    // setState(()  {
-    //     eventsList = eventsQuery;
-    // });
-
     final parentQuery = await httpService.getParent();
     setState(() {
       parentModel = parentQuery;
     });
 
-    final trips = await httpService.getParentTrips();
+    final List<TripModel> trips = (await httpService.getGuardianTrips("true"));
+    List<String> routeTopics = [];
+    for (var trip in trips) {
+      notificationSubcribe("route-${trip.route_id}");
+      routeTopics.add("route-${trip.route_id}");
+    }
+    storage.setItem('route-topics',routeTopics.toString());
+
     setState(() {
-      tripsList = trips;
-      for (var trip in tripsList) {
-        notificationSubcribe("start-trip-${trip.route_id}");
-        notificationSubcribe("end-trip-${trip.route_id}");
-      }
+      activeTrips = trips;
     });
 
-    TripModel? activeTrip_ = await httpService.getActiveTrip();
+    final List<TripModel> oldTrips = (await httpService.getGuardianTrips("false"));
     setState(() {
-      activeTrip = activeTrip_;
-      hasActiveTrip = activeTrip_.trip_id! > 0 ? true : false;
+      oldTripsList = oldTrips;
     });
 
-    // List<TripModel>? oldTrips = await httpService.getStudentTrips(parentModel!.students[0].student_id, 0);
-    // setState(()  {
-    //     oldTripsList = oldTrips;
-    // });
   }
-
-  // addStudent()
-  // {
-  //   Get.to(AddStudentPage(parent: parentModel));
-  // }
 
   openTrip(trip) {
     Get.to(TripPage(

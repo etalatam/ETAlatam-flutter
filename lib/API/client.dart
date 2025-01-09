@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:eta_school_app/Models/driver_model.dart';
 import 'package:eta_school_app/Models/PickupLocationModel.dart';
+import 'package:eta_school_app/Models/emitter_keygen.dart';
 import 'package:eta_school_app/Models/user_model.dart';
 import 'package:eta_school_app/Models/login_information_model.dart';
 import 'package:eta_school_app/Pages/providers/driver_provider.dart';
@@ -12,7 +13,7 @@ import 'package:eta_school_app/infrastructure/mappers/driver_mapper.dart';
 import 'package:eta_school_app/infrastructure/mappers/login_information_mapper.dart';
 import 'package:eta_school_app/infrastructure/repositories/login_information_repository_impl.dart';
 import 'package:eta_school_app/methods.dart';
-// import 'package:get/get.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
@@ -118,9 +119,15 @@ class HttpService {
   }
 
   /// Load Latest Notifications
-  Future<List<NotificationModel>?> getNotifications() async {
-    http.Response res = await getQuery(
-        "/rpc/notifications?order=id.desc");
+  Future<List<NotificationModel>?> getNotifications(String? topics) async {
+    var query = "/rpc/notifications?order=id.desc&limit=20";
+
+    if(topics != null){
+      topics = topics.replaceAll("[", "(").replaceAll("]", ")").replaceAll(" ", "");
+      query += "&topic=in.$topics";
+    }
+    
+    http.Response res = await getQuery(query);
 
     print("res.statusCode: ${res.statusCode}");
     print("res.body: ${res.body}");
@@ -281,38 +288,36 @@ class HttpService {
     return [];
   }
 
-  Future<List<TripModel>> getParentTrips() async {
-      var res = await getQuery("/rpc/guardian_trips?running=eq.true&limit=10");
-      print("res.statusCode: ${res.statusCode}");
-      print("res.body: ${res.body}");
+  // Future<List<TripModel>> getParentTrips() async {
+  //     var res = await getQuery("/rpc/guardian_trips?running=eq.true&limit=10");
+  //     print("res.statusCode: ${res.statusCode}");
+  //     print("res.body: ${res.body}");
 
-      if (res.statusCode == 200) {
-        try {
-          List<dynamic> body = jsonDecode(res.body);
-          return body.map((dynamic item) => TripModel.fromJson(item)).toList();          
-        } catch (e) {
-          print("getRoutes error: ${e.toString()}");
-          return [];
-        }
-      }
+  //     if (res.statusCode == 200) {
+  //       try {
+  //         List<dynamic> body = jsonDecode(res.body);
+  //         return body.map((dynamic item) => TripModel.fromJson(item)).toList();          
+  //       } catch (e) {
+  //         print("getRoutes error: ${e.toString()}");
+  //         return [];
+  //       }
+  //     }
 
-      return [];
+  //     return [];
 
-  }
+  // }
 
   /// Load Routes
   Future<List<RouteModel>> getRoutes() async {
-    var res = await getQuery("/rpc/driver_routes?limit=10");
-    print("res.statusCode: ${res.statusCode}");
-    print("res.body: ${res.body}");
+    const endpoint = "/rpc/driver_routes";
+    var res = await getQuery("$endpoint?limit=10");
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       try {
         List<dynamic> body = jsonDecode(res.body);
         return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
-        // await Future.wait(body
-        //       .map((dynamic item) async => RouteModel.fromJson(item))
-        //       .toList());
       } catch (e) {
         print("getRoutes error: ${e.toString()}");
         return [];
@@ -322,54 +327,47 @@ class HttpService {
     return [];
   }
 
-  ///
-  // Future<List<RouteModel>> getRoutes() async {
-  //   http.Response res = await getQuery(
-  //     "/rpc/driver_routes?limit=10",
-  //   );
+  Future<EmitterKeyGenModel?> emitterKeyGen(String channel) async {
+    const endpoint = "/rpc/emitter_keygen";
+    http.Response res =
+        await getQuery("$endpoint?order=ts.asc&channel=ilike.*$channel*&limit=1");
 
-  //   print("res.statusCode: ${res.statusCode}");
-  //   print("res.body: ${res.body}");
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
 
-  //   if (res.statusCode == 200) {
-  //     try {
-  //       final pickUpLocation = await getPickUpLocationPoint();
-  //       final List<Map<String, dynamic>> body = jsonDecode(res.body);
+    try {
+      if (res.statusCode == 200) {
+        List<dynamic> body = jsonDecode(res.body);
+        if(body.isNotEmpty){
+          return EmitterKeyGenModel.fromJson(body[0]);
+        }
+      }
+    } catch (e) {
+      print("emitterKeyGen.error ${e.toString()}");
+    }
+    return null;
+  }
 
-  //       if (res.body.isEmpty) return [];
-  //       // Recorrer la lista de pickUpLocation
-  //       for (var route in body) {
-  //         for (var location in pickUpLocation) {
-  //           if (route["route_id"] == location["route_id"]) {
-  //             route["pickup_location"] = {
-  //               "schedule_start_time": location["schedule_start_time"],
-  //               "schedule_end_time": location["schedule_end_time"],
-  //               "bus_plate": location["bus_plate"],
-  //               "bus_model": location["bus_model"],
-  //               "bus_year": location["bus_year"],
-  //               "driver_id": location["driver_id"],
-  //               "monitor_id": location["monitor_id"]
-  //             };
-  //           }
-  //         }
-  //       }
+  Future<EventModel?> getEvent(int eventId) async {
+    const endpoint = "/rpc/trips_events";
+    http.Response res =
+        await getQuery("$endpoint?limit1&id_event=$eventId");
 
-  //       // Convertir todo el arreglo de forma asíncrona
-  //       final List<RouteModel> routes = await Future.wait(body
-  //             .map((dynamic item) async => await RouteModel.fromJson(item))
-  //             .toList(),
-  //       );
-  //       return routes;
-  //     } catch (e) {
-  //       print("getRoutes error: ${e.toString()}");
-  //       return [];
-  //     }
-  //   } else {
-  //     print("erorr en peticion: ${res.toString()}");
-  //   }
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
 
-  //   return [];
-  // }
+    try {
+      if (res.statusCode == 200) {
+        List<dynamic> body = jsonDecode(res.body);
+        if(body.isNotEmpty){
+          return EventModel.fromJson(body[0]);
+        }
+      }
+    } catch (e) {
+      print("emitterKeyGen.error ${e.toString()}");
+    }
+    return null;
+  }
 
   Future<List<Map<String, dynamic>>> getPickUpLocationPoint() async {
     http.Response res = await getQuery(
@@ -411,43 +409,61 @@ class HttpService {
 
   /// Load Tripd
   Future<TripModel> getActiveTrip() async {
+    const endpoint = "/rpc/driver_trips";
     http.Response res =
-        await getQuery("/rpc/driver_trips?select=*&limit=1&running=eq.true");
+        await getQuery("$endpoint?select=*&limit=1&running=eq.true");
 
-    print("res.statusCode: ${res.statusCode}");
-    print("res.body: ${res.body}");
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       try {
         var body = jsonDecode(res.body);
         if (body == null) return TripModel(trip_id: 0);
+        
         final TripModel trips = TripModel.fromJson(body[0]);
         return trips;
+        
       } catch (e) {
-        print(e.toString());
+        print("[getActiveTrip] ${e.toString()}");
       }
     }
     return TripModel(trip_id: 0);
   }
 
+  Future<List<TripModel>> getGuardianTrips(String active) async {
+    const endpoint = "/rpc/guardian_trips";
+    http.Response res =
+        await getQuery("$endpoint?select=*&limit=10&running=eq.$active");
+
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint]res.body: ${res.body}");
+
+    if (res.statusCode == 200) {
+      try {
+        List<dynamic> body = jsonDecode(res.body);
+        return body.map((dynamic item) => TripModel.fromJson(item)).toList();
+      } catch (e) {
+        print("[$endpoint] ${e.toString()}");
+      }
+    }
+    return [];
+  }
+
   /// Submit form to update data through API
   Future<TripModel> startTrip(RouteModel route) async {
-    
+    const endpoint = "/rpc/driver_start_trip";    
     Map data = {
       "_route_id": "${route.route_id}",
       "_id_schedule": "${route.schedule_id}"
-      // "driver_id": driverId,
-      // "route_id": routeId,
-      // "vehicle_id": vehicleId,
-      // "trip_status": 'Scheduled',
     };
 
     // Map? body = {"model": 'create_trip', "params": jsonEncode(data)};
     // http.Response res = await postQuery('/mobile_api', body);
 
-    http.Response res = await postQuery('/rpc/driver_start_trip', data);
-    print("res.statusCode ${res.statusCode}");
-    print("res.body ${res.body}");
+    http.Response res = await postQuery(endpoint, data);
+    print("[$endpoint] res.statusCode ${res.statusCode}");
+    print("[$endpoint] res.body ${res.body}");
 
     if (res.statusCode == 200) {
       return TripModel.fromJson(jsonDecode(res.body));
@@ -458,6 +474,7 @@ class HttpService {
 
   Future<StudentModel> updateAttendance(
       TripModel trip, StudentModel student, String statusCode) async {
+    const endpoint = "/rpc/update_attendance";
     final data = jsonEncode({
       "id_school": student.schoolId,
       "id_student": student.student_id,
@@ -467,10 +484,10 @@ class HttpService {
 
     print("[client.updateAttendance] $data");
 
-    http.Response res = await postQuery('/rpc/update_attendance', data,
+    http.Response res = await postQuery(endpoint, data,
         contentType: 'application/json');
-    print("res.statusCode ${res.statusCode}");
-    print("res.body ${res.body}");
+    print("[$endpoint] res.statusCode ${res.statusCode}");
+    print("[$endpoint] res.body ${res.body}");
 
     if (res.statusCode == 200) {
       return StudentModel.fromJson(jsonDecode(res.body));
@@ -557,16 +574,17 @@ class HttpService {
   // request access to api
   requestAccess() async {
     debugPrint('requestAccess');
+    const endpoint = "/rpc/request_access";
     final data = {
       '_client_id': '4926212245183',
       '_access_token': '8725ca59-71be-46c6-a364-eaac57f1786d'
     };
 
     final http.Response res =
-        await postQuery('/rpc/request_access', data, useToken: false);
+        await postQuery(endpoint, data, useToken: false);
 
-    print("statuscode: ${res.statusCode}");
-    print("res.body: ${res.body}");
+    print("[$endpoint] statuscode: ${res.statusCode}");
+    print("[$endpoint]res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
@@ -582,6 +600,7 @@ class HttpService {
   /// Login with email & password
   login(String email, String password) async {
     debugPrint('login');
+    const endpoint = '/rpc/login';
     final data = {
       "_email": email,
       "_pass": password,
@@ -589,10 +608,10 @@ class HttpService {
 
     var requestAccessRes = await requestAccess();
     if (requestAccessRes == '1') {
-      http.Response res = await postQuery('/rpc/login', data);
+      http.Response res = await postQuery(endpoint, data);
 
-      print("statuscode: ${res.statusCode}");
-      print("res.body: ${res.body}");
+      print("[$endpoint] statuscode: ${res.statusCode}");
+      print("[$endpoint] res.body: ${res.body}");
 
       if (res.statusCode == 200) {
         dynamic body = jsonDecode(res.body);
@@ -637,6 +656,7 @@ class HttpService {
   /// Send message
   Future<HelpMessageModel> sendMessage(
       int categoryId, String message, int priority) async {
+    const endpoint = '/rpc/save_support_message';
     final data = {
       "category_id": categoryId,
       "content": message,
@@ -644,11 +664,11 @@ class HttpService {
     };
 
     http.Response res = await postQuery(
-        '/rpc/save_support_message', jsonEncode(data),
+        endpoint, jsonEncode(data),
         contentType: 'application/json');
 
-    print("[sendMessage] statuscode: ${res.statusCode}");
-    print("[sendMessage] res.body: ${res.body}");
+    print("[$endpoint] statuscode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
@@ -661,14 +681,15 @@ class HttpService {
 
   /// Send message
   Future<CommentModel> sendMessageComment(String comment, int messageId) async {
+    const endpoint = '/rpc/save_support_message_comment';
     final data = {"message_id": messageId, "comment": comment};
 
     http.Response res = await postQuery(
-        '/rpc/save_support_message_comment', jsonEncode(data),
+        endpoint, jsonEncode(data),
         contentType: 'application/json');
 
-    print("[sendMessageComment] statuscode: ${res.statusCode}");
-    print("[sendMessageComment] res.body: ${res.body}");
+    print("[$endpoint] statuscode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
@@ -680,16 +701,17 @@ class HttpService {
 
   /// Send message
   Future<String> resetPassword(String email) async {
+    const endpoint = '/rpc/update_password_request';
     Map data = {
       "email": email,
     };
 
     var requestAccessRes = await requestAccess();
     if (requestAccessRes == '1') {
-      http.Response res = await postQuery('/rpc/update_password_request', data);
+      http.Response res = await postQuery(endpoint, data);
 
-      print("res.statusCode: ${res.statusCode}");
-      print("res.body: ${res.body}");
+      print("[$endpoint] res.statusCode: ${res.statusCode}");
+      print("[$endpoint] res.body: ${res.body}");
 
       if (res.statusCode == 200) {
         return '1';
@@ -894,8 +916,6 @@ class HttpService {
       'latitude': position['latitude'],
       'longitude': position['longitude'],
       'speed': position['speed'],
-      // 'heading': position['heading'],
-      // 'time': position['time'],
       'accuracy': position['accuracy'],
       'altitude': position['altitude']
     };
@@ -951,11 +971,12 @@ class HttpService {
 
   Future<dynamic> driverInfo() async {
     try {
-      http.Response res = await postQuery('/rpc/driver_info', null,
+      const endpoint = '/rpc/driver_info';
+      http.Response res = await postQuery(endpoint, null,
           contentType: 'application/json');
 
-      print("res.statusCode: ${res.statusCode}");
-      print("res.body: ${res.body}");
+      print("[$endpoint] res.statusCode: ${res.statusCode}");
+      print("[$endpoint] res.body: ${res.body}");
 
       if (res.statusCode == 200) {
         return res.body;
@@ -970,15 +991,15 @@ class HttpService {
 
   Future<UserModel?> userInfo() async {
     try {
-      http.Response res = await postQuery('/rpc/user_info', null,
+      const endpoint = '/rpc/user_info';
+      http.Response res = await postQuery(endpoint, null,
           contentType: 'application/json');
 
-      print("res.statusCode: ${res.statusCode}");
-      print("res.body: ${res.body}");
+      print("[$endpoint] res.statusCode: ${res.statusCode}");
+      print("[$endpoint] res.body: ${res.body}");
       
       if (res.statusCode == 200) {
         final json  = jsonDecode(res.body);
-        // print("res.body.json: $json");
         return UserModel.fromJson(json);
       } 
     } catch (e) {

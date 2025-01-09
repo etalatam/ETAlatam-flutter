@@ -68,22 +68,6 @@ class _DriverHomeState extends State<DriverHome>
                                   color: activeTheme.main_bg,
                                   margin: const EdgeInsets.only(top: 120),
                                   child: Column(children: [
-                                    // Row(children:[ Container(
-                                    //   padding: const EdgeInsets.symmetric(horizontal: 20),
-                                    //   child: Text(
-                                    //   "${lang.translate('welcome')}  ${driverModel.first_name!}",
-                                    //   style: activeTheme.h4,
-                                    //   textAlign: TextAlign.start,
-                                    // ))]),
-
-                                    /// Driver profile
-                                    // GestureDetector(
-                                    //   onTap: () {
-                                    //     openNewPage(context, ProfilePage());
-                                    //   },
-                                    //   child: profileInfoBlock(driverModel, context),
-                                    // ),
-
                                     /// Has Active Trip
                                     !hasActiveTrip
                                         ? Container(
@@ -219,20 +203,7 @@ class _DriverHomeState extends State<DriverHome>
                             left: 0,
                             right: 0,
                             top: 0,
-                            child: Header(lang.translate('sitename'))),
-
-                        // Positioned(
-                        //   left: 0,
-                        //   right: 0,
-                        //   top: 0,
-                        //   child: Header(lang.translate('sitename'))
-                        // ),
-                        // Positioned(
-                        //   bottom: 20,
-                        //   left: 20,
-                        //   right: 20,
-                        //   child: BottomMenu('home', openNewPage)
-                        // )
+                            child: Header()),
                       ],
                     ))));
   }
@@ -330,12 +301,15 @@ class _DriverHomeState extends State<DriverHome>
     });
 
     final routesQuery = await httpService.getRoutes();
+    List<String> routeTopics = [];
+    for (var route in routesQuery) {
+      notificationSubcribe("route-${route.route_id}");
+      routeTopics.add("route-${route.route_id}");
+    }
+    storage.setItem('route-topics',routeTopics.toString());
+
     setState(() {
       routesList = routesQuery;
-      for (var route in routesList) {
-        notificationSubcribe("start-trip-${route.route_id}");
-        notificationSubcribe("end-trip-${route.route_id}");
-      }
     });
 
     List<TripModel>? oldTrips = await httpService.getDriverTrips(0);
@@ -343,10 +317,10 @@ class _DriverHomeState extends State<DriverHome>
       oldTripsList = oldTrips;
     });
 
-    TripModel? activeTrip_ = await httpService.getActiveTrip();
+    TripModel? activeTripWrapper = await httpService.getActiveTrip();
     setState(() {
-      activeTrip = activeTrip_;
-      hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
+      activeTrip = activeTripWrapper;
+      hasActiveTrip = (activeTripWrapper.trip_id != 0) ? true : false;
     });
 
     if (hasActiveTrip) {
@@ -355,7 +329,7 @@ class _DriverHomeState extends State<DriverHome>
   }
 
   openTrip(TripModel trip) {
-    Get.to(TripPage(trip: trip));
+    Get.to(TripPage(trip: trip, navigationMode: "support",));
   }
 
   @override

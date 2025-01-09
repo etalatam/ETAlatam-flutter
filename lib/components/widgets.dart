@@ -380,13 +380,13 @@ mixin ETAWidgets {
                 blurStyle: BlurStyle.normal,
               )
             ],
-            image: DecorationImage(
-              image: NetworkImage((item.picture != null)
-                  ? (httpService.croppedImage(item.picture!, 800, 600))
-                  : httpService.croppedImage(
-                      "/uploads/images/60x60.png", 200, 200)),
-              fit: BoxFit.fill,
-            ),
+            // image: DecorationImage(
+            //   image: NetworkImage((item.. != null)
+            //       ? (httpService.croppedImage(item.picture!, 800, 600))
+            //       : httpService.croppedImage(
+            //           "/uploads/images/60x60.png", 200, 200)),
+            //   fit: BoxFit.fill,
+            // ),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(50),
             ),
@@ -725,7 +725,7 @@ mixin ETAWidgets {
                 ),
               ),
               child: Icon(
-                Icons.time_to_leave,
+                Icons.access_time,
                 // color: activeTheme.main_bg,
                 color: Color.fromARGB(255,15,148,136)
               ),
@@ -776,7 +776,7 @@ mixin ETAWidgets {
                 ),
               ),
               child: Icon(
-                Icons.pin_drop,
+                Icons.pin_drop_outlined,
                 color: Color.fromARGB(255,15,148,136),
               ),
             ),

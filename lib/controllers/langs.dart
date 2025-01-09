@@ -44,7 +44,7 @@ class Lang {
   }
 
   Map<String, dynamic> arLangs = {
-    'sitename': 'Medians Trips',
+    'sitename': 'Eta',
     'error': 'خطأ',
     'first_name': 'الإسم الأول',
     'last_name': 'الإسم الاخير',
@@ -186,7 +186,7 @@ class Lang {
   };
 
   Map<String, dynamic> enLangs = {
-    'sitename': 'Medians Trips',
+    'sitename': 'ETA',
     'trips_history': 'Trips log history',
     'show_map': 'Show map route',
     'login_intro_message':
@@ -304,7 +304,7 @@ class Lang {
     'no_notification_yet!': 'No hay notificaciones aún!',
     'list_of_your_notifications': 'Lista de notificaciones',
     "list_of_your_added_children": "Estudiantes",
-    "active_routes": "Rutas activas",
+    "active_routes": "Viajes activos",
     "view_details": "Ver detalles"
   };
 }

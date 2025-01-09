@@ -1,6 +1,7 @@
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class ActiveTrip extends StatelessWidget {
   const ActiveTrip(this.openTrip, this.trip, {super.key});
@@ -40,25 +41,10 @@ class ActiveTrip extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              if (trip?.trip_id != 0)
-                Container(
-                  decoration: ShapeDecoration(
-                      //color: activeTheme.main_color,
-                      // color: Colors.amber,
-                      shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  )),
-                  width: 80,
-                  alignment: Alignment.center,
-                  child: Image(
-                      width: 80,
-                      height: 70,
-                      image: AssetImage("assets/moving_car.gif")),
-                ),
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.only(
-                    top: 10,
+                    top: 1,
                     left: 3,
                     right: 15,
                     bottom: 10,
@@ -70,32 +56,41 @@ class ActiveTrip extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.only(left: 10),
+                          padding: const EdgeInsets.only(left: 5),
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      trip?.trip_id == 0
-                                          ? lang.translate(
-                                              "Does not have active trips")
-                                          : lang.translate('Your active trip'),
+                              Row(
+                                mainAxisSize: MainAxisSize.max,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 150,
+                                    child: Text(
+                                      "${lang.translate('Trip')} #${trip?.trip_id} (${trip?.route?.route_name})",
+                                      maxLines: 1, 
+                                      overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
-                                        color: activeTheme.buttonColor,
-                                        fontSize: activeTheme.h5.fontSize,
-                                        fontFamily: activeTheme.h6.fontFamily,
-                                        fontWeight: activeTheme.h6.fontWeight,
+                                        color: activeTheme.buttonColor
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  
+                                  Row(children: [
+                                    SvgPicture.asset("assets/svg/bus.svg",
+                                        width: 15, color: activeTheme.buttonColor),
+                                    SizedBox(width: 5),
+                                    Text(
+                                      trip?.vehicle?.plate_number ?? '',
+                                      style: TextStyle(
+                                        color: activeTheme.buttonColor,
+                                      ),
+                                    )
+                                  ]),
+                                ],
                               ),
                               const SizedBox(height: 10),
                               SizedBox(
@@ -104,33 +99,66 @@ class ActiveTrip extends StatelessWidget {
                                   textDirection: TextDirection.ltr,
                                   mainAxisSize: MainAxisSize.max,
                                   mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                      MainAxisAlignment.spaceEvenly,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
+                                    if (trip?.trip_id != 0)
+                                    Container(
+                                      decoration: ShapeDecoration(
+                                          //color: activeTheme.main_color,
+                                          // color: Colors.amber,
+                                          shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      )),
+                                      width: 80,
+                                      alignment: Alignment.center,
+                                      child: Image(
+                                          width: 70,
+                                          height: 60,
+                                          image: AssetImage("assets/moving_car.gif")),
+                                    ),
+                                    const SizedBox(width: 10),
+
+                                    Icon(
+                                      Icons.access_time,
+                                      color: activeTheme.buttonColor,
+                                      size: 20
+                                    ),
+
                                     Text(
                                       trip?.trip_id == 0
                                           ? ""
                                           : "${trip?.trip_date}",
                                       style: TextStyle(
-                                        color: activeTheme.buttonColor,
-                                        fontSize: activeTheme.h6.fontSize,
-                                        fontFamily: activeTheme.h6.fontFamily,
-                                        fontWeight: activeTheme.h6.fontWeight,
+                                        color: activeTheme.buttonColor
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: 10),
+                                    Icon(
+                                      Icons.route,
+                                      color: activeTheme.buttonColor,
+                                      size: 20
+                                    ),
+                                    Text(
+                                      '${trip?.distance} KM',
+                                      style: TextStyle(
+                                        color: activeTheme.buttonColor
+                                      )
+                                    ),
+                                    const SizedBox(width: 10),
+                                    (trip != null &&
+                                            trip!.pickup_locations != null) ?
+                                    Icon(
+                                      Icons.pin_drop_outlined,
+                                      color: activeTheme.buttonColor,
+                                      size: 20
+                                    ) :const Center(),
                                     (trip != null &&
                                             trip!.pickup_locations != null)
                                         ? Text(
-                                            '${lang.translate('pickups')} : ${trip!.pickup_locations!.length.toString()} ',
+                                            '${trip!.pickup_locations!.length.toString()} ',
                                             style: TextStyle(
-                                              color: activeTheme.buttonColor,
-                                              fontSize: activeTheme
-                                                  .normalText.fontSize,
-                                              fontFamily: activeTheme
-                                                  .normalText.fontFamily,
-                                              fontWeight: activeTheme
-                                                  .normalText.fontWeight,
+                                              color: activeTheme.buttonColor
                                             ),
                                           )
                                         : const Center(),

@@ -1,10 +1,13 @@
 import 'dart:core';
 import 'package:eta_school_app/Models/DestinationModel.dart';
 import 'package:eta_school_app/Models/driver_model.dart';
+import 'package:eta_school_app/Models/emitter_keygen.dart';
 import 'package:eta_school_app/Models/student_model.dart';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Models/PickupLocationModel.dart';
 import 'package:eta_school_app/Models/VehicleModel.dart';
+import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
+import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:intl/intl.dart';
 
 class TripModel {
@@ -26,6 +29,12 @@ class TripModel {
   RouteModel? route;
   VehicleModel? vehicle;
   DriverModel? driver;
+  EmitterKeyGenModel? emitterKeyGenModelEvents;
+  EmitterKeyGenModel? emitterKeyGenModelTracking;
+  Map<String, dynamic>? geoJson;
+  bool isEmitterSubcribedToEvents = false;
+  bool isEmitterSubcribedToTracking = false;
+  int? school_id;
 
   TripModel({
     required this.trip_id,
@@ -46,7 +55,14 @@ class TripModel {
     this.route,
     this.vehicle,
     this.driver,
-  });
+    this.geoJson,
+    this.school_id
+  }){
+    if(trip_status == "Running"){
+      subscribeToTripEvents();
+      subscribeToTripTracking();
+    }
+  }
 
   factory TripModel.fromJson(Map<String, dynamic> json) {
     // print('[TripModel.fromJson] $json');
@@ -70,32 +86,40 @@ class TripModel {
           : List<TripDestinationLocation>.from(
               o.map((model) => TripDestinationLocation.fromJson(model)));
     } catch (e) {
-      print(e.toString());
+      print("[TripModel.TripDestinationLocation.error] ${e.toString()}");
     }
 
     RouteModel? route;
     try {
       route = RouteModel.fromJson(json);
     } catch (e) {
-      print(e.toString());
+      print("[TripModel.RouteModel.error] ${e.toString()}");
     }
 
     VehicleModel? vehicle;
     try {
       vehicle = VehicleModel.fromJson(json);
     } catch (e) {
-      print(e.toString());
+      print("[TripModel.VehicleModel.error] ${e.toString()}");
     }
 
     DriverModel? driver;
     try {
       driver = DriverModel.fromJson(json);
     } catch (e) {
-      print(e.toString());
+      print("[TripModel.DriverModel.error] ${e.toString()}");
     }
 
     DateFormat format = DateFormat('HH:mm');
     json['done_locations_count'] = pickupLocations.length;
+
+    Map<String, dynamic>? routeGeom;
+    try {
+      routeGeom = json['route_geom'];
+      print("[TripModel.routeGeom] ${routeGeom.toString()}");
+    } catch (e) {
+      print("[TripModel.routeGeom.error] ${e.toString()}");
+    }
 
     return TripModel(
       trip_id: json['id_trip'] as int?,
@@ -123,7 +147,73 @@ class TripModel {
       route: route,
       vehicle: vehicle,
       driver: driver,
+      geoJson: routeGeom,
+      school_id: json['school_id']
     );
+  }
+
+  endTrip() async{
+    await httpService.endTrip(trip_id.toString());
+    unSubscribeToTripEvents();
+    unSubscribeToTripTracking();
+  }
+
+  unSubscribeToTripEvents() async {
+    
+    if( isEmitterSubcribedToEvents ) return;
+
+    try {
+      emitterServiceProvider.client!.unsubscribe(
+        "school/$school_id/$trip_id/event",
+        key: emitterKeyGenModelEvents!.key
+      );
+    } catch (e) {
+      print("[TripModel.unSubscribeToTripEvents.error] ${e.toString()}");
+    }
+  }
+
+  unSubscribeToTripTracking() async {
+    
+    if( isEmitterSubcribedToTracking ) return;
+
+    try {
+      emitterServiceProvider.client!.unsubscribe(
+        "school/$school_id/$trip_id/tracking",
+        key: emitterKeyGenModelTracking!.key
+      );
+    } catch (e) {
+      print("[TripModel.unSubscribeToTripTracking.error] ${e.toString()}");
+    }
+  } 
+
+  subscribeToTripEvents() async {
+    if ( ! isEmitterSubcribedToEvents ) {
+      String encodedValue = Uri.encodeComponent("school/$school_id/trip/$trip_id/event/#/");
+        emitterKeyGenModelEvents = await httpService.emitterKeyGen(encodedValue);
+        if (emitterKeyGenModelEvents != null &&
+          emitterServiceProvider.client!.isConnected) {
+          emitterServiceProvider.client!.subscribe(
+            "school/$school_id/trip/$trip_id/event/",
+            key: emitterKeyGenModelEvents!.key
+          );
+          isEmitterSubcribedToEvents = true;
+        }
+    }
+  }
+
+  subscribeToTripTracking() async {
+    if ( ! isEmitterSubcribedToTracking ) {
+        String encodedValue = Uri.encodeComponent("school/$school_id/trip/$trip_id/tracking/#/");
+        emitterKeyGenModelTracking = await httpService.emitterKeyGen(encodedValue);
+        if (emitterKeyGenModelTracking != null &&
+          emitterServiceProvider.client!.isConnected) {
+          emitterServiceProvider.client!.subscribe(
+            "school/$school_id/trip/$trip_id/tracking/",
+            key: emitterKeyGenModelTracking!.key
+          );
+          isEmitterSubcribedToTracking = true;
+        }
+    }
   }
 }
 
