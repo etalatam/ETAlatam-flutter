@@ -439,7 +439,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         loadNotifications();
       });
       
-      messaging.subscribeToTopic('all-notifications');
+      // messaging.subscribeToTopic('all-notifications');
 
       try {
         final userId = await storage.getItem('id_usu');
