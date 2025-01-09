@@ -78,7 +78,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                             })),
                                             
                                       ETAWidgets.svgTitle(
-                                          "assets/svg/fire.svg",
+                                          "assets/svg/school.svg",
                                           lang.translate(
                                               "List of your added children")),
 
