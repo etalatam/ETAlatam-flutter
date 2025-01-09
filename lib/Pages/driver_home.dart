@@ -329,7 +329,7 @@ class _DriverHomeState extends State<DriverHome>
   }
 
   openTrip(TripModel trip) {
-    Get.to(TripPage(trip: trip));
+    Get.to(TripPage(trip: trip, navigationMode: "support",));
   }
 
   @override

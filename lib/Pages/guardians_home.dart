@@ -1,13 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
-import 'package:eta_school_app/Models/route_model.dart';
-import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
-import 'package:eta_school_app/Pages/student_page.dart';
 // import 'package:eta_school_app/Pages/AddStudentPage.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/components/active_trip.dart';
 import 'package:eta_school_app/components/header.dart';
-import 'package:eta_school_app/components/home_route_block.dart';
 import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -152,7 +147,8 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                                         openNewPage(
                                                             context,
                                                             TripPage(
-                                                                trip: tripsList[index])
+                                                                trip: tripsList[index],
+                                                            )
                                                         );
                                                       },
                                                   child: ETAWidgets.homeTripBlock(context,tripsList[index])

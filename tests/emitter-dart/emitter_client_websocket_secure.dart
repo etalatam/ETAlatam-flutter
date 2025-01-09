@@ -2,9 +2,9 @@
 
 import 'package:eta_school_app/shared/emitterio/emitter_client.dart';
 
-const chanelKey = "amhPRP-Qg30XfnmRh1WAeI3G4ByfI1Y6";
+const chanelKey = "XHC_E2nKAmuqYYaABBYZza6DFO6B1xBD";
 
-const testChannel = 'trip/121/event';
+const testChannel = 'school/24/trip/123/tracking/';
 
 final client = EmitterClient(
   host: 'wss://emitter.etalatam.com',

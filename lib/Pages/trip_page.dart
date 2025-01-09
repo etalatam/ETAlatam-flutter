@@ -24,9 +24,11 @@ import 'package:provider/provider.dart';
 import 'map/map_wiew.dart';
 
 class TripPage extends StatefulWidget {
-  const TripPage({super.key, this.trip});
+  const TripPage({super.key, this.trip, this.navigationMode});
 
   final TripModel? trip;
+
+  final String? navigationMode; 
 
   @override
   State<TripPage> createState() => _TripPageState();
@@ -66,8 +68,8 @@ class _TripPageState extends State<TripPage>
                 SizedBox(
                   height: MediaQuery.of(context).size.height / 1.40,
                   child: MapWiew(
-                    navigationMode:
-                        trip.trip_status == 'Running' ? true : false,
+                    navigationMode: widget.navigationMode == null ? false : (
+                        trip.trip_status == 'Running' ? true : false ),
                     onMapReady: (MapboxMap mapboxMap) async {
                       _mapboxMapController = mapboxMap;
 
@@ -483,35 +485,32 @@ class _TripPageState extends State<TripPage>
         center: coordinateBounds.southwest, zoom: 15.5, pitch: 70));
   }
 
-  Future<void> _updateBusIcon() async {
-    final dynamic lastMessage = Provider.of<EmitterService>(context, listen: false).lastMessage;
-    // final position = lastMessage["position"];
-
-    print("[TripPage._updateBusIcon] $lastMessage");
-    
-    // if (position != null) {
-    //   if(busPointAnnotation == null){
-    //     await createBusAnnotation(position);
-    //   }else{
-    //     busPointAnnotation?.geometry = position;
-    //     busPointAnnotationManager?.update(busPointAnnotation!);
-    //   }
-    // }
+  Future<void> _updateBusIcon(Position position) async {
+    if(busPointAnnotation == null){
+       busPointAnnotation = await createBusAnnotation(position);
+    }else{
+      busPointAnnotation?.geometry = Point(
+        coordinates: position
+      );
+      busPointAnnotationManager?.update(busPointAnnotation!);
+    }
+    _mapboxMapController?.setCamera(CameraOptions(
+        center: Point(coordinates: position)));
   }
 
   Future<PointAnnotation?> createBusAnnotation(Position position) async {
     final ByteData bytes =
-        await rootBundle.load('assets/markers/marker-start-route.png');
+        await rootBundle.load('assets/moving_car.gif');
     final Uint8List imageData = bytes.buffer.asUint8List();
 
     return await busPointAnnotationManager
         ?.create(PointAnnotationOptions(
             geometry: Point(
                 coordinates: position),
-            textField: "Bus",
+            textField: "",
             textOffset: [0.0, -2.0],
             textColor: Colors.black.value,
-            iconSize: 1.3,
+            iconSize: 0.5,
             iconOffset: [0.0, -5.0],
             symbolSortKey: 10,
             image: imageData));
@@ -544,12 +543,19 @@ class _TripPageState extends State<TripPage>
 
   void onEmitterMessage() async {
     if (mounted) { 
+      final String? message = Provider.of<EmitterService>(context, listen: false).lastMessage;
       try {
-        final String? message = Provider.of<EmitterService>(context, listen: false).lastMessage;
         final event = EventModel.fromJson(jsonDecode(message!));
         await event.requestData();        
       } catch (e) {
-        print("[TripPage.onEmitterMessage.error] ${e.toString()}");
+        final Map<String, dynamic> tracking = jsonDecode(message!);
+        if(tracking['payload'] != null){
+            print("emitter-tracking $tracking");
+            _updateBusIcon(Position(
+              double.parse("${tracking['payload']['longitude']}"), 
+              double.parse("${tracking['payload']['latitude']}")
+            ));
+        }
       }
       
     }
