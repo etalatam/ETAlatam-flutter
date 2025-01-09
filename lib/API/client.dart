@@ -288,24 +288,24 @@ class HttpService {
     return [];
   }
 
-  Future<List<TripModel>> getParentTrips() async {
-      var res = await getQuery("/rpc/guardian_trips?running=eq.true&limit=10");
-      print("res.statusCode: ${res.statusCode}");
-      print("res.body: ${res.body}");
+  // Future<List<TripModel>> getParentTrips() async {
+  //     var res = await getQuery("/rpc/guardian_trips?running=eq.true&limit=10");
+  //     print("res.statusCode: ${res.statusCode}");
+  //     print("res.body: ${res.body}");
 
-      if (res.statusCode == 200) {
-        try {
-          List<dynamic> body = jsonDecode(res.body);
-          return body.map((dynamic item) => TripModel.fromJson(item)).toList();          
-        } catch (e) {
-          print("getRoutes error: ${e.toString()}");
-          return [];
-        }
-      }
+  //     if (res.statusCode == 200) {
+  //       try {
+  //         List<dynamic> body = jsonDecode(res.body);
+  //         return body.map((dynamic item) => TripModel.fromJson(item)).toList();          
+  //       } catch (e) {
+  //         print("getRoutes error: ${e.toString()}");
+  //         return [];
+  //       }
+  //     }
 
-      return [];
+  //     return [];
 
-  }
+  // }
 
   /// Load Routes
   Future<List<RouteModel>> getRoutes() async {
@@ -431,25 +431,23 @@ class HttpService {
     return TripModel(trip_id: 0);
   }
 
-  Future<TripModel> getGuardianTrip() async {
+  Future<List<TripModel>> getGuardianTrips(String active) async {
     const endpoint = "/rpc/guardian_trips";
     http.Response res =
-        await getQuery("$endpoint?select=*&limit=1&running=eq.true");
+        await getQuery("$endpoint?select=*&limit=1&running=eq.$active");
 
     print("[$endpoint] res.statusCode: ${res.statusCode}");
     print("[$endpoint]res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       try {
-        var body = jsonDecode(res.body);
-        if (body == null) return TripModel(trip_id: 0);
-        final TripModel trips = TripModel.fromJson(body[0]);
-        return trips;
+        List<dynamic> body = jsonDecode(res.body);
+        return body.map((dynamic item) => TripModel.fromJson(item)).toList();
       } catch (e) {
         print("[$endpoint] ${e.toString()}");
       }
     }
-    return TripModel(trip_id: 0);
+    return [];
   }
 
   /// Submit form to update data through API

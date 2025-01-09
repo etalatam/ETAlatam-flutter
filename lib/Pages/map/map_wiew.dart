@@ -54,7 +54,9 @@ class MapWiewState extends State<MapWiew> {
     this.mapboxMap?.compass.updateSettings(CompassSettings(
         enabled: true, position: OrnamentPosition.BOTTOM_RIGHT));
 
-    await locationService?.init();
+    if(widget.navigationMode){
+      await locationService?.init();
+    }
     await widget.onMapReady(mapboxMap);
   }
   

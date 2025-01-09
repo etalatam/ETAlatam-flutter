@@ -725,7 +725,7 @@ mixin ETAWidgets {
                 ),
               ),
               child: Icon(
-                Icons.time_to_leave,
+                Icons.access_time,
                 // color: activeTheme.main_bg,
                 color: Color.fromARGB(255,15,148,136)
               ),
@@ -776,7 +776,7 @@ mixin ETAWidgets {
                 ),
               ),
               child: Icon(
-                Icons.pin_drop,
+                Icons.pin_drop_outlined,
                 color: Color.fromARGB(255,15,148,136),
               ),
             ),
