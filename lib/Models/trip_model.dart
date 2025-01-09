@@ -188,11 +188,12 @@ class TripModel {
 
   subscribeToTripEvents() async {
     if ( ! isEmitterSubcribedToEvents ) {
-        emitterKeyGenModelEvents = await httpService.emitterKeyGen("school/$school_id/trip/$trip_id/event");
+      String encodedValue = Uri.encodeComponent("school/$school_id/trip/$trip_id/event/#/");
+        emitterKeyGenModelEvents = await httpService.emitterKeyGen(encodedValue);
         if (emitterKeyGenModelEvents != null &&
           emitterServiceProvider.client!.isConnected) {
-                emitterServiceProvider.client!.subscribe(
-            "school/$school_id/trip/$trip_id/event",
+          emitterServiceProvider.client!.subscribe(
+            "school/$school_id/trip/$trip_id/event/",
             key: emitterKeyGenModelEvents!.key
           );
           isEmitterSubcribedToEvents = true;
@@ -202,11 +203,12 @@ class TripModel {
 
   subscribeToTripTracking() async {
     if ( ! isEmitterSubcribedToTracking ) {
-        emitterKeyGenModelTracking = await httpService.emitterKeyGen("school/$school_id/trip/$trip_id/tracking");
+        String encodedValue = Uri.encodeComponent("school/$school_id/trip/$trip_id/tracking/#/");
+        emitterKeyGenModelTracking = await httpService.emitterKeyGen(encodedValue);
         if (emitterKeyGenModelTracking != null &&
           emitterServiceProvider.client!.isConnected) {
-                emitterServiceProvider.client!.subscribe(
-            "school/$school_id/trip/$trip_id/tracking",
+          emitterServiceProvider.client!.subscribe(
+            "school/$school_id/trip/$trip_id/tracking/",
             key: emitterKeyGenModelTracking!.key
           );
           isEmitterSubcribedToTracking = true;
