@@ -145,7 +145,8 @@ class _StudentsHomeState extends State<StudentsHome>
                                                             context,
                                                             TripPage(
                                                                 trip: oldTripsList[index],
-                                                                showBus: true,
+                                                                showBus: false,
+                                                                showStudents: false,
                                                             ));
                                                       },
                                                       child: ETAWidgets
@@ -287,7 +288,7 @@ class _StudentsHomeState extends State<StudentsHome>
 
 
   openTrip(TripModel trip) {
-    Get.to(TripPage(trip: trip, showBus: true,));
+    Get.to(TripPage(trip: trip, showBus: true, showStudents: false,));
   }
 
   @override
@@ -300,4 +301,5 @@ class _StudentsHomeState extends State<StudentsHome>
     super.initState();
     loadResources();
   }
+  
 }

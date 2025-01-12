@@ -137,6 +137,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                                             TripPage(
                                                                 trip: oldTripsList[index],
                                                                 showBus: false,
+                                                                showStudents: false,
                                                             )
                                                         );
                                                       },
@@ -216,6 +217,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
     Get.to(TripPage(
       trip: trip,
       showBus: true,
+      showStudents: true,
     ));
   }
 

@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'dart:ui' as ui;
+import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'package:http/http.dart' as http;
-import 'dart:typed_data';
 import 'package:flutter/services.dart';
 
 import 'package:eta_school_app/Models/EventModel.dart';
@@ -27,13 +25,22 @@ import 'package:provider/provider.dart';
 import 'map/map_wiew.dart';
 
 class TripPage extends StatefulWidget {
-  const TripPage({super.key, this.trip, this.navigationMode, required this.showBus});
+
+  const TripPage({
+    super.key, 
+    this.trip, 
+    this.navigationMode, 
+    required this.showBus, 
+    required this.showStudents
+  });
 
   final TripModel? trip;
 
   final String? navigationMode;
 
   final bool showBus;
+
+  final bool showStudents;
 
   @override
   State<TripPage> createState() => _TripPageState();
@@ -380,7 +387,7 @@ class _TripPageState extends State<TripPage>
       trip = widget.trip!;
     });
     
-    if(widget.showBus){
+    if(widget.showBus || widget.showStudents){
       Provider.of<EmitterService>(context, listen: false).addListener(onEmitterMessage);
     }
     
@@ -487,12 +494,12 @@ class _TripPageState extends State<TripPage>
             await rootBundle.load('assets/moving_car.gif');
         final Uint8List imageData = bytes.buffer.asUint8List();
 
-          pointAnnotation = await createAnnotation(position, imageData);
+          pointAnnotation = await mapboxUtils.createAnnotation(annotationManager, position, imageData);
           annotationsMap["$relationName.$relationId"] = pointAnnotation!;
       }else{
-        final networkImage = await getNetworkImage(httpService.getAvatarUrl(relationId, relationName));
-        final circleImage = await createCircleImage(networkImage);
-        pointAnnotation = await createAnnotation(position, circleImage);
+        final networkImage = await mapboxUtils.getNetworkImage(httpService.getAvatarUrl(relationId, relationName));
+        final circleImage = await mapboxUtils.createCircleImage(networkImage);
+        pointAnnotation = await mapboxUtils.createAnnotation(annotationManager,position, circleImage);
       }      
     }else{
       pointAnnotation.geometry = Point(
@@ -504,62 +511,7 @@ class _TripPageState extends State<TripPage>
         center: Point(coordinates: position)));
   }
   
-  Future<Uint8List> getNetworkImage(String imageUrl) async {
-    final http.Response response = await http.get(Uri.parse(imageUrl),
-    headers: {'Accept': 'image/png'});
-    final Uint8List bytes = response.bodyBytes;
-    
-    final ui.Codec codec = await ui.instantiateImageCodec(bytes);
-    final ui.FrameInfo frameInfo = await codec.getNextFrame();
-    final ui.Image image = frameInfo.image;
-
-    final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    final Uint8List imageData = byteData!.buffer.asUint8List();
-
-    return  imageData;
-  }
-
-   Future<Uint8List> createCircleImage(Uint8List imageData) async {
-    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
-    final Canvas canvas = Canvas(pictureRecorder);
-    final Paint paint = Paint();
-    const double size = 250.0;
-    const double borderSize = 10.0;
-
-    final ui.Image image = await decodeImageFromList(imageData);
-    final Rect rect = Rect.fromLTWH(borderSize, borderSize, size - 2 * borderSize, size - 2 * borderSize);
-    final Path path = Path()..addOval(rect);
-
-    // Dibujar el borde blanco
-    canvas.drawOval(Rect.fromLTWH(0, 0, size + 2, size + 2), Paint()..color = Colors.black);
-    canvas.drawOval(Rect.fromLTWH(0, 0, size, size), Paint()..color = Colors.white);
-    
-    // Dibujar la imagen circular
-    canvas.clipPath(path);
-    canvas.drawImageRect(image, Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()), rect, paint);
-
-    final ui.Picture picture = pictureRecorder.endRecording();
-    final ui.Image circularImage = await picture.toImage(size.toInt(), size.toInt());
-    final ByteData? byteData = await circularImage.toByteData(format: ui.ImageByteFormat.png);
-
-    return byteData!.buffer.asUint8List();
-  } 
-
-  Future<PointAnnotation?> createAnnotation(Position position, Uint8List imageData) async {
-
-    return await annotationManager
-        ?.create(PointAnnotationOptions(
-            geometry: Point(
-                coordinates: position),
-            textField: "",
-            textOffset: [0.0, -2.0],
-            textColor: Colors.black.value,
-            iconSize: 0.5,
-            iconOffset: [0.0, -5.0],
-            symbolSortKey: 10,
-            image: imageData));
-  }
-
+  
   //  void _animateIcon(LatLng start, LatLng end) {
   //   const int animationDuration = 1000; // Duración en milisegundos
   //   const int frameRate = 60; // Frames por segundo
@@ -609,7 +561,7 @@ class _TripPageState extends State<TripPage>
                 double.parse("${tracking['payload']['longitude']}"), 
                 double.parse("${tracking['payload']['latitude']}")
               ),relationName, relationId);
-            } else if(relationName == 'eta.students' && widget.showBus){
+            } else if(relationName == 'eta.students' && widget.showStudents){
               print("[TripPage.onEmitterMessage.emitter-tracking.student] $tracking");
               _updateIcon(Position(
                 double.parse("${tracking['payload']['longitude']}"), 
