@@ -41,7 +41,9 @@ bool darkMode = true;
 bool switchTheme = false;
 
 DefaultTheme activeTheme = MediansTheme.theme;
+
 DarkTheme darkTheme = DarkTheme();
+
 LightTheme lightTheme = LightTheme();
 
 /// Main locatl storage file

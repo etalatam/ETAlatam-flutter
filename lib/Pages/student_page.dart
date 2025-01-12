@@ -1,6 +1,4 @@
 import 'dart:convert';
-
-
 import 'package:eta_school_app/Models/student_model.dart';
 import 'package:eta_school_app/Pages/upload_picture_page.dart';
 import 'package:eta_school_app/components/widgets.dart';
@@ -146,8 +144,6 @@ class _StudentPageState extends State<StudentPage> {
                     );
                   },
                 ),
-
-
               ]),
             ),
           );
