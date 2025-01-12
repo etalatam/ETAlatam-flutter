@@ -4,16 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 class ActiveTrip extends StatelessWidget {
-  const ActiveTrip(this.openTrip, this.trip, {super.key});
+  const ActiveTrip(this.openTripcallback, this.trip, {super.key});
 
   final TripModel? trip;
 
-  final Function? openTrip;
+  final Function? openTripcallback;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        onTap: () => {openTrip!(trip)},
+        onTap: () => {openTripcallback!(trip)},
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

@@ -1,15 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
+import 'package:flutter/material.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:flutter/services.dart';
 
 import 'package:eta_school_app/Models/EventModel.dart';
 import 'package:eta_school_app/Pages/attendance_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter/material.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/components/tripReportPage.dart';
 import 'package:eta_school_app/components/widgets.dart';
@@ -18,17 +20,27 @@ import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:localstorage/localstorage.dart';
-import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
 import 'map/map_wiew.dart';
 
 class TripPage extends StatefulWidget {
-  const TripPage({super.key, this.trip, this.navigationMode});
+
+  const TripPage({
+    super.key, 
+    this.trip, 
+    this.navigationMode, 
+    required this.showBus, 
+    required this.showStudents
+  });
 
   final TripModel? trip;
 
-  final String? navigationMode; 
+  final String? navigationMode;
+
+  final bool showBus;
+
+  final bool showStudents;
 
   @override
   State<TripPage> createState() => _TripPageState();
@@ -53,10 +65,10 @@ class _TripPageState extends State<TripPage>
 
   String relationName = '';
 
-  PointAnnotation? busPointAnnotation;
-  
-  PointAnnotationManager? busPointAnnotationManager;
+  PointAnnotationManager? annotationManager;
 
+  Map<String, PointAnnotation> annotationsMap = {};
+  
   @override
   Widget build(BuildContext context) {
 
@@ -74,7 +86,7 @@ class _TripPageState extends State<TripPage>
                       _mapboxMapController = mapboxMap;
 
                       mapboxMap.annotations.createPointAnnotationManager().then((value) async {
-                        busPointAnnotationManager = value;
+                        annotationManager = value;
                       });
                     },
                     onStyleLoadedListener: (MapboxMap mapboxMap) async {
@@ -344,34 +356,18 @@ class _TripPageState extends State<TripPage>
         Get.back();
       });
     }
-  }
+  }  
 
-  finish(TripPickupLocation pickupLocation) async {
-    await httpService.updatePickup(
-        pickupLocation.trip_pickup_id!, pickupLocation.trip_id!, 'moving');
-    setState(() {
-      markers = <MarkerId, Marker>{};
-      loadTrip();
-    });
-  }
-
-  finishDestination(TripDestinationLocation pickupLocation) async {
-    await httpService.update_destination(
-        pickupLocation.trip_destination_id!, pickupLocation.trip_id!, 'moving');
-    setState(() {
-      markers = <MarkerId, Marker>{};
-      loadTrip();
-    });
-  }
 
   loadTrip() async {
-    TripModel? trip_ = await httpService.getTrip(trip.trip_id);
+    
     final LocalStorage storage = LocalStorage('tokens.json');
     final userId = await storage.getItem('id_usu');
     final relationNameLocal = await storage.getItem('relation_name');
     print("[TipPage.loadTrip.userId] $userId");
-    print("[TipPage.loadTrip.relationName] $relationName");
+    print("[TipPage.loadTrip.relationNameLocal] $relationNameLocal");
 
+    TripModel? trip_ = await httpService.getTrip(trip.trip_id);
     if (trip_.trip_id != 0) {
       setState(() {
         trip = trip_;
@@ -386,11 +382,16 @@ class _TripPageState extends State<TripPage>
   void initState() {
     super.initState();
 
+    loadTrip();
+
     setState(() {
       trip = widget.trip!;
     });
-    loadTrip();
-    Provider.of<EmitterService>(context, listen: false).addListener(onEmitterMessage);
+    
+    if(widget.showBus || widget.showStudents){
+      Provider.of<EmitterService>(context, listen: false).addListener(onEmitterMessage);
+    }
+    
   }
 
   @override
@@ -485,37 +486,33 @@ class _TripPageState extends State<TripPage>
         center: coordinateBounds.southwest, zoom: 15.5, pitch: 70));
   }
 
-  Future<void> _updateBusIcon(Position position) async {
-    if(busPointAnnotation == null){
-       busPointAnnotation = await createBusAnnotation(position);
+  Future<void> _updateIcon(Position position, String relationName, int relationId) async {
+    PointAnnotation? pointAnnotation = annotationsMap["$relationName.$relationId"];    
+    
+    if(pointAnnotation == null){
+      if(relationName.indexOf("drivers") > 1){
+        final ByteData bytes =
+            await rootBundle.load('assets/moving_car.gif');
+        final Uint8List imageData = bytes.buffer.asUint8List();
+
+          pointAnnotation = await mapboxUtils.createAnnotation(annotationManager, position, imageData);
+          annotationsMap["$relationName.$relationId"] = pointAnnotation!;
+      }else{
+        final networkImage = await mapboxUtils.getNetworkImage(httpService.getAvatarUrl(relationId, relationName));
+        final circleImage = await mapboxUtils.createCircleImage(networkImage);
+        pointAnnotation = await mapboxUtils.createAnnotation(annotationManager,position, circleImage);
+      }      
     }else{
-      busPointAnnotation?.geometry = Point(
+      pointAnnotation.geometry = Point(
         coordinates: position
       );
-      busPointAnnotationManager?.update(busPointAnnotation!);
+      annotationManager?.update(pointAnnotation);
     }
     _mapboxMapController?.setCamera(CameraOptions(
         center: Point(coordinates: position)));
   }
-
-  Future<PointAnnotation?> createBusAnnotation(Position position) async {
-    final ByteData bytes =
-        await rootBundle.load('assets/moving_car.gif');
-    final Uint8List imageData = bytes.buffer.asUint8List();
-
-    return await busPointAnnotationManager
-        ?.create(PointAnnotationOptions(
-            geometry: Point(
-                coordinates: position),
-            textField: "",
-            textOffset: [0.0, -2.0],
-            textColor: Colors.black.value,
-            iconSize: 0.5,
-            iconOffset: [0.0, -5.0],
-            symbolSortKey: 10,
-            image: imageData));
-  }
-
+  
+  
   //  void _animateIcon(LatLng start, LatLng end) {
   //   const int animationDuration = 1000; // Duración en milisegundos
   //   const int frameRate = 60; // Frames por segundo
@@ -544,20 +541,39 @@ class _TripPageState extends State<TripPage>
   void onEmitterMessage() async {
     if (mounted) { 
       final String? message = Provider.of<EmitterService>(context, listen: false).lastMessage;
+
       try {
+        // si es un evento del viaje
         final event = EventModel.fromJson(jsonDecode(message!));
-        await event.requestData();        
+        await event.requestData();
       } catch (e) {
+        
+        //si es un evento posicion
         final Map<String, dynamic> tracking = jsonDecode(message!);
-        if(tracking['payload'] != null){
-            print("emitter-tracking $tracking");
-            _updateBusIcon(Position(
-              double.parse("${tracking['payload']['longitude']}"), 
-              double.parse("${tracking['payload']['latitude']}")
-            ));
+
+        if(tracking['relation_name'] != null){
+          
+          final relationName = tracking['relation_name'];
+          final relationId = tracking['relation_id'];
+
+          if(tracking['payload'] != null){
+            
+            final Position position = Position(
+                double.parse("${tracking['payload']['longitude']}"), 
+                double.parse("${tracking['payload']['latitude']}")
+            );
+            
+            if(relationId!=null && relationName == 'eta.drivers' && widget.showBus){
+              print("[TripPage.onEmitterMessage.emitter-tracking.driver] $tracking");
+              _updateIcon(position,relationName, relationId);
+            } else if(relationName == 'eta.students' && widget.showStudents){
+              print("[TripPage.onEmitterMessage.emitter-tracking.student] $tracking");
+              _updateIcon(position,relationName, relationId);
+            }
+
+          }
         }
       }
-      
     }
   }
 }

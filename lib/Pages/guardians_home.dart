@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:eta_school_app/Pages/student_page.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/components/active_trip.dart';
 import 'package:eta_school_app/components/header.dart';
@@ -78,7 +79,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                             })),
                                             
                                       ETAWidgets.svgTitle(
-                                          "assets/svg/fire.svg",
+                                          "assets/svg/school.svg",
                                           lang.translate(
                                               "List of your added children")),
 
@@ -99,19 +100,16 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                                 /// Student block
                                                 return GestureDetector(
                                                     onTap: () {
-                                                      // openNewPage(
-                                                      //     context,
-                                                      //     StudentPage(
-                                                      //         student: parentModel!
-                                                      //                 .students[
-                                                      //             index]));
+                                                      openNewPage(
+                                                          context,
+                                                          StudentPage(
+                                                              student: parentModel!.students[index]));
                                                     },
                                                     child: ETAWidgets
                                                         .homeStudentBlock(
                                                             context,
-                                                            parentModel!
-                                                                    .students[
-                                                                index]));
+                                                            parentModel!.students[index]
+                                                        ));
                                               },
                                             ),
                                           ),
@@ -138,6 +136,8 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                                             context,
                                                             TripPage(
                                                                 trip: oldTripsList[index],
+                                                                showBus: false,
+                                                                showStudents: false,
                                                             )
                                                         );
                                                       },
@@ -198,6 +198,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
     for (var trip in trips) {
       notificationSubcribe("route-${trip.route_id}");
       routeTopics.add("route-${trip.route_id}");
+      trip.subscribeToTripTracking();
     }
     storage.setItem('route-topics',routeTopics.toString());
 
@@ -215,6 +216,8 @@ class _GuardiansHomeState extends State<GuardiansHome>
   openTrip(trip) {
     Get.to(TripPage(
       trip: trip,
+      showBus: true,
+      showStudents: true,
     ));
   }
 

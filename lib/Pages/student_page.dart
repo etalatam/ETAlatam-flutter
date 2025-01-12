@@ -1,12 +1,13 @@
+
 import 'dart:convert';
 
 import 'package:eta_school_app/Models/student_model.dart';
+import 'package:eta_school_app/Pages/upload_picture_page.dart';
+import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
-import 'package:flutter/material.dart';
-import 'package:eta_school_app/components/loader.dart';
-import 'package:eta_school_app/Pages/upload_picture_page.dart';
 import 'package:eta_school_app/methods.dart';
+import 'package:flutter/material.dart';
 
 class StudentPage extends StatefulWidget {
   StudentPage({super.key, this.student});
@@ -81,86 +82,75 @@ class _StudentPageState extends State<StudentPage> {
                           blurRadius: 5.0,
                         ),
                       ],
-                    ),
-                                          ),
-                                          SingleChildScrollView(
+                    ),),
+                    SingleChildScrollView(
                     controller: scrollController,
-                    child: Container(
-                        child: Stack(children: [
-                      Container(
-                          child: Row(
-                        textDirection:
-                            isRTL() ? TextDirection.rtl : TextDirection.ltr,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              uploadPicture();
-                            },
-                            child: Container(
-                                padding:
-                                    EdgeInsets.symmetric(horizontal: 20),
-                                child: CircleAvatar(
-                                    radius: 50,
-                                    foregroundImage: NetworkImage(
-                                        (widget.student!.picture != null)
-                                            ? (httpService.croppedImage(
-                                                widget.student!.picture!,
-                                                200,
-                                                200))
-                                            : httpService.croppedImage(
-                                                "/uploads/images/60x60.png",
-                                                200,
-                                                200)))),
-                          ),
-                          Column(
-                            textDirection: isRTL()
-                                ? TextDirection.rtl
-                                : TextDirection.ltr,
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Stack(children: [
+                          Row(
+                            textDirection:isRTL() ? TextDirection.rtl : TextDirection.ltr,
                             mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.max,
                             children: [
-                              Container(
-                                padding: EdgeInsets.only(top: 15),
-                                child: Text("${widget.student!.first_name}",
-                                    style: TextStyle(
-                                        fontSize: activeTheme.h5.fontSize,
-                                        fontWeight:
-                                            activeTheme.h4.fontWeight,
-                                        color: Colors.white)),
-                              ),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                    color: activeTheme.buttonBG,
-                                    borderRadius: BorderRadius.all(
-                                        Radius.circular(10))),
-                                margin: EdgeInsets.only(top: 15),
-                                child: Text(
-                                    "${widget.student!.route!.route_name}",
-                                    style: TextStyle(
-                                      color: activeTheme.buttonColor,
-                                      fontWeight: FontWeight.bold,
-                                    )),
-                              ),
-                            ],
-                          ),
-                          // Expanded(child: Icon(Icons.edit, color: activeTheme.icon_color,)),
-                          // Padding(padding: EdgeInsets.only(top: 10, right: 20, left: 20), child: Icon(Icons.edit, color: activeTheme.icon_color,),)
-                        ],
-                      )),
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: 20),
-                        height: 1,
-                        color: activeTheme.main_color.withOpacity(.2),
+                                GestureDetector(
+                                  onTap: () {
+                                    uploadPicture();
+                                  },
+                                  child: Container(
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 20),
+                                      child: CircleAvatar(
+                                          radius: 50,
+                                          backgroundColor: Colors.white,
+                                          foregroundImage: NetworkImage( 
+                                            httpService.getAvatarUrl(widget.student?.student_id,'eta.students'),
+                                            headers: {'Accept': 'image/png'}
+                                          ))),
+                                ),
+                                Column(
+                                  textDirection: isRTL()
+                                      ? TextDirection.rtl
+                                      : TextDirection.ltr,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.only(top: 15),
+                                      child: Text("${widget.student!.first_name}",
+                                          style: TextStyle(
+                                              fontSize: activeTheme.h5.fontSize,
+                                              fontWeight:
+                                                  activeTheme.h4.fontWeight,
+                                              )),
+                                    ),
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                          color: activeTheme.buttonBG,
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(10))),
+                                      margin: EdgeInsets.only(top: 15),
+                                      child: Text(
+                                          "${widget.student!.route!.route_name}",
+                                          style: TextStyle(
+                                            color: activeTheme.buttonColor,
+                                            fontWeight: FontWeight.bold,
+                                          )),
+                                    ),
+                                  ],
+                                ),
+                                // Expanded(child: Icon(Icons.edit, color: activeTheme.icon_color,)),
+                                // Padding(padding: EdgeInsets.only(top: 10, right: 20, left: 20), child: Icon(Icons.edit, color: activeTheme.icon_color,),)
+                        ],),
+                                          Container(
+                    margin: EdgeInsets.symmetric(horizontal: 20),
+                    height: 1,
+                    color: activeTheme.main_color.withOpacity(.2),
                       ),
                       ETAWidgets.studentMenuWidget(widget.student),
-                    ])),
-                                          )
-                                        ]);
+                    ]),
+                    )]);
                   },
                 ),
               ]),

@@ -59,8 +59,7 @@ class TripModel {
     this.school_id
   }){
     if(trip_status == "Running"){
-      subscribeToTripEvents();
-      subscribeToTripTracking();
+      subscribeToTripEvents();      
     }
   }
 

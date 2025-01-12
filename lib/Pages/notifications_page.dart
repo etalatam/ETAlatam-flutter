@@ -1,6 +1,5 @@
 import 'package:eta_school_app/Pages/driver_page.dart';
 import 'package:eta_school_app/Pages/help_messages_page.dart';
-import 'package:eta_school_app/Pages/route_map_page.dart';
 import 'package:eta_school_app/Models/parent_model.dart';
 import 'package:eta_school_app/Models/NotificationModel.dart';
 import 'package:eta_school_app/components/header.dart';
@@ -388,7 +387,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     });
     switch (notification.notification_model) {
       case 'PickupLocation':
-        openPage(context, RouteMap(route_id: notification.model_id!.toInt()));
+        // openPage(context, RouteMap(route_id: notification.model_id!.toInt()));
         break;
       case 'Driver':
         openPage(context, DriverPage());
@@ -439,7 +438,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         loadNotifications();
       });
       
-      messaging.subscribeToTopic('all-notifications');
+      // messaging.subscribeToTopic('all-notifications');
 
       try {
         final userId = await storage.getItem('id_usu');

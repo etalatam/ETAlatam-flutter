@@ -107,7 +107,7 @@ class _DriverHomeState extends State<DriverHome>
                                                   fontWeight:
                                                       activeTheme.h6.fontWeight,
                                                 )))
-                                        : ActiveTrip(openTrip, activeTrip),
+                                        : ActiveTrip(openTripCallback, activeTrip),
 
                                     ETAWidgets.svgTitle(
                                         "assets/svg/fire.svg",
@@ -164,9 +164,11 @@ class _DriverHomeState extends State<DriverHome>
                                                         openNewPage(
                                                             context,
                                                             TripPage(
-                                                                trip:
-                                                                    oldTripsList[
-                                                                        index]));
+                                                              trip: oldTripsList[index],
+                                                              navigationMode: "support",
+                                                              showBus: false,
+                                                              showStudents: false,
+                                                            ));
                                                       },
                                                       child: ETAWidgets
                                                           .homeTripBlock(
@@ -222,7 +224,11 @@ class _DriverHomeState extends State<DriverHome>
         await locationServiceProvider.startLocationService();
         await Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => TripPage(trip: trip)),
+          MaterialPageRoute(builder: (context) => TripPage(
+              trip: trip, 
+              navigationMode: "support", 
+              showBus: false,
+              showStudents: false,)),
         );
         loadResources();
       }
@@ -328,8 +334,12 @@ class _DriverHomeState extends State<DriverHome>
     }
   }
 
-  openTrip(TripModel trip) {
-    Get.to(TripPage(trip: trip, navigationMode: "support",));
+  openTripCallback(TripModel wrapper) {
+    Get.to(TripPage(
+      trip: wrapper, 
+      navigationMode: "support", 
+      showBus: false,
+      showStudents: false,));
   }
 
   @override
