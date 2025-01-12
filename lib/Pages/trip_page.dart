@@ -1,15 +1,19 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:ui' as ui;
+import 'package:flutter/material.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'dart:typed_data';
+import 'package:flutter/services.dart';
 
 import 'package:eta_school_app/Models/EventModel.dart';
 import 'package:eta_school_app/Pages/attendance_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter/material.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/components/tripReportPage.dart';
 import 'package:eta_school_app/components/widgets.dart';
@@ -18,17 +22,18 @@ import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:localstorage/localstorage.dart';
-import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
 import 'map/map_wiew.dart';
 
 class TripPage extends StatefulWidget {
-  const TripPage({super.key, this.trip, this.navigationMode});
+  const TripPage({super.key, this.trip, this.navigationMode, required this.showBus});
 
   final TripModel? trip;
 
-  final String? navigationMode; 
+  final String? navigationMode;
+
+  final bool showBus;
 
   @override
   State<TripPage> createState() => _TripPageState();
@@ -53,10 +58,10 @@ class _TripPageState extends State<TripPage>
 
   String relationName = '';
 
-  PointAnnotation? busPointAnnotation;
-  
-  PointAnnotationManager? busPointAnnotationManager;
+  PointAnnotationManager? annotationManager;
 
+  Map<String, PointAnnotation> annotationsMap = {};
+  
   @override
   Widget build(BuildContext context) {
 
@@ -74,7 +79,7 @@ class _TripPageState extends State<TripPage>
                       _mapboxMapController = mapboxMap;
 
                       mapboxMap.annotations.createPointAnnotationManager().then((value) async {
-                        busPointAnnotationManager = value;
+                        annotationManager = value;
                       });
                     },
                     onStyleLoadedListener: (MapboxMap mapboxMap) async {
@@ -344,25 +349,8 @@ class _TripPageState extends State<TripPage>
         Get.back();
       });
     }
-  }
+  }  
 
-  finish(TripPickupLocation pickupLocation) async {
-    await httpService.updatePickup(
-        pickupLocation.trip_pickup_id!, pickupLocation.trip_id!, 'moving');
-    setState(() {
-      markers = <MarkerId, Marker>{};
-      loadTrip();
-    });
-  }
-
-  finishDestination(TripDestinationLocation pickupLocation) async {
-    await httpService.update_destination(
-        pickupLocation.trip_destination_id!, pickupLocation.trip_id!, 'moving');
-    setState(() {
-      markers = <MarkerId, Marker>{};
-      loadTrip();
-    });
-  }
 
   loadTrip() async {
     TripModel? trip_ = await httpService.getTrip(trip.trip_id);
@@ -370,7 +358,7 @@ class _TripPageState extends State<TripPage>
     final userId = await storage.getItem('id_usu');
     final relationNameLocal = await storage.getItem('relation_name');
     print("[TipPage.loadTrip.userId] $userId");
-    print("[TipPage.loadTrip.relationName] $relationName");
+    print("[TipPage.loadTrip.relationNameLocal] $relationNameLocal");
 
     if (trip_.trip_id != 0) {
       setState(() {
@@ -386,11 +374,16 @@ class _TripPageState extends State<TripPage>
   void initState() {
     super.initState();
 
+    loadTrip();
+
     setState(() {
       trip = widget.trip!;
     });
-    loadTrip();
-    Provider.of<EmitterService>(context, listen: false).addListener(onEmitterMessage);
+    
+    if(widget.showBus){
+      Provider.of<EmitterService>(context, listen: false).addListener(onEmitterMessage);
+    }
+    
   }
 
   @override
@@ -485,25 +478,69 @@ class _TripPageState extends State<TripPage>
         center: coordinateBounds.southwest, zoom: 15.5, pitch: 70));
   }
 
-  Future<void> _updateBusIcon(Position position) async {
-    if(busPointAnnotation == null){
-       busPointAnnotation = await createBusAnnotation(position);
+  Future<void> _updateIcon(Position position, String relationName, int relationId) async {
+    PointAnnotation? pointAnnotation = annotationsMap["$relationName.$relationId"];    
+    
+    if(pointAnnotation == null){
+      if(relationName.indexOf("drivers") > 1){
+        final ByteData bytes =
+            await rootBundle.load('assets/moving_car.gif');
+        final Uint8List imageData = bytes.buffer.asUint8List();
+
+          pointAnnotation = await createAnnotation(position, imageData);
+          annotationsMap["$relationName.$relationId"] = pointAnnotation!;
+      }else{
+        final networkImage = await getNetworkImage(httpService.getAvatarUrl(relationId, relationName));
+        final circleImage = await createCircleImage(networkImage);
+        pointAnnotation = await createAnnotation(position, circleImage);
+      }
+      
     }else{
-      busPointAnnotation?.geometry = Point(
+      pointAnnotation.geometry = Point(
         coordinates: position
       );
-      busPointAnnotationManager?.update(busPointAnnotation!);
+      annotationManager?.update(pointAnnotation);
     }
     _mapboxMapController?.setCamera(CameraOptions(
         center: Point(coordinates: position)));
   }
+  
+  Future<Uint8List> getNetworkImage(String imageUrl) async {
+    final http.Response response = await http.get(Uri.parse(imageUrl));
+    final Uint8List bytes = response.bodyBytes;
+    
+    final ui.Codec codec = await ui.instantiateImageCodec(bytes);
+    final ui.FrameInfo frameInfo = await codec.getNextFrame();
+    final ui.Image image = frameInfo.image;
 
-  Future<PointAnnotation?> createBusAnnotation(Position position) async {
-    final ByteData bytes =
-        await rootBundle.load('assets/moving_car.gif');
-    final Uint8List imageData = bytes.buffer.asUint8List();
+    final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    final Uint8List imageData = byteData!.buffer.asUint8List();
 
-    return await busPointAnnotationManager
+    return  imageData;
+  }
+
+   Future<Uint8List> createCircleImage(Uint8List imageData) async {
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+    final Paint paint = Paint();
+    const double size = 100.0;
+
+    final ui.Image image = await decodeImageFromList(imageData);
+    final Rect rect = Rect.fromLTWH(0, 0, size, size);
+    final Path path = Path()..addOval(rect);
+    canvas.clipPath(path);
+    canvas.drawImageRect(image, Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()), rect, paint);
+
+    final ui.Picture picture = pictureRecorder.endRecording();
+    final ui.Image circularImage = await picture.toImage(size.toInt(), size.toInt());
+    final ByteData? byteData = await circularImage.toByteData(format: ui.ImageByteFormat.png);
+
+    return byteData!.buffer.asUint8List();
+  } 
+
+  Future<PointAnnotation?> createAnnotation(Position position, Uint8List imageData) async {
+
+    return await annotationManager
         ?.create(PointAnnotationOptions(
             geometry: Point(
                 coordinates: position),
@@ -545,19 +582,37 @@ class _TripPageState extends State<TripPage>
     if (mounted) { 
       final String? message = Provider.of<EmitterService>(context, listen: false).lastMessage;
       try {
+        // si es une evento del viaje
         final event = EventModel.fromJson(jsonDecode(message!));
         await event.requestData();        
       } catch (e) {
+        //si es un evento posicion
         final Map<String, dynamic> tracking = jsonDecode(message!);
-        if(tracking['payload'] != null){
-            print("emitter-tracking $tracking");
-            _updateBusIcon(Position(
-              double.parse("${tracking['payload']['longitude']}"), 
-              double.parse("${tracking['payload']['latitude']}")
-            ));
+
+        if(tracking['relation_name'] != null){
+          
+          final relationName = tracking['relation_name'];
+          final relationId = tracking['relation_id'];
+
+          if(tracking['payload'] != null){
+            
+            if(relationId!=null && relationName == 'eta.drivers' && widget.showBus){
+              print("[TripPage.onEmitterMessage.emitter-tracking.driver] $tracking");
+              _updateIcon(Position(
+                double.parse("${tracking['payload']['longitude']}"), 
+                double.parse("${tracking['payload']['latitude']}")
+              ),relationName, relationId);
+            } else if(relationName == 'eta.students' && widget.showBus){
+              print("[TripPage.onEmitterMessage.emitter-tracking.student] $tracking");
+              _updateIcon(Position(
+                double.parse("${tracking['payload']['longitude']}"), 
+                double.parse("${tracking['payload']['latitude']}")
+              ),relationName, relationId);
+            }
+
+          }
         }
       }
-      
     }
   }
 }

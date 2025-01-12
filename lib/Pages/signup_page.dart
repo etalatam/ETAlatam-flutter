@@ -318,22 +318,22 @@ class _SignupPageState extends State<SignupPage> {
                                         setState(() {
                                           showLoader = true;
                                         });
-                                        final res = await httpService.signup(
-                                            firstName,
-                                            lastName,
-                                            email,
-                                            contactNumber,
-                                            gender);
+                                        // final res = await httpService.signup(
+                                        //     firstName,
+                                        //     lastName,
+                                        //     email,
+                                        //     contactNumber,
+                                        //     gender);
                                         setState(() {
-                                          if (res == '1') {
-                                            showSuccessDialog(
-                                                context,
-                                                lang.translate(
-                                                    'Thanks for subscription'),
-                                                lang.translate(
-                                                    'Your password sent through the registered email'),
-                                                callback);
-                                          }
+                                          // if (res == '1') {
+                                          //   showSuccessDialog(
+                                          //       context,
+                                          //       lang.translate(
+                                          //           'Thanks for subscription'),
+                                          //       lang.translate(
+                                          //           'Your password sent through the registered email'),
+                                          //       callback);
+                                          // }
                                           showLoader = false;
                                         });
                                       },

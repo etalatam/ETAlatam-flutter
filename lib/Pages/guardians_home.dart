@@ -138,6 +138,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                                             context,
                                                             TripPage(
                                                                 trip: oldTripsList[index],
+                                                                showBus: false,
                                                             )
                                                         );
                                                       },
@@ -198,6 +199,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
     for (var trip in trips) {
       notificationSubcribe("route-${trip.route_id}");
       routeTopics.add("route-${trip.route_id}");
+      trip.subscribeToTripTracking();
     }
     storage.setItem('route-topics',routeTopics.toString());
 
@@ -215,6 +217,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
   openTrip(trip) {
     Get.to(TripPage(
       trip: trip,
+      showBus: true,
     ));
   }
 

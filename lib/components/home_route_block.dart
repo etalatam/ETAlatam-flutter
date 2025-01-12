@@ -1,5 +1,4 @@
 import 'package:eta_school_app/Pages/pickups_page.dart';
-import 'package:eta_school_app/Pages/route_map_page.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/methods.dart';
@@ -72,8 +71,8 @@ class HomeRouteBlock extends StatelessWidget {
                               onTap: (() {
                                 // return;
                                 //TODO ir a mapa
-                                openNewPage(context,
-                                    RouteMap(route_id: route.route_id!));
+                                // openNewPage(context,
+                                //     RouteMap(route_id: route.route_id!));
                               }),
                               child: Container(
                                   constraints: const BoxConstraints(

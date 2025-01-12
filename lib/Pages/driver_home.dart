@@ -164,9 +164,10 @@ class _DriverHomeState extends State<DriverHome>
                                                         openNewPage(
                                                             context,
                                                             TripPage(
-                                                                trip:
-                                                                    oldTripsList[
-                                                                        index]));
+                                                              trip: oldTripsList[index],
+                                                              navigationMode: "support",
+                                                              showBus: false,
+                                                            ));
                                                       },
                                                       child: ETAWidgets
                                                           .homeTripBlock(
@@ -222,7 +223,7 @@ class _DriverHomeState extends State<DriverHome>
         await locationServiceProvider.startLocationService();
         await Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => TripPage(trip: trip)),
+          MaterialPageRoute(builder: (context) => TripPage(trip: trip, navigationMode: "support", showBus: false,)),
         );
         loadResources();
       }
@@ -329,7 +330,7 @@ class _DriverHomeState extends State<DriverHome>
   }
 
   openTrip(TripModel trip) {
-    Get.to(TripPage(trip: trip, navigationMode: "support",));
+    Get.to(TripPage(trip: trip, navigationMode: "support", showBus: false,));
   }
 
   @override

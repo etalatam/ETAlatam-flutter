@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Models/student_model.dart';
 import 'package:eta_school_app/Pages/login_page.dart';
-import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/components/active_trip.dart';
@@ -146,9 +144,9 @@ class _StudentsHomeState extends State<StudentsHome>
                                                         openNewPage(
                                                             context,
                                                             TripPage(
-                                                                trip:
-                                                                    oldTripsList[
-                                                                        index]));
+                                                                trip: oldTripsList[index],
+                                                                showBus: true,
+                                                            ));
                                                       },
                                                       child: ETAWidgets
                                                           .homeTripBlock(
@@ -289,7 +287,7 @@ class _StudentsHomeState extends State<StudentsHome>
 
 
   openTrip(TripModel trip) {
-    Get.to(TripPage(trip: trip));
+    Get.to(TripPage(trip: trip, showBus: true,));
   }
 
   @override
