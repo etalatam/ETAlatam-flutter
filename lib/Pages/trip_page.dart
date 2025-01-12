@@ -540,11 +540,13 @@ class _TripPageState extends State<TripPage>
   void onEmitterMessage() async {
     if (mounted) { 
       final String? message = Provider.of<EmitterService>(context, listen: false).lastMessage;
+
       try {
-        // si es une evento del viaje
+        // si es un evento del viaje
         final event = EventModel.fromJson(jsonDecode(message!));
-        await event.requestData();        
+        await event.requestData();
       } catch (e) {
+        
         //si es un evento posicion
         final Map<String, dynamic> tracking = jsonDecode(message!);
 
@@ -555,18 +557,17 @@ class _TripPageState extends State<TripPage>
 
           if(tracking['payload'] != null){
             
+            final Position position = Position(
+                double.parse("${tracking['payload']['longitude']}"), 
+                double.parse("${tracking['payload']['latitude']}")
+            );
+            
             if(relationId!=null && relationName == 'eta.drivers' && widget.showBus){
               print("[TripPage.onEmitterMessage.emitter-tracking.driver] $tracking");
-              _updateIcon(Position(
-                double.parse("${tracking['payload']['longitude']}"), 
-                double.parse("${tracking['payload']['latitude']}")
-              ),relationName, relationId);
+              _updateIcon(position,relationName, relationId);
             } else if(relationName == 'eta.students' && widget.showStudents){
               print("[TripPage.onEmitterMessage.emitter-tracking.student] $tracking");
-              _updateIcon(Position(
-                double.parse("${tracking['payload']['longitude']}"), 
-                double.parse("${tracking['payload']['latitude']}")
-              ),relationName, relationId);
+              _updateIcon(position,relationName, relationId);
             }
 
           }
