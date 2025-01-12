@@ -107,7 +107,7 @@ class _DriverHomeState extends State<DriverHome>
                                                   fontWeight:
                                                       activeTheme.h6.fontWeight,
                                                 )))
-                                        : ActiveTrip(openTrip, activeTrip),
+                                        : ActiveTrip(openTripCallback, activeTrip),
 
                                     ETAWidgets.svgTitle(
                                         "assets/svg/fire.svg",
@@ -334,9 +334,9 @@ class _DriverHomeState extends State<DriverHome>
     }
   }
 
-  openTrip(TripModel trip) {
+  openTripCallback(TripModel wrapper) {
     Get.to(TripPage(
-      trip: trip, 
+      trip: wrapper, 
       navigationMode: "support", 
       showBus: false,
       showStudents: false,));

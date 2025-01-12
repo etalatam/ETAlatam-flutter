@@ -360,13 +360,14 @@ class _TripPageState extends State<TripPage>
 
 
   loadTrip() async {
-    TripModel? trip_ = await httpService.getTrip(trip.trip_id);
+    
     final LocalStorage storage = LocalStorage('tokens.json');
     final userId = await storage.getItem('id_usu');
     final relationNameLocal = await storage.getItem('relation_name');
     print("[TipPage.loadTrip.userId] $userId");
     print("[TipPage.loadTrip.relationNameLocal] $relationNameLocal");
 
+    TripModel? trip_ = await httpService.getTrip(trip.trip_id);
     if (trip_.trip_id != 0) {
       setState(() {
         trip = trip_;
