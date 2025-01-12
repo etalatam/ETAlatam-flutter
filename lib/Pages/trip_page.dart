@@ -493,8 +493,7 @@ class _TripPageState extends State<TripPage>
         final networkImage = await getNetworkImage(httpService.getAvatarUrl(relationId, relationName));
         final circleImage = await createCircleImage(networkImage);
         pointAnnotation = await createAnnotation(position, circleImage);
-      }
-      
+      }      
     }else{
       pointAnnotation.geometry = Point(
         coordinates: position
@@ -506,7 +505,8 @@ class _TripPageState extends State<TripPage>
   }
   
   Future<Uint8List> getNetworkImage(String imageUrl) async {
-    final http.Response response = await http.get(Uri.parse(imageUrl));
+    final http.Response response = await http.get(Uri.parse(imageUrl),
+    headers: {'Accept': 'image/png'});
     final Uint8List bytes = response.bodyBytes;
     
     final ui.Codec codec = await ui.instantiateImageCodec(bytes);
@@ -523,11 +523,18 @@ class _TripPageState extends State<TripPage>
     final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(pictureRecorder);
     final Paint paint = Paint();
-    const double size = 100.0;
+    const double size = 250.0;
+    const double borderSize = 10.0;
 
     final ui.Image image = await decodeImageFromList(imageData);
-    final Rect rect = Rect.fromLTWH(0, 0, size, size);
+    final Rect rect = Rect.fromLTWH(borderSize, borderSize, size - 2 * borderSize, size - 2 * borderSize);
     final Path path = Path()..addOval(rect);
+
+    // Dibujar el borde blanco
+    canvas.drawOval(Rect.fromLTWH(0, 0, size + 2, size + 2), Paint()..color = Colors.black);
+    canvas.drawOval(Rect.fromLTWH(0, 0, size, size), Paint()..color = Colors.white);
+    
+    // Dibujar la imagen circular
     canvas.clipPath(path);
     canvas.drawImageRect(image, Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()), rect, paint);
 
