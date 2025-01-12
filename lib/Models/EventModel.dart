@@ -1,7 +1,6 @@
 import 'dart:core';
 
 import 'package:eta_school_app/controllers/helpers.dart';
-import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 
 class EventModel {

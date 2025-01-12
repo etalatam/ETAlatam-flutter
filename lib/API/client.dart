@@ -1,7 +1,5 @@
 import 'dart:convert';
-import 'dart:math';
 import 'package:eta_school_app/Models/driver_model.dart';
-import 'package:eta_school_app/Models/PickupLocationModel.dart';
 import 'package:eta_school_app/Models/emitter_keygen.dart';
 import 'package:eta_school_app/Models/user_model.dart';
 import 'package:eta_school_app/Models/login_information_model.dart';
@@ -12,8 +10,6 @@ import 'package:eta_school_app/infrastructure/datasources/login_information_data
 import 'package:eta_school_app/infrastructure/mappers/driver_mapper.dart';
 import 'package:eta_school_app/infrastructure/mappers/login_information_mapper.dart';
 import 'package:eta_school_app/infrastructure/repositories/login_information_repository_impl.dart';
-import 'package:eta_school_app/methods.dart';
-import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
@@ -24,7 +20,6 @@ import 'package:eta_school_app/Models/student_model.dart';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/Models/NotificationModel.dart';
-import 'package:location/location.dart';
 import 'package:flutter/foundation.dart';
 
 class HttpService {

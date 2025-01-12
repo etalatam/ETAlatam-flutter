@@ -1,7 +1,6 @@
 import 'package:eta_school_app/Models/user_model.dart';
 import 'package:eta_school_app/Pages/reset_password_page.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:eta_school_app/methods.dart';
