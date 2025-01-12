@@ -22,7 +22,9 @@ class _HeaderState extends State<Header>{
         widthFactor: 1,
         child: Container(
           clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.9),
+          ),
           padding:
               const EdgeInsets.only(left: 20, right: 20, top: 40, bottom: 10),
           child: Row(

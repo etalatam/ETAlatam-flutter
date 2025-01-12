@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:eta_school_app/Pages/student_page.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/components/active_trip.dart';
 import 'package:eta_school_app/components/header.dart';
@@ -99,19 +100,16 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                                 /// Student block
                                                 return GestureDetector(
                                                     onTap: () {
-                                                      // openNewPage(
-                                                      //     context,
-                                                      //     StudentPage(
-                                                      //         student: parentModel!
-                                                      //                 .students[
-                                                      //             index]));
+                                                      openNewPage(
+                                                          context,
+                                                          StudentPage(
+                                                              student: parentModel!.students[index]));
                                                     },
                                                     child: ETAWidgets
                                                         .homeStudentBlock(
                                                             context,
-                                                            parentModel!
-                                                                    .students[
-                                                                index]));
+                                                            parentModel!.students[index]
+                                                        ));
                                               },
                                             ),
                                           ),
