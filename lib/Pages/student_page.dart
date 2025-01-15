@@ -1,14 +1,17 @@
 import 'dart:convert';
-
+import 'package:eta_school_app/Models/EventModel.dart';
 import 'package:eta_school_app/Models/student_model.dart';
 import 'package:eta_school_app/Pages/map/map_wiew.dart';
+import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
 import 'package:eta_school_app/Pages/upload_picture_page.dart';
 import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/methods.dart';
+import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:provider/provider.dart';
 
 class StudentPage extends StatefulWidget {
   StudentPage({super.key, this.student});
@@ -23,6 +26,10 @@ class _StudentPageState extends State<StudentPage> {
   bool showLoader = true;
 
   MapboxMap? _mapboxMapController;
+
+  PointAnnotationManager? annotationManager;
+
+  Map<String, PointAnnotation> annotationsMap = {};
 
   @override
   Widget build(BuildContext context) {
@@ -179,5 +186,55 @@ class _StudentPageState extends State<StudentPage> {
   void initState() {
     super.initState();
     showLoader = false;
+  }
+
+  Future<void> _updateIcon(
+      Position position, String relationName, int relationId) async {
+    PointAnnotation? pointAnnotation =
+        annotationsMap["$relationName.$relationId"];
+
+    if (pointAnnotation == null) {
+      final networkImage = await mapboxUtils
+          .getNetworkImage(httpService.getAvatarUrl(relationId, relationName));
+      final circleImage = await mapboxUtils.createCircleImage(networkImage);
+      pointAnnotation = await mapboxUtils.createAnnotation(
+          annotationManager, position, circleImage);
+    } else {
+      pointAnnotation.geometry = Point(coordinates: position);
+      annotationManager?.update(pointAnnotation);
+    }
+    _mapboxMapController
+        ?.setCamera(CameraOptions(center: Point(coordinates: position)));
+  }
+
+  void onEmitterMessage() async {
+    if (mounted) {
+      final String? message =
+          Provider.of<EmitterService>(context, listen: false).lastMessage;
+
+      try {
+        // si es un evento del viaje
+        final event = EventModel.fromJson(jsonDecode(message!));
+        await event.requestData();
+      } catch (e) {
+        //si es un evento posicion
+        final Map<String, dynamic> tracking = jsonDecode(message!);
+
+        if (tracking['relation_name'] != null) {
+          final relationName = tracking['relation_name'];
+          final relationId = tracking['relation_id'];
+
+          if (tracking['payload'] != null) {
+            final Position position = Position(
+                double.parse("${tracking['payload']['longitude']}"),
+                double.parse("${tracking['payload']['latitude']}"));
+
+            print(
+                "[TripPage.onEmitterMessage.emitter-tracking.student] $tracking");
+            _updateIcon(position, relationName, relationId);
+          }
+        }
+      }
+    }
   }
 }
