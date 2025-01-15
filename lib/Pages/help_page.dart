@@ -54,7 +54,7 @@ class _SentMessageState extends State<SendMessagePage> {
       httpService.supportHelpCategory().then((result) {
         setState(() {
           list = result;
-          if(result.length > 0) {
+          if(result.isNotEmpty) {
             categoryId = result[0].id!;
           }
           
