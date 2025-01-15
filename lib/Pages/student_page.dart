@@ -186,6 +186,8 @@ class _StudentPageState extends State<StudentPage> {
   void initState() {
     super.initState();
     showLoader = false;
+    Provider.of<EmitterService>(context, listen: false)
+        .addListener(onEmitterMessage);
   }
 
   Future<void> _updateIcon(
@@ -220,7 +222,8 @@ class _StudentPageState extends State<StudentPage> {
         //si es un evento posicion
         final Map<String, dynamic> tracking = jsonDecode(message!);
 
-        if (tracking['relation_name'] != null) {
+        if (tracking['relation_name'] != null &&
+            tracking['relation_name'] == 'eta.students') {
           final relationName = tracking['relation_name'];
           final relationId = tracking['relation_id'];
 
