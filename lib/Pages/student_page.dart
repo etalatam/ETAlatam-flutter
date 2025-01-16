@@ -52,9 +52,9 @@ class _StudentPageState extends State<StudentPage> {
                 ),
                 DraggableScrollableSheet(
                   snapAnimationDuration: const Duration(seconds: 1),
-                  initialChildSize: .5,
-                  minChildSize: 0.29,
-                  maxChildSize: 1,
+                  initialChildSize: .4,
+                  minChildSize: 0.4,
+                  maxChildSize: 0.7,
                   builder: (BuildContext context,
                       ScrollController scrollController) {
                     return Stack(children: [
