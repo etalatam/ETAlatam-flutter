@@ -33,7 +33,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
   List<TripModel> oldTripsList = [];
 
   List<TripModel> activeTrips = [];
-
+  
   @override
   Widget build(BuildContext context) {
     activeTheme =
@@ -61,9 +61,45 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                   margin: EdgeInsets.only(top: 120),
                                   child: Column(children: [
                                     
-                                      ETAWidgets.svgTitle("assets/svg/route.svg",
-                                        lang.translate('Active routes')),
-
+                                        activeTrips.isEmpty
+                                        ? Container(
+                                            width: double.infinity,
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 6),
+                                            margin: const EdgeInsets.fromLTRB(
+                                                25, 0, 25, 10),
+                                            clipBehavior: Clip.antiAlias,
+                                            decoration: ShapeDecoration(
+                                              color: Color.fromARGB(
+                                                  255, 228, 201, 119),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(30),
+                                              ),
+                                              shadows: [
+                                                BoxShadow(
+                                                  color: activeTheme.main_color
+                                                      .withOpacity(.3),
+                                                  blurRadius: 10,
+                                                  offset: const Offset(0, 1),
+                                                  spreadRadius: 0,
+                                                )
+                                              ],
+                                            ),
+                                            child: Text(
+                                                lang.translate(
+                                                    "Does not have active trips"),
+                                                style: TextStyle(
+                                                  color: Color.fromARGB(
+                                                      255, 112, 88, 16),
+                                                  fontSize:
+                                                      activeTheme.h5.fontSize,
+                                                  fontFamily:
+                                                      activeTheme.h6.fontFamily,
+                                                  fontWeight:
+                                                      activeTheme.h6.fontWeight,
+                                                )))
+                                      :
                                       SizedBox(
                                         height: 150,
                                         child: ListView.builder(
@@ -89,7 +125,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                     parentModel!.students.isEmpty
                                         ? Center()
                                         : SizedBox(
-                                            height: 280,
+                                            height: 230,
                                             child: ListView.builder(
                                               scrollDirection: Axis.horizontal,
                                               itemCount: parentModel!.students
