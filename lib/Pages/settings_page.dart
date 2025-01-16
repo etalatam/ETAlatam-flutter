@@ -95,7 +95,8 @@ class _SettingsPageState extends State<SettingsPage>
                                         });
                                       });
                                     },
-                                    items: langs.map<DropdownMenuItem<String>>((String value) {
+                                    items: langs.map<DropdownMenuItem<String>>(
+                                        (String value) {
                                       return DropdownMenuItem<String>(
                                         value: value,
                                         child: Text(
@@ -206,16 +207,14 @@ class _SettingsPageState extends State<SettingsPage>
                                       });
 
                                       // Future.delayed(const Duration(seconds: 1), () {
-                                        setState(() {
-                                          storage.setItem('darkmode', value);
-                                          preferences.setBool(
-                                              'darkmode', value);
-                                          darkMode = value;
-                                          showLoader = false;
-                                          activeTheme = value
-                                              ? DarkTheme()
-                                              : LightTheme();
-                                        });
+                                      setState(() {
+                                        storage.setItem('darkmode', value);
+                                        preferences.setBool('darkmode', value);
+                                        darkMode = value;
+                                        showLoader = false;
+                                        activeTheme =
+                                            value ? DarkTheme() : LightTheme();
+                                      });
                                       // });
                                     }),
                               ],
@@ -223,11 +222,7 @@ class _SettingsPageState extends State<SettingsPage>
                           ],
                         )),
                   ])),
-                  Positioned(
-                      left: 0,
-                      right: 0,
-                      top: 0,
-                      child: Header()),
+                  Positioned(left: 0, right: 0, top: 0, child: Header()),
                   // Positioned(
                   //     bottom: 20,
                   //     left: 20,
@@ -243,18 +238,18 @@ class _SettingsPageState extends State<SettingsPage>
     getDarkMode().then((value) => darkMode = value);
 
     Future.delayed(const Duration(seconds: 1)).then((value) => {
-      setState(() {
-        showLoader = false;    
-      })
-    });
+          setState(() {
+            showLoader = false;
+          })
+        });
   }
 
-  Future <bool> getDarkMode() async {
+  Future<bool> getDarkMode() async {
     var darkMode = await storage.getItem('darkmode');
     return darkMode ?? false;
   }
-  
-  Future <String> getLang() async {
+
+  Future<String> getLang() async {
     selectedLang = await storage.getItem('lang');
     return selectedLang ?? 'Español';
   }
@@ -263,5 +258,4 @@ class _SettingsPageState extends State<SettingsPage>
     var selectedLang = value!;
     await storage.setItem('lang', selectedLang);
   }
-
 }

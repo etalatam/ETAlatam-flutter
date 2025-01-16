@@ -1,4 +1,3 @@
-
 import 'package:eta_school_app/Pages/login_page.dart';
 import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/Pages/splash_screen_page.dart';

@@ -1,4 +1,3 @@
-
 import 'package:eta_school_app/shared/location/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -13,10 +12,10 @@ class MapWiew extends StatefulWidget {
   Future<void> Function(MapboxMap) onMapReady;
   Future<void> Function(MapboxMap) onStyleLoadedListener;
 
-  MapWiew({
-    this.navigationMode = false, 
-    required this.onMapReady, 
-    required this.onStyleLoadedListener}){
+  MapWiew(
+      {this.navigationMode = false,
+      required this.onMapReady,
+      required this.onStyleLoadedListener}) {
     print('[MapWiew.navigationMode] $navigationMode');
   }
 
@@ -25,7 +24,6 @@ class MapWiew extends StatefulWidget {
 }
 
 class MapWiewState extends State<MapWiew> {
-
   MapboxMap? mapboxMap;
 
   LocationService? locationService;
@@ -37,7 +35,9 @@ class MapWiewState extends State<MapWiew> {
 
     this.mapboxMap = mapboxMap;
 
-    this.mapboxMap?.logo
+    this
+        .mapboxMap
+        ?.logo
         .updateSettings(LogoSettings(marginRight: 3000, marginTop: 3000));
     this.mapboxMap?.attribution.updateSettings(AttributionSettings(
         marginRight: 3000, marginTop: 3000, clickable: false));
@@ -54,16 +54,15 @@ class MapWiewState extends State<MapWiew> {
     this.mapboxMap?.compass.updateSettings(CompassSettings(
         enabled: true, position: OrnamentPosition.BOTTOM_RIGHT));
 
-    if(widget.navigationMode){
+    if (widget.navigationMode) {
       await locationService?.init();
     }
     await widget.onMapReady(mapboxMap);
   }
-  
-  void _onStyleLoadedListener(StyleLoadedEventData styleLoadedEventData) async{
+
+  void _onStyleLoadedListener(StyleLoadedEventData styleLoadedEventData) async {
     await widget.onStyleLoadedListener(mapboxMap!);
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +71,8 @@ class MapWiewState extends State<MapWiew> {
         Consumer<LocationService>(builder: (context, locationService, child) {
       final locationData = locationService.locationData;
       print('[MapView.Consumer.LocationService] $locationData');
-      print('MapView.Consumer.LocationService.widget.navigationMode ${widget.navigationMode}');
+      print(
+          'MapView.Consumer.LocationService.widget.navigationMode ${widget.navigationMode}');
       if (locationData != null && mapboxMap != null && widget.navigationMode) {
         if (_firstLocationUpdate) {
           print('[MapView.build._firstLocationUpdate] $_firstLocationUpdate');

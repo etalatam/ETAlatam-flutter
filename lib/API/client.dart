@@ -32,7 +32,8 @@ class HttpService {
   Map? headers;
 
   String getAvatarUrl(relationId, relationName) {
-    final url = "$apiURL/rpc/get_reource_image?_relation_name=$relationName&_relation_id=$relationId";
+    final url =
+        "$apiURL/rpc/get_reource_image?_relation_name=$relationName&_relation_id=$relationId";
     print("getAvatarUrl: $url");
     return url;
   }
@@ -83,9 +84,7 @@ class HttpService {
     if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
       final List<TripModel> trips = await Future.wait(
-        body
-            .map((dynamic item) async => TripModel.fromJson(item))
-            .toList(),
+        body.map((dynamic item) async => TripModel.fromJson(item)).toList(),
       );
       return trips;
     }
@@ -105,9 +104,7 @@ class HttpService {
     if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
       final List<TripModel> trips = await Future.wait(
-        body
-            .map((dynamic item) async => TripModel.fromJson(item))
-            .toList(),
+        body.map((dynamic item) async => TripModel.fromJson(item)).toList(),
       );
       return trips;
     }
@@ -120,11 +117,12 @@ class HttpService {
     const endpoint = '';
     var query = "/rpc/notifications?order=id.desc&limit=20";
 
-    if(topics != null){
-      topics = topics.replaceAll("[", "(").replaceAll("]", ")").replaceAll(" ", "");
+    if (topics != null) {
+      topics =
+          topics.replaceAll("[", "(").replaceAll("]", ")").replaceAll(" ", "");
       query += "&topic=in.$topics";
     }
-    
+
     http.Response res = await getQuery(query);
 
     print("[$endpoint] res.statusCode: ${res.statusCode}");
@@ -145,8 +143,7 @@ class HttpService {
 
   Future<List<SupportHelpCategory>> supportHelpCategory() async {
     const endpoint = "/rpc/support_help_category";
-    http.Response res =
-        await getQuery("$endpoint?order=name.asc");
+    http.Response res = await getQuery("$endpoint?order=name.asc");
 
     print("[$endpoint] res.statusCode: ${res.statusCode}");
     print("[$endpoint] res.body: ${res.body}");
@@ -156,8 +153,7 @@ class HttpService {
       final List<SupportHelpCategory> supportHelpCategoryList =
           await Future.wait(
         body
-            .map((dynamic item) async =>
-                SupportHelpCategory.fromJson(item))
+            .map((dynamic item) async => SupportHelpCategory.fromJson(item))
             .toList(),
       );
       return supportHelpCategoryList;
@@ -190,8 +186,8 @@ class HttpService {
   /// Load Route
   Future<RouteModel> getRoute(routeId) async {
     const endpoint = "/rpc/driver_routes";
-    http.Response res = await getQuery(
-        "$endpoint?select=*&limit=1&route_id=eq.$routeId");
+    http.Response res =
+        await getQuery("$endpoint?select=*&limit=1&route_id=eq.$routeId");
 
     print("[$endpoint] res.statusCode: ${res.statusCode}");
     print("[$endpoint] res.body: ${res.body}");
@@ -228,12 +224,12 @@ class HttpService {
   Future<StudentModel> getStudent() async {
     const endpoint = '/rpc/student_info';
     try {
-      http.Response res = await postQuery(endpoint, null,
-          contentType: 'application/json');
+      http.Response res =
+          await postQuery(endpoint, null, contentType: 'application/json');
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
         return StudentModel.fromJson(json);
-      } 
+      }
     } catch (e) {
       print("sendTracking error: ${e.toString()}");
     }
@@ -248,12 +244,13 @@ class HttpService {
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
         return ParentModel.fromJson(json);
-      } 
+      }
     } catch (e) {
       print("sendTracking error: ${e.toString()}");
     }
     return ParentModel(parentId: 0, students: []);
   }
+
   // /// Load Student pickup
   /// Load Routes
   Future<List<RouteModel>> getRoutes() async {
@@ -277,8 +274,8 @@ class HttpService {
 
   Future<EmitterKeyGenModel?> emitterKeyGen(String channel) async {
     const endpoint = "/rpc/emitter_keygen";
-    http.Response res =
-        await getQuery("$endpoint?order=ts.asc&channel=ilike.*$channel*&limit=1");
+    http.Response res = await getQuery(
+        "$endpoint?order=ts.asc&channel=ilike.*$channel*&limit=1");
 
     print("[$endpoint] res.statusCode: ${res.statusCode}");
     print("[$endpoint] res.body: ${res.body}");
@@ -286,7 +283,7 @@ class HttpService {
     try {
       if (res.statusCode == 200) {
         List<dynamic> body = jsonDecode(res.body);
-        if(body.isNotEmpty){
+        if (body.isNotEmpty) {
           return EmitterKeyGenModel.fromJson(body[0]);
         }
       }
@@ -298,8 +295,7 @@ class HttpService {
 
   Future<EventModel?> getEvent(int eventId) async {
     const endpoint = "/rpc/trips_events";
-    http.Response res =
-        await getQuery("$endpoint?limit1&id_event=$eventId");
+    http.Response res = await getQuery("$endpoint?limit1&id_event=$eventId");
 
     print("[$endpoint] res.statusCode: ${res.statusCode}");
     print("[$endpoint] res.body: ${res.body}");
@@ -307,7 +303,7 @@ class HttpService {
     try {
       if (res.statusCode == 200) {
         List<dynamic> body = jsonDecode(res.body);
-        if(body.isNotEmpty){
+        if (body.isNotEmpty) {
           return EventModel.fromJson(body[0]);
         }
       }
@@ -349,7 +345,7 @@ class HttpService {
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
       if (body == null) return TripModel(trip_id: 0);
-      
+
       try {
         return TripModel.fromJson(body[0]);
       } catch (e) {
@@ -372,10 +368,9 @@ class HttpService {
       try {
         var body = jsonDecode(res.body);
         if (body == null) return TripModel(trip_id: 0);
-        
+
         final TripModel trips = TripModel.fromJson(body[0]);
         return trips;
-        
       } catch (e) {
         print("[getActiveTrip] ${e.toString()}");
       }
@@ -404,7 +399,7 @@ class HttpService {
 
   /// Submit form to update data through API
   Future<TripModel> startTrip(RouteModel route) async {
-    const endpoint = "/rpc/driver_start_trip";    
+    const endpoint = "/rpc/driver_start_trip";
     Map data = {
       "_route_id": "${route.route_id}",
       "_id_schedule": "${route.schedule_id}"
@@ -436,8 +431,8 @@ class HttpService {
 
     print("[client.updateAttendance] $data");
 
-    http.Response res = await postQuery(endpoint, data,
-        contentType: 'application/json');
+    http.Response res =
+        await postQuery(endpoint, data, contentType: 'application/json');
     print("[$endpoint] res.statusCode ${res.statusCode}");
     print("[$endpoint] res.body ${res.body}");
 
@@ -476,8 +471,7 @@ class HttpService {
       '_access_token': '8725ca59-71be-46c6-a364-eaac57f1786d'
     };
 
-    final http.Response res =
-        await postQuery(endpoint, data, useToken: false);
+    final http.Response res = await postQuery(endpoint, data, useToken: false);
 
     print("[$endpoint] statuscode: ${res.statusCode}");
     print("[$endpoint]res.body: ${res.body}");
@@ -511,10 +505,13 @@ class HttpService {
 
       if (res.statusCode == 200) {
         dynamic body = jsonDecode(res.body);
-        await storage.setItem('token', body['token'].isEmpty ? '' : body['token']);
+        await storage.setItem(
+            'token', body['token'].isEmpty ? '' : body['token']);
         await storage.setItem('id_usu', body['id_usu'] ?? body['id_usu']);
-        await storage.setItem('relation_name', body['relation_name'] ?? body['relation_name']);
-        await storage.setItem('relation_id', body['relation_id'] ?? body['relation_id']);
+        await storage.setItem(
+            'relation_name', body['relation_name'] ?? body['relation_name']);
+        await storage.setItem(
+            'relation_id', body['relation_id'] ?? body['relation_id']);
 
         try {
           final LoginInformation login =
@@ -544,8 +541,7 @@ class HttpService {
       "priority_id": priority
     };
 
-    http.Response res = await postQuery(
-        endpoint, jsonEncode(data),
+    http.Response res = await postQuery(endpoint, jsonEncode(data),
         contentType: 'application/json');
 
     print("[$endpoint] statuscode: ${res.statusCode}");
@@ -565,8 +561,7 @@ class HttpService {
     const endpoint = '/rpc/save_support_message_comment';
     final data = {"message_id": messageId, "comment": comment};
 
-    http.Response res = await postQuery(
-        endpoint, jsonEncode(data),
+    http.Response res = await postQuery(endpoint, jsonEncode(data),
         contentType: 'application/json');
 
     print("[$endpoint] statuscode: ${res.statusCode}");
@@ -692,9 +687,7 @@ class HttpService {
     if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
       final List<StudentModel> students = await Future.wait(
-        body
-            .map((dynamic item) async => StudentModel.fromJson(item))
-            .toList(),
+        body.map((dynamic item) async => StudentModel.fromJson(item)).toList(),
       );
       return students;
     }
@@ -705,8 +698,8 @@ class HttpService {
   Future<dynamic> driverInfo() async {
     try {
       const endpoint = '/rpc/driver_info';
-      http.Response res = await postQuery(endpoint, null,
-          contentType: 'application/json');
+      http.Response res =
+          await postQuery(endpoint, null, contentType: 'application/json');
 
       print("[$endpoint] res.statusCode: ${res.statusCode}");
       print("[$endpoint] res.body: ${res.body}");
@@ -725,19 +718,18 @@ class HttpService {
   Future<UserModel?> userInfo() async {
     try {
       const endpoint = '/rpc/user_info';
-      http.Response res = await postQuery(endpoint, null,
-          contentType: 'application/json');
+      http.Response res =
+          await postQuery(endpoint, null, contentType: 'application/json');
 
       print("[$endpoint] res.statusCode: ${res.statusCode}");
       print("[$endpoint] res.body: ${res.body}");
-      
+
       if (res.statusCode == 200) {
-        final json  = jsonDecode(res.body);
+        final json = jsonDecode(res.body);
         return UserModel.fromJson(json);
-      } 
+      }
     } catch (e) {
       print("userInfo error: ${e.toString()}");
-      
     }
     return null;
   }

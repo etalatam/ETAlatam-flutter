@@ -27,7 +27,7 @@ class EmitterClient {
   void Function(String)? onUnsubscribed;
   void Function()? onAutoReconnect;
   void Function()? onAutoReconnected;
-  
+
   EmitterClient({
     String? host,
     int? port,
@@ -66,7 +66,8 @@ class EmitterClient {
       await _client.connect();
       _client.published!.listen((MqttPublishMessage message) {
         print("Message receiver");
-        final payload = MqttPublishPayload.bytesToStringAsString(message.payload.message);
+        final payload =
+            MqttPublishPayload.bytesToStringAsString(message.payload.message);
         if (onMessage != null) {
           onMessage!(payload);
         }
@@ -97,7 +98,8 @@ class EmitterClient {
     _client.subscribe(formattedChannel, MqttQos.atLeastOnce);
   }
 
-  void publish(String channel, dynamic message, {String? key, Map<String, dynamic>? options}) {
+  void publish(String channel, dynamic message,
+      {String? key, Map<String, dynamic>? options}) {
     if (!_connected) {
       throw Exception('Client is not connected');
     }
@@ -108,8 +110,7 @@ class EmitterClient {
     }
 
     final formattedChannel = _formatChannel(channel, publisherKey);
-    final builder = MqttClientPayloadBuilder()
-      ..addString(message);
+    final builder = MqttClientPayloadBuilder()..addString(message);
 
     _client.publishMessage(
       formattedChannel,
@@ -137,18 +138,17 @@ class EmitterClient {
     // Prefix with the key if any
     var formatted = channel;
     if (key.isNotEmpty) {
-        formatted = "$key/$channel";
+      formatted = "$key/$channel";
     }
 
     // Add trailing slash
     if (!channel.endsWith("/")) {
-        formatted += "/";
+      formatted += "/";
     }
 
     // We're done compiling the channel name
     return formatted;
   }
-
 
   void _onConnected() {
     _connected = true;

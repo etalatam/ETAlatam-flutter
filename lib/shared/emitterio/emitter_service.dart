@@ -1,14 +1,11 @@
-
-
 import 'package:eta_school_app/shared/emitterio/emitter_client.dart';
 import 'package:flutter/foundation.dart';
 
 class EmitterService extends ChangeNotifier {
-  
   static final EmitterService _instance = EmitterService._internal();
-  
+
   factory EmitterService() => _instance;
-  
+
   EmitterService._internal() {
     connect();
   }
@@ -18,13 +15,9 @@ class EmitterService extends ChangeNotifier {
   String? lastMessage;
 
   Future<void> connect() async {
-
     client ??= EmitterClient(
-      host: 'wss://emitter.etalatam.com',
-      port: 443,
-      secure: true
-    );
-    
+        host: 'wss://emitter.etalatam.com', port: 443, secure: true);
+
     print("[EmitterService.connect] isConnected ${client?.isConnected}");
 
     if (client?.isConnected == false) {
@@ -45,7 +38,7 @@ class EmitterService extends ChangeNotifier {
       }
     }
   }
-  
+
   void _onMessage(String message) {
     print("[EmitterService.onMessage] $message");
     lastMessage = message;

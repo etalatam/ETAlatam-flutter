@@ -19,7 +19,6 @@ class LocationServiceRepository {
   int _count = -1;
 
   Future<void> init(Map<dynamic, dynamic> params) async {
-    
     print('***********Init callback handler');
     if (params.containsKey('countInit')) {
       dynamic tmpCount = params['countInit'];

@@ -32,7 +32,6 @@ class _SignupPageState extends State<SignupPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return showLoader
         ? Loader()
         : Material(
@@ -367,11 +366,7 @@ class _SignupPageState extends State<SignupPage> {
                           ],
                         )),
                   )),
-              Positioned(
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  child: Header()),
+              Positioned(left: 0, right: 0, top: 0, child: Header()),
             ]));
   }
 

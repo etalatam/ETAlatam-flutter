@@ -122,8 +122,7 @@ class _StudentsHomeState extends State<StudentsHome>
                                                 )))
                                         : ActiveTrip(openTrip, activeTrip),
 
-                                    ETAWidgets.svgTitle(
-                                        "assets/svg/bus.svg",
+                                    ETAWidgets.svgTitle("assets/svg/bus.svg",
                                         lang.translate('trips_history')),
 
                                     /// Last Trips
@@ -144,9 +143,12 @@ class _StudentsHomeState extends State<StudentsHome>
                                                         openNewPage(
                                                             context,
                                                             TripPage(
-                                                                trip: oldTripsList[index],
-                                                                showBus: false,
-                                                                showStudents: false,
+                                                              trip:
+                                                                  oldTripsList[
+                                                                      index],
+                                                              showBus: false,
+                                                              showStudents:
+                                                                  false,
                                                             ));
                                                       },
                                                       child: ETAWidgets
@@ -180,11 +182,7 @@ class _StudentsHomeState extends State<StudentsHome>
                                 ),
                               ]),
                             )),
-                        Positioned(
-                            left: 0,
-                            right: 0,
-                            top: 0,
-                            child: Header()),
+                        Positioned(left: 0, right: 0, top: 0, child: Header()),
 
                         // Positioned(
                         //   left: 0,
@@ -201,7 +199,6 @@ class _StudentsHomeState extends State<StudentsHome>
                       ],
                     ))));
   }
-
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -255,7 +252,6 @@ class _StudentsHomeState extends State<StudentsHome>
       student = studentQuery;
     });
 
-
     List<TripModel>? oldTrips = await httpService.getStudentTrips(studentId);
     setState(() {
       oldTripsList = oldTrips;
@@ -286,9 +282,12 @@ class _StudentsHomeState extends State<StudentsHome>
     }
   }
 
-
   openTrip(TripModel trip) {
-    Get.to(TripPage(trip: trip, showBus: true, showStudents: false,));
+    Get.to(TripPage(
+      trip: trip,
+      showBus: true,
+      showStudents: false,
+    ));
   }
 
   @override
@@ -301,5 +300,4 @@ class _StudentsHomeState extends State<StudentsHome>
     super.initState();
     loadResources();
   }
-  
 }

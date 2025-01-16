@@ -28,7 +28,6 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-
     return showLoader
         ? Loader()
         : Material(
@@ -182,20 +181,21 @@ class _LoginState extends State<Login> {
                                         setState(() {
                                           showLoader = true;
                                         });
-                                        
-                                        loginResponse = await httpService.login(email, password);
-                                        var msg =loginResponse?.split('/');
-                                        
+
+                                        loginResponse = await httpService.login(
+                                            email, password);
+                                        var msg = loginResponse?.split('/');
+
                                         setState(() {
                                           showLoader = false;
-                                          if(loginResponse == '1'){
+                                          if (loginResponse == '1') {
                                             goHome();
-                                          }else{
+                                          } else {
                                             showSuccessDialog(
-                                              context, 
-                                              "${lang.translate('Error')} (${msg![1]})",
-                                              lang.translate(msg[0]),
-                                              null);
+                                                context,
+                                                "${lang.translate('Error')} (${msg![1]})",
+                                                lang.translate(msg[0]),
+                                                null);
                                           }
                                         });
                                       },
@@ -263,11 +263,11 @@ class _LoginState extends State<Login> {
   ///
   /// Redirect to home page
   goHome() async {
-      final hasSession = await checkSession();
+    final hasSession = await checkSession();
 
-      if(hasSession){
-        Get.offAll(HomeScreen());
-      }
+    if (hasSession) {
+      Get.offAll(HomeScreen());
+    }
   }
 
   @override

@@ -64,24 +64,24 @@ class ActiveTrip extends StatelessWidget {
                             children: [
                               Row(
                                 mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   SizedBox(
                                     width: 150,
                                     child: Text(
                                       "${lang.translate('Trip')} #${trip?.trip_id} (${trip?.route?.route_name})",
-                                      maxLines: 1, 
+                                      maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
-                                        color: activeTheme.buttonColor
-                                      ),
+                                          color: activeTheme.buttonColor),
                                     ),
                                   ),
-                                  
                                   Row(children: [
                                     SvgPicture.asset("assets/svg/bus.svg",
-                                        width: 15, color: activeTheme.buttonColor),
+                                        width: 15,
+                                        color: activeTheme.buttonColor),
                                     SizedBox(width: 5),
                                     Text(
                                       trip?.vehicle?.plate_number ?? '',
@@ -103,63 +103,53 @@ class ActiveTrip extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     if (trip?.trip_id != 0)
-                                    Container(
-                                      decoration: ShapeDecoration(
-                                          //color: activeTheme.main_color,
-                                          // color: Colors.amber,
-                                          shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      )),
-                                      width: 80,
-                                      alignment: Alignment.center,
-                                      child: Image(
-                                          width: 70,
-                                          height: 60,
-                                          image: AssetImage("assets/moving_car.gif")),
-                                    ),
+                                      Container(
+                                        decoration: ShapeDecoration(
+                                            //color: activeTheme.main_color,
+                                            // color: Colors.amber,
+                                            shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        )),
+                                        width: 80,
+                                        alignment: Alignment.center,
+                                        child: Image(
+                                            width: 70,
+                                            height: 60,
+                                            image: AssetImage(
+                                                "assets/moving_car.gif")),
+                                      ),
                                     const SizedBox(width: 10),
-
-                                    Icon(
-                                      Icons.access_time,
-                                      color: activeTheme.buttonColor,
-                                      size: 20
-                                    ),
-
+                                    Icon(Icons.access_time,
+                                        color: activeTheme.buttonColor,
+                                        size: 20),
                                     Text(
                                       trip?.trip_id == 0
                                           ? ""
                                           : "${trip?.trip_date}",
                                       style: TextStyle(
-                                        color: activeTheme.buttonColor
-                                      ),
+                                          color: activeTheme.buttonColor),
                                     ),
                                     const SizedBox(width: 10),
-                                    Icon(
-                                      Icons.route,
-                                      color: activeTheme.buttonColor,
-                                      size: 20
-                                    ),
-                                    Text(
-                                      '${trip?.distance} KM',
-                                      style: TextStyle(
-                                        color: activeTheme.buttonColor
-                                      )
-                                    ),
+                                    Icon(Icons.route,
+                                        color: activeTheme.buttonColor,
+                                        size: 20),
+                                    Text('${trip?.distance} KM',
+                                        style: TextStyle(
+                                            color: activeTheme.buttonColor)),
                                     const SizedBox(width: 10),
                                     (trip != null &&
-                                            trip!.pickup_locations != null) ?
-                                    Icon(
-                                      Icons.pin_drop_outlined,
-                                      color: activeTheme.buttonColor,
-                                      size: 20
-                                    ) :const Center(),
+                                            trip!.pickup_locations != null)
+                                        ? Icon(Icons.pin_drop_outlined,
+                                            color: activeTheme.buttonColor,
+                                            size: 20)
+                                        : const Center(),
                                     (trip != null &&
                                             trip!.pickup_locations != null)
                                         ? Text(
                                             '${trip!.pickup_locations!.length.toString()} ',
                                             style: TextStyle(
-                                              color: activeTheme.buttonColor
-                                            ),
+                                                color: activeTheme.buttonColor),
                                           )
                                         : const Center(),
                                   ],

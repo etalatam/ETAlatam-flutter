@@ -24,7 +24,7 @@ class CustomBottonNavigation extends StatelessWidget {
             BottomNavigationBarItem(
                 icon: Icon(Icons.home_outlined), label: "Inicio"),
             BottomNavigationBarItem(
-                icon: Icon(Icons.notifications), label: "Notificaciones"),                
+                icon: Icon(Icons.notifications), label: "Notificaciones"),
             BottomNavigationBarItem(
                 icon: Icon(Icons.help_outline_outlined), label: 'Ayuda'),
           ],

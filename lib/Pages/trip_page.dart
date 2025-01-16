@@ -25,14 +25,12 @@ import 'package:provider/provider.dart';
 import 'map/map_wiew.dart';
 
 class TripPage extends StatefulWidget {
-
-  const TripPage({
-    super.key, 
-    this.trip, 
-    this.navigationMode, 
-    required this.showBus, 
-    required this.showStudents
-  });
+  const TripPage(
+      {super.key,
+      this.trip,
+      this.navigationMode,
+      required this.showBus,
+      required this.showStudents});
 
   final TripModel? trip;
 
@@ -68,10 +66,9 @@ class _TripPageState extends State<TripPage>
   PointAnnotationManager? annotationManager;
 
   Map<String, PointAnnotation> annotationsMap = {};
-  
+
   @override
   Widget build(BuildContext context) {
-
     return Material(
       child: showLoader
           ? Loader()
@@ -80,12 +77,15 @@ class _TripPageState extends State<TripPage>
                 SizedBox(
                   height: MediaQuery.of(context).size.height / 1.40,
                   child: MapWiew(
-                    navigationMode: widget.navigationMode == null ? false : (
-                        trip.trip_status == 'Running' ? true : false ),
+                    navigationMode: widget.navigationMode == null
+                        ? false
+                        : (trip.trip_status == 'Running' ? true : false),
                     onMapReady: (MapboxMap mapboxMap) async {
                       _mapboxMapController = mapboxMap;
 
-                      mapboxMap.annotations.createPointAnnotationManager().then((value) async {
+                      mapboxMap.annotations
+                          .createPointAnnotationManager()
+                          .then((value) async {
                         annotationManager = value;
                       });
                     },
@@ -157,8 +157,8 @@ class _TripPageState extends State<TripPage>
                                       "${trip.trip_date}",
                                       style: activeTheme.normalText,
                                     ),
-                                    if (trip.trip_status == 'Completed' && 
-                                      relationName.contains('eta.drivers'))
+                                    if (trip.trip_status == 'Completed' &&
+                                        relationName.contains('eta.drivers'))
                                       GestureDetector(
                                           onTap: (() {
                                             openNewPage(context,
@@ -188,27 +188,27 @@ class _TripPageState extends State<TripPage>
                                     ? ETAWidgets.tripInfoRow(trip)
                                     : const Center(),
                                 Row(children: [
-                                  if (trip.trip_status == 'Running' && 
-                                    relationName.contains('eta.drivers'))
-                                   GestureDetector(
-                                          onTap: (() {
-                                            endTrip();
-                                          }),
-                                          child: Center(
-                                              child: ButtonTextIcon(
-                                                  lang.translate('End trip'),
-                                                  Icon(
-                                                    Icons.route,
-                                                    color:
-                                                        activeTheme.buttonColor,
-                                                  ),
-                                                  Colors.red))),
+                                  if (trip.trip_status == 'Running' &&
+                                      relationName.contains('eta.drivers'))
+                                    GestureDetector(
+                                        onTap: (() {
+                                          endTrip();
+                                        }),
+                                        child: Center(
+                                            child: ButtonTextIcon(
+                                                lang.translate('End trip'),
+                                                Icon(
+                                                  Icons.route,
+                                                  color:
+                                                      activeTheme.buttonColor,
+                                                ),
+                                                Colors.red))),
                                   if (trip.trip_status == 'Running')
                                     const SizedBox(
                                       width: 20,
                                     ),
-                                  if (trip.trip_status == 'Running' && 
-                                    relationName.contains('eta.drivers'))
+                                  if (trip.trip_status == 'Running' &&
+                                      relationName.contains('eta.drivers'))
                                     GestureDetector(
                                         onTap: (() {
                                           openNewPage(context,
@@ -228,7 +228,6 @@ class _TripPageState extends State<TripPage>
                                 SizedBox(
                                   height: 20,
                                 ),
-
                                 for (var i = 0;
                                     i < trip.pickup_locations!.length;
                                     i++)
@@ -316,11 +315,11 @@ class _TripPageState extends State<TripPage>
             SizedBox(
               width: 300,
               child: Text(
-              '${pickupLocation.location?.location_name}',
-              style: activeTheme.h5,
-              softWrap: true,
-              maxLines: 2,
-            ),
+                '${pickupLocation.location?.location_name}',
+                style: activeTheme.h5,
+                softWrap: true,
+                maxLines: 2,
+              ),
             ),
             SizedBox(
                 width: 300,
@@ -356,11 +355,9 @@ class _TripPageState extends State<TripPage>
         Get.back();
       });
     }
-  }  
-
+  }
 
   loadTrip() async {
-    
     final LocalStorage storage = LocalStorage('tokens.json');
     final userId = await storage.getItem('id_usu');
     final relationNameLocal = await storage.getItem('relation_name');
@@ -373,7 +370,7 @@ class _TripPageState extends State<TripPage>
         trip = trip_;
         isActiveTrip = true;
         showLoader = false;
-        relationName = relationNameLocal;        
+        relationName = relationNameLocal;
       });
     }
   }
@@ -387,11 +384,11 @@ class _TripPageState extends State<TripPage>
     setState(() {
       trip = widget.trip!;
     });
-    
-    if(widget.showBus || widget.showStudents){
-      Provider.of<EmitterService>(context, listen: false).addListener(onEmitterMessage);
+
+    if (widget.showBus || widget.showStudents) {
+      Provider.of<EmitterService>(context, listen: false)
+          .addListener(onEmitterMessage);
     }
-    
   }
 
   @override
@@ -432,10 +429,8 @@ class _TripPageState extends State<TripPage>
 
     Map<String, dynamic> data = trip.geoJson!;
 
-    await mapboxMap.style.addSource(GeoJsonSource(
-      id: "trip_source", 
-      data: jsonEncode(data)
-    ));
+    await mapboxMap.style
+        .addSource(GeoJsonSource(id: "trip_source", data: jsonEncode(data)));
 
     await mapboxMap.style.addLayer(LineLayer(
       id: "line_layer",
@@ -446,10 +441,9 @@ class _TripPageState extends State<TripPage>
       lineBlur: 1.0,
       lineDasharray: [1.0, 2.0],
       lineWidth: 6.0,
-      
-      ));
+    ));
   }
-  
+
   void showPickupLocations(MapboxMap mapboxMap) async {
     print("[TripPage.showPickupLocations]");
     final ByteData bytes =
@@ -486,33 +480,34 @@ class _TripPageState extends State<TripPage>
         center: coordinateBounds.southwest, zoom: 15.5, pitch: 70));
   }
 
-  Future<void> _updateIcon(Position position, String relationName, int relationId) async {
-    PointAnnotation? pointAnnotation = annotationsMap["$relationName.$relationId"];    
-    
-    if(pointAnnotation == null){
-      if(relationName.indexOf("drivers") > 1){
-        final ByteData bytes =
-            await rootBundle.load('assets/moving_car.gif');
+  Future<void> _updateIcon(
+      Position position, String relationName, int relationId) async {
+    PointAnnotation? pointAnnotation =
+        annotationsMap["$relationName.$relationId"];
+
+    if (pointAnnotation == null) {
+      if (relationName.indexOf("drivers") > 1) {
+        final ByteData bytes = await rootBundle.load('assets/moving_car.gif');
         final Uint8List imageData = bytes.buffer.asUint8List();
 
-          pointAnnotation = await mapboxUtils.createAnnotation(annotationManager, position, imageData);
-          annotationsMap["$relationName.$relationId"] = pointAnnotation!;
-      }else{
-        final networkImage = await mapboxUtils.getNetworkImage(httpService.getAvatarUrl(relationId, relationName));
+        pointAnnotation = await mapboxUtils.createAnnotation(
+            annotationManager, position, imageData);
+        annotationsMap["$relationName.$relationId"] = pointAnnotation!;
+      } else {
+        final networkImage = await mapboxUtils.getNetworkImage(
+            httpService.getAvatarUrl(relationId, relationName));
         final circleImage = await mapboxUtils.createCircleImage(networkImage);
-        pointAnnotation = await mapboxUtils.createAnnotation(annotationManager,position, circleImage);
-      }      
-    }else{
-      pointAnnotation.geometry = Point(
-        coordinates: position
-      );
+        pointAnnotation = await mapboxUtils.createAnnotation(
+            annotationManager, position, circleImage);
+      }
+    } else {
+      pointAnnotation.geometry = Point(coordinates: position);
       annotationManager?.update(pointAnnotation);
     }
-    _mapboxMapController?.setCamera(CameraOptions(
-        center: Point(coordinates: position)));
+    _mapboxMapController
+        ?.setCamera(CameraOptions(center: Point(coordinates: position)));
   }
-  
-  
+
   //  void _animateIcon(LatLng start, LatLng end) {
   //   const int animationDuration = 1000; // Duración en milisegundos
   //   const int frameRate = 60; // Frames por segundo
@@ -536,41 +531,41 @@ class _TripPageState extends State<TripPage>
   //       ),
   //     );
   //   });
-  // } 
+  // }
 
   void onEmitterMessage() async {
-    if (mounted) { 
-      final String? message = Provider.of<EmitterService>(context, listen: false).lastMessage;
+    if (mounted) {
+      final String? message =
+          Provider.of<EmitterService>(context, listen: false).lastMessage;
 
       try {
         // si es un evento del viaje
         final event = EventModel.fromJson(jsonDecode(message!));
         await event.requestData();
       } catch (e) {
-        
         //si es un evento posicion
         final Map<String, dynamic> tracking = jsonDecode(message!);
 
-        if(tracking['relation_name'] != null){
-          
+        if (tracking['relation_name'] != null) {
           final relationName = tracking['relation_name'];
           final relationId = tracking['relation_id'];
 
-          if(tracking['payload'] != null){
-            
+          if (tracking['payload'] != null) {
             final Position position = Position(
-                double.parse("${tracking['payload']['longitude']}"), 
-                double.parse("${tracking['payload']['latitude']}")
-            );
-            
-            if(relationId!=null && relationName == 'eta.drivers' && widget.showBus){
-              print("[TripPage.onEmitterMessage.emitter-tracking.driver] $tracking");
-              _updateIcon(position,relationName, relationId);
-            } else if(relationName == 'eta.students' && widget.showStudents){
-              print("[TripPage.onEmitterMessage.emitter-tracking.student] $tracking");
-              _updateIcon(position,relationName, relationId);
-            }
+                double.parse("${tracking['payload']['longitude']}"),
+                double.parse("${tracking['payload']['latitude']}"));
 
+            if (relationId != null &&
+                relationName == 'eta.drivers' &&
+                widget.showBus) {
+              print(
+                  "[TripPage.onEmitterMessage.emitter-tracking.driver] $tracking");
+              _updateIcon(position, relationName, relationId);
+            } else if (relationName == 'eta.students' && widget.showStudents) {
+              print(
+                  "[TripPage.onEmitterMessage.emitter-tracking.student] $tracking");
+              _updateIcon(position, relationName, relationId);
+            }
           }
         }
       }

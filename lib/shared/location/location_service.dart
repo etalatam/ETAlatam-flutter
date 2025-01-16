@@ -30,13 +30,12 @@ class LocationService extends ChangeNotifier {
   final LocalStorage storage = LocalStorage('tokens.json');
 
   static final LocationService _instance = LocationService._internal();
-  
+
   factory LocationService() => _instance;
-  
+
   LocationService._internal();
 
   init() async {
-
     _locationData = await storage.getItem('lastPosition');
     print('[ETALocationService.init] $_locationData');
     notifyListeners();
@@ -66,11 +65,11 @@ class LocationService extends ChangeNotifier {
             await storage.setItem('lastPosition', data);
             await tracking(_locationData);
             try {
-              notifyListeners();  
+              notifyListeners();
             } catch (e) {
-              print('[ETALocationService.notifyListeners.error] ${e.toString()}');
+              print(
+                  '[ETALocationService.notifyListeners.error] ${e.toString()}');
             }
-            
           }
         });
 

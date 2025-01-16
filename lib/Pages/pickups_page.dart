@@ -439,11 +439,7 @@ class _PickupsPageState extends State<PickupsPage> {
                       ),
                     ]),
                   ),
-                  Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      child: Header()),
+                  Positioned(top: 0, left: 0, right: 0, child: Header()),
                   Positioned(
                       bottom: 20,
                       left: 20,

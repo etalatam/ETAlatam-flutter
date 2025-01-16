@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart'; 
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocaleController extends GetxController {
@@ -28,7 +28,8 @@ class LocaleController extends GetxController {
     final prefs = await SharedPreferences.getInstance();
     final savedLocale = prefs.getString('locale');
     if (savedLocale != null) {
-      selectedLocale.value = Locale(savedLocale.split('_')[0], savedLocale.split('_')[1]);
+      selectedLocale.value =
+          Locale(savedLocale.split('_')[0], savedLocale.split('_')[1]);
     }
   }
 }

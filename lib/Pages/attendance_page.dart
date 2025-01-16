@@ -65,15 +65,15 @@ class _DriverPageState extends State<AttendancePage> {
     }
   }
 
-  updateAttendance (StudentModel student, String statusCode, int index) async {
+  updateAttendance(StudentModel student, String statusCode, int index) async {
     print('[Attendance.updateAttendance] ${student.toJson()}');
     try {
       setState(() {
-          _loadingIndex = index;
+        _loadingIndex = index;
       });
-      final result = await httpService
-          .updateAttendance(widget.trip, student, statusCode);
-      
+      final result =
+          await httpService.updateAttendance(widget.trip, student, statusCode);
+
       print('[Attendance.updateAttendance] $result');
 
       setState(() {
@@ -84,7 +84,7 @@ class _DriverPageState extends State<AttendancePage> {
     } catch (e) {
       print('[Attendance.updateAttendance] ${e.toString()}');
       setState(() {
-          _loadingIndex = null;
+        _loadingIndex = null;
       });
     }
   }
@@ -108,7 +108,7 @@ class _DriverPageState extends State<AttendancePage> {
         children: [
           TextField(
             controller: _queryController,
-            onSubmitted:(value) {
+            onSubmitted: (value) {
               _page = 1;
               fetchData();
             },
@@ -118,10 +118,10 @@ class _DriverPageState extends State<AttendancePage> {
               labelStyle: TextStyle(color: Colors.black),
               // focusedBorder: OutlineInputBorder(
               //   borderSide: BorderSide(color: Colors.black),
-                
+
               // ),
               // enabledBorder: OutlineInputBorder(
-              //   borderSide: BorderSide(color: Colors.grey), 
+              //   borderSide: BorderSide(color: Colors.grey),
               // ),
               suffixIcon: IconButton(
                 icon: Icon(Icons.search),
@@ -134,7 +134,9 @@ class _DriverPageState extends State<AttendancePage> {
           ),
           Expanded(
             child: loading && _page == 1
-                ? Center(child: CircularProgressIndicator(color: activeTheme.main_color))
+                ? Center(
+                    child: CircularProgressIndicator(
+                        color: activeTheme.main_color))
                 : RefreshIndicator(
                     onRefresh: () async {
                       _page = 1;
@@ -149,14 +151,17 @@ class _DriverPageState extends State<AttendancePage> {
                         }
                         final item = list[index];
                         return GestureDetector(
-                            onTap: widget.trip.trip_status != 'Running' ? null : () => {
-                                  setState(() {
-                                    _editingIndex = index;
-                                  })
-                                },
+                            onTap: widget.trip.trip_status != 'Running'
+                                ? null
+                                : () => {
+                                      setState(() {
+                                        _editingIndex = index;
+                                      })
+                                    },
                             child: Card(
-                                color: _editingIndex == index ? Color.fromARGB(255, 245, 243, 236) : Colors.white,
-                                
+                                color: _editingIndex == index
+                                    ? Color.fromARGB(255, 245, 243, 236)
+                                    : Colors.white,
                                 margin: EdgeInsets.all(8.0),
                                 child: Padding(
                                     padding: const EdgeInsets.symmetric(
@@ -164,71 +169,100 @@ class _DriverPageState extends State<AttendancePage> {
                                     child: Column(children: [
                                       ListTile(
                                           leading: CircleAvatar(
-                                              backgroundColor: Color.fromARGB(255, 234,244,243),
+                                              backgroundColor: Color.fromARGB(
+                                                  255, 234, 244, 243),
                                               backgroundImage:
                                                   CachedNetworkImageProvider(
                                                       'https://ui-avatars.com/api/?background=random&name=${item.first_name!}')),
-                                          title: Text('${item.first_name!} ${item.last_name}'),
+                                          title: Text(
+                                              '${item.first_name!} ${item.last_name}'),
                                           trailing: Column(
                                             children: [
                                               if (_editingIndex != index)
                                                 IconButton(
                                                   icon: Icon(Icons.check_circle,
-                                                      color: getStatusColor(item.statusCode)),
+                                                      color: getStatusColor(
+                                                          item.statusCode)),
                                                   onPressed: null,
                                                 ),
                                             ],
                                           )),
-                                        SizedBox(height: 10,),
-                                        if (_editingIndex == index)
+                                      SizedBox(
+                                        height: 10,
+                                      ),
+                                      if (_editingIndex == index)
                                         Container(
                                           width: 350.0,
                                           height: 1.0,
                                           color: Colors.grey,
                                         ),
-                                        if (_editingIndex == index)
+                                      if (_editingIndex == index)
                                         Padding(
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 16, horizontal: 16.0),
-                                          child: _loadingIndex == index ? 
-                                          Center(child: CircularProgressIndicator( color: activeTheme.main_color,)):
-                                          Row(
-                                            children: [
-                                              IconButtonWithText(
-                                                label: Text(lang.translate('Will not board')),
-                                                icon: Icon(Icons.check_circle,
-                                                    color: Colors.orange),
-                                                onPressed: () => updateAttendance(item,'WILL_NOT_BOARD', index),
-                                              ),
-                                              SizedBox(
-                                                width: 30,
-                                              ),
-                                              IconButtonWithText(
-                                                label: Text(lang.translate('Not boarding')),
-                                                icon: Icon(Icons.check_circle,
-                                                    color: Colors.red),
-                                                onPressed: () => updateAttendance(item,'NOT_BOARDING', index),
-                                              ),
-                                              SizedBox(
-                                                width: 30,
-                                              ),
-                                              IconButtonWithText(
-                                                label: Text(lang.translate('Boarding')),
-                                                icon: Icon(Icons.check_circle,
-                                                    color: Colors.green),
-                                                onPressed: () => updateAttendance(item,'BOARDING', index),
-                                              ),
-                                              Spacer(),
-                                              IconButton(
-                                                icon: Icon(Icons.close),
-                                                onPressed: () {
-                                                  setState(() {
-                                                    _editingIndex = null;
-                                                  });
-                                                },
-                                              ),
-                                            ],
-                                          ),
+                                          child: _loadingIndex == index
+                                              ? Center(
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                  color: activeTheme.main_color,
+                                                ))
+                                              : Row(
+                                                  children: [
+                                                    IconButtonWithText(
+                                                      label: Text(lang.translate(
+                                                          'Will not board')),
+                                                      icon: Icon(
+                                                          Icons.check_circle,
+                                                          color: Colors.orange),
+                                                      onPressed: () =>
+                                                          updateAttendance(
+                                                              item,
+                                                              'WILL_NOT_BOARD',
+                                                              index),
+                                                    ),
+                                                    SizedBox(
+                                                      width: 30,
+                                                    ),
+                                                    IconButtonWithText(
+                                                      label: Text(
+                                                          lang.translate(
+                                                              'Not boarding')),
+                                                      icon: Icon(
+                                                          Icons.check_circle,
+                                                          color: Colors.red),
+                                                      onPressed: () =>
+                                                          updateAttendance(
+                                                              item,
+                                                              'NOT_BOARDING',
+                                                              index),
+                                                    ),
+                                                    SizedBox(
+                                                      width: 30,
+                                                    ),
+                                                    IconButtonWithText(
+                                                      label: Text(
+                                                          lang.translate(
+                                                              'Boarding')),
+                                                      icon: Icon(
+                                                          Icons.check_circle,
+                                                          color: Colors.green),
+                                                      onPressed: () =>
+                                                          updateAttendance(
+                                                              item,
+                                                              'BOARDING',
+                                                              index),
+                                                    ),
+                                                    Spacer(),
+                                                    IconButton(
+                                                      icon: Icon(Icons.close),
+                                                      onPressed: () {
+                                                        setState(() {
+                                                          _editingIndex = null;
+                                                        });
+                                                      },
+                                                    ),
+                                                  ],
+                                                ),
                                         ),
                                     ]))));
                       },
@@ -245,15 +279,15 @@ class _DriverPageState extends State<AttendancePage> {
     _scrollController.dispose();
     super.dispose();
   }
-  
+
   Color getStatusColor(String? statusCode) {
-    Color color =Color.fromARGB(255, 149, 148, 146);
-      
-    if(statusCode == 'WILL_NOT_BOARD'){
+    Color color = Color.fromARGB(255, 149, 148, 146);
+
+    if (statusCode == 'WILL_NOT_BOARD') {
       color = Colors.orange;
-    }else if(statusCode == 'BOARDING'){
-      color =  Colors.green;
-    }else if(statusCode == 'NOT_BOARDING'){
+    } else if (statusCode == 'BOARDING') {
+      color = Colors.green;
+    } else if (statusCode == 'NOT_BOARDING') {
       color = Colors.red;
     }
 

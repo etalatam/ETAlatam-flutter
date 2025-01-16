@@ -107,10 +107,10 @@ class _DriverHomeState extends State<DriverHome>
                                                   fontWeight:
                                                       activeTheme.h6.fontWeight,
                                                 )))
-                                        : ActiveTrip(openTripCallback, activeTrip),
+                                        : ActiveTrip(
+                                            openTripCallback, activeTrip),
 
-                                    ETAWidgets.svgTitle(
-                                        "assets/svg/fire.svg",
+                                    ETAWidgets.svgTitle("assets/svg/route.svg",
                                         lang.translate("Routes")),
 
                                     const SizedBox(height: 10),
@@ -142,8 +142,7 @@ class _DriverHomeState extends State<DriverHome>
                                               );
                                             })),
 
-                                    ETAWidgets.svgTitle(
-                                        "assets/svg/bus.svg",
+                                    ETAWidgets.svgTitle("assets/svg/bus.svg",
                                         lang.translate('trips_history')),
 
                                     /// Last Trips
@@ -164,10 +163,14 @@ class _DriverHomeState extends State<DriverHome>
                                                         openNewPage(
                                                             context,
                                                             TripPage(
-                                                              trip: oldTripsList[index],
-                                                              navigationMode: "support",
+                                                              trip:
+                                                                  oldTripsList[
+                                                                      index],
+                                                              navigationMode:
+                                                                  "support",
                                                               showBus: false,
-                                                              showStudents: false,
+                                                              showStudents:
+                                                                  false,
                                                             ));
                                                       },
                                                       child: ETAWidgets
@@ -201,11 +204,7 @@ class _DriverHomeState extends State<DriverHome>
                                 ),
                               ]),
                             )),
-                        Positioned(
-                            left: 0,
-                            right: 0,
-                            top: 0,
-                            child: Header()),
+                        Positioned(left: 0, right: 0, top: 0, child: Header()),
                       ],
                     ))));
   }
@@ -224,11 +223,13 @@ class _DriverHomeState extends State<DriverHome>
         await locationServiceProvider.startLocationService();
         await Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => TripPage(
-              trip: trip, 
-              navigationMode: "support", 
-              showBus: false,
-              showStudents: false,)),
+          MaterialPageRoute(
+              builder: (context) => TripPage(
+                    trip: trip,
+                    navigationMode: "support",
+                    showBus: false,
+                    showStudents: false,
+                  )),
         );
         loadResources();
       }
@@ -271,7 +272,7 @@ class _DriverHomeState extends State<DriverHome>
   openPage(context, page) {
     setState(() => openNewPage(context, page));
   }
- 
+
   notificationSubcribe(String topic) {
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
@@ -279,7 +280,7 @@ class _DriverHomeState extends State<DriverHome>
     } catch (e) {
       print("DriverHome.notificationSubcribe.error: ${e.toString()}");
     }
-  }  
+  }
 
   ///
   /// Load resources through API
@@ -300,7 +301,6 @@ class _DriverHomeState extends State<DriverHome>
       showLoader = false;
     });
 
-
     final driverQuery = await httpService.getDriver();
     setState(() {
       driverModel = driverQuery;
@@ -312,7 +312,7 @@ class _DriverHomeState extends State<DriverHome>
       notificationSubcribe("route-${route.route_id}");
       routeTopics.add("route-${route.route_id}");
     }
-    storage.setItem('route-topics',routeTopics.toString());
+    storage.setItem('route-topics', routeTopics.toString());
 
     setState(() {
       routesList = routesQuery;
@@ -336,10 +336,11 @@ class _DriverHomeState extends State<DriverHome>
 
   openTripCallback(TripModel wrapper) {
     Get.to(TripPage(
-      trip: wrapper, 
-      navigationMode: "support", 
+      trip: wrapper,
+      navigationMode: "support",
       showBus: false,
-      showStudents: false,));
+      showStudents: false,
+    ));
   }
 
   @override

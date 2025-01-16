@@ -33,7 +33,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
   List<TripModel> oldTripsList = [];
 
   List<TripModel> activeTrips = [];
-  
+
   @override
   Widget build(BuildContext context) {
     activeTheme =
@@ -60,8 +60,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                   color: activeTheme.main_bg,
                                   margin: EdgeInsets.only(top: 120),
                                   child: Column(children: [
-                                    
-                                        activeTrips.isEmpty
+                                    activeTrips.isEmpty
                                         ? Container(
                                             width: double.infinity,
                                             padding: const EdgeInsets.symmetric(
@@ -99,27 +98,31 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                                   fontWeight:
                                                       activeTheme.h6.fontWeight,
                                                 )))
-                                      :
-                                      SizedBox(
-                                        height: 150,
-                                        child: ListView.builder(
-                                            shrinkWrap: true,
-                                            scrollDirection: Axis.horizontal,
-                                            itemCount: activeTrips.length,
-                                            itemBuilder: (BuildContext context, int index) {
-                                              return SizedBox( 
-                                                width: 400,
-                                                child: ActiveTrip(openTrip, activeTrips[index])
-                                                // child: Text("Maldito"),
-                                              );
-                                            })),
-                                            
-                                      ETAWidgets.svgTitle(
-                                          "assets/svg/school.svg",
-                                          lang.translate(
-                                              "List of your added children")),
+                                        : SizedBox(
+                                            height: 150,
+                                            child: ListView.builder(
+                                                shrinkWrap: true,
+                                                scrollDirection:
+                                                    Axis.horizontal,
+                                                itemCount: activeTrips.length,
+                                                itemBuilder:
+                                                    (BuildContext context,
+                                                        int index) {
+                                                  return SizedBox(
+                                                      width: 400,
+                                                      child: ActiveTrip(
+                                                          openTrip,
+                                                          activeTrips[index])
+                                                      // child: Text("Maldito"),
+                                                      );
+                                                })),
 
-                                      SizedBox(height: 10),
+                                    ETAWidgets.svgTitle(
+                                        "assets/svg/school.svg",
+                                        lang.translate(
+                                            "List of your added children")),
+
+                                    SizedBox(height: 10),
 
                                     /// Students list
                                     parentModel!.students.isEmpty
@@ -139,13 +142,16 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                                       openNewPage(
                                                           context,
                                                           StudentPage(
-                                                              student: parentModel!.students[index]));
+                                                              student: parentModel!
+                                                                      .students[
+                                                                  index]));
                                                     },
                                                     child: ETAWidgets
                                                         .homeStudentBlock(
                                                             context,
-                                                            parentModel!.students[index]
-                                                        ));
+                                                            parentModel!
+                                                                    .students[
+                                                                index]));
                                               },
                                             ),
                                           ),
@@ -153,7 +159,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                     SizedBox(
                                       height: 10,
                                     ),
-                                    
+
                                     ETAWidgets.svgTitle("assets/svg/route.svg",
                                         lang.translate('trips_history')),
 
@@ -167,29 +173,26 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                             itemBuilder: (BuildContext context,
                                                 int index) {
                                               return GestureDetector(
-                                                      onTap: () {
-                                                        openNewPage(
-                                                            context,
-                                                            TripPage(
-                                                                trip: oldTripsList[index],
-                                                                showBus: false,
-                                                                showStudents: false,
-                                                            )
-                                                        );
-                                                      },
-                                                  child: ETAWidgets.homeTripBlock(context,oldTripsList[index])
-                                              );
+                                                  onTap: () {
+                                                    openNewPage(
+                                                        context,
+                                                        TripPage(
+                                                          trip: oldTripsList[
+                                                              index],
+                                                          showBus: false,
+                                                          showStudents: false,
+                                                        ));
+                                                  },
+                                                  child:
+                                                      ETAWidgets.homeTripBlock(
+                                                          context,
+                                                          oldTripsList[index]));
                                             })),
                                   ]),
                                 ),
                               ]),
                             )),
-
-                        Positioned(
-                            left: 0,
-                            right: 0,
-                            top: 0,
-                            child: Header()),
+                        Positioned(left: 0, right: 0, top: 0, child: Header()),
                       ],
                     ))));
   }
@@ -236,17 +239,17 @@ class _GuardiansHomeState extends State<GuardiansHome>
       routeTopics.add("route-${trip.route_id}");
       trip.subscribeToTripTracking();
     }
-    storage.setItem('route-topics',routeTopics.toString());
+    storage.setItem('route-topics', routeTopics.toString());
 
     setState(() {
       activeTrips = trips;
     });
 
-    final List<TripModel> oldTrips = (await httpService.getGuardianTrips("false"));
+    final List<TripModel> oldTrips =
+        (await httpService.getGuardianTrips("false"));
     setState(() {
       oldTripsList = oldTrips;
     });
-
   }
 
   openTrip(trip) {

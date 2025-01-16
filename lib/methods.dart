@@ -275,4 +275,3 @@ bool isRTL() {
 }
 
 bool clickListenerAdded = false;
-

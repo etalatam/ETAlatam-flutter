@@ -152,46 +152,44 @@ class _StudentPageState extends State<StudentPage> {
                               // Padding(padding: EdgeInsets.only(top: 10, right: 20, left: 20), child: Icon(Icons.edit, color: activeTheme.icon_color,),)
                             ],
                           ),
-
-                        Container(
-                          margin: const EdgeInsets.only(top: 80),
-                          padding: const EdgeInsets.all(20),
-                          width: double.infinity,  
-                          child: 
-                          Column(
-                            crossAxisAlignment: isRTL()
-                                ? CrossAxisAlignment.end
-                                : CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                              CustomRow(lang.translate('First Name'),
-                                  widget.student?.first_name),
-                              Container(
-                                height: 1,
-                                color: activeTheme.main_color.withOpacity(.3),
-                              ),
-                              CustomRow(lang.translate('Last Name'),
-                                  widget.student?.last_name),
-                              Container(
-                                height: 1,
-                                color: activeTheme.main_color.withOpacity(.3),
-                              ),
-                              
-                              Container(
-                                height: 1,
-                                color: activeTheme.main_color.withOpacity(.3),
-                              ),
-                              CustomRow(lang.translate('Contact number'),
-                                  widget.student?.contact_number),
-                              Container(
-                                height: 1,
-                                color: activeTheme.main_color.withOpacity(.3),
-                              ),
-                          ]
-                          ),
-                        )
-
-                          
+                          Container(
+                            margin: const EdgeInsets.only(top: 80),
+                            padding: const EdgeInsets.all(20),
+                            width: double.infinity,
+                            child: Column(
+                                crossAxisAlignment: isRTL()
+                                    ? CrossAxisAlignment.end
+                                    : CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  CustomRow(lang.translate('First Name'),
+                                      widget.student?.first_name),
+                                  Container(
+                                    height: 1,
+                                    color:
+                                        activeTheme.main_color.withOpacity(.3),
+                                  ),
+                                  CustomRow(lang.translate('Last Name'),
+                                      widget.student?.last_name),
+                                  Container(
+                                    height: 1,
+                                    color:
+                                        activeTheme.main_color.withOpacity(.3),
+                                  ),
+                                  Container(
+                                    height: 1,
+                                    color:
+                                        activeTheme.main_color.withOpacity(.3),
+                                  ),
+                                  CustomRow(lang.translate('Contact number'),
+                                      widget.student?.contact_number),
+                                  Container(
+                                    height: 1,
+                                    color:
+                                        activeTheme.main_color.withOpacity(.3),
+                                  ),
+                                ]),
+                          )
                         ]),
                       )
                     ]);

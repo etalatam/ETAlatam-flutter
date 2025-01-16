@@ -54,10 +54,10 @@ class _SentMessageState extends State<SendMessagePage> {
       httpService.supportHelpCategory().then((result) {
         setState(() {
           list = result;
-          if(result.isNotEmpty) {
+          if (result.isNotEmpty) {
             categoryId = result[0].id!;
           }
-          
+
           showLoader = false;
         });
       });
@@ -127,11 +127,7 @@ class _SentMessageState extends State<SendMessagePage> {
                           const SizedBox(height: 100),
                         ],
                       ))),
-              Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: Header()),
+              Positioned(top: 0, left: 0, right: 0, child: Header()),
               // Positioned(
               //     bottom: 20,
               //     left: 20,
@@ -163,33 +159,34 @@ class _SentMessageState extends State<SendMessagePage> {
                   style: activeTheme.normalText,
                 ),
                 const SizedBox(height: 8),
-                if(categoryId > 0)
-                Container(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        border: Border.all(
-                            width: 1, color: const Color.fromRGBO(0, 0, 0, .6)),
-                        borderRadius: BorderRadius.circular(10)),
-                    child: DropdownButton<int>(
-                      value: categoryId,
-                      icon: const Icon(Icons.arrow_downward),
-                      elevation: 16,
-                      onChanged: (int? value) {
-                        setState(() {
-                          categoryId = value!;
-                        });
-                      },
-                      items: list?.map<DropdownMenuItem<int>>(
-                          (SupportHelpCategory item) {
-                        return DropdownMenuItem<int>(
-                          value: item.id,
-                          child: Text(item.name!),
-                        );
-                      }).toList(),
-                    )),
+                if (categoryId > 0)
+                  Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 0, horizontal: 10),
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          border: Border.all(
+                              width: 1,
+                              color: const Color.fromRGBO(0, 0, 0, .6)),
+                          borderRadius: BorderRadius.circular(10)),
+                      child: DropdownButton<int>(
+                        value: categoryId,
+                        icon: const Icon(Icons.arrow_downward),
+                        elevation: 16,
+                        onChanged: (int? value) {
+                          setState(() {
+                            categoryId = value!;
+                          });
+                        },
+                        items: list?.map<DropdownMenuItem<int>>(
+                            (SupportHelpCategory item) {
+                          return DropdownMenuItem<int>(
+                            value: item.id,
+                            child: Text(item.name!),
+                          );
+                        }).toList(),
+                      )),
               ],
             ),
           ),
