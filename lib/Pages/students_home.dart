@@ -263,9 +263,8 @@ class _StudentsHomeState extends State<StudentsHome>
       hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
     });
 
+    await locationServiceProvider.startLocationService();
     if (hasActiveTrip) {
-      await locationServiceProvider.startLocationService();
-
       String routeTopics = "";
       notificationSubcribe("route-${activeTrip?.route_id}");
       routeTopics += "route-${activeTrip?.route_id}";
