@@ -269,6 +269,7 @@ class _StudentsHomeState extends State<StudentsHome>
       notificationSubcribe("route-${activeTrip?.route_id}");
       routeTopics += "route-${activeTrip?.route_id}";
       storage.setItem('route-topics', routeTopics);
+      activeTrip?.subscribeToTripTracking();
     }
   }
 
@@ -281,9 +282,9 @@ class _StudentsHomeState extends State<StudentsHome>
     }
   }
 
-  openTrip(TripModel trip) {
+  openTrip(TripModel trip_) {
     Get.to(TripPage(
-      trip: trip,
+      trip: trip_,
       showBus: true,
       showStudents: false,
     ));
