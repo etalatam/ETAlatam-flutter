@@ -124,14 +124,14 @@ class _ProfilePageState extends State<ProfilePage> {
                     // height: 1,
                     // color: activeTheme.main_color.withOpacity(.2),
                                           ),
-                                          Container(
-                    margin: const EdgeInsets.only(top: 80),
-                    padding: const EdgeInsets.all(20),
-                    width: double.infinity,
-                    child: Column(
-                      crossAxisAlignment: isRTL()
-                          ? CrossAxisAlignment.end
-                          : CrossAxisAlignment.start,
+                    Container(
+                      margin: const EdgeInsets.only(top: 80),
+                      padding: const EdgeInsets.all(20),
+                      width: double.infinity,
+                      child: Column(
+                        crossAxisAlignment: isRTL()
+                            ? CrossAxisAlignment.end
+                            : CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.max,
                       children: [
                         CustomRow(lang.translate('First Name'),

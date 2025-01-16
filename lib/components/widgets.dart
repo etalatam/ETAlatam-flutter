@@ -663,6 +663,29 @@ mixin ETAWidgets {
         const SizedBox(
           height: 40,
         ),
+        Column(
+            textDirection: isRTL() ? TextDirection.rtl : TextDirection.ltr,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                lang.translate('Name'),
+                style: activeTheme.h5,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.symmetric(vertical: 20),
+                    child: Text(
+                        "${student.first_name} ${student.last_name}",
+                        style: activeTheme.h6
+                      ),
+                  )
+                ],
+
+              )
+            ],
+          ),
       ]),
     );
   }

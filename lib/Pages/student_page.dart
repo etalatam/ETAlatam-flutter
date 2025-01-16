@@ -4,6 +4,7 @@ import 'package:eta_school_app/Models/student_model.dart';
 import 'package:eta_school_app/Pages/map/map_wiew.dart';
 import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
 import 'package:eta_school_app/Pages/upload_picture_page.dart';
+import 'package:eta_school_app/components/custom_row.dart';
 import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
@@ -122,41 +123,75 @@ class _StudentPageState extends State<StudentPage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
-                                  Container(
-                                    padding: EdgeInsets.only(top: 15),
-                                    child: Text("${widget.student!.first_name}",
-                                        style: TextStyle(
-                                          fontSize: activeTheme.h5.fontSize,
-                                          fontWeight: activeTheme.h4.fontWeight,
-                                        )),
-                                  ),
-                                  Container(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                        color: activeTheme.buttonBG,
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(10))),
-                                    margin: EdgeInsets.only(top: 15),
-                                    child: Text(
-                                        "${widget.student!.route!.route_name}",
-                                        style: TextStyle(
-                                          color: activeTheme.buttonColor,
-                                          fontWeight: FontWeight.bold,
-                                        )),
-                                  ),
+                                  // Container(
+                                  //   padding: EdgeInsets.only(top: 15),
+                                  //   child: Text("${widget.student!.first_name}",
+                                  //       style: TextStyle(
+                                  //         fontSize: activeTheme.h5.fontSize,
+                                  //         fontWeight: activeTheme.h4.fontWeight,
+                                  //       )),
+                                  // ),
+                                  // Container(
+                                  //   padding: EdgeInsets.symmetric(
+                                  //       horizontal: 10, vertical: 4),
+                                  //   decoration: BoxDecoration(
+                                  //       color: activeTheme.buttonBG,
+                                  //       borderRadius: BorderRadius.all(
+                                  //           Radius.circular(10))),
+                                  //   margin: EdgeInsets.only(top: 15),
+                                  //   child: Text(
+                                  //       "${widget.student!.route!.route_name}",
+                                  //       style: TextStyle(
+                                  //         color: activeTheme.buttonColor,
+                                  //         fontWeight: FontWeight.bold,
+                                  //       )),
+                                  // ),
                                 ],
                               ),
                               // Expanded(child: Icon(Icons.edit, color: activeTheme.icon_color,)),
                               // Padding(padding: EdgeInsets.only(top: 10, right: 20, left: 20), child: Icon(Icons.edit, color: activeTheme.icon_color,),)
                             ],
                           ),
-                          Container(
-                            margin: EdgeInsets.symmetric(horizontal: 20),
-                            height: 1,
-                            color: activeTheme.main_color.withOpacity(.2),
+
+                        Container(
+                          margin: const EdgeInsets.only(top: 80),
+                          padding: const EdgeInsets.all(20),
+                          width: double.infinity,  
+                          child: 
+                          Column(
+                            crossAxisAlignment: isRTL()
+                                ? CrossAxisAlignment.end
+                                : CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                              CustomRow(lang.translate('First Name'),
+                                  widget.student?.first_name),
+                              Container(
+                                height: 1,
+                                color: activeTheme.main_color.withOpacity(.3),
+                              ),
+                              CustomRow(lang.translate('Last Name'),
+                                  widget.student?.last_name),
+                              Container(
+                                height: 1,
+                                color: activeTheme.main_color.withOpacity(.3),
+                              ),
+                              
+                              Container(
+                                height: 1,
+                                color: activeTheme.main_color.withOpacity(.3),
+                              ),
+                              CustomRow(lang.translate('Contact number'),
+                                  widget.student?.contact_number),
+                              Container(
+                                height: 1,
+                                color: activeTheme.main_color.withOpacity(.3),
+                              ),
+                          ]
                           ),
-                          ETAWidgets.studentMenuWidget(widget.student),
+                        )
+
+                          
                         ]),
                       )
                     ]);
