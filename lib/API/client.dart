@@ -358,8 +358,8 @@ class HttpService {
   /// Load Tripd
   Future<TripModel> getActiveTrip() async {
     const endpoint = "/rpc/driver_trips";
-    http.Response res =
-        await getQuery("$endpoint?select=*&limit=1&running=eq.true");
+    http.Response res = await getQuery(
+        "$endpoint?select=*&limit=1&running=eq.true&order=start_ts.desc");
 
     print("[$endpoint] res.statusCode: ${res.statusCode}");
     print("[$endpoint] res.body: ${res.body}");
