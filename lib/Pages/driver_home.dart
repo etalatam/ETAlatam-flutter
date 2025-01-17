@@ -42,7 +42,7 @@ class _DriverHomeState extends State<DriverHome>
   bool showLoader = true;
 
   List<EventModel> eventsList = [];
-  List<RouteModel> routesList = [];
+  List<RouteModel> todateRoutesList = [];
   List<TripModel> oldTripsList = [];
 
   @override
@@ -70,43 +70,8 @@ class _DriverHomeState extends State<DriverHome>
                                   child: Column(children: [
                                     /// Has Active Trip
                                     !hasActiveTrip
-                                        ? Container(
-                                            width: double.infinity,
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 12, vertical: 6),
-                                            margin: const EdgeInsets.fromLTRB(
-                                                25, 0, 25, 10),
-                                            clipBehavior: Clip.antiAlias,
-                                            decoration: ShapeDecoration(
-                                              color: Color.fromARGB(
-                                                  255, 228, 201, 119),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(30),
-                                              ),
-                                              shadows: [
-                                                BoxShadow(
-                                                  color: activeTheme.main_color
-                                                      .withOpacity(.3),
-                                                  blurRadius: 10,
-                                                  offset: const Offset(0, 1),
-                                                  spreadRadius: 0,
-                                                )
-                                              ],
-                                            ),
-                                            child: Text(
-                                                lang.translate(
-                                                    "Does not have active trips"),
-                                                style: TextStyle(
-                                                  color: Color.fromARGB(
-                                                      255, 112, 88, 16),
-                                                  fontSize:
-                                                      activeTheme.h5.fontSize,
-                                                  fontFamily:
-                                                      activeTheme.h6.fontFamily,
-                                                  fontWeight:
-                                                      activeTheme.h6.fontWeight,
-                                                )))
+                                        ? ETAWidgets.infoMessage(lang.translate(
+                                            "Does not have active trips"))
                                         : ActiveTrip(
                                             openTripCallback, activeTrip),
 
@@ -116,31 +81,41 @@ class _DriverHomeState extends State<DriverHome>
                                     const SizedBox(height: 10),
 
                                     /// Available Routes
-                                    SizedBox(
-                                        height: 260,
-                                        child: ListView.builder(
-                                            scrollDirection: Axis.horizontal,
-                                            itemCount: routesList
-                                                .length, // Replace with the total number of items
-                                            itemBuilder: (BuildContext context,
-                                                int index) {
-                                              return Container(
-                                                padding: EdgeInsets.symmetric(
-                                                    horizontal:
-                                                        routesList.length < 2
-                                                            ? 20
-                                                            : 0),
-                                                width: routesList.length < 2
-                                                    ? MediaQuery.of(context)
-                                                        .size
-                                                        .width
-                                                    : 400,
-                                                // height: 400,
-                                                child: HomeRouteBlock(
-                                                    route: routesList[index],
-                                                    callback: createTrip),
-                                              );
-                                            })),
+                                    todateRoutesList.isEmpty
+                                        ? ETAWidgets.infoMessage(lang.translate(
+                                            "Does not have next route"))
+                                        : SizedBox(
+                                            height: 260,
+                                            child: ListView.builder(
+                                                scrollDirection:
+                                                    Axis.horizontal,
+                                                itemCount: todateRoutesList
+                                                    .length, // Replace with the total number of items
+                                                itemBuilder:
+                                                    (BuildContext context,
+                                                        int index) {
+                                                  return Container(
+                                                    padding: EdgeInsets.symmetric(
+                                                        horizontal:
+                                                            todateRoutesList
+                                                                        .length <
+                                                                    2
+                                                                ? 20
+                                                                : 0),
+                                                    width: todateRoutesList
+                                                                .length <
+                                                            2
+                                                        ? MediaQuery.of(context)
+                                                            .size
+                                                            .width
+                                                        : 400,
+                                                    // height: 400,
+                                                    child: HomeRouteBlock(
+                                                        route: todateRoutesList[
+                                                            index],
+                                                        callback: createTrip),
+                                                  );
+                                                })),
 
                                     ETAWidgets.svgTitle("assets/svg/bus.svg",
                                         lang.translate('trips_history')),
@@ -306,16 +281,16 @@ class _DriverHomeState extends State<DriverHome>
       driverModel = driverQuery;
     });
 
-    final routesQuery = await httpService.getRoutes();
+    final todateRoutes = await httpService.todayRoutes();
     List<String> routeTopics = [];
-    for (var route in routesQuery) {
+    for (var route in todateRoutes) {
       notificationSubcribe("route-${route.route_id}");
       routeTopics.add("route-${route.route_id}");
     }
     storage.setItem('route-topics', routeTopics.toString());
 
     setState(() {
-      routesList = routesQuery;
+      todateRoutesList = todateRoutes;
     });
 
     List<TripModel>? oldTrips = await httpService.getDriverTrips(0);

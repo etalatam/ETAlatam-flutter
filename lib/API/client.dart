@@ -251,11 +251,31 @@ class HttpService {
     return ParentModel(parentId: 0, students: []);
   }
 
-  // /// Load Student pickup
   /// Load Routes
   Future<List<RouteModel>> getRoutes() async {
     const endpoint = "/rpc/driver_routes";
-    var res = await getQuery("$endpoint?limit=10");
+    var res =
+        await getQuery("$endpoint?limit=10&order=schedule_start_time.desc");
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
+
+    if (res.statusCode == 200) {
+      try {
+        List<dynamic> body = jsonDecode(res.body);
+        return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
+      } catch (e) {
+        print("getRoutes error: ${e.toString()}");
+        return [];
+      }
+    }
+
+    return [];
+  }
+
+  Future<List<RouteModel>> todayRoutes() async {
+    const endpoint = "/rpc/today_driver_routes";
+    var res =
+        await getQuery("$endpoint?limit=10&order=schedule_start_time.desc");
     print("[$endpoint] res.statusCode: ${res.statusCode}");
     print("[$endpoint] res.body: ${res.body}");
 
