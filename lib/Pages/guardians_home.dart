@@ -5,6 +5,7 @@ import 'package:eta_school_app/components/active_trip.dart';
 import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
+import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -13,6 +14,7 @@ import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/Models/parent_model.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/components/loader.dart';
+import 'package:provider/provider.dart';
 
 class GuardiansHome extends StatefulWidget {
   @override
@@ -229,5 +231,14 @@ class _GuardiansHomeState extends State<GuardiansHome>
   void initState() {
     super.initState();
     loadParent();
+    Provider.of<NotificationService>(context, listen: false)
+          .addListener(onPushMessage);
   }
+
+  onPushMessage(){
+    setState(() {
+      loadParent();
+    });
+  }
+
 }

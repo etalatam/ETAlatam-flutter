@@ -7,10 +7,12 @@ import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/components/slide_action.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/methods.dart';
+import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:provider/provider.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -399,58 +401,33 @@ class _NotificationsPageState extends State<NotificationsPage> {
     super.initState();
     showLoader = true;
     if (mounted) {
-      configureFirebaseMessaging();
       loadNotifications();
+
+      Provider.of<NotificationService>(context, listen: false)
+          .addListener(onPushMessage);
     }
   }
 
-  configureFirebaseMessaging() async {
-    try {
-      FirebaseMessaging messaging = FirebaseMessaging.instance;
+  onPushMessage(){
+    final LastMessage? lastMessage =
+          Provider.of<NotificationService>(context, listen: false).lastMessage;
 
-      // Solicitar permisos en iOS
-      messaging.requestPermission();
-
-      // Obtener el token de FCM
-      messaging.getToken().then((token) {
-        print("[FCM] Token: $token");
-      });
-
-      // Manejar mensajes en segundo plano
-      FirebaseMessaging.onBackgroundMessage(
-          _firebaseMessagingBackgroundHandler);
-
-      // Manejar mensajes cuando la app está en primer plano
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        print('[FCM] Got a message whilst in the foreground!');
-        print('[FCM] Message data: ${message.data}');
-        if (message.notification != null) {
-          print(
-              '[FCM] Message also contained a notification: ${message.notification}');
-        }
-        loadNotifications();
-      });
-
-      // messaging.subscribeToTopic('all-notifications');
-
-      try {
-        final userId = await storage.getItem('id_usu');
-        messaging.subscribeToTopic("user-$userId");
-      } catch (e) {
-        print(e.toString());
+    setState(() {
+      if(lastMessage?.status == 'foreground'){
+        showTooltip(lastMessage!.lastMessage);
       }
-    } catch (e) {
-      print("[FCM] ${e.toString()}");
-    }
+
+      loadNotifications();
+    });
   }
 
-  Future<void> _firebaseMessagingBackgroundHandler(
-      RemoteMessage message) async {
-    try {
-      print('[FCM] Handling a background message: ${message.messageId}');
-      loadNotifications();
-    } catch (e) {
-      print("[FCM] ${e.toString()}");
+  void showTooltip(RemoteMessage message) {
+    if (message.notification != null) {
+      final snackBar = SnackBar(
+        content: Text(message.notification!.title ?? "Nuevo mensaje"),
+        duration: Duration(seconds: 3),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 }
