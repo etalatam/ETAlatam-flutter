@@ -4,6 +4,7 @@ import 'package:eta_school_app/Pages/login_page.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/components/active_trip.dart';
+import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -17,6 +18,7 @@ import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/home_route_block.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
+import 'package:provider/provider.dart';
 
 class DriverHome extends StatefulWidget {
   const DriverHome({super.key});
@@ -352,5 +354,13 @@ class _DriverHomeState extends State<DriverHome>
   void initState() {
     super.initState();
     loadResources();
+    Provider.of<NotificationService>(context, listen: false)
+          .addListener(onPushMessage);          
   }
+
+  onPushMessage(){
+    setState(() {
+      loadResources();
+    });
+  }      
 }

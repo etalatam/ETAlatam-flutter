@@ -5,6 +5,7 @@ import 'package:eta_school_app/Pages/login_page.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/components/active_trip.dart';
+import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -15,6 +16,7 @@ import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/components/header.dart';
+import 'package:provider/provider.dart';
 
 class StudentsHome extends StatefulWidget {
   const StudentsHome({super.key});
@@ -299,5 +301,13 @@ class _StudentsHomeState extends State<StudentsHome>
   void initState() {
     super.initState();
     loadResources();
+    Provider.of<NotificationService>(context, listen: false)
+          .addListener(onPushMessage);          
   }
+
+  onPushMessage(){
+    setState(() {
+      loadResources();
+    });
+  }  
 }

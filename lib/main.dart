@@ -4,6 +4,7 @@ import 'package:eta_school_app/Pages/splash_screen_page.dart';
 import 'package:eta_school_app/Pages/home_screen.dart';
 import 'package:eta_school_app/controllers/preferences.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
+import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,7 +13,6 @@ import 'package:eta_school_app/controllers/locale.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';
-
 import 'shared/location/location_service.dart';
 
 void main() async {
@@ -34,6 +34,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (context) => EmitterService()),
         ChangeNotifierProvider(create: (context) => LocationService()),
+        ChangeNotifierProvider(create: (context) => NotificationService()),
       ],
       child: MyApp(),
     ),
