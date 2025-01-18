@@ -42,12 +42,15 @@ class MapWiewState extends State<MapWiew> {
     this.mapboxMap?.attribution.updateSettings(AttributionSettings(
         marginRight: 3000, marginTop: 3000, clickable: false));
 
-    this.mapboxMap?.location.updateSettings(LocationComponentSettings(
-          enabled: widget.navigationMode ? true : false,
+    if(widget.navigationMode){
+      this.mapboxMap?.location.updateSettings(LocationComponentSettings(
+          enabled: true,
           pulsingEnabled: true,
           showAccuracyRing: true,
           puckBearingEnabled: true,
         ));
+
+    }
 
     this.mapboxMap?.scaleBar.updateSettings(ScaleBarSettings(
         enabled: true, position: OrnamentPosition.BOTTOM_LEFT));
