@@ -306,6 +306,6 @@ class Lang {
     "list_of_your_added_children": "Estudiantes",
     "active_routes": "Viajes activos",
     "view_details": "Ver detalles",
-    "Does not have next route": "No tiene siguiente ruta"
+    "does_not_have_next_route": "No proximas rutas"
   };
 }
