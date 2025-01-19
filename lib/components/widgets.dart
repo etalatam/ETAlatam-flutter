@@ -557,7 +557,7 @@ mixin ETAWidgets {
                           SizedBox(
                             width: 190,
                             child: Text(
-                              "${lang.translate('Trip')} #${tripInfo.trip_id} (${tripInfo.route?.route_name})",
+                              "${lang.translate('Trip')} #${tripInfo.trip_id} ${tripInfo.route?.route_name}",
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: activeTheme.h6,
