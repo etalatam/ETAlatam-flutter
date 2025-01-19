@@ -110,11 +110,9 @@ class _StudentsHomeState extends State<StudentsHome>
                                               ],
                                             ),
                                             child: Text(
-                                                lang.translate(
-                                                    "Does not have active trips"),
+                                                lang.translate("Does not have active trips"),
                                                 style: TextStyle(
-                                                  color: Color.fromARGB(
-                                                      255, 112, 88, 16),
+                                                  color: Color.fromARGB(255, 112, 88, 16),
                                                   fontSize:
                                                       activeTheme.h5.fontSize,
                                                   fontFamily:
@@ -122,7 +120,7 @@ class _StudentsHomeState extends State<StudentsHome>
                                                   fontWeight:
                                                       activeTheme.h6.fontWeight,
                                                 )))
-                                        : ActiveTrip(openTrip, activeTrip),
+                                        : ActiveTrip(openTripcallback, activeTrip),
 
                                     ETAWidgets.svgTitle("assets/svg/bus.svg",
                                         lang.translate('trips_history')),
@@ -133,53 +131,24 @@ class _StudentsHomeState extends State<StudentsHome>
                                         : SizedBox(
                                             height: 238,
                                             child: ListView.builder(
-                                                scrollDirection:
-                                                    Axis.horizontal,
-                                                itemCount: oldTripsList
-                                                    .length, // Replace with the total number of items
-                                                itemBuilder:
-                                                    (BuildContext context,
-                                                        int index) {
+                                                scrollDirection: Axis.horizontal,
+                                                itemCount: oldTripsList.length, 
+                                                itemBuilder: (BuildContext context,int index) {
                                                   return GestureDetector(
                                                       onTap: () {
                                                         openNewPage(
                                                             context,
                                                             TripPage(
-                                                              trip:
-                                                                  oldTripsList[
-                                                                      index],
+                                                              trip: oldTripsList[index],
                                                               showBus: false,
-                                                              showStudents:
-                                                                  false,
+                                                              showStudents:false,
                                                             ));
                                                       },
-                                                      child: ETAWidgets
-                                                          .homeTripBlock(
-                                                              context,
-                                                              oldTripsList[
-                                                                  index]));
+                                                      child: ETAWidgets.homeTripBlock(
+                                                        context,
+                                                        oldTripsList[index]
+                                                      ));
                                                 })),
-                                    // const SizedBox(
-                                    //   height: 30,
-                                    // ),
-
-                                    // Container(
-                                    //   padding: const EdgeInsets.all(20),
-                                    //   child: Text(
-                                    //   "${lang.translate('Events and News')}",
-                                    //   style: activeTheme.h3,
-                                    //   textAlign: TextAlign.start,
-                                    // )),
-
-                                    /// Events carousel
-                                    // Container(
-                                    //   width: MediaQuery.of(context).size.width,
-                                    //   alignment: Alignment.center,
-                                    //   child:  ETAWidgets.eventCarousel(eventsList, context),
-                                    // ),
-
-                                    /// Help / Support Block
-                                    // ETAWidgets.homeHelpBlock(),
                                   ]),
                                 ),
                               ]),
@@ -284,9 +253,10 @@ class _StudentsHomeState extends State<StudentsHome>
     }
   }
 
-  openTrip(TripModel trip_) {
+  openTripcallback(TripModel trip_) {
     Get.to(TripPage(
       trip: trip_,
+      navigationMode: "support",
       showBus: true,
       showStudents: false,
     ));
