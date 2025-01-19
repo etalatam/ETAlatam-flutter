@@ -138,12 +138,13 @@ class StudentModel {
 
   subscribeToStudentTracking() async {
     if ( ! isEmitterSubcribedToTracking ) {
-        String encodedValue = Uri.encodeComponent("school/$schoolId/tracking/students/");
+      final channel = "school/$schoolId/tracking/eta.students/$student_id/";
+        String encodedValue = Uri.encodeComponent(channel);
         emitterKeyGenModelTracking = await httpService.emitterKeyGen(encodedValue);
         if (emitterKeyGenModelTracking != null &&
           emitterServiceProvider.client!.isConnected) {
           emitterServiceProvider.client!.subscribe(
-            "school/$schoolId/tracking/students",
+            channel,
             key: emitterKeyGenModelTracking!.key
           );
           isEmitterSubcribedToTracking = true;
