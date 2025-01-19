@@ -6,7 +6,6 @@ import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
 import 'package:eta_school_app/Pages/upload_picture_page.dart';
 import 'package:eta_school_app/components/custom_row.dart';
 import 'package:eta_school_app/components/loader.dart';
-import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
@@ -46,6 +45,9 @@ class _StudentPageState extends State<StudentPage> {
                     navigationMode: false,
                     onMapReady: (MapboxMap mapboxMap) async {
                       _mapboxMapController = mapboxMap;
+                        annotationManager =
+                          await mapboxMap.annotations.createPointAnnotationManager();
+
                     },
                     onStyleLoadedListener: (MapboxMap mapboxMap) async {},
                   ),
@@ -223,8 +225,7 @@ class _StudentPageState extends State<StudentPage> {
         .addListener(onEmitterMessage);
   }
 
-  Future<void> _updateIcon(
-      Position position, String relationName, int relationId) async {
+  Future<void> _updateIcon(Position position, String relationName, int relationId) async {
     PointAnnotation? pointAnnotation =
         annotationsMap["$relationName.$relationId"];
 
@@ -234,12 +235,21 @@ class _StudentPageState extends State<StudentPage> {
       final circleImage = await mapboxUtils.createCircleImage(networkImage);
       pointAnnotation = await mapboxUtils.createAnnotation(
           annotationManager, position, circleImage);
+          _mapboxMapController
+        ?.setCamera(CameraOptions(
+          center: Point(coordinates: position),
+          zoom: 15.5,
+          pitch: 70,
+        ));
+    
+      annotationsMap["$relationName.$relationId"] = pointAnnotation!;
     } else {
       pointAnnotation.geometry = Point(coordinates: position);
       annotationManager?.update(pointAnnotation);
     }
     _mapboxMapController
-        ?.setCamera(CameraOptions(center: Point(coordinates: position)));
+        ?.flyTo(CameraOptions(center: Point(coordinates: position)),
+        MapAnimationOptions(duration: 1));
   }
 
   void onEmitterMessage() async {

@@ -122,7 +122,7 @@ class _StudentsHomeState extends State<StudentsHome>
                                                 )))
                                         : ActiveTrip(openTripcallback, activeTrip),
 
-                                    ETAWidgets.svgTitle("assets/svg/bus.svg",
+                                    ETAWidgets.svgTitle("assets/svg/route.svg",
                                         lang.translate('trips_history')),
 
                                     /// Last Trips

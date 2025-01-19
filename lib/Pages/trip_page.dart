@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
-import 'package:eta_school_app/components/pulsating_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:flutter/services.dart';
@@ -67,6 +66,8 @@ class _TripPageState extends State<TripPage>
 
   Map<String, PointAnnotation> annotationsMap = {};
   
+  bool waitingBusPosition = true;
+  
   // ScreenCoordinate busPulsatingCircleCoordinate = ScreenCoordinate( x: 0, y: 0);
   
   @override
@@ -106,6 +107,18 @@ class _TripPageState extends State<TripPage>
                     },
                   ),
                 ),
+
+                // Positioned(
+                //   left: 0,
+                //   top: 0,
+                //   child: SizedBox(
+                //     height: 10,
+                //     child: 
+                //       waitingBusPosition ?
+                //       LinearProgressIndicator() :
+                //       Center()
+                //   ),
+                //   ), 
 
                 // if(busPulsatingCircleCoordinate.x.toDouble() > 0)
                 // Positioned(
@@ -529,7 +542,7 @@ class _TripPageState extends State<TripPage>
 
         pointAnnotation = await mapboxUtils.createAnnotation(
             annotationManager, position, imageData);
-        annotationsMap["$relationName.$relationId"] = pointAnnotation!;        
+        annotationsMap["$relationName.$relationId"] = pointAnnotation!;
       } else {
         final networkImage = await mapboxUtils.getNetworkImage(
             httpService.getAvatarUrl(relationId, relationName));
@@ -542,9 +555,9 @@ class _TripPageState extends State<TripPage>
       annotationManager?.update(pointAnnotation);
     }
 
-    _mapboxMapController?.setCamera(CameraOptions(
+    _mapboxMapController?.flyTo(CameraOptions(
       center: Point(coordinates: position)
-    ));
+    ), MapAnimationOptions());
   }
 
   //  void _animateIcon(LatLng start, LatLng end) {
