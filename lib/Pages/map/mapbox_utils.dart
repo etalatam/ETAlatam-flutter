@@ -69,7 +69,7 @@ class MapboxUtils {
     return await annotationManager?.create(PointAnnotationOptions(
         geometry: Point(coordinates: position),
         textField: "",
-        textOffset: [0.0, -2.0],
+        textOffset: [0.0, -1.0],
         textColor: Colors.black.value,
         iconSize: 0.5,
         iconOffset: [0.0, -5.0],
