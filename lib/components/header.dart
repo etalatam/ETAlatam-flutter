@@ -40,10 +40,11 @@ class _HeaderState extends State<Header>{
               Expanded(
                 flex: 1,
                 child: Center(
-                  child: Text(
+                  child: (user != null) ?
+                    Text(
                     "${user?.firstName} ${user?.lastName}",
                     style: activeTheme.h6,
-                  ),
+                  ) : Text(""),
                 )                
               ),
               UserAvatar() 
