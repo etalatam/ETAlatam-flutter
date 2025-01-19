@@ -256,7 +256,7 @@ class _StudentsHomeState extends State<StudentsHome>
   openTripcallback(TripModel trip_) {
     Get.to(TripPage(
       trip: trip_,
-      navigationMode: "support",
+      // navigationMode: "support",
       showBus: true,
       showStudents: false,
     ));

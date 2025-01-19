@@ -101,24 +101,20 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                               itemCount: parentModel!.students
                                                   .length, // Replace with the total number of items
                                               itemBuilder:
-                                                  (BuildContext context,
-                                                      int index) {
+                                                  (BuildContext context,int index) {
                                                 /// Student block
                                                 return GestureDetector(
                                                     onTap: () {
                                                       openNewPage(
                                                           context,
                                                           StudentPage(
-                                                              student: parentModel!
-                                                                      .students[
-                                                                  index]));
+                                                              student: parentModel!.students[index]));
                                                     },
                                                     child: ETAWidgets
                                                         .homeStudentBlock(
                                                             context,
-                                                            parentModel!
-                                                                    .students[
-                                                                index]));
+                                                            parentModel!.students[index]
+                                                        ));
                                               },
                                             ),
                                           ),
@@ -144,8 +140,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                                     openNewPage(
                                                         context,
                                                         TripPage(
-                                                          trip: oldTripsList[
-                                                              index],
+                                                          trip: oldTripsList[index],
                                                           showBus: false,
                                                           showStudents: false,
                                                         ));
@@ -198,6 +193,9 @@ class _GuardiansHomeState extends State<GuardiansHome>
     setState(() {
       parentModel = parentQuery;
     });
+    for (var student in parentModel!.students) {
+      student.subscribeToStudentTracking();
+    }
 
     final List<TripModel> trips = (await httpService.getGuardianTrips("true"));
     List<String> routeTopics = [];
