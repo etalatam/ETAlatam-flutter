@@ -544,7 +544,6 @@ class _TripPageState extends State<TripPage>
 
     _mapboxMapController?.setCamera(CameraOptions(
       center: Point(coordinates: position)
-      zoom: 
     ));
   }
 
