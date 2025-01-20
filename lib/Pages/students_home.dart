@@ -110,9 +110,11 @@ class _StudentsHomeState extends State<StudentsHome>
                                               ],
                                             ),
                                             child: Text(
-                                                lang.translate("Does not have active trips"),
+                                                lang.translate(
+                                                    "Does not have active trips"),
                                                 style: TextStyle(
-                                                  color: Color.fromARGB(255, 112, 88, 16),
+                                                  color: Color.fromARGB(
+                                                      255, 112, 88, 16),
                                                   fontSize:
                                                       activeTheme.h5.fontSize,
                                                   fontFamily:
@@ -120,7 +122,8 @@ class _StudentsHomeState extends State<StudentsHome>
                                                   fontWeight:
                                                       activeTheme.h6.fontWeight,
                                                 )))
-                                        : ActiveTrip(openTripcallback, activeTrip),
+                                        : ActiveTrip(
+                                            openTripcallback, activeTrip),
 
                                     ETAWidgets.svgTitle("assets/svg/route.svg",
                                         lang.translate('trips_history')),
@@ -131,23 +134,30 @@ class _StudentsHomeState extends State<StudentsHome>
                                         : SizedBox(
                                             height: 238,
                                             child: ListView.builder(
-                                                scrollDirection: Axis.horizontal,
-                                                itemCount: oldTripsList.length, 
-                                                itemBuilder: (BuildContext context,int index) {
+                                                scrollDirection:
+                                                    Axis.horizontal,
+                                                itemCount: oldTripsList.length,
+                                                itemBuilder:
+                                                    (BuildContext context,
+                                                        int index) {
                                                   return GestureDetector(
                                                       onTap: () {
                                                         openNewPage(
                                                             context,
                                                             TripPage(
-                                                              trip: oldTripsList[index],
+                                                              trip:
+                                                                  oldTripsList[
+                                                                      index],
                                                               showBus: false,
-                                                              showStudents:false,
+                                                              showStudents:
+                                                                  false,
                                                             ));
                                                       },
-                                                      child: ETAWidgets.homeTripBlock(
-                                                        context,
-                                                        oldTripsList[index]
-                                                      ));
+                                                      child: ETAWidgets
+                                                          .homeTripBlock(
+                                                              context,
+                                                              oldTripsList[
+                                                                  index]));
                                                 })),
                                   ]),
                                 ),
@@ -236,9 +246,19 @@ class _StudentsHomeState extends State<StudentsHome>
 
     await locationServiceProvider.startLocationService();
     if (hasActiveTrip) {
-      String routeTopics = "route-${activeTrip?.route_id}-student-$studentId";
-      notificationSubcribe(routeTopics);
-      storage.setItem('route-topics', routeTopics);
+      List<String> routeTopics = [];
+      String tripTopic = "route-${activeTrip?.route_id}-student-$studentId";
+      notificationSubcribe(tripTopic);
+      routeTopics.add(tripTopic);
+
+      for (var pickupPoint in student.pickup_points!) {
+        var pickupPointTopic =
+            "route-${activeTrip?.route_id}-pickup_point-${pickupPoint.pickup_id}";
+        notificationSubcribe(pickupPointTopic);
+        routeTopics.add(pickupPointTopic);
+      }
+
+      storage.setItem('route-topics', routeTopics.toString());
       activeTrip?.subscribeToTripTracking();
     }
   }
@@ -271,12 +291,12 @@ class _StudentsHomeState extends State<StudentsHome>
     super.initState();
     loadResources();
     Provider.of<NotificationService>(context, listen: false)
-          .addListener(onPushMessage);          
+        .addListener(onPushMessage);
   }
 
-  onPushMessage(){
+  onPushMessage() {
     setState(() {
       loadResources();
     });
-  }  
+  }
 }
