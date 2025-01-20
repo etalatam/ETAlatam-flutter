@@ -235,14 +235,13 @@ class _StudentPageState extends State<StudentPage> {
       final circleImage = await mapboxUtils.createCircleImage(networkImage);
       pointAnnotation = await mapboxUtils.createAnnotation(
           annotationManager, position, circleImage);
-          _mapboxMapController
+      annotationsMap["$relationName.$relationId"] = pointAnnotation!;
+      _mapboxMapController
         ?.setCamera(CameraOptions(
           center: Point(coordinates: position),
           zoom: 15.5,
           pitch: 70,
         ));
-    
-      annotationsMap["$relationName.$relationId"] = pointAnnotation!;
     } else {
       pointAnnotation.geometry = Point(coordinates: position);
       annotationManager?.update(pointAnnotation);
