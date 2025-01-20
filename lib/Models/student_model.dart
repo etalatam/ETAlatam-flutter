@@ -1,5 +1,8 @@
 import 'dart:core';
 import 'package:eta_school_app/Models/PickupLocationModel.dart';
+import 'package:eta_school_app/Models/emitter_keygen.dart';
+import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
+import 'package:eta_school_app/controllers/helpers.dart';
 
 class StudentModel {
   int? student_id;
@@ -20,6 +23,8 @@ class StudentModel {
   //RouteModel? route;
   int? schoolId;
   String? statusCode;
+  bool isEmitterSubcribedToTracking = false;
+  EmitterKeyGenModel? emitterKeyGenModelTracking;
 
   StudentModel(
       {required this.student_id,
@@ -95,5 +100,33 @@ class StudentModel {
       statusCode: json['status_code'],
       // route: route,
     );
+  }
+
+  unSubscribeToStudentTracking() async {
+    if (isEmitterSubcribedToTracking) return;
+
+    try {
+      emitterServiceProvider.client!.unsubscribe(
+          "school/$schoolId/tracking/eta.students/",
+          key: emitterKeyGenModelTracking!.key);
+    } catch (e) {
+      print(
+          "[StudentModel.unSubscribeToStudentTracking.error] ${e.toString()}");
+    }
+  }
+
+  subscribeToStudentTracking() async {
+    if (!isEmitterSubcribedToTracking) {
+      final channel = "school/$schoolId/tracking/eta.students/$student_id/";
+      String encodedValue = Uri.encodeComponent(channel);
+      emitterKeyGenModelTracking =
+          await httpService.emitterKeyGen(encodedValue);
+      if (emitterKeyGenModelTracking != null &&
+          emitterServiceProvider.client!.isConnected) {
+        emitterServiceProvider.client!
+            .subscribe(channel, key: emitterKeyGenModelTracking!.key);
+        isEmitterSubcribedToTracking = true;
+      }
+    }
   }
 }

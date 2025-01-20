@@ -69,9 +69,9 @@ class ActiveTrip extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   SizedBox(
-                                    width: 150,
+                                    width: 200,
                                     child: Text(
-                                      "${lang.translate('Trip')} #${trip?.trip_id} (${trip?.route?.route_name})",
+                                      "${lang.translate('Trip')} #${trip?.trip_id} ${trip?.route?.route_name}",
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
