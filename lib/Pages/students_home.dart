@@ -236,9 +236,8 @@ class _StudentsHomeState extends State<StudentsHome>
 
     await locationServiceProvider.startLocationService();
     if (hasActiveTrip) {
-      String routeTopics = "";
-      notificationSubcribe("route-${activeTrip?.route_id}");
-      routeTopics += "route-${activeTrip?.route_id}";
+      String routeTopics = "route-${activeTrip?.route_id}-student-$studentId";
+      notificationSubcribe(routeTopics);
       storage.setItem('route-topics', routeTopics);
       activeTrip?.subscribeToTripTracking();
     }

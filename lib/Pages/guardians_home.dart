@@ -200,10 +200,16 @@ class _GuardiansHomeState extends State<GuardiansHome>
     final List<TripModel> trips = (await httpService.getGuardianTrips("true"));
     List<String> routeTopics = [];
     for (var trip in trips) {
-      notificationSubcribe("route-${trip.route_id}");
-      routeTopics.add("route-${trip.route_id}");
+      var tripTopic = "route-${trip.route_id}";
       trip.subscribeToTripTracking();
+
+      for (var student in parentModel!.students) {
+        var topic = "$tripTopic-student-${student.schoolId}";
+        notificationSubcribe(topic);
+        routeTopics.add(topic);
+      }
     }
+
     storage.setItem('route-topics', routeTopics.toString());
 
     setState(() {
