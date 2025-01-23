@@ -213,11 +213,11 @@ class _GuardiansHomeState extends State<GuardiansHome>
         notificationSubcribe(topic);
         routeTopics.add(topic);
 
-        for (var pickupPoint in student.pickup_points!) {
-          var topic = "$tripTopic-pickup_point-${pickupPoint.pickup_id}";
-          notificationSubcribe(topic);
-          routeTopics.add(topic);
-        }
+        // for (var pickupPoint in student.pickup_points!) {
+        //   var topic = "$tripTopic-pickup_point-${pickupPoint.pickup_id}";
+        //   notificationSubcribe(topic);
+        //   routeTopics.add(topic);
+        // }
       }
     }
 
