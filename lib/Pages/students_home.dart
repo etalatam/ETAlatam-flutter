@@ -32,7 +32,7 @@ class _StudentsHomeState extends State<StudentsHome>
   bool hasActiveTrip = false;
 
   // DriverModel driverModel = DriverModel(driver_id: 0, first_name: '');
-  StudentModel student = StudentModel(student_id: 0, parent_id: 0);
+  StudentModel student = StudentModel(student_id: 0, parent_id: 0, pickup_points: []);
 
   TripModel? activeTrip;
 

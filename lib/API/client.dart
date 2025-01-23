@@ -233,7 +233,7 @@ class HttpService {
     } catch (e) {
       print("sendTracking error: ${e.toString()}");
     }
-    return StudentModel(student_id: 0, parent_id: 0);
+    return StudentModel(student_id: 0, parent_id: 0, pickup_points: []);
   }
 
   /// Load Parent

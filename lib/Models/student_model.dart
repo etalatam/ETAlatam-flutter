@@ -18,7 +18,7 @@ class StudentModel {
   String? gender;
   String? status;
   int? trips_count;
-  List<PickupLocationModel>? pickup_points;
+  List<PickupLocationModel> pickup_points = [];
   //DestinationModel? destination;
   //RouteModel? route;
   int? schoolId;
@@ -39,7 +39,7 @@ class StudentModel {
       this.transfer_status,
       this.gender,
       this.status,
-      this.pickup_points,
+      required this.pickup_points,
       // this.destination,
       // this.route,
       this.trips_count,
@@ -71,7 +71,7 @@ class StudentModel {
   }
 
   factory StudentModel.fromJson(Map<String, dynamic> json) {
-    List<PickupLocationModel>? _pickupLocations;
+    List<PickupLocationModel> _pickupLocations = [];
 
     try {
       _pickupLocations = json['pickup_points']
