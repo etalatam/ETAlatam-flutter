@@ -180,6 +180,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
       messaging.subscribeToTopic(topic);
+      print("[GuardianHome.notificationSubcribe] $topic");
     } catch (e) {
       print("GuardianHome.notificationSubcribe.error: ${e.toString()}");
     }
@@ -213,11 +214,11 @@ class _GuardiansHomeState extends State<GuardiansHome>
         notificationSubcribe(topic);
         routeTopics.add(topic);
 
-        // for (var pickupPoint in student.pickup_points!) {
-        //   var topic = "$tripTopic-pickup_point-${pickupPoint.pickup_id}";
-        //   notificationSubcribe(topic);
-        //   routeTopics.add(topic);
-        // }
+        for (var pickupPoint in student.pickup_points!) {
+          var topic = "$tripTopic-pickup_point-${pickupPoint.pickup_id}";
+          notificationSubcribe(topic);
+          routeTopics.add(topic);
+        }
       }
     }
 
@@ -245,14 +246,24 @@ class _GuardiansHomeState extends State<GuardiansHome>
   @override
   void initState() {
     super.initState();
-    loadParent();
-    Provider.of<NotificationService>(context, listen: false)
-        .addListener(onPushMessage);
+    if(mounted){
+      loadParent();
+      Provider.of<NotificationService>(context, listen: false)
+          .addListener(onPushMessage);
+    }
+  }
+
+  @override
+  void dispose() {
+    // Break references to this State object here
+    super.dispose();
   }
 
   onPushMessage() {
-    setState(() {
-      loadParent();
-    });
+    if(mounted){
+      setState(() {
+        loadParent();
+      });
+    }
   }
 }

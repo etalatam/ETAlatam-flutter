@@ -71,15 +71,15 @@ class StudentModel {
   }
 
   factory StudentModel.fromJson(Map<String, dynamic> json) {
-    // List<PickupLocationModel>? _pickupLocations;
+    List<PickupLocationModel>? _pickupLocations;
 
-    // try {
-    //   _pickupLocations = json['pickup_points']
-    //       .map((dynamic item) => PickupLocationModel.fromJson(item))
-    //       .toList();
-    // } catch (e) {
-    //   print("StudentModel.fromJson.parsePickupLocation.error: ${e.toString()}");
-    // }
+    try {
+      _pickupLocations = json['pickup_points']
+          .map((dynamic item) => PickupLocationModel.fromJson(item))
+          .toList();
+    } catch (e) {
+      print("StudentModel.fromJson.parsePickupLocation.error: ${e.toString()}");
+    }
 
     return StudentModel(
       student_id: json['student_id'] as int?,
@@ -94,7 +94,7 @@ class StudentModel {
       transfer_status: json['transfer_status'] as String?,
       gender: json['gender'] as String?,
       trips_count: json['trips_count'] as int?,
-      // pickup_points: _pickupLocations,
+      pickup_points: _pickupLocations,
       // destination: destination,
       schoolId: json['school_id'],
       statusCode: json['status_code'],
