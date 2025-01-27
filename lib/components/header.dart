@@ -44,10 +44,8 @@ class _HeaderState extends State<Header>{
               Expanded(
                 flex: 1,
                 child: AnimatedContainer(
-                  duration: Duration(seconds: 2),
-                  width: connectivityNone ? 200 : 0,
-                  // height: connectivityNone ? 200 : 0,
-                  // color: connectivityNone ? Colors.blue : Colors.transparent,
+                  duration: Duration(seconds: 1),
+                  curve: Curves.fastOutSlowIn,
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.red,
@@ -139,9 +137,7 @@ class _HeaderState extends State<Header>{
 
   Future<void> _updateConnectionStatus(List<ConnectivityResult> results) async {
     setState(() {
-      // connectivityNone = results.any((result) => result == ConnectivityResult.none);
-      connectivityNone = true;
-
+      connectivityNone = results.any((result) => result == ConnectivityResult.none);
     });
     // ignore: avoid_print
     print('connectivityNone: $connectivityNone');
