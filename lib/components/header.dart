@@ -40,7 +40,7 @@ class _HeaderState extends State<Header>{
               const EdgeInsets.only(left: 20, right: 20, top: 40, bottom: 10),
           child: Row(
             children: [
-              // if(connectivityNone)
+              if(connectivityNone)
               Expanded(
                 flex: 1,
                 child: AnimatedContainer(
