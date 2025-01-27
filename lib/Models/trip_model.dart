@@ -9,6 +9,7 @@ import 'package:eta_school_app/Models/VehicleModel.dart';
 import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 class TripModel {
   int? trip_id;
@@ -35,6 +36,8 @@ class TripModel {
   bool isEmitterSubcribedToEvents = false;
   bool isEmitterSubcribedToTracking = false;
   int? school_id;
+  
+  String? formatDate;
 
   TripModel({
     required this.trip_id,
@@ -60,6 +63,21 @@ class TripModel {
   }){
     if(trip_status == "Running"){
       subscribeToTripEvents();      
+    }
+
+    prettyDate();
+  }
+
+  prettyDate (){
+    try {
+      initializeDateFormatting('es_ES', null).then((_) {
+        DateFormat formato = DateFormat("yyyy-MM-dd");
+        var dt = formato.parse(date!);
+        DateFormat nuevoFormato = DateFormat("EEEE d 'de' MMMM", 'es_ES');
+        formatDate  = nuevoFormato.format(dt);
+      });
+    } catch (e) {
+      print("pretty date error ${e.toString()}");
     }
   }
 

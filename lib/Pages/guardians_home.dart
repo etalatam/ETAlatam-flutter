@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Pages/student_page.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/components/active_trip.dart';
@@ -187,6 +188,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
   }
 
   loadParent() async {
+    if(!mounted) return;
     Timer(Duration(seconds: 2), () async {
       await storage.getItem('darkmode');
       setState(() {
@@ -204,20 +206,34 @@ class _GuardiansHomeState extends State<GuardiansHome>
     }
 
     final List<TripModel> trips = (await httpService.getGuardianTrips("true"));
-    List<String> routeTopics = [];
     for (var trip in trips) {
-      var tripTopic = "route-${trip.route_id}";
       trip.subscribeToTripTracking();
+    }
+
+    final List<RouteModel> routes = await httpService.getGuardianRoutes();
+
+    List<String> routeTopics = [];
+    for (var route in routes) {
+      var tripTopic = "route-${route.route_id}";
+      
+      if(!routeTopics.contains(tripTopic)){
+        routeTopics.add(tripTopic);
+        notificationSubcribe(tripTopic);
+      }
 
       for (var student in parentModel!.students) {
         var topic = "$tripTopic-student-${student.schoolId}";
-        notificationSubcribe(topic);
-        routeTopics.add(topic);
+        if(!routeTopics.contains(topic)){
+          notificationSubcribe(topic);
+          routeTopics.add(topic);
+        }
 
         for (var pickupPoint in student.pickup_points) {
           var topic = "$tripTopic-pickup_point-${pickupPoint.pickup_id}";
-          notificationSubcribe(topic);
-          routeTopics.add(topic);
+          if(!routeTopics.contains(topic)){
+            notificationSubcribe(topic);
+            routeTopics.add(topic);
+          }
         }
       }
     }

@@ -31,7 +31,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     return showLoader
         ? Loader()
         : Material(
-            type: MaterialType.transparency,
+            // type: MaterialType.transparency,
             child: RefreshIndicator(
                 triggerMode: RefreshIndicatorTriggerMode.onEdge,
                 onRefresh:
@@ -300,7 +300,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                                                   width: double
                                                                       .infinity,
                                                                   child: Text(
-                                                                    '${notificationsList[i].short_date}',
+                                                                    '${notificationsList[i].formatDate}',
                                                                     style: activeTheme
                                                                         .xsmallText,
                                                                   ),
@@ -429,5 +429,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }

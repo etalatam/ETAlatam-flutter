@@ -577,6 +577,7 @@ mixin ETAWidgets {
                           ]),
                         ],
                       ),
+                      Text("${tripInfo.formatDate}"),
                       SizedBox(height: 40),
                       SizedBox(
                         width: double.infinity,
