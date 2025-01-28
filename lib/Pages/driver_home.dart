@@ -286,8 +286,11 @@ class _DriverHomeState extends State<DriverHome>
     final todateRoutes = await httpService.todayRoutes();
     List<String> routeTopics = [];
     for (var route in todateRoutes) {
-      notificationSubcribe("route-${route.route_id}");
-      routeTopics.add("route-${route.route_id}");
+      var routeDriverTopic = "route-${route.route_id}-driver";
+      if(!routeTopics.contains(routeDriverTopic)){
+        notificationSubcribe(routeDriverTopic);
+        routeTopics.add(routeDriverTopic);
+      }
     }
     storage.setItem('route-topics', routeTopics.toString());
 

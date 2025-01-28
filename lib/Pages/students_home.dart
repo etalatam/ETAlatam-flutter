@@ -247,15 +247,20 @@ class _StudentsHomeState extends State<StudentsHome>
     await locationServiceProvider.startLocationService();
     if (hasActiveTrip) {
       List<String> routeTopics = [];
-      String tripTopic = "route-${activeTrip?.route_id}-student-$studentId";
-      notificationSubcribe(tripTopic);
-      routeTopics.add(tripTopic);
+      String routeTopic = "route-${activeTrip?.route_id}-student";
 
-      for (var pickupPoint in student.pickup_points!) {
+      if(!routeTopics.contains(routeTopic)){
+        notificationSubcribe(routeTopic);
+        routeTopics.add(routeTopic);
+      }
+
+      for (var pickupPoint in student.pickup_points) {
         var pickupPointTopic =
             "route-${activeTrip?.route_id}-pickup_point-${pickupPoint.pickup_id}";
-        notificationSubcribe(pickupPointTopic);
-        routeTopics.add(pickupPointTopic);
+        if(!routeTopics.contains(pickupPointTopic)){
+          notificationSubcribe(pickupPointTopic);
+          routeTopics.add(pickupPointTopic);
+        }
       }
 
       storage.setItem('route-topics', routeTopics.toString());

@@ -214,22 +214,23 @@ class _GuardiansHomeState extends State<GuardiansHome>
 
     List<String> routeTopics = [];
     for (var route in routes) {
-      var tripTopic = "route-${route.route_id}";
+      var routeTopic = "route-${route.route_id}";
+      var routeTopicGuardian = "$routeTopic-guardian";
       
-      if(!routeTopics.contains(tripTopic)){
-        routeTopics.add(tripTopic);
-        notificationSubcribe(tripTopic);
+      if(!routeTopics.contains(routeTopicGuardian)){
+        routeTopics.add(routeTopicGuardian);
+        notificationSubcribe(routeTopicGuardian);
       }
 
       for (var student in parentModel!.students) {
-        var topic = "$tripTopic-student-${student.schoolId}";
+        var topic = "$routeTopic-student-${student.student_id}";
         if(!routeTopics.contains(topic)){
           notificationSubcribe(topic);
           routeTopics.add(topic);
         }
 
         for (var pickupPoint in student.pickup_points) {
-          var topic = "$tripTopic-pickup_point-${pickupPoint.pickup_id}";
+          var topic = "$routeTopic-pickup_point-${pickupPoint.pickup_id}";
           if(!routeTopics.contains(topic)){
             notificationSubcribe(topic);
             routeTopics.add(topic);
