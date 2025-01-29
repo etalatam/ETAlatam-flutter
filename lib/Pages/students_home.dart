@@ -132,7 +132,7 @@ class _StudentsHomeState extends State<StudentsHome>
                                     oldTripsList.isEmpty
                                         ? const Center()
                                         : SizedBox(
-                                            height: 238,
+                                            height: 260,
                                             child: ListView.builder(
                                                 scrollDirection:
                                                     Axis.horizontal,

@@ -578,7 +578,7 @@ mixin ETAWidgets {
                         ],
                       ),
                       Text("${tripInfo.formatDate}"),
-                      SizedBox(height: 40),
+                      SizedBox(height: 10),
                       SizedBox(
                         width: double.infinity,
                         child: tripInfoRow(tripInfo),
