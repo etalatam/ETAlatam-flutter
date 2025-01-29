@@ -40,8 +40,8 @@ class LocationService extends ChangeNotifier {
     // _locationData = await storage.getItem('lastPosition');
     _userId = await storage.getItem('id_usu');
 
-    print('[ETALocationService.init] $_locationData');
-    notifyListeners();
+    // print('[ETALocationService.init] $_locationData');
+    // notifyListeners();
 
     if (initialization) {
       return;
@@ -65,6 +65,13 @@ class LocationService extends ChangeNotifier {
               (_locationData?['latitude'] != data['latitude']) &&
               (_locationData?['longitude'] != data['longitude'])) {
             _locationData = data;
+            
+            try {
+              await tracking(_locationData);
+            } catch (e) {
+              print ('[ETALocationService.tracking.error] ${e.toString()}');
+            }
+            // saveLastPosition(data);
 
             try {
               notifyListeners();
@@ -72,13 +79,7 @@ class LocationService extends ChangeNotifier {
               print(
                   '[ETALocationService.notifyListeners.error] ${e.toString()}');
             }
-            
-            try {
-              tracking(_locationData);
-            } catch (e) {
-              print ('[ETALocationService.tracking.error] ${e.toString()}');
-            }
-            // saveLastPosition(data);
+
 
           }
         });
@@ -90,9 +91,9 @@ class LocationService extends ChangeNotifier {
     });
   }
 
-  saveLastPosition(data) async {
-      await storage.setItem('lastPosition', data);
-  }
+  // saveLastPosition(data) async {
+  //     await storage.setItem('lastPosition', data);
+  // }
 
   Future<void> startLocationService() async {
     print('[ETALocationService.startLocationService]');

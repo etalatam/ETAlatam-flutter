@@ -220,6 +220,8 @@ class _StudentsHomeState extends State<StudentsHome>
       return;
     }
 
+    if(!mounted) return;
+
     await locationServiceProvider.init();
 
     await storage.getItem('darkmode');

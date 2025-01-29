@@ -6,7 +6,6 @@ import 'package:eta_school_app/Models/login_information_model.dart';
 import 'package:eta_school_app/Pages/providers/driver_provider.dart';
 import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
-import 'package:eta_school_app/Pages/providers/login_information_provider.dart';
 import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/domain/entities/user/driver.dart';
 import 'package:eta_school_app/domain/entities/user/login_information.dart';
