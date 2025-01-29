@@ -425,7 +425,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     if (message.notification != null) {
       final snackBar = SnackBar(
         content: Text(message.notification!.title ?? "Nuevo mensaje"),
-        duration: Duration(seconds: 3),
+        duration: Duration(seconds: 5),
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
