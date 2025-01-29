@@ -39,6 +39,14 @@ class EmitterService extends ChangeNotifier {
     }
   }
 
+  close(){
+    try {
+      client?.disconnect();
+    } catch (e) {
+      print(e);
+    }
+  }
+
   void _onMessage(String message) {
     print("[EmitterService.onMessage] $message");
     lastMessage = message;

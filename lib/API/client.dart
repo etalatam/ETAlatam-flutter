@@ -4,6 +4,9 @@ import 'package:eta_school_app/Models/emitter_keygen.dart';
 import 'package:eta_school_app/Models/user_model.dart';
 import 'package:eta_school_app/Models/login_information_model.dart';
 import 'package:eta_school_app/Pages/providers/driver_provider.dart';
+import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
+import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
+import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/domain/entities/user/driver.dart';
 import 'package:eta_school_app/domain/entities/user/login_information.dart';
 import 'package:eta_school_app/infrastructure/datasources/login_information_datasource.dart';
@@ -563,6 +566,7 @@ class HttpService {
         } on Exception catch (e) {
           debugPrint('Error saving login info: $e');
         }
+        emitterServiceProvider.connect();
         return '1';
       } else {
         return "${parseResponseMessage(res)}/${res.statusCode}";
@@ -673,7 +677,10 @@ class HttpService {
 
   // Logout and clear localStorage
   logout() async {
-    await storage.clear();
+    locationServiceProvider.stopLocationService();
+    emitterServiceProvider.close();
+    await notificationServiceProvider.close();
+    await storage.clear();    
   }
 
   Future<dynamic> sendTracking({required position, int driver = 18}) async {
