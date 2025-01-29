@@ -257,7 +257,7 @@ class HttpService {
   Future<List<RouteModel>> getGuardianRoutes() async {
     const endpoint = "/rpc/guardian_routes";
     var res =
-        await getQuery("$endpoint?limit=10&order=schedule_start_time.desc");
+        await getQuery("$endpoint?limit=10&select=driver_id,bus_plate,route_id,route_description,schedule_start_time,schedule_end_time,schedule_id,pickup_points");
     print("[$endpoint] res.statusCode: ${res.statusCode}");
     print("[$endpoint] res.body: ${res.body}");
 
@@ -266,7 +266,27 @@ class HttpService {
         List<dynamic> body = jsonDecode(res.body);
         return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
       } catch (e) {
-        print("getRoutes error: ${e.toString()}");
+        print("getGuardianRoutes error: ${e.toString()}");
+        return [];
+      }
+    }
+
+    return [];
+  }
+
+    Future<List<RouteModel>> getStudentRoutes() async {
+    const endpoint = "/rpc/student_routes";
+    var res =
+        await getQuery("$endpoint?limit=10&select=driver_id,bus_plate,route_id,route_description,schedule_start_time,schedule_end_time,schedule_id,pickup_points");
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
+
+    if (res.statusCode == 200) {
+      try {
+        List<dynamic> body = jsonDecode(res.body);
+        return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
+      } catch (e) {
+        print("getStudentRoutes error: ${e.toString()}");
         return [];
       }
     }

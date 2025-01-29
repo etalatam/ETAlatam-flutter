@@ -245,9 +245,12 @@ class _StudentsHomeState extends State<StudentsHome>
     });
 
     await locationServiceProvider.startLocationService();
-    if (hasActiveTrip) {
+
+     List<RouteModel> routes = await httpService.getStudentRoutes();
+
+     for (var route in routes) {
       List<String> routeTopics = [];
-      String routeTopic = "route-${activeTrip?.route_id}-student";
+      String routeTopic = "route-${route.route_id}-student";
 
       if(!routeTopics.contains(routeTopic)){
         notificationSubcribe(routeTopic);
@@ -256,7 +259,7 @@ class _StudentsHomeState extends State<StudentsHome>
 
       for (var pickupPoint in student.pickup_points) {
         var pickupPointTopic =
-            "route-${activeTrip?.route_id}-pickup_point-${pickupPoint.pickup_id}";
+            "route-${route.route_id}-pickup_point-${pickupPoint.pickup_id}";
         if(!routeTopics.contains(pickupPointTopic)){
           notificationSubcribe(pickupPointTopic);
           routeTopics.add(pickupPointTopic);
@@ -264,6 +267,10 @@ class _StudentsHomeState extends State<StudentsHome>
       }
 
       storage.setItem('route-topics', routeTopics.toString());
+       
+     }
+
+    if (hasActiveTrip) {
       activeTrip?.subscribeToTripTracking();
     }
   }
