@@ -7,7 +7,6 @@ import 'package:background_locator_2/settings/android_settings.dart';
 import 'package:background_locator_2/settings/ios_settings.dart';
 import 'package:background_locator_2/settings/locator_settings.dart';
 import 'package:flutter/foundation.dart';
-import 'package:localstorage/localstorage.dart';
 import 'package:location/location.dart' hide LocationAccuracy;
 import 'location_callback_handler.dart';
 import 'location_service_repository.dart';
@@ -26,8 +25,10 @@ class LocationService extends ChangeNotifier {
   ReceivePort port = ReceivePort();
 
   bool initialization = false;
+  
+  int _userId = 0;
 
-  final LocalStorage storage = LocalStorage('tokens.json');
+  // final LocalStorage storage = LocalStorage('tokens.json');
 
   static final LocationService _instance = LocationService._internal();
 
@@ -36,7 +37,9 @@ class LocationService extends ChangeNotifier {
   LocationService._internal();
 
   init() async {
-    _locationData = await storage.getItem('lastPosition');
+    // _locationData = await storage.getItem('lastPosition');
+    _userId = await storage.getItem('id_usu');
+
     print('[ETALocationService.init] $_locationData');
     notifyListeners();
 
@@ -62,14 +65,21 @@ class LocationService extends ChangeNotifier {
               (_locationData?['latitude'] != data['latitude']) &&
               (_locationData?['longitude'] != data['longitude'])) {
             _locationData = data;
-            await storage.setItem('lastPosition', data);
-            await tracking(_locationData);
+
             try {
               notifyListeners();
             } catch (e) {
               print(
                   '[ETALocationService.notifyListeners.error] ${e.toString()}');
             }
+            
+            try {
+              tracking(_locationData);
+            } catch (e) {
+              print ('[ETALocationService.tracking.error] ${e.toString()}');
+            }
+            // saveLastPosition(data);
+
           }
         });
 
@@ -78,6 +88,10 @@ class LocationService extends ChangeNotifier {
         // _startLocator().then((value) => null);
       }
     });
+  }
+
+  saveLastPosition(data) async {
+      await storage.setItem('lastPosition', data);
   }
 
   Future<void> startLocationService() async {
@@ -134,7 +148,7 @@ class LocationService extends ChangeNotifier {
     return true;
   }
 
-  Future tracking(dynamic locationInfo) async {
+  tracking(dynamic locationInfo) async {
     print('[ETALocationService.tracking] ${locationInfo.toString()}');
     try {
       final jsonData = {
@@ -144,11 +158,10 @@ class LocationService extends ChangeNotifier {
         'accuracy': locationInfo?['accuracy'],
         'speed': locationInfo?['speed']
       };
-      return await httpService.sendTracking(position: jsonData);
+      await httpService.sendTracking(position: jsonData, userId: _userId);
     } catch (e) {
       print('[ETALocationService.tracking.error] ${e.toString()}');
     }
-    return null;
   }
 
   void stopLocationService() {
