@@ -341,21 +341,20 @@ class _NotificationsPageState extends State<NotificationsPage> {
   /// Load devices through API
   ///
   loadNotifications() async {
-    if (mounted) {
+    if (!mounted)  return;
       setState(() {
         showLoader = true;
       });
 
-      String? routeTopics = await storage.getItem('route-topics');
-      print("[loadNotifications.routeTopic] $routeTopics");
+    String? routeTopics = await storage.getItem('route-topics');
+    print("[loadNotifications.routeTopic] $routeTopics");
 
-      final notificationslist = await httpService.getNotifications(routeTopics);
+    final notificationslist = await httpService.getNotifications(routeTopics);
 
-      setState(() {
-        notificationsList = notificationslist!;
-        showLoader = false;
-      });
-    }
+    setState(() {
+      notificationsList = notificationslist!;
+      showLoader = false;
+    });
   }
 
   bool showLoader = true;
@@ -400,15 +399,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
   void initState() {
     super.initState();
     showLoader = true;
-    if (mounted) {
-      loadNotifications();
+    loadNotifications();
 
       Provider.of<NotificationService>(context, listen: false)
           .addListener(onPushMessage);
-    }
   }
 
   onPushMessage(){
+    if(!mounted) return;
     final LastMessage? lastMessage =
           Provider.of<NotificationService>(context, listen: false).lastMessage;
 

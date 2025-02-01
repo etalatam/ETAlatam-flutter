@@ -1,4 +1,3 @@
-import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/Pages/pickups_page.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/Models/route_model.dart';
@@ -7,10 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class HomeRouteBlock extends StatelessWidget {
-  const HomeRouteBlock({super.key, required this.route, this.callback, this.trip});
+   HomeRouteBlock({super.key, required this.route, this.callback, this.hasActiveTrip});
 
   final RouteModel route;
-  final TripModel? trip;
+  bool? hasActiveTrip;
   final Function? callback;
 
   @override
@@ -220,7 +219,7 @@ class HomeRouteBlock extends StatelessWidget {
                               ]),
                       ),
                       GestureDetector(
-                          onTap: trip == null || trip?.trip_id == 0 ? () {
+                          onTap: (hasActiveTrip != null && hasActiveTrip == false) ? () {
                             // return;
                             callback!(route);
                             // openNewPage(context, DriverPage(driver: route.driver, vehicle: route.vehicle,));
@@ -231,7 +230,7 @@ class HomeRouteBlock extends StatelessWidget {
                               decoration: BoxDecoration(
                                   // color: activeTheme.buttonBG,
                                   color:
-                                      trip == null || trip?.trip_id == 0 ?
+                                      (hasActiveTrip != null && hasActiveTrip == false) ?
                                        Color.fromARGB(255, 234,244,243)
                                        :
                                        Color.fromARGB(255, 225, 224, 224),
@@ -241,7 +240,7 @@ class HomeRouteBlock extends StatelessWidget {
                                 children: [
                                   Icon(
                                     Icons.route_rounded,
-                                    color: trip == null || trip?.trip_id == 0 ?
+                                    color: (hasActiveTrip != null && hasActiveTrip == false) ?
                                     Color.fromARGB(255,15,148,136):
                                     Colors.grey
                                   ),
@@ -254,7 +253,7 @@ class HomeRouteBlock extends StatelessWidget {
                                         fontSize: activeTheme.h6.fontSize,
                                         fontFamily: activeTheme.h6.fontFamily,
                                         // color: activeTheme.buttonColor
-                                        color: trip == null || trip?.trip_id == 0 ?
+                                        color: (hasActiveTrip != null && hasActiveTrip == false) ?
                                           Color.fromARGB(255,15,148,136):
                                           Colors.grey
                                         ),

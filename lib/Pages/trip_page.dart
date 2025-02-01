@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
+import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:flutter/services.dart';
@@ -227,7 +228,7 @@ class _TripPageState extends State<TripPage>
                                   if (trip.trip_status == 'Running' &&
                                       relationName.contains('eta.drivers'))
                                     GestureDetector(
-                                        onTap: (() {
+                                        onTap: showLoader ? null : (() {
                                           endTrip();
                                         }),
                                         child: Center(
@@ -238,6 +239,7 @@ class _TripPageState extends State<TripPage>
                                                   color:
                                                       activeTheme.buttonColor,
                                                 ),
+                                                showLoader ? Colors.grey :
                                                 Colors.red))),
                                   if (trip.trip_status == 'Running')
                                     const SizedBox(
@@ -375,9 +377,13 @@ class _TripPageState extends State<TripPage>
 
   endTrip() async {
     try {
+      setState(() {
+        showLoader = true;
+      });
       await trip.endTrip();
       locationServiceProvider.stopLocationService();
       setState(() {
+        showLoader = false;
         showTripReportModal = true;
       });
     } catch (e) {
@@ -424,6 +430,7 @@ class _TripPageState extends State<TripPage>
     if (widget.showBus || widget.showStudents) {
       Provider.of<EmitterService>(context, listen: false)
           .addListener(onEmitterMessage);
+      emitterServiceProvider.activeTimer();
     }
   }
 

@@ -107,7 +107,8 @@ class _DriverHomeState extends State<DriverHome>
                                                     child: HomeRouteBlock(
                                                         route: todateRoutesList[index],
                                                         callback: createTrip,
-                                                        trip: activeTrip,),
+                                                        hasActiveTrip: hasActiveTrip,
+                                                        ),
                                                   );
                                                 })),
 
@@ -133,8 +134,7 @@ class _DriverHomeState extends State<DriverHome>
                                                             context,
                                                             TripPage(
                                                               trip:
-                                                                  oldTripsList[
-                                                                      index],
+                                                                  oldTripsList[index],
                                                               navigationMode:
                                                                   "support",
                                                               showBus: false,
@@ -145,8 +145,7 @@ class _DriverHomeState extends State<DriverHome>
                                                       child: ETAWidgets
                                                           .homeTripBlock(
                                                               context,
-                                                              oldTripsList[
-                                                                  index]));
+                                                              oldTripsList[index]));
                                                 })),
                                     // const SizedBox(
                                     //   height: 30,
@@ -255,6 +254,7 @@ class _DriverHomeState extends State<DriverHome>
   /// Load resources through API
   ///
   loadResources() async {
+    if(!mounted) return;
     final check = await storage.getItem('id_usu');
 
     if (check == null) {
@@ -329,8 +329,6 @@ class _DriverHomeState extends State<DriverHome>
   }
 
   onPushMessage(){
-    setState(() {
-      loadResources();
-    });
+    loadResources();
   }      
 }

@@ -69,6 +69,7 @@ class TripModel {
   }
 
   prettyDate (){
+    if(date == null ) return;
     try {
       initializeDateFormatting('es_ES', null).then((_) {
         DateFormat formato = DateFormat("yyyy-MM-dd");

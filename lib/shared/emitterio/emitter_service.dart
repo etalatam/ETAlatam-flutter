@@ -1,8 +1,16 @@
+import 'dart:async';
+
 import 'package:eta_school_app/shared/emitterio/emitter_client.dart';
 import 'package:flutter/foundation.dart';
 
 class EmitterService extends ChangeNotifier {
   static final EmitterService _instance = EmitterService._internal();
+  
+  DateTime? _lastMessageDate;
+  
+  Timer? _timer;
+  
+  bool _activeTimer = false;
 
   factory EmitterService() => _instance;
 
@@ -47,11 +55,48 @@ class EmitterService extends ChangeNotifier {
     }
   }
 
+  void activeTimer(){
+    _activeTimer = true;
+    print("[EmitterService.activeTimer]");
+  }
+
+  void diactiveTimer(){
+    _stopTimer();
+    _activeTimer = false;
+    print("[EmitterService.diactiveTimer]");
+  }
+
   void _onMessage(String message) {
     print("[EmitterService.onMessage] $message");
     lastMessage = message;
+    _lastMessageDate = DateTime.now();
+    if(_activeTimer){
+      _startTimer();
+    }
+    
     notifyListeners();
   }
+
+    void _startTimer() {
+      _stopTimer();
+      print("[EmitterService._startTimer]");
+    _timer = Timer.periodic(Duration(seconds: 60), (timer) {
+      if (_lastMessageDate != null) {
+        final now = DateTime.now();
+        final difference = now.difference(_lastMessageDate!);
+        if (difference.inMinutes >= 2) {
+          client?.disconnect();
+          client?.connect();
+        }
+      }
+    });
+  }
+
+  void _stopTimer() {
+    print("[EmitterService._stopTimer]");
+    _timer?.cancel();
+  }
+
 
   void _onError(String error) {
     print("[EmitterService.onError] $error");
@@ -63,6 +108,7 @@ class EmitterService extends ChangeNotifier {
 
   void _onDisconnect() {
     print("[EmitterService._onDisconnect]");
+    _stopTimer();
   }
 
   void _onSubscribed(String topic) {
