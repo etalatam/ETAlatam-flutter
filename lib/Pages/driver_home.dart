@@ -107,7 +107,7 @@ class _DriverHomeState extends State<DriverHome>
                                                     child: HomeRouteBlock(
                                                         route: todateRoutesList[index],
                                                         callback: createTrip,
-                                                        activeTrip: activeTrip,),
+                                                        trip: activeTrip,),
                                                   );
                                                 })),
 

@@ -7,10 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class HomeRouteBlock extends StatelessWidget {
-  const HomeRouteBlock({super.key, required this.route, this.callback, this.activeTrip});
+  const HomeRouteBlock({super.key, required this.route, this.callback, this.trip});
 
   final RouteModel route;
-  final TripModel? activeTrip;
+  final TripModel? trip;
   final Function? callback;
 
   @override
@@ -220,7 +220,7 @@ class HomeRouteBlock extends StatelessWidget {
                               ]),
                       ),
                       GestureDetector(
-                          onTap: activeTrip != null ? () {
+                          onTap: trip == null || trip?.trip_id == 0 ? () {
                             // return;
                             callback!(route);
                             // openNewPage(context, DriverPage(driver: route.driver, vehicle: route.vehicle,));
@@ -231,16 +231,19 @@ class HomeRouteBlock extends StatelessWidget {
                               decoration: BoxDecoration(
                                   // color: activeTheme.buttonBG,
                                   color:
-                                      // const Color.fromARGB(255, 59, 140, 135),
-                                      const Color.fromARGB(255, 234,244,243),
+                                      trip == null || trip?.trip_id == 0 ?
+                                       Color.fromARGB(255, 234,244,243)
+                                       :
+                                       Color.fromARGB(255, 225, 224, 224),
                                   //     Border.all(width: 1, color: Colors.green),
                                   borderRadius: BorderRadius.circular(10)),
                               child: Row(
                                 children: [
                                   Icon(
                                     Icons.route_rounded,
-                                    // color: activeTheme.buttonColor,
-                                    color: Color.fromARGB(255,15,148,136)
+                                    color: trip == null || trip?.trip_id == 0 ?
+                                    Color.fromARGB(255,15,148,136):
+                                    Colors.grey
                                   ),
                                   const SizedBox(
                                     width: 10,
@@ -251,7 +254,9 @@ class HomeRouteBlock extends StatelessWidget {
                                         fontSize: activeTheme.h6.fontSize,
                                         fontFamily: activeTheme.h6.fontFamily,
                                         // color: activeTheme.buttonColor
-                                        color: Color.fromARGB(255,15,148,136)
+                                        color: trip == null || trip?.trip_id == 0 ?
+                                          Color.fromARGB(255,15,148,136):
+                                          Colors.grey
                                         ),
                                   )
                                 ],
