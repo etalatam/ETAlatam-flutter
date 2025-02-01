@@ -2,6 +2,7 @@ import 'package:eta_school_app/Pages/driver_page.dart';
 import 'package:eta_school_app/Pages/help_messages_page.dart';
 import 'package:eta_school_app/Models/parent_model.dart';
 import 'package:eta_school_app/Models/NotificationModel.dart';
+import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/components/slide_action.dart';
@@ -346,10 +347,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
         showLoader = true;
       });
 
-    String? routeTopics = await storage.getItem('route-topics');
-    print("[loadNotifications.routeTopic] $routeTopics");
-
-    final notificationslist = await httpService.getNotifications(routeTopics);
+    final notificationslist = await httpService.getNotifications(
+      notificationServiceProvider.topicsList.toString()
+    );
 
     setState(() {
       notificationsList = notificationslist!;

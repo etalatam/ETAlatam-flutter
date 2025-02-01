@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:eta_school_app/Models/route_model.dart';
+import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/Pages/student_page.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/components/active_trip.dart';
@@ -177,16 +178,6 @@ class _GuardiansHomeState extends State<GuardiansHome>
     });
   }
 
-  notificationSubcribe(String topic) {
-    try {
-      FirebaseMessaging messaging = FirebaseMessaging.instance;
-      messaging.subscribeToTopic(topic);
-      print("[GuardianHome.notificationSubcribe] $topic");
-    } catch (e) {
-      print("GuardianHome.notificationSubcribe.error: ${e.toString()}");
-    }
-  }
-
   loadParent() async {
     if(!mounted) return;
     Timer(Duration(seconds: 2), () async {
@@ -212,34 +203,23 @@ class _GuardiansHomeState extends State<GuardiansHome>
 
     final List<RouteModel> routes = await httpService.getGuardianRoutes();
 
-    List<String> routeTopics = [];
     for (var route in routes) {
       var routeTopic = "route-${route.route_id}";
       var routeTopicGuardian = "$routeTopic-guardian";
       
-      if(!routeTopics.contains(routeTopicGuardian)){
-        routeTopics.add(routeTopicGuardian);
-        notificationSubcribe(routeTopicGuardian);
-      }
+      notificationServiceProvider.subscribeToTopic(routeTopicGuardian);
 
       for (var student in parentModel!.students) {
         var topic = "$routeTopic-student-${student.student_id}";
-        if(!routeTopics.contains(topic)){
-          notificationSubcribe(topic);
-          routeTopics.add(topic);
-        }
+        
+        notificationServiceProvider.subscribeToTopic(topic);
 
         for (var pickupPoint in student.pickup_points) {
           var topic = "$routeTopic-pickup_point-${pickupPoint.pickup_id}";
-          if(!routeTopics.contains(topic)){
-            notificationSubcribe(topic);
-            routeTopics.add(topic);
-          }
+          notificationServiceProvider.subscribeToTopic(topic);
         }
       }
     }
-
-    storage.setItem('route-topics', routeTopics.toString());
 
     setState(() {
       activeTrips = trips;
@@ -247,6 +227,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
 
     final List<TripModel> oldTrips =
         (await httpService.getGuardianTrips("false"));
+    
     setState(() {
       oldTripsList = oldTrips;
     });

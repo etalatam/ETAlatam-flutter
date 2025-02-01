@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Models/student_model.dart';
 import 'package:eta_school_app/Pages/login_page.dart';
+import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/components/active_trip.dart';
@@ -251,41 +252,21 @@ class _StudentsHomeState extends State<StudentsHome>
      List<RouteModel> routes = await httpService.getStudentRoutes();
 
      for (var route in routes) {
-      List<String> routeTopics = [];
       String routeTopic = "route-${route.route_id}-student";
 
-      if(!routeTopics.contains(routeTopic)){
-        notificationSubcribe(routeTopic);
-        routeTopics.add(routeTopic);
-      }
+      notificationServiceProvider.subscribeToTopic(routeTopic);
 
       for (var pickupPoint in student.pickup_points) {
         var pickupPointTopic =
             "route-${route.route_id}-pickup_point-${pickupPoint.pickup_id}";
-        if(!routeTopics.contains(pickupPointTopic)){
-          notificationSubcribe(pickupPointTopic);
-          routeTopics.add(pickupPointTopic);
-        }
-      }
-
-      storage.setItem('route-topics', routeTopics.toString());
-       
+          notificationServiceProvider.subscribeToTopic(pickupPointTopic);
+      }       
      }
 
     if (hasActiveTrip) {
       activeTrip?.subscribeToTripTracking();
     }
   }
-
-  notificationSubcribe(String topic) {
-    try {
-      FirebaseMessaging messaging = FirebaseMessaging.instance;
-      messaging.subscribeToTopic(topic);
-    } catch (e) {
-      print("StudentsHome.notificationSubcribe.error: ${e.toString()}");
-    }
-  }
-
   openTripcallback(TripModel trip_) {
     Get.to(TripPage(
       trip: trip_,

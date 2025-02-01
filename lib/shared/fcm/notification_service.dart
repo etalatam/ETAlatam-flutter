@@ -8,6 +8,8 @@ class NotificationService with ChangeNotifier {
 
   // Declaración del singleton
   static final NotificationService _instance = NotificationService._internal();
+  
+  List<String> topicsList = [];
 
   // Constructor privado
   NotificationService._internal() {
@@ -16,7 +18,21 @@ class NotificationService with ChangeNotifier {
 
   // Método factory para retornar la misma instancia del singleton
   factory NotificationService() {
-    return _instance;
+    return _instance;    
+  }
+
+  subscribeToTopic(String topic) {
+    print("notificationService.notificationSubcribe: $topic");
+    try {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+      
+      if(!topicsList.contains(topic)){
+        topicsList.add(topic);
+        messaging.subscribeToTopic(topic);
+      }
+    } catch (e) {
+      print("notificationService.notificationSubcribe.error: ${e.toString()}");
+    }
   }
 
   // Método para manejar los mensajes entrantes

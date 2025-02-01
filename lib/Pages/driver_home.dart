@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Pages/login_page.dart';
+import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/components/active_trip.dart';
@@ -240,16 +241,6 @@ class _DriverHomeState extends State<DriverHome>
   openPage(context, page) {
     setState(() => openNewPage(context, page));
   }
-
-  notificationSubcribe(String topic) {
-    try {
-      FirebaseMessaging messaging = FirebaseMessaging.instance;
-      messaging.subscribeToTopic(topic);
-    } catch (e) {
-      print("DriverHome.notificationSubcribe.error: ${e.toString()}");
-    }
-  }
-
   ///
   /// Load resources through API
   ///
@@ -276,15 +267,10 @@ class _DriverHomeState extends State<DriverHome>
     });
 
     final todateRoutes = await httpService.todayRoutes();
-    List<String> routeTopics = [];
     for (var route in todateRoutes) {
       var routeDriverTopic = "route-${route.route_id}-driver";
-      if(!routeTopics.contains(routeDriverTopic)){
-        notificationSubcribe(routeDriverTopic);
-        routeTopics.add(routeDriverTopic);
-      }
+      notificationServiceProvider.subscribeToTopic(routeDriverTopic);
     }
-    storage.setItem('route-topics', routeTopics.toString());
 
     setState(() {
       todateRoutesList = todateRoutes;
