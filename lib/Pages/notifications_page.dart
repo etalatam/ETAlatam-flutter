@@ -3,6 +3,7 @@ import 'package:eta_school_app/Pages/help_messages_page.dart';
 import 'package:eta_school_app/Models/parent_model.dart';
 import 'package:eta_school_app/Models/NotificationModel.dart';
 import 'package:eta_school_app/Pages/providers/notification_provider.dart';
+import 'package:eta_school_app/components/animated_snackbar_content.dart';
 import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/components/slide_action.dart';
@@ -355,6 +356,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
       notificationsList = notificationslist!;
       showLoader = false;
     });
+
+    showTooltip(null);
   }
 
   bool showLoader = true;
@@ -419,14 +422,23 @@ class _NotificationsPageState extends State<NotificationsPage> {
     });
   }
 
-  void showTooltip(RemoteMessage message) {
-    if (message.notification != null) {
-      final snackBar = SnackBar(
-        content: Text(message.notification!.title ?? "Nuevo mensaje"),
-        duration: Duration(seconds: 5),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    }
+  void showTooltip(RemoteMessage? message) {
+    final title = message?.notification!.title ?? "Nuevo mensaje";
+    final snackBar = SnackBar(
+      duration: Duration(seconds: 5),
+      content: AnimatedSnackBarContent(title: title,),
+      backgroundColor: Color.fromARGB(255,15,148,136),
+      shape: RoundedRectangleBorder(
+        side: BorderSide(
+          color: Colors.white, // Color del borde
+          width: 2.0, // Ancho del borde
+        ),
+        borderRadius: BorderRadius.circular(10.0), // Bordes redondeados
+      ),
+      behavior: SnackBarBehavior.floating, // Hace que el SnackBar flote
+      margin: EdgeInsets.all(20.0), // Margen alrededor del SnackBar
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   @override
