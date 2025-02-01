@@ -57,6 +57,7 @@ class EmitterService extends ChangeNotifier {
 
   void activeTimer(){
     _activeTimer = true;
+    _startTimer();
     print("[EmitterService.activeTimer]");
   }
 

@@ -427,10 +427,13 @@ class _TripPageState extends State<TripPage>
       trip = widget.trip!;
     });
 
+    if(trip.trip_status == "Running"){
+      emitterServiceProvider.activeTimer();
+    }
+
     if (widget.showBus || widget.showStudents) {
       Provider.of<EmitterService>(context, listen: false)
           .addListener(onEmitterMessage);
-      emitterServiceProvider.activeTimer();
     }
   }
 
