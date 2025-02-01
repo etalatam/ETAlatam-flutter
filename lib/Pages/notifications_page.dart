@@ -357,7 +357,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       showLoader = false;
     });
 
-    showTooltip(null);
+    // showTooltip(null);
   }
 
   bool showLoader = true;
