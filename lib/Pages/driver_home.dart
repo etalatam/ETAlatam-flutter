@@ -99,23 +99,15 @@ class _DriverHomeState extends State<DriverHome>
                                                   return Container(
                                                     padding: EdgeInsets.symmetric(
                                                         horizontal:
-                                                            todateRoutesList
-                                                                        .length <
-                                                                    2
-                                                                ? 20
-                                                                : 0),
-                                                    width: todateRoutesList
-                                                                .length <
-                                                            2
-                                                        ? MediaQuery.of(context)
-                                                            .size
-                                                            .width
+                                                          todateRoutesList.length < 2 ? 20 : 0),
+                                                        width: 
+                                                          todateRoutesList.length < 2 ? MediaQuery.of(context).size.width
                                                         : 400,
                                                     // height: 400,
                                                     child: HomeRouteBlock(
-                                                        route: todateRoutesList[
-                                                            index],
-                                                        callback: createTrip),
+                                                        route: todateRoutesList[index],
+                                                        callback: createTrip,
+                                                        activeTrip: activeTrip,),
                                                   );
                                                 })),
 

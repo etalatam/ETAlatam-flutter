@@ -1,3 +1,4 @@
+import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/Pages/pickups_page.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/Models/route_model.dart';
@@ -6,9 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class HomeRouteBlock extends StatelessWidget {
-  const HomeRouteBlock({super.key, required this.route, this.callback});
+  const HomeRouteBlock({super.key, required this.route, this.callback, this.activeTrip});
 
   final RouteModel route;
+  final TripModel? activeTrip;
   final Function? callback;
 
   @override
@@ -218,11 +220,11 @@ class HomeRouteBlock extends StatelessWidget {
                               ]),
                       ),
                       GestureDetector(
-                          onTap: () {
+                          onTap: activeTrip != null ? () {
                             // return;
                             callback!(route);
                             // openNewPage(context, DriverPage(driver: route.driver, vehicle: route.vehicle,));
-                          },
+                          } : null,
                           child: Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 6),
