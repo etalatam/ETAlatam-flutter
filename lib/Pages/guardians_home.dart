@@ -8,7 +8,6 @@ import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -179,19 +178,16 @@ class _GuardiansHomeState extends State<GuardiansHome>
   }
 
   loadParent() async {
-    if(!mounted) return;
-    Timer(Duration(seconds: 2), () async {
-      await storage.getItem('darkmode');
-      setState(() {
-        darkMode = storage.getItem('darkmode') == true ? true : false;
-        showLoader = false;
-      });
+    setState(() {
+      showLoader = true;
     });
 
     final parentQuery = await httpService.getParent();
     setState(() {
       parentModel = parentQuery;
+      showLoader = false;
     });
+
     for (var student in parentModel!.students) {
       student.subscribeToStudentTracking();
     }
@@ -244,8 +240,10 @@ class _GuardiansHomeState extends State<GuardiansHome>
   @override
   void initState() {
     super.initState();
-    if(mounted){
-      loadParent();
+
+    loadParent();
+
+    if(mounted){      
       Provider.of<NotificationService>(context, listen: false)
           .addListener(onPushMessage);
     }

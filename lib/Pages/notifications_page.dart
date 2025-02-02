@@ -33,9 +33,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
     return showLoader
         ? Loader()
         : Material(
-            // type: MaterialType.transparency,
+            type: MaterialType.transparency,
             child: RefreshIndicator(
-                triggerMode: RefreshIndicatorTriggerMode.onEdge,
+                triggerMode: RefreshIndicatorTriggerMode.anywhere,
                 onRefresh:
                     _refreshData, // Function to be called on pull-to-refresh
                 child: Container(
@@ -354,7 +354,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
   /// Load devices through API
   ///
   loadNotifications() async {
-    if (!mounted)  return;
       setState(() {
         showLoader = true;
       });
