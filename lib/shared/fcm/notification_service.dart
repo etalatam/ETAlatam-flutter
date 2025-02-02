@@ -93,13 +93,6 @@ class NotificationService with ChangeNotifier {
 
   Future<void> close() async {
     try {
-      String? topics = await storage.getItem('route-topics');
-      if(topics != null){
-        topics =
-          topics.replaceAll("[", "").replaceAll("]", "").replaceAll(" ", "");
-      }
-      List<String> topicsList = topics!.split(",");
-
       for (var topic in topicsList) {
         print("unsubscribeFromTopic: $topic");
         FirebaseMessaging.instance.unsubscribeFromTopic(topic);
