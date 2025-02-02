@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:isolate';
 import 'dart:ui';
+import 'package:background_locator_2/location_dto.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:background_locator_2/background_locator.dart';
 import 'package:background_locator_2/settings/android_settings.dart';
@@ -49,9 +50,9 @@ class LocationService extends ChangeNotifier {
 
     askPermission().then((value) {
       if (value) {
+        
         if (IsolateNameServer.lookupPortByName(
-                LocationServiceRepository.isolateName) !=
-            null) {
+                LocationServiceRepository.isolateName) != null) {
           IsolateNameServer.removePortNameMapping(
               LocationServiceRepository.isolateName);
         }
@@ -60,14 +61,14 @@ class LocationService extends ChangeNotifier {
             port.sendPort, LocationServiceRepository.isolateName);
 
         port.listen((dynamic data) async {
-          print('[ETALocationService.listen] $data');
+          print('[ETALocationService] $data');
           if (data != null &&
               (_locationData?['latitude'] != data['latitude']) &&
               (_locationData?['longitude'] != data['longitude'])) {
             _locationData = data;
             
             try {
-              await tracking(_locationData);
+              // await trackingDynamic(_locationData);
             } catch (e) {
               print ('[ETALocationService.tracking.error] ${e.toString()}');
             }
@@ -79,8 +80,6 @@ class LocationService extends ChangeNotifier {
               print(
                   '[ETALocationService.notifyListeners.error] ${e.toString()}');
             }
-
-
           }
         });
 
@@ -116,10 +115,10 @@ class LocationService extends ChangeNotifier {
             client: LocationClient.google,
             androidNotificationSettings: AndroidNotificationSettings(
                 notificationChannelName: 'Location tracking',
-                notificationTitle: 'Start Location Tracking',
-                notificationMsg: 'Track location in background',
+                notificationTitle: 'Seguimiento de ubicación',
+                notificationMsg: 'Seguimiento de la ubicación en segundo plano',
                 notificationBigMsg:
-                    'Background location is on to keep the app up-tp-date with your location. This is required for main features to work properly when the app is not running.',
+                    'La ubicación en segundo plano está activada para mantener la aplicación actualizada con su ubicación. Esto es necesario para que las funciones principales funcionen correctamente cuando la aplicación no se está ejecutando.',
                 // notificationIconColor: Colors.grey,
                 notificationTapCallback:
                     LocationCallbackHandler.notificationCallback)));
@@ -149,8 +148,8 @@ class LocationService extends ChangeNotifier {
     return true;
   }
 
-  tracking(dynamic locationInfo) async {
-    print('[ETALocationService.tracking] ${locationInfo.toString()}');
+  trackingDynamic(dynamic locationInfo) async {
+    print('[ETALocationService.trackingDynamic] ${locationInfo.toString()}');
     try {
       final jsonData = {
         'latitude': locationInfo?['latitude'],
@@ -161,7 +160,32 @@ class LocationService extends ChangeNotifier {
       };
       await httpService.sendTracking(position: jsonData, userId: _userId);
     } catch (e) {
-      print('[ETALocationService.tracking.error] ${e.toString()}');
+      print('[ETALocationService.trackingDynamic.error] ${e.toString()}');
+    }
+  }
+
+
+  trackingLocationDto(LocationDto locationInfo) async {
+    print('[ETALocationService.trackingLocationDto] ${locationInfo.toString()}');
+
+    if ((_locationData?['latitude'] != locationInfo.latitude) &&
+    (_locationData?['longitude'] != locationInfo.longitude)) {
+
+      try {
+        final jsonData = {
+          'latitude': locationInfo.latitude,
+          'longitude': locationInfo.longitude,
+          'altitude': locationInfo.altitude,
+          'accuracy': locationInfo.accuracy,
+          'speed': locationInfo.speed,
+          'speedAccuracy': locationInfo.speedAccuracy        
+        };
+        _locationData = jsonData;
+        notifyListeners();
+        await httpService.sendTracking(position: jsonData, userId: _userId);
+      } catch (e) {
+        print('[ETALocationService.trackingLocationDto.error] ${e.toString()}');
+      }
     }
   }
 
