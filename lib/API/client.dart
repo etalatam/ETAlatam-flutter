@@ -116,7 +116,7 @@ class HttpService {
   }
 
   /// Load Latest Notifications
-  Future<List<NotificationModel>?> getNotifications(String? topics) async {
+  Future<List<NotificationModel>> getNotifications(String? topics) async {
     const endpoint = '';
     var query = "/rpc/notifications?order=id.desc&limit=20";
 

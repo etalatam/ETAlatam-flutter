@@ -538,8 +538,9 @@ class _TripPageState extends State<TripPage>
 
   Future<void> _updateIcon(
       Position position, String relationName, int relationId) async {
-    PointAnnotation? pointAnnotation =
-        annotationsMap["$relationName.$relationId"];
+       PointAnnotation? pointAnnotation = 
+        annotationsMap.containsKey("$relationName.$relationId") ?
+        annotationsMap["$relationName.$relationId"] : null;
 
     // if (relationName.indexOf("drivers") > 1) {
     //   _updatePulsatingCircle(Point(coordinates: position));

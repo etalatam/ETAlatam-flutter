@@ -64,6 +64,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 //       )),
                                 // ),
                                 const SizedBox(height: 60),
+                                if(notificationsList.isEmpty)
                                 SizedBox(
                                     width: double.infinity,
                                     child: Row(children: [
@@ -83,9 +84,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                         style: activeTheme.h3,
                                       )
                                     ])),
+                                if(notificationsList.isEmpty)
                                 const SizedBox(
                                   height: 10,
                                 ),
+                                if(notificationsList.isEmpty)
                                 SizedBox(
                                     width: double.infinity,
                                     child: Text(
@@ -97,7 +100,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             ),
                           ),
                           Container(
-                              margin: const EdgeInsets.only(top: 220),
+                              margin: const EdgeInsets.only(top: 130),
                               child: notificationsList.isEmpty
                                   ? const Center()
                                   : Column(children: [
@@ -339,6 +342,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     ]))));
   }
 
+    @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if(notificationsList.isEmpty){
+      loadNotifications();
+    }
+  }
+
   ///
   /// Load devices through API
   ///
@@ -348,13 +359,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
         showLoader = true;
       });
 
-    final notificationslist = await httpService.getNotifications(
+    final notificationslistResponse = await httpService.getNotifications(
       notificationServiceProvider.topicsList.toString()
     );
 
     setState(() {
-      notificationsList = notificationslist!;
       showLoader = false;
+      if(notificationslistResponse.isNotEmpty){
+        notificationsList = notificationslistResponse;  
+      }
     });
 
     // showTooltip(null);

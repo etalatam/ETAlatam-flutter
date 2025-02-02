@@ -226,8 +226,10 @@ class _StudentPageState extends State<StudentPage> {
   }
 
   Future<void> _updateIcon(Position position, String relationName, int relationId) async {
-    PointAnnotation? pointAnnotation =
-        annotationsMap["$relationName.$relationId"];
+
+    PointAnnotation? pointAnnotation = 
+      annotationsMap.containsKey("$relationName.$relationId") ?
+        annotationsMap["$relationName.$relationId"] : null;
 
     if (pointAnnotation == null) {
       final networkImage = await mapboxUtils
@@ -246,9 +248,12 @@ class _StudentPageState extends State<StudentPage> {
       pointAnnotation.geometry = Point(coordinates: position);
       annotationManager?.update(pointAnnotation);
     }
+
+    if("$relationId" == "${widget.student?.schoolId}"){
     _mapboxMapController
         ?.flyTo(CameraOptions(center: Point(coordinates: position)),
         MapAnimationOptions(duration: 1));
+    }
   }
 
   void onEmitterMessage() async {
