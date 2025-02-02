@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -24,6 +25,7 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
+
   List<NotificationModel> notificationsList = [];
 
   ParentModel? parent;
@@ -38,7 +40,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 triggerMode: RefreshIndicatorTriggerMode.anywhere,
                 onRefresh:
                     _refreshData, // Function to be called on pull-to-refresh
-                child: Container(
+                child: VisibilityDetector(
+                  key: Key('my-widget-key'),
+                  onVisibilityChanged: (visibilityInfo) {
+                    if (visibilityInfo.visibleFraction > 0) {
+                      print('Widget visible');
+                      loadNotifications();
+                    } else {
+                      print('Widget oculto');
+                    }
+                  },
+                  child:
+                Container(
                     width: double.infinity,
                     height: MediaQuery.of(context).size.height,
                     color: activeTheme.main_bg,
@@ -339,15 +352,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       //     left: 20,
                       //     right: 20,
                       //     child: BottomMenu('notifications', openPage))
-                    ]))));
-  }
-
-    @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if(notificationsList.isEmpty){
-      loadNotifications();
-    }
+                    ])))));
   }
 
   ///
@@ -421,7 +426,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   onPushMessage(){
-    if(!mounted) return;
     final LastMessage? lastMessage =
           Provider.of<NotificationService>(context, listen: false).lastMessage;
 
