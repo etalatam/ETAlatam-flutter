@@ -560,6 +560,7 @@ class _TripPageState extends State<TripPage>
         final circleImage = await mapboxUtils.createCircleImage(networkImage);
         pointAnnotation = await mapboxUtils.createAnnotation(
             annotationManager, position, circleImage);
+        annotationsMap["$relationName.$relationId"] = pointAnnotation!;
       }
     } else {
       pointAnnotation.geometry = Point(coordinates: position);
