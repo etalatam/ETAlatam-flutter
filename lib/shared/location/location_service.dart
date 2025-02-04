@@ -67,6 +67,7 @@ class LocationService extends ChangeNotifier {
           IsolateNameServer.registerPortWithName(
               port.sendPort, LocationServiceRepository.isolateName);
 
+          // ubicacion en foreground
           port.listen((dynamic data) async {
             print('[ETALocationService.listen] $data');
             if (data != null &&
@@ -159,7 +160,8 @@ class LocationService extends ChangeNotifier {
         'longitude': locationInfo?['longitude'],
         'altitude': locationInfo?['altitude'],
         'accuracy': locationInfo?['accuracy'],
-        'speed': locationInfo?['speed']
+        'heading': locationInfo?['heading'],
+        'time': locationInfo?['time']
       };
       await httpService.sendTracking(position: jsonData, userId: _userId);
     } catch (e) {
@@ -185,8 +187,8 @@ class LocationService extends ChangeNotifier {
           'heading': locationInfo.heading,
           'time': locationInfo.time
         };
-        _locationData = jsonData;
-        notifyListeners();
+        // _locationData = jsonData;
+        // notifyListeners();
         await httpService.sendTracking(position: jsonData, userId: _userId);
       } catch (e) {
         print('[ETALocationService.trackingLocationDto.error] ${e.toString()}');

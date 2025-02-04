@@ -712,7 +712,10 @@ class HttpService {
       'longitude': position['longitude'],
       'speed': position['speed'],
       'accuracy': position['accuracy'],
-      'altitude': position['altitude']
+      'altitude': position['altitude'],
+      'speedAccuracy': position['speedAccuracy'],
+      'time': position['time']
+
     };
     final jsonData = jsonEncode(data);
     try {

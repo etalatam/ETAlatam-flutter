@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:eta_school_app/shared/location/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -30,6 +32,10 @@ class MapWiewState extends State<MapWiew> {
   LocationService? locationService;
 
   bool _firstLocationUpdate = true;
+  
+  double _bearing = 0;
+  
+  Map<String, dynamic>? _lastLocation;
 
   _onMapCreated(MapboxMap mapboxMap) async {
     print('[MapView._onMapCreated]');
@@ -73,6 +79,18 @@ class MapWiewState extends State<MapWiew> {
     return Scaffold(body:
         Consumer<LocationService>(builder: (context, locationService, child) {
       final locationData = locationService.locationData;
+
+      if(_lastLocation != null){
+        _bearing = calculateBearing(
+          locationData?['latitude'], 
+          locationData?['longitude'], 
+          _lastLocation?['latitude'], 
+          _lastLocation?['longitude']
+        );
+        print("_bearing: $_bearing");
+      }
+      _lastLocation = locationData;
+
       print('[MapView.Consumer.LocationService.locationData] $locationData');
       print(
           'MapView.Consumer.LocationService.widget.navigationMode ${widget.navigationMode}');
@@ -89,6 +107,7 @@ class MapWiewState extends State<MapWiew> {
           _firstLocationUpdate = false;
         } else {
           mapboxMap?.setCamera(CameraOptions(
+            // bearing: widget.navigationMode? _bearing : 0,
             center: Point(
                 coordinates: Position(
                     locationData['longitude'], locationData['latitude'])),
@@ -112,5 +131,29 @@ class MapWiewState extends State<MapWiew> {
     print('[MapView.initState]');
     super.initState();
     locationService = Provider.of<LocationService>(context, listen: false);
+  }
+
+  double calculateBearing(double lat1, double lon1, double lat2, double lon2) {
+    final lat1Rad = radians(lat1);
+    final lon1Rad = radians(lon1);
+    final lat2Rad = radians(lat2);
+    final lon2Rad = radians(lon2);
+
+    final y = sin(lon2Rad - lon1Rad) * cos(lat2Rad);
+    final x = cos(lat1Rad) * sin(lat2Rad) - sin(lat1Rad) * cos(lat2Rad) * cos(lon2Rad - lon1Rad);
+    final bearingRad = atan2(y, x);
+
+    // Convierte el rumbo a grados y normaliza a un valor entre 0 y 360
+    final bearingDeg = (degrees(bearingRad) + 360) % 360;
+
+    return bearingDeg;
+  }
+
+  double radians(double degrees) {
+    return degrees * pi / 180;
+  }
+
+  double degrees(double radians) {
+    return radians * 180 / pi;
   }
 }
