@@ -62,7 +62,7 @@ class StudentModel {
       "gender": gender,
       "status": status,
       "trips_count": trips_count,
-      "pickup_location": pickup_points,
+      "pickup_points": pickup_points,
       // "destination": destination!.toJson(),
       "schoolId": schoolId,
       "statuscode": statusCode
@@ -71,12 +71,14 @@ class StudentModel {
   }
 
   factory StudentModel.fromJson(Map<String, dynamic> json) {
-    List<PickupLocationModel> _pickupLocations = [];
+    List<PickupLocationModel> pickupLocations = [];
 
     try {
-      _pickupLocations = json['pickup_points']
-          .map((dynamic item) => PickupLocationModel.fromJson(item))
-          .toList();
+      if (json['pickup_points'] != null )
+      {
+        Iterable l = json["pickup_points"];
+        pickupLocations = List<PickupLocationModel>.from(l.map((model)=> PickupLocationModel.fromJson(model)));
+      }
     } catch (e) {
       print("StudentModel.fromJson.parsePickupLocation.error: ${e.toString()}");
     }
@@ -94,7 +96,7 @@ class StudentModel {
       transfer_status: json['transfer_status'] as String?,
       gender: json['gender'] as String?,
       trips_count: json['trips_count'] as int?,
-      pickup_points: _pickupLocations,
+      pickup_points: pickupLocations,
       // destination: destination,
       schoolId: json['school_id'],
       statusCode: json['status_code'],

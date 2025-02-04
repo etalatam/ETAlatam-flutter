@@ -257,7 +257,7 @@ class HttpService {
   Future<List<RouteModel>> getGuardianRoutes() async {
     const endpoint = "/rpc/guardian_routes";
     var res =
-        await getQuery("$endpoint?limit=10&select=driver_id,bus_plate,route_id,route_description,schedule_start_time,schedule_end_time,schedule_id,pickup_points");
+        await getQuery("$endpoint?limit=10&select=driver_id,bus_plate,route_id,route_description,schedule_start_time,schedule_end_time,schedule_id");
     print("[$endpoint] res.statusCode: ${res.statusCode}");
     print("[$endpoint] res.body: ${res.body}");
 
@@ -277,7 +277,7 @@ class HttpService {
     Future<List<RouteModel>> getStudentRoutes() async {
     const endpoint = "/rpc/student_routes";
     var res =
-        await getQuery("$endpoint?limit=10&select=driver_id,bus_plate,route_id,route_description,schedule_start_time,schedule_end_time,schedule_id,pickup_points");
+        await getQuery("$endpoint?limit=10&select=driver_id,bus_plate,route_id,route_description,schedule_start_time,schedule_end_time,schedule_id");
     print("[$endpoint] res.statusCode: ${res.statusCode}");
     print("[$endpoint] res.body: ${res.body}");
 

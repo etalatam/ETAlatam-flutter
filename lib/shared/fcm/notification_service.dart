@@ -22,7 +22,7 @@ class NotificationService with ChangeNotifier {
   }
 
   subscribeToTopic(String topic) {
-    print("notificationService.notificationSubcribe: $topic");
+    print("notificationService.subscribeToTopic: $topic");
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
       

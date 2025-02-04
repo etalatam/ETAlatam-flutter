@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 
 class MapWiew extends StatefulWidget {
   // Indica si el mapa debe mostrar la ubicación
@@ -35,8 +36,6 @@ class MapWiewState extends State<MapWiew> {
   
   double _bearing = 0;
   
-  Map<String, dynamic>? _lastLocation;
-
   _onMapCreated(MapboxMap mapboxMap) async {
     print('[MapView._onMapCreated]');
 
@@ -56,9 +55,9 @@ class MapWiewState extends State<MapWiew> {
           pulsingEnabled: true,
           showAccuracyRing: true,
           puckBearingEnabled: true,
-
         ));
       await locationService?.init();
+      // listenToCompass();
     }
 
     this.mapboxMap?.scaleBar.updateSettings(ScaleBarSettings(
@@ -80,17 +79,6 @@ class MapWiewState extends State<MapWiew> {
         Consumer<LocationService>(builder: (context, locationService, child) {
       final locationData = locationService.locationData;
 
-      if(_lastLocation != null){
-        _bearing = calculateBearing(
-          locationData?['latitude'], 
-          locationData?['longitude'], 
-          _lastLocation?['latitude'], 
-          _lastLocation?['longitude']
-        );
-        print("_bearing: $_bearing");
-      }
-      _lastLocation = locationData;
-
       print('[MapView.Consumer.LocationService.locationData] $locationData');
       print(
           'MapView.Consumer.LocationService.widget.navigationMode ${widget.navigationMode}');
@@ -99,7 +87,7 @@ class MapWiewState extends State<MapWiew> {
           print('[MapView.build._firstLocationUpdate] $_firstLocationUpdate');
           mapboxMap?.setCamera(CameraOptions(
             zoom: 18,
-            pitch: 80,
+            pitch: widget.navigationMode ? 80 : 0,
             center: Point(
                 coordinates: Position(
                     locationData['longitude'], locationData['latitude'])),
@@ -156,4 +144,16 @@ class MapWiewState extends State<MapWiew> {
   double degrees(double radians) {
     return radians * 180 / pi;
   }
+
+  void listenToCompass() {
+    // Usa magnetometerEventStream() en lugar de magnetometerEvents
+    magnetometerEventStream().listen((MagnetometerEvent event) {
+      // Calcula el bearing usando los datos del magnetómetro
+      setState(() {
+        _bearing = atan2(event.y, event.x);
+        print("bearing $_bearing");
+      });
+
+    });
+  }  
 }

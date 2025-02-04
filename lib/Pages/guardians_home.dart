@@ -208,9 +208,8 @@ class _GuardiansHomeState extends State<GuardiansHome>
 
       for (var student in parentModel!.students) {
         var topic = "$routeTopic-student-${student.student_id}";
-        
-        notificationServiceProvider.subscribeToTopic(topic);
-
+        print("sdssd: ${student.pickup_points}");
+        notificationServiceProvider.subscribeToTopic(topic);        
         for (var pickupPoint in student.pickup_points) {
           var topic = "$routeTopic-pickup_point-${pickupPoint.pickup_id}";
           notificationServiceProvider.subscribeToTopic(topic);

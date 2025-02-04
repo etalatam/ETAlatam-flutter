@@ -45,7 +45,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   onVisibilityChanged: (visibilityInfo) {
                     if (visibilityInfo.visibleFraction > 0) {
                       print('Widget visible');
-                      loadNotifications();
+                      if(notificationsList.isEmpty){
+                        loadNotifications();
+                      }
                     } else {
                       print('Widget oculto');
                     }
@@ -385,7 +387,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       showLoader = true;
     });
 
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 1));
     setState(() {
       loadNotifications();
     });
