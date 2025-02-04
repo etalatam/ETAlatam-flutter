@@ -146,9 +146,8 @@ class _StudentsHomeState extends State<StudentsHome>
                                                         openNewPage(
                                                             context,
                                                             TripPage(
-                                                              trip:
-                                                                  oldTripsList[
-                                                                      index],
+                                                              trip: oldTripsList[index],
+                                                              navigationMode: false,
                                                               showBus: false,
                                                               showStudents:
                                                                   false,
@@ -270,7 +269,7 @@ class _StudentsHomeState extends State<StudentsHome>
   openTripcallback(TripModel trip_) {
     Get.to(TripPage(
       trip: trip_,
-      // navigationMode: "support",
+      navigationMode: false,
       showBus: true,
       showStudents: false,
     ));

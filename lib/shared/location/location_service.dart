@@ -44,48 +44,53 @@ class LocationService extends ChangeNotifier {
     // print('[ETALocationService.init] $_locationData');
     // notifyListeners();
 
-    if (initialization) {
-      return;
-    }
 
-    askPermission().then((value) {
+    askPermission().then((value) async{
+      print("[ETALocationService.askPermission.callback] $value");
       if (value) {
-        
-        if (IsolateNameServer.lookupPortByName(
-                LocationServiceRepository.isolateName) != null) {
-          IsolateNameServer.removePortNameMapping(
-              LocationServiceRepository.isolateName);
+
+        bool serviceEnabled = await Location().serviceEnabled();
+        print('[ETALocationService.serviceEnabled] $serviceEnabled');
+        if (!serviceEnabled) {
+          serviceEnabled = await Location().requestService();
         }
-
-        IsolateNameServer.registerPortWithName(
-            port.sendPort, LocationServiceRepository.isolateName);
-
-        port.listen((dynamic data) async {
-          print('[ETALocationService] $data');
-          if (data != null &&
-              (_locationData?['latitude'] != data['latitude']) &&
-              (_locationData?['longitude'] != data['longitude'])) {
-            _locationData = data;
-            
-            try {
-              // await trackingDynamic(_locationData);
-            } catch (e) {
-              print ('[ETALocationService.tracking.error] ${e.toString()}');
-            }
-            // saveLastPosition(data);
-
-            try {
-              notifyListeners();
-            } catch (e) {
-              print(
-                  '[ETALocationService.notifyListeners.error] ${e.toString()}');
-            }
-          }
-        });
-
         BackgroundLocator.initialize();
+
+        if(!initialization){
+
+          if (IsolateNameServer.lookupPortByName(
+                  LocationServiceRepository.isolateName) != null) {
+            IsolateNameServer.removePortNameMapping(
+                LocationServiceRepository.isolateName);
+          }
+
+          IsolateNameServer.registerPortWithName(
+              port.sendPort, LocationServiceRepository.isolateName);
+
+          port.listen((dynamic data) async {
+            print('[ETALocationService.listen] $data');
+            if (data != null &&
+                (_locationData?['latitude'] != data['latitude']) &&
+                (_locationData?['longitude'] != data['longitude'])) {
+              _locationData = data;
+              
+              try {
+                notifyListeners();
+              } catch (e) {
+                print(
+                    '[ETALocationService.notifyListeners.error] ${e.toString()}');
+              }
+
+              try {
+                // await trackingDynamic(_locationData);
+              } catch (e) {
+                print ('[ETALocationService.tracking.error] ${e.toString()}');
+              }
+
+            }
+          });
+        }
         initialization = true;
-        // _startLocator().then((value) => null);
       }
     });
   }
@@ -97,6 +102,11 @@ class LocationService extends ChangeNotifier {
   Future<void> startLocationService() async {
     print('[ETALocationService.startLocationService]');
     var data = <String, dynamic>{'countInit': 1};
+
+    if(!initialization){
+      init();
+    }
+
     return await BackgroundLocator.registerLocationUpdate(
         LocationCallbackHandler.callback,
         initCallback: LocationCallbackHandler.initCallback,
@@ -126,21 +136,14 @@ class LocationService extends ChangeNotifier {
 
   Future<bool> askPermission() async {
     print('[ETALocationService.askPermission]');
-    bool serviceEnabled;
     PermissionStatus permissionGranted;
 
-    serviceEnabled = await Location().serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await Location().requestService();
-      if (!serviceEnabled) {
-        return false;
-      }
-    }
-
     permissionGranted = await Location().hasPermission();
+    print('[ETALocationService.permissionGranted] $permissionGranted');
     if (permissionGranted == PermissionStatus.denied) {
       permissionGranted = await Location().requestPermission();
       if (permissionGranted != PermissionStatus.granted) {
+        print('[ETALocationService.permissionGranted] $permissionGranted');
         return false;
       }
     }

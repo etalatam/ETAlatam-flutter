@@ -136,8 +136,7 @@ class _DriverHomeState extends State<DriverHome>
                                                             TripPage(
                                                               trip:
                                                                   oldTripsList[index],
-                                                              navigationMode:
-                                                                  "support",
+                                                              navigationMode: false,
                                                               showBus: false,
                                                               showStudents:
                                                                   false,
@@ -195,7 +194,7 @@ class _DriverHomeState extends State<DriverHome>
           MaterialPageRoute(
               builder: (context) => TripPage(
                     trip: trip,
-                    navigationMode: "support",
+                    navigationMode: true,
                     showBus: false,
                     showStudents: false,
                   )),
@@ -241,11 +240,13 @@ class _DriverHomeState extends State<DriverHome>
   openPage(context, page) {
     setState(() => openNewPage(context, page));
   }
+
   ///
   /// Load resources through API
   ///
   loadResources() async {
     if(!mounted) return;
+
     final check = await storage.getItem('id_usu');
 
     if (check == null) {
@@ -253,11 +254,9 @@ class _DriverHomeState extends State<DriverHome>
       return;
     }
 
-    await locationServiceProvider.init();
-
-    await storage.getItem('darkmode');
+    // await storage.getItem('darkmode');
     setState(() {
-      darkMode = storage.getItem('darkmode') == true ? true : false;
+      // darkMode = storage.getItem('darkmode') == true ? true : false;
       showLoader = false;
     });
 
@@ -295,7 +294,7 @@ class _DriverHomeState extends State<DriverHome>
   openTripCallback(TripModel wrapper) {
     Get.to(TripPage(
       trip: wrapper,
-      navigationMode: "support",
+      navigationMode: true,
       showBus: false,
       showStudents: false,
     ));

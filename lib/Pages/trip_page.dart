@@ -28,13 +28,13 @@ class TripPage extends StatefulWidget {
   const TripPage(
       {super.key,
       this.trip,
-      this.navigationMode,
+      required this.navigationMode,
       required this.showBus,
       required this.showStudents});
 
   final TripModel? trip;
 
-  final String? navigationMode;
+  final bool navigationMode;
 
   final bool showBus;
 
@@ -90,9 +90,7 @@ class _TripPageState extends State<TripPage>
                 SizedBox(
                   height: MediaQuery.of(context).size.height / 1.40,
                   child: MapWiew(
-                    navigationMode: widget.navigationMode == null
-                        ? false
-                        : (trip.trip_status == 'Running' ? true : false),
+                    navigationMode: widget.navigationMode,
                     onMapReady: (MapboxMap mapboxMap) async {
                       _mapboxMapController = mapboxMap;
 

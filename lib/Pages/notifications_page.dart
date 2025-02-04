@@ -420,12 +420,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
     super.initState();
     showLoader = true;
     loadNotifications();
-
-      Provider.of<NotificationService>(context, listen: false)
+    
+    Provider.of<NotificationService>(context, listen: false)
           .addListener(onPushMessage);
   }
 
   onPushMessage(){
+    if(!mounted) return;
     final LastMessage? lastMessage =
           Provider.of<NotificationService>(context, listen: false).lastMessage;
 
