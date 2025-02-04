@@ -178,7 +178,9 @@ class LocationService extends ChangeNotifier {
           'altitude': locationInfo.altitude,
           'accuracy': locationInfo.accuracy,
           'speed': locationInfo.speed,
-          'speedAccuracy': locationInfo.speedAccuracy        
+          'speedAccuracy': locationInfo.speedAccuracy,
+          'heading': locationInfo.heading,
+          'time': locationInfo.time
         };
         _locationData = jsonData;
         notifyListeners();
