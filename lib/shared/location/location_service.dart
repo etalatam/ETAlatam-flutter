@@ -129,7 +129,7 @@ class LocationService extends ChangeNotifier {
                 notificationTitle: 'Seguimiento de ubicación',
                 notificationMsg: 'Seguimiento de la ubicación en segundo plano',
                 notificationBigMsg:
-                    'La ubicación en segundo plano está activada para mantener la aplicación actualizada con su ubicación. Esto es necesario para que las funciones principales funcionen correctamente cuando la aplicación no se está ejecutando.',
+                    'La ubicación en segundo plano está activada para mantener la aplicación actualizada con su ubicación. Esto es necesario para el seguimiento en vivo.',
                 // notificationIconColor: Colors.grey,
                 notificationTapCallback:
                     LocationCallbackHandler.notificationCallback)));
