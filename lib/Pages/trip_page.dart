@@ -66,11 +66,11 @@ class _TripPageState extends State<TripPage>
   PointAnnotationManager? annotationManager;
 
   Map<String, PointAnnotation> annotationsMap = {};
-  
+
   bool waitingBusPosition = true;
-  
+
   // ScreenCoordinate busPulsatingCircleCoordinate = ScreenCoordinate( x: 0, y: 0);
-  
+
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -78,7 +78,7 @@ class _TripPageState extends State<TripPage>
           ? Loader()
           : Scaffold(
               body: Stack(children: <Widget>[
-              // Column(children: [
+                // Column(children: [
                 // if(widget.showBus && !hasBusPosition )
                 //   SizedBox(
                 //     height: 15,
@@ -112,12 +112,12 @@ class _TripPageState extends State<TripPage>
                 //   top: 0,
                 //   child: SizedBox(
                 //     height: 10,
-                //     child: 
+                //     child:
                 //       waitingBusPosition ?
                 //       LinearProgressIndicator() :
                 //       Center()
                 //   ),
-                //   ), 
+                //   ),
 
                 // if(busPulsatingCircleCoordinate.x.toDouble() > 0)
                 // Positioned(
@@ -226,9 +226,11 @@ class _TripPageState extends State<TripPage>
                                   if (trip.trip_status == 'Running' &&
                                       relationName.contains('eta.drivers'))
                                     GestureDetector(
-                                        onTap: showLoader ? null : (() {
-                                          endTrip();
-                                        }),
+                                        onTap: showLoader
+                                            ? null
+                                            : (() {
+                                                endTrip();
+                                              }),
                                         child: Center(
                                             child: ButtonTextIcon(
                                                 lang.translate('End trip'),
@@ -237,8 +239,9 @@ class _TripPageState extends State<TripPage>
                                                   color:
                                                       activeTheme.buttonColor,
                                                 ),
-                                                showLoader ? Colors.grey :
-                                                Colors.red))),
+                                                showLoader
+                                                    ? Colors.grey
+                                                    : Colors.red))),
                                   if (trip.trip_status == 'Running')
                                     const SizedBox(
                                       width: 20,
@@ -425,7 +428,7 @@ class _TripPageState extends State<TripPage>
       trip = widget.trip!;
     });
 
-    if(trip.trip_status == "Running"){
+    if (trip.trip_status == "Running") {
       emitterServiceProvider.activeTimer();
     }
 
@@ -532,13 +535,12 @@ class _TripPageState extends State<TripPage>
   //   });
   // }
 
-  
-
   Future<void> _updateIcon(
       Position position, String relationName, int relationId) async {
-       PointAnnotation? pointAnnotation = 
-        annotationsMap.containsKey("$relationName.$relationId") ?
-        annotationsMap["$relationName.$relationId"] : null;
+    PointAnnotation? pointAnnotation =
+        annotationsMap.containsKey("$relationName.$relationId")
+            ? annotationsMap["$relationName.$relationId"]
+            : null;
 
     // if (relationName.indexOf("drivers") > 1) {
     //   _updatePulsatingCircle(Point(coordinates: position));
@@ -552,6 +554,10 @@ class _TripPageState extends State<TripPage>
         pointAnnotation = await mapboxUtils.createAnnotation(
             annotationManager, position, imageData);
         annotationsMap["$relationName.$relationId"] = pointAnnotation!;
+
+        _mapboxMapController?.flyTo(
+            CameraOptions(center: Point(coordinates: position)),
+            MapAnimationOptions());
       } else {
         final networkImage = await mapboxUtils.getNetworkImage(
             httpService.getAvatarUrl(relationId, relationName));
@@ -564,10 +570,6 @@ class _TripPageState extends State<TripPage>
       pointAnnotation.geometry = Point(coordinates: position);
       annotationManager?.update(pointAnnotation);
     }
-
-    _mapboxMapController?.flyTo(CameraOptions(
-      center: Point(coordinates: position)
-    ), MapAnimationOptions());
   }
 
   //  void _animateIcon(LatLng start, LatLng end) {

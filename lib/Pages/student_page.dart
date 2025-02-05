@@ -45,9 +45,8 @@ class _StudentPageState extends State<StudentPage> {
                     navigationMode: false,
                     onMapReady: (MapboxMap mapboxMap) async {
                       _mapboxMapController = mapboxMap;
-                        annotationManager =
-                          await mapboxMap.annotations.createPointAnnotationManager();
-
+                      annotationManager = await mapboxMap.annotations
+                          .createPointAnnotationManager();
                     },
                     onStyleLoadedListener: (MapboxMap mapboxMap) async {},
                   ),
@@ -225,11 +224,12 @@ class _StudentPageState extends State<StudentPage> {
         .addListener(onEmitterMessage);
   }
 
-  Future<void> _updateIcon(Position position, String relationName, int relationId) async {
-
-    PointAnnotation? pointAnnotation = 
-      annotationsMap.containsKey("$relationName.$relationId") ?
-        annotationsMap["$relationName.$relationId"] : null;
+  Future<void> _updateIcon(
+      Position position, String relationName, int relationId) async {
+    PointAnnotation? pointAnnotation =
+        annotationsMap.containsKey("$relationName.$relationId")
+            ? annotationsMap["$relationName.$relationId"]
+            : null;
 
     if (pointAnnotation == null) {
       final networkImage = await mapboxUtils
@@ -238,21 +238,20 @@ class _StudentPageState extends State<StudentPage> {
       pointAnnotation = await mapboxUtils.createAnnotation(
           annotationManager, position, circleImage);
       annotationsMap["$relationName.$relationId"] = pointAnnotation!;
-      _mapboxMapController
-        ?.setCamera(CameraOptions(
-          center: Point(coordinates: position),
-          zoom: 15.5,
-          pitch: 70,
-        ));
+      _mapboxMapController?.setCamera(CameraOptions(
+        center: Point(coordinates: position),
+        zoom: 15.5,
+        pitch: 70,
+      ));
     } else {
       pointAnnotation.geometry = Point(coordinates: position);
       annotationManager?.update(pointAnnotation);
     }
 
-    if("$relationId" == "${widget.student?.schoolId}"){
-    _mapboxMapController
-        ?.flyTo(CameraOptions(center: Point(coordinates: position)),
-        MapAnimationOptions(duration: 1));
+    if ("$relationId" == "${widget.student?.student_id}") {
+      _mapboxMapController?.flyTo(
+          CameraOptions(center: Point(coordinates: position)),
+          MapAnimationOptions(duration: 1));
     }
   }
 
