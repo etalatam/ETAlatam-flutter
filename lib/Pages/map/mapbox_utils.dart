@@ -73,7 +73,7 @@ class MapboxUtils {
         textColor: Colors.black.value,
         iconSize: 0.35,
         iconOffset: [0.0, -5.0],
-        symbolSortKey: 1,
+        symbolSortKey: 100,
         image: imageData));
   }
 }

@@ -98,6 +98,7 @@ class _TripPageState extends State<TripPage>
                           .createPointAnnotationManager()
                           .then((value) async {
                         annotationManager = value;
+                        annotationManager?.addOnPointAnnotationClickListener(this);
                       });
                     },
                     onStyleLoadedListener: (MapboxMap mapboxMap) async {
@@ -488,6 +489,7 @@ class _TripPageState extends State<TripPage>
       lineBlur: 1.0,
       lineDasharray: [1.0, 2.0],
       lineWidth: 6.0,
+      lineSortKey: 0
     ));
   }
 
@@ -496,11 +498,6 @@ class _TripPageState extends State<TripPage>
     final ByteData bytes =
         await rootBundle.load('assets/markers/marker-start-route.png');
     final Uint8List imageData = bytes.buffer.asUint8List();
-
-    final pointAnnotationManager =
-        await mapboxMap.annotations.createPointAnnotationManager();
-
-    pointAnnotationManager.addOnPointAnnotationClickListener(this);
 
     List<Position> points = [];
 
@@ -515,10 +512,10 @@ class _TripPageState extends State<TripPage>
           textSize: 15,
           iconSize: 0.8,
           iconOffset: [0.0, -5.0],
-          symbolSortKey: 10,
+          symbolSortKey: 1,
           geometry: Point(coordinates: position),
           image: imageData);
-      pointAnnotationManager.create(point);
+      annotationManager?.create(point);
       points.add(position);
     }
 
