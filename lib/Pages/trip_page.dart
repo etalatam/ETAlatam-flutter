@@ -555,9 +555,8 @@ class _TripPageState extends State<TripPage>
             annotationManager, position, imageData);
         annotationsMap["$relationName.$relationId"] = pointAnnotation!;
 
-        _mapboxMapController?.flyTo(
-            CameraOptions(center: Point(coordinates: position)),
-            MapAnimationOptions());
+        _mapboxMapController?.setCamera(
+            CameraOptions(center: Point(coordinates: position)));
       } else {
         final networkImage = await mapboxUtils.getNetworkImage(
             httpService.getAvatarUrl(relationId, relationName));
