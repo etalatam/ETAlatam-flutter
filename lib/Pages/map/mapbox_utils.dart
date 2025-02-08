@@ -71,9 +71,9 @@ class MapboxUtils {
         textField: "",
         textOffset: [0.0, -1.0],
         textColor: Colors.black.value,
-        iconSize: 0.5,
+        iconSize: 0.35,
         iconOffset: [0.0, -5.0],
-        symbolSortKey: 10,
+        symbolSortKey: 1,
         image: imageData));
   }
 }

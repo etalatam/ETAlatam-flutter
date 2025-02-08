@@ -509,11 +509,11 @@ class _TripPageState extends State<TripPage>
           pickupPoint.location!.latitude as double);
       final point = PointAnnotationOptions(
           textField: "${pickupPoint.location?.location_name}",
-          textOffset: [0.0, -2.5],
+          textOffset: [0.0, -2.0],
           textColor: Color.fromARGB(255, 2, 54, 37).value,
-          textLineHeight: 20,
-          textSize: 20,
-          iconSize: 1.3,
+          textLineHeight: 15,
+          textSize: 15,
+          iconSize: 0.8,
           iconOffset: [0.0, -5.0],
           symbolSortKey: 10,
           geometry: Point(coordinates: position),
@@ -554,9 +554,6 @@ class _TripPageState extends State<TripPage>
         pointAnnotation = await mapboxUtils.createAnnotation(
             annotationManager, position, imageData);
         annotationsMap["$relationName.$relationId"] = pointAnnotation!;
-
-        _mapboxMapController?.setCamera(
-            CameraOptions(center: Point(coordinates: position)));
       } else {
         final networkImage = await mapboxUtils.getNetworkImage(
             httpService.getAvatarUrl(relationId, relationName));
@@ -568,6 +565,12 @@ class _TripPageState extends State<TripPage>
     } else {
       pointAnnotation.geometry = Point(coordinates: position);
       annotationManager?.update(pointAnnotation);
+    }
+
+    if (relationName.indexOf("drivers") > 1) {
+      print("[TripPage._updateIcon.relationName] $relationName");
+      _mapboxMapController?.setCamera(
+            CameraOptions(center: Point(coordinates: position)));
     }
   }
 
