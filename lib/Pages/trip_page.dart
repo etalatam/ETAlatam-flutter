@@ -543,8 +543,15 @@ class _TripPageState extends State<TripPage>
     //   _updatePulsatingCircle(Point(coordinates: position));
     // }
 
+    // If it does not exist, the new element is created on the map
     if (pointAnnotation == null) {
+
+      // is driver?
       if (relationName.indexOf("drivers") > 1) {
+        // is the trip driver?
+        if(trip.driver_id == relationId){
+          return;
+        }
         final ByteData bytes = await rootBundle.load('assets/moving_car.gif');
         final Uint8List imageData = bytes.buffer.asUint8List();
 
@@ -552,6 +559,7 @@ class _TripPageState extends State<TripPage>
             annotationManager, position, imageData);
         annotationsMap["$relationName.$relationId"] = pointAnnotation!;
       } else {
+        // any user who wishes will be shown on the map, examples for students
         final networkImage = await mapboxUtils.getNetworkImage(
             httpService.getAvatarUrl(relationId, relationName));
         final circleImage = await mapboxUtils.createCircleImage(networkImage);
