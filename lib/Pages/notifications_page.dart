@@ -376,7 +376,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       }
     });
 
-     showTooltip(null);
+    //  showTooltip(null); // to test uncomment
   }
 
   bool showLoader = true;
