@@ -15,7 +15,7 @@ class ActiveTrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return Consumer<EmitterService>(builder:(context, emitterService, child) {
+    // return Consumer<EmitterService>(builder:(context, emitterService, child) {
       return GestureDetector(
           onTap: () => {openTripCallback!(trip)},
           child: Container(
@@ -170,6 +170,6 @@ class ActiveTrip extends StatelessWidget {
               ],
             ),
           ));
-    });
+    // });
   }
 }

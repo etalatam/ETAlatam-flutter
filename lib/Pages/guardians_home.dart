@@ -71,8 +71,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                             height: 150,
                                             child: ListView.builder(
                                                 shrinkWrap: true,
-                                                scrollDirection:
-                                                    Axis.horizontal,
+                                                scrollDirection: Axis.horizontal,
                                                 itemCount: activeTrips.length,
                                                 itemBuilder: (BuildContext context, int index) {
                                                   return Consumer<EmitterService>(builder:(context, emitterService, child) {
