@@ -54,7 +54,7 @@ class MapWiewState extends State<MapWiew> {
           enabled: true,
           pulsingEnabled: true,
           showAccuracyRing: true,
-          puckBearingEnabled: true,
+          puckBearingEnabled: true
         ));
       await locationService?.init();
       // listenToCompass();

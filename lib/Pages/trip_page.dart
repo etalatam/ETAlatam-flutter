@@ -21,6 +21,7 @@ import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
+import 'package:wakelock/wakelock.dart';
 
 import 'map/map_wiew.dart';
 
@@ -384,6 +385,7 @@ class _TripPageState extends State<TripPage>
       });
       await trip.endTrip();
       locationServiceProvider.stopLocationService();
+      Wakelock.disable();
       setState(() {
         showLoader = false;
         showTripReportModal = true;
@@ -420,6 +422,12 @@ class _TripPageState extends State<TripPage>
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    Wakelock.disable();
+  }
+
+  @override
   void initState() {
     super.initState();
 
@@ -431,6 +439,9 @@ class _TripPageState extends State<TripPage>
 
     if (trip.trip_status == "Running") {
       emitterServiceProvider.activeTimer();
+      Wakelock.enable();
+    }else{
+      Wakelock.disable();
     }
 
     if (widget.showBus || widget.showStudents) {

@@ -3,7 +3,7 @@ description: Parent APP for ETA School Routes system.
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 1.8.74
+version: 1.8.75
 
 environment:
   sdk: ">=3.2.0 <4.0.0"
@@ -47,6 +47,7 @@ dependencies:
   shared_preferences: ^2.0.17
   url_launcher: ^6.0.0
   visibility_detector: ^0.4.0+2
+  wakelock: ^0.6.2
 
 dev_dependencies:
   build_runner: ^2.4.9
