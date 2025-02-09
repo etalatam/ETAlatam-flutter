@@ -10,8 +10,6 @@ class EmitterService extends ChangeNotifier {
   
   Timer? _timer;
   
-  bool _activeTimer = false;
-
   factory EmitterService() => _instance;
 
   EmitterService._internal() {
@@ -55,49 +53,33 @@ class EmitterService extends ChangeNotifier {
     }
   }
 
-  void activeTimer(){
-    _activeTimer = true;
-    _startTimer();
-    print("[EmitterService.activeTimer]");
-  }
-
-  void diactiveTimer(){
-    _stopTimer();
-    _activeTimer = false;
-    print("[EmitterService.diactiveTimer]");
-  }
-
   void _onMessage(String message) {
     print("[EmitterService.onMessage] $message");
     lastMessage = message;
-    _lastMessageDate = DateTime.now();
-    if(_activeTimer){
-      _startTimer();
-    }
-    
+    _lastMessageDate = DateTime.now();    
     notifyListeners();
   }
 
-    void _startTimer() {
-      _stopTimer();
-      print("[EmitterService._startTimer]");
-    _timer = Timer.periodic(Duration(seconds: 60), (timer) {
-      if (_lastMessageDate != null) {
-        final now = DateTime.now();
-        final difference = now.difference(_lastMessageDate!);
-        if (difference.inMinutes >= 2) {
-          client?.disconnect();
-          client?.connect();
-        }
-      }
-    });
-  }
+  // void _startTimer() {
+  //     print("[EmitterService._startTimer]");
+  //   _timer = Timer.periodic(Duration(seconds: 10), (timer) {
+  //     if (_lastMessageDate != null) {
+  //       final now = DateTime.now();
+  //       final difference = now.difference(_lastMessageDate!);
+  //       print("[EmitterService.timer] ${difference.inMinutes}min");
+  //       if (difference.inSeconds >= 2) {
+  //         print("[EmitterService] restarting...");
+  //         client?.disconnect();
+  //         client?.connect();
+  //       }
+  //     }
+  //   });
+  // }
 
-  void _stopTimer() {
-    print("[EmitterService._stopTimer]");
-    _timer?.cancel();
-  }
-
+  // void _stopTimer() {
+  //   print("[EmitterService._stopTimer]");
+  //   _timer?.cancel();
+  // }
 
   void _onError(String error) {
     print("[EmitterService.onError] $error");
@@ -105,11 +87,12 @@ class EmitterService extends ChangeNotifier {
 
   void _onConnect() {
     print("[EmitterService._onConnect]");
+    // _startTimer();
   }
 
   void _onDisconnect() {
     print("[EmitterService._onDisconnect]");
-    _stopTimer();
+    // _stopTimer();
   }
 
   void _onSubscribed(String topic) {

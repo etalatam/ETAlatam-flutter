@@ -438,10 +438,7 @@ class _TripPageState extends State<TripPage>
     });
 
     if (trip.trip_status == "Running") {
-      emitterServiceProvider.activeTimer();
       Wakelock.enable();
-    }else{
-      Wakelock.disable();
     }
 
     if (widget.showBus || widget.showStudents) {
@@ -455,33 +452,33 @@ class _TripPageState extends State<TripPage>
     // _showInfoWindow(annotation);
   }
 
-  void _showInfoWindow(PointAnnotation annotation) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Container(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Información del Marker',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 8.0),
-              Text('ID: ${annotation.id}'),
-              Text('Coordenadas:'),
-              // Puedes agregar más información aquí
-            ],
-          ),
-        );
-      },
-    );
-  }
+  // void _showInfoWindow(PointAnnotation annotation) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     builder: (context) {
+  //       return Container(
+  //         padding: EdgeInsets.all(16.0),
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Text(
+  //               'Información del Marker',
+  //               style: TextStyle(
+  //                 fontSize: 18,
+  //                 fontWeight: FontWeight.bold,
+  //               ),
+  //             ),
+  //             SizedBox(height: 8.0),
+  //             Text('ID: ${annotation.id}'),
+  //             Text('Coordenadas:'),
+  //             // Puedes agregar más información aquí
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
 
   void showTripGeoJson(MapboxMap mapboxMap) async {
     print("[TripPage.showTripGeoJson]");

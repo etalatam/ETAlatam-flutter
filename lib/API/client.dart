@@ -59,7 +59,7 @@ class HttpService {
     return await http.get(url, headers: {
       'Content-Type': 'application/json',
       'Authorization': useToken ? 'Bearer $token' : '',
-    });
+    }).onError((error, stackTrace) => handleHttpError(error));
   }
 
   /// Run API POST query
@@ -803,5 +803,9 @@ class HttpService {
       print("userInfo error: ${e.toString()}");
     }
     return null;
+  }
+  
+  handleHttpError(e) {
+    print("userInfo error: ${e.toString()}");
   }
 }

@@ -21,22 +21,23 @@ class LocationCallbackHandler {
 
   @pragma('vm:entry-point')
   static Future<void> callback(LocationDto locationDto) async {
+    print("LocationCallbackHandler.callback");
     try {
       var myLocationCallbackRepository = LocationServiceRepository();
       await myLocationCallbackRepository.callback(locationDto);
     } catch (e) {
-      print("invoke.myLocationCallbackRepository.error ${e.toString()}");
+      print("LocationCallbackHandler.callback.error ${e.toString()}");
     }
     
     try {
      locationServiceProvider.trackingLocationDto(locationDto); 
     } catch (e) {
-      print("invoke.locationServiceProvider.trackingLocationDto.error ${e.toString()}");
+      print("LocationCallbackHandler.trackingLocationDto.error ${e.toString()}");
     }
   }
 
   @pragma('vm:entry-point')
   static Future<void> notificationCallback() async {
-    print('***notificationCallback');
+    print("LocationCallbackHandler.notificationCallback");
   }
 }

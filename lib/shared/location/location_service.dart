@@ -29,7 +29,9 @@ class LocationService extends ChangeNotifier {
   
   int _userId = 0;
 
-  // final LocalStorage storage = LocalStorage('tokens.json');
+  Timer? _timer;
+    
+  DateTime? _lastPositionDate;
 
   static final LocationService _instance = LocationService._internal();
 
@@ -38,26 +40,15 @@ class LocationService extends ChangeNotifier {
   LocationService._internal();
 
   init() async {
-    // _locationData = await storage.getItem('lastPosition');
+    print("[LocationService.init]");
     _userId = await storage.getItem('id_usu');
 
-    // print('[ETALocationService.init] $_locationData');
-    // notifyListeners();
-
-
     askPermission().then((value) async{
-      print("[ETALocationService.askPermission.callback] $value");
+      print("[LocationService.askPermission.callback] $value");
       if (value) {
-
-        bool serviceEnabled = await Location().serviceEnabled();
-        print('[ETALocationService.serviceEnabled] $serviceEnabled');
-        if (!serviceEnabled) {
-          serviceEnabled = await Location().requestService();
-        }
-        BackgroundLocator.initialize();
-
+        
         if(!initialization){
-
+          print('[LocationService.initialization...]');
           if (IsolateNameServer.lookupPortByName(
                   LocationServiceRepository.isolateName) != null) {
             IsolateNameServer.removePortNameMapping(
@@ -69,29 +60,36 @@ class LocationService extends ChangeNotifier {
 
           // ubicacion en foreground
           port.listen((dynamic data) async {
-            print('[ETALocationService.listen] $data');
+            print('[LocationService.port.listen.callback] $data');
             if (data != null &&
                 (_locationData?['latitude'] != data['latitude']) &&
                 (_locationData?['longitude'] != data['longitude'])) {
               _locationData = data;
               
               try {
+                _lastPositionDate = DateTime.now();
                 notifyListeners();
               } catch (e) {
                 print(
-                    '[ETALocationService.notifyListeners.error] ${e.toString()}');
+                    '[LocationService.notifyListeners.error] ${e.toString()}');
               }
 
               try {
                 // await trackingDynamic(_locationData);
               } catch (e) {
-                print ('[ETALocationService.tracking.error] ${e.toString()}');
+                print ('[LocationService.tracking.error] ${e.toString()}');
               }
 
             }
           });
+          BackgroundLocator.initialize();
+          initialization = true;
+          print("[LocationService._startTimer]");
+          _startTimer();
         }
-        initialization = true;
+
+      }else{
+        print('[LocationService.init] allready initialize');
       }
     });
   }
@@ -101,12 +99,10 @@ class LocationService extends ChangeNotifier {
   // }
 
   Future<void> startLocationService() async {
-    print('[ETALocationService.startLocationService]');
+    print('[LocationService.startLocationService]');
     var data = <String, dynamic>{'countInit': 1};
-
-    if(!initialization){
-      init();
-    }
+    
+    init();
 
     return await BackgroundLocator.registerLocationUpdate(
         LocationCallbackHandler.callback,
@@ -136,15 +132,24 @@ class LocationService extends ChangeNotifier {
   }
 
   Future<bool> askPermission() async {
-    print('[ETALocationService.askPermission]');
+    print('[LocationService.askPermission]');
     PermissionStatus permissionGranted;
+    bool serviceEnabled;
+
+    serviceEnabled = await Location().serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await Location().requestService();
+      if (!serviceEnabled) {
+        return false;
+      }
+    }
 
     permissionGranted = await Location().hasPermission();
-    print('[ETALocationService.permissionGranted] $permissionGranted');
+    print('[LocationService.permissionGranted] $permissionGranted');
     if (permissionGranted == PermissionStatus.denied) {
       permissionGranted = await Location().requestPermission();
       if (permissionGranted != PermissionStatus.granted) {
-        print('[ETALocationService.permissionGranted] $permissionGranted');
+        print('[LocationService.permissionGranted] $permissionGranted');
         return false;
       }
     }
@@ -153,8 +158,9 @@ class LocationService extends ChangeNotifier {
   }
 
   trackingDynamic(dynamic locationInfo) async {
-    print('[ETALocationService.trackingDynamic] ${locationInfo.toString()}');
+    print('[LocationService.trackingDynamic] ${locationInfo.toString()}');
     try {
+      _lastPositionDate = DateTime.now();
       final jsonData = {
         'latitude': locationInfo?['latitude'],
         'longitude': locationInfo?['longitude'],
@@ -165,13 +171,14 @@ class LocationService extends ChangeNotifier {
       };
       await httpService.sendTracking(position: jsonData, userId: _userId);
     } catch (e) {
-      print('[ETALocationService.trackingDynamic.error] ${e.toString()}');
+      print('[LocationService.trackingDynamic.error] ${e.toString()}');
     }
   }
 
 
   trackingLocationDto(LocationDto locationInfo) async {
-    print('[ETALocationService.trackingLocationDto] ${locationInfo.toString()}');
+    print('[LocationService.trackingLocationDto] ${locationInfo.toString()}');
+    _lastPositionDate = DateTime.now();
 
     if ((_locationData?['latitude'] != locationInfo.latitude) &&
     (_locationData?['longitude'] != locationInfo.longitude)) {
@@ -191,19 +198,39 @@ class LocationService extends ChangeNotifier {
         // notifyListeners();
         await httpService.sendTracking(position: jsonData, userId: _userId);
       } catch (e) {
-        print('[ETALocationService.trackingLocationDto.error] ${e.toString()}');
+        print('[LocationService.trackingLocationDto.error] ${e.toString()}');
       }
     }
   }
 
+  void _startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(Duration(seconds: 5), (timer) {
+      if (_lastPositionDate != null) {
+        final now = DateTime.now();
+        final difference = now.difference(_lastPositionDate!);
+        print("[LocationService.timer.difference] ${difference.inSeconds}s.");
+        if (difference.inSeconds >= 30) {
+          print("[LocationService.timer] restaring... ");
+          stopLocationService();
+          startLocationService();
+        }
+      }else{
+        print("[LocationService.timer] _lastPositionDate is null");
+      }
+    });
+  }
+
   void stopLocationService() {
-    print('[ETALocationService.stopLocationService]');
+    print('[LocationService.stopLocationService]');
     try {
       IsolateNameServer.removePortNameMapping(
           LocationServiceRepository.isolateName);
       BackgroundLocator.unRegisterLocationUpdate();
+      initialization = false;
+      _timer?.cancel();
     } catch (e) {
-      print('[ETALocationService.stopLocationService.error] ${e.toString()}');
+      print('[LocationService.stopLocationService.error] ${e.toString()}');
     }
   }
 }
