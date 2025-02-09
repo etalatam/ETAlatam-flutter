@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
-import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:flutter/services.dart';
@@ -556,8 +555,9 @@ class _TripPageState extends State<TripPage>
 
       // is driver?
       if (relationName.indexOf("drivers") > 1) {
+        print("[TripPage._updateIcon.driver_id] $relationId [trip.driver_id] ${trip.driver_id}");
         // is the trip driver?
-        if(trip.driver_id == relationId){
+        if(trip.driver_id != relationId){
           return;
         }
         final ByteData bytes = await rootBundle.load('assets/moving_car.gif');

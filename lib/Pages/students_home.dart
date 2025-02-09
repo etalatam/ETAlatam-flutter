@@ -6,6 +6,7 @@ import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/components/active_trip.dart';
+import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -123,9 +124,22 @@ class _StudentsHomeState extends State<StudentsHome>
                                                   fontWeight:
                                                       activeTheme.h6.fontWeight,
                                                 )))
-                                        : ActiveTrip(
-                                            openTripcallback, activeTrip),
+                                        : Consumer<EmitterService>(builder:(context, emitterService, child) {
+                                                    try {
+                                                      final jsonMessage = emitterService.jsonMessage();
+                                                      final String type = jsonMessage['event_type'];
 
+                                                      if(type == "end-trip"){
+                                                        setState(() {
+                                                          loadResources();
+                                                        });
+                                                      }
+                                                    } catch (e) {
+                                                      print(e);
+                                                    }
+
+                                                    return ActiveTrip(openTripcallback, activeTrip);
+                                        }),
                                     ETAWidgets.svgTitle("assets/svg/route.svg",
                                         lang.translate('trips_history')),
 

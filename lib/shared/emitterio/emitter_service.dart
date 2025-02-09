@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:eta_school_app/shared/emitterio/emitter_client.dart';
 import 'package:flutter/foundation.dart';
@@ -58,6 +59,10 @@ class EmitterService extends ChangeNotifier {
     lastMessage = message;
     _lastMessageDate = DateTime.now();    
     notifyListeners();
+  }
+
+  Map<String, dynamic> jsonMessage(){
+    return jsonDecode(lastMessage!);
   }
 
   // void _startTimer() {
