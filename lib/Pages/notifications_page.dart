@@ -376,7 +376,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       }
     });
 
-    // showTooltip(null);
+     showTooltip(null);
   }
 
   bool showLoader = true;
@@ -446,7 +446,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final snackBar = SnackBar(
       duration: Duration(seconds: 5),
       content: AnimatedSnackBarContent(title: title,),
-      backgroundColor: Color.fromARGB(255,15,148,136),
+      backgroundColor: Color.fromARGB(255, 236, 243, 242),
       shape: RoundedRectangleBorder(
         side: BorderSide(
           color: Colors.white, // Color del borde
