@@ -74,12 +74,11 @@ class _TripPageState extends State<TripPage>
 
   // ScreenCoordinate busPulsatingCircleCoordinate = ScreenCoordinate( x: 0, y: 0);
 
-    bool connectivityNone = false;
+  bool connectivityNone = false;
 
   final Connectivity _connectivity = Connectivity();
 
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
-
 
   @override
   Widget build(BuildContext context) {
@@ -87,8 +86,7 @@ class _TripPageState extends State<TripPage>
       child: showLoader
           ? Loader()
           : Scaffold(
-              body: Stack(
-                children: <Widget>[
+              body: Stack(children: <Widget>[
                 // Column(children: [
                 // // if(widget.showBus && !hasBusPosition )
                 //   SizedBox(
@@ -109,7 +107,8 @@ class _TripPageState extends State<TripPage>
                           .createPointAnnotationManager()
                           .then((value) async {
                         annotationManager = value;
-                        annotationManager?.addOnPointAnnotationClickListener(this);
+                        annotationManager
+                            ?.addOnPointAnnotationClickListener(this);
                       });
                     },
                     onStyleLoadedListener: (MapboxMap mapboxMap) async {
@@ -119,40 +118,44 @@ class _TripPageState extends State<TripPage>
                   ),
                 ),
 
-                if(connectivityNone)
-                Positioned(
-                  // left: 0,
-                  top: 40,
-                  child: SizedBox(
-                    height: 50,
-                    width: 300,
-                    child: Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: AnimatedContainer(
-                          duration: Duration(seconds: 1),
-                          curve: Curves.fastOutSlowIn,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(20), // Cambia el valor para ajustar el radio
+                if (connectivityNone)
+                  Positioned(
+                    // left: 0,
+                    top: 40,
+                    child: SizedBox(
+                        height: 50,
+                        width: 300,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: AnimatedContainer(
+                                duration: Duration(seconds: 1),
+                                curve: Curves.fastOutSlowIn,
+                                child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      borderRadius: BorderRadius.circular(
+                                          20), // Cambia el valor para ajustar el radio
+                                    ),
+                                    padding: EdgeInsets.all(10),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.wifi_off,
+                                            color: Colors.white),
+                                        SizedBox(width: 10),
+                                        Text('No hay conexión a Internet',
+                                            style:
+                                                TextStyle(color: Colors.white)),
+                                      ],
+                                    )),
+                              ),
                             ),
-                            padding: EdgeInsets.all(10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.wifi_off, color: Colors.white),
-                                SizedBox(width: 10),
-                                Text('No hay conexión a Internet', style: TextStyle(color: Colors.white)),
-                              ],
-                            )
-                        ),
-                      ),
-                      ),
-                    ],
-                  )),
-                ),
+                          ],
+                        )),
+                  ),
 
                 // Positioned(
                 //   left: 0,
@@ -184,7 +187,7 @@ class _TripPageState extends State<TripPage>
                   maxChildSize: 1,
                   builder: (BuildContext context,
                       ScrollController scrollController) {
-                    return Stack(children: [                      
+                    return Stack(children: [
                       Container(
                         margin: const EdgeInsets.only(top: 0),
                         height: double.infinity,
@@ -334,7 +337,6 @@ class _TripPageState extends State<TripPage>
               ]),
               // ])
             ),
-            
     );
   }
 
@@ -491,15 +493,14 @@ class _TripPageState extends State<TripPage>
         Provider.of<EmitterService>(context, listen: false)
             .addListener(onEmitterMessage);
       }
-      
+
       Provider.of<NotificationService>(context, listen: false)
           .addListener(onPushMessage);
 
       initConnectivity();
 
       _connectivitySubscription =
-      _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
-
+          _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
     }
   }
 
@@ -526,12 +527,12 @@ class _TripPageState extends State<TripPage>
 
   Future<void> _updateConnectionStatus(List<ConnectivityResult> results) async {
     setState(() {
-      connectivityNone = results.any((result) => result == ConnectivityResult.none);
+      connectivityNone =
+          results.any((result) => result == ConnectivityResult.none);
     });
     // ignore: avoid_print
     print('connectivityNone: $connectivityNone');
-  }  
-
+  }
 
   @override
   void onPointAnnotationClick(PointAnnotation annotation) {
@@ -575,16 +576,15 @@ class _TripPageState extends State<TripPage>
         .addSource(GeoJsonSource(id: "trip_source", data: jsonEncode(data)));
 
     await mapboxMap.style.addLayer(LineLayer(
-      id: "line_layer",
-      sourceId: "trip_source",
-      lineJoin: LineJoin.ROUND,
-      lineCap: LineCap.ROUND,
-      lineColor: Colors.blue.value,
-      lineBlur: 1.0,
-      lineDasharray: [1.0, 2.0],
-      lineWidth: 6.0,
-      lineSortKey: 0
-    ));
+        id: "line_layer",
+        sourceId: "trip_source",
+        lineJoin: LineJoin.ROUND,
+        lineCap: LineCap.ROUND,
+        lineColor: Colors.blue.value,
+        lineBlur: 1.0,
+        lineDasharray: [1.0, 2.0],
+        lineWidth: 6.0,
+        lineSortKey: 0));
   }
 
   void showPickupLocations(MapboxMap mapboxMap) async {
@@ -639,12 +639,12 @@ class _TripPageState extends State<TripPage>
 
     // If it does not exist, the new element is created on the map
     if (pointAnnotation == null) {
-
       // is driver?
       if (relationName.indexOf("drivers") > 1) {
-        print("[TripPage._updateIcon.driver_id] $relationId [trip.driver_id] ${trip.driver_id}");
+        print(
+            "[TripPage._updateIcon.driver_id] $relationId [trip.driver_id] ${trip.driver_id}");
         // is the trip driver?
-        if(trip.driver_id != relationId){
+        if (trip.driver_id != relationId) {
           return;
         }
         final ByteData bytes = await rootBundle.load('assets/moving_car.gif');
@@ -669,8 +669,8 @@ class _TripPageState extends State<TripPage>
 
     if (relationName.indexOf("drivers") > 1) {
       print("[TripPage._updateIcon.relationName] $relationName");
-      _mapboxMapController?.setCamera(
-            CameraOptions(center: Point(coordinates: position)));
+      _mapboxMapController
+          ?.setCamera(CameraOptions(center: Point(coordinates: position)));
     }
   }
 
@@ -706,14 +706,14 @@ class _TripPageState extends State<TripPage>
 
       try {
         // si es un evento del viaje
-        final event = EventModel.fromJson(jsonDecode(message!));
-        if(event.type == "end-trip" && relationName != 'eta.drivers'){
-          setState(() {
-            Get.back();
-          });
-        }else{
-          await event.requestData();
-        }
+        // final event = EventModel.fromJson(jsonDecode(message!));
+        // if(event.type == "end-trip" && relationName != 'eta.drivers'){
+        //   setState(() {
+        //     Get.back();
+        //   });
+        // }else{
+        //   await event.requestData();
+        // }
       } catch (e) {
         //si es un evento posicion
         final Map<String, dynamic> tracking = jsonDecode(message!);
@@ -744,15 +744,16 @@ class _TripPageState extends State<TripPage>
     }
   }
 
-  onPushMessage(){
-    if(!mounted) return;
+  onPushMessage() {
+    if (!mounted) return;
     final LastMessage? lastMessage =
-          Provider.of<NotificationService>(context, listen: false).lastMessage;
+        Provider.of<NotificationService>(context, listen: false).lastMessage;
 
     setState(() {
-      if(lastMessage?.status == 'foreground'){
-        notificationServiceProvider.showTooltip(context, lastMessage!.lastMessage);
+      if (lastMessage?.status == 'foreground') {
+        notificationServiceProvider.showTooltip(
+            context, lastMessage!.lastMessage);
       }
     });
-  }  
+  }
 }

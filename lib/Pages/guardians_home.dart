@@ -71,15 +71,26 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                             height: 150,
                                             child: ListView.builder(
                                                 shrinkWrap: true,
-                                                scrollDirection: Axis.horizontal,
+                                                scrollDirection:
+                                                    Axis.horizontal,
                                                 itemCount: activeTrips.length,
-                                                itemBuilder: (BuildContext context, int index) {
-                                                  return Consumer<EmitterService>(builder:(context, emitterService, child) {
+                                                itemBuilder:
+                                                    (BuildContext context,
+                                                        int index) {
+                                                  return Consumer<
+                                                          EmitterService>(
+                                                      builder: (context,
+                                                          emitterService,
+                                                          child) {
                                                     try {
-                                                      final jsonMessage = emitterService.jsonMessage();
-                                                      final String type = jsonMessage['event_type'];
+                                                      final jsonMessage =
+                                                          emitterService
+                                                              .jsonMessage();
+                                                      final String type =
+                                                          jsonMessage[
+                                                              'event_type'];
 
-                                                      if(type == "end-trip"){
+                                                      if (type == "end-trip") {
                                                         setState(() {
                                                           loadParent();
                                                         });
@@ -92,8 +103,8 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                                         width: 400,
                                                         child: ActiveTrip(
                                                             openTrip,
-                                                            activeTrips[index])
-                                                        );
+                                                            activeTrips[
+                                                                index]));
                                                   });
                                                 })),
 
@@ -215,13 +226,13 @@ class _GuardiansHomeState extends State<GuardiansHome>
     for (var route in routes) {
       var routeTopic = "route-${route.route_id}";
       var routeTopicGuardian = "$routeTopic-guardian";
-      
+
       notificationServiceProvider.subscribeToTopic(routeTopicGuardian);
 
       for (var student in parentModel!.students) {
         var topic = "$routeTopic-student-${student.student_id}";
         print("sdssd: ${student.pickup_points}");
-        notificationServiceProvider.subscribeToTopic(topic);        
+        notificationServiceProvider.subscribeToTopic(topic);
         for (var pickupPoint in student.pickup_points) {
           var topic = "$routeTopic-pickup_point-${pickupPoint.pickup_id}";
           notificationServiceProvider.subscribeToTopic(topic);
@@ -235,7 +246,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
 
     final List<TripModel> oldTrips =
         (await httpService.getGuardianTrips("false"));
-    
+
     setState(() {
       oldTripsList = oldTrips;
     });
@@ -256,7 +267,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
 
     loadParent();
 
-    if(mounted){      
+    if (mounted) {
       Provider.of<NotificationService>(context, listen: false)
           .addListener(onPushMessage);
     }
@@ -269,7 +280,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
   }
 
   onPushMessage() {
-    if(mounted){
+    if (mounted) {
       setState(() {
         loadParent();
       });
