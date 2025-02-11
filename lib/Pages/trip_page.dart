@@ -707,7 +707,7 @@ class _TripPageState extends State<TripPage>
       try {
         // si es un evento del viaje
         final event = EventModel.fromJson(jsonDecode(message!));
-        if(event.type == "end-trip"){
+        if(event.type == "end-trip" && relationName != 'eta.drivers'){
           setState(() {
             Get.back();
           });
