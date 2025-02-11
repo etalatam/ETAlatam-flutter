@@ -489,10 +489,8 @@ class _TripPageState extends State<TripPage>
     if (trip.trip_status == "Running") {
       Wakelock.enable();
 
-      if (widget.showBus || widget.showStudents) {
-        Provider.of<EmitterService>(context, listen: false)
-            .addListener(onEmitterMessage);
-      }
+      Provider.of<EmitterService>(context, listen: false)
+          .addListener(onEmitterMessage);
 
       Provider.of<NotificationService>(context, listen: false)
           .addListener(onPushMessage);
@@ -628,6 +626,8 @@ class _TripPageState extends State<TripPage>
 
   Future<void> _updateIcon(
       Position position, String relationName, int relationId) async {
+    print(
+        "[TripPage._updateIcon.relationName] $relationName [relationId] $relationId");
     PointAnnotation? pointAnnotation =
         annotationsMap.containsKey("$relationName.$relationId")
             ? annotationsMap["$relationName.$relationId"]
@@ -668,7 +668,6 @@ class _TripPageState extends State<TripPage>
     }
 
     if (relationName.indexOf("drivers") > 1) {
-      print("[TripPage._updateIcon.relationName] $relationName");
       _mapboxMapController
           ?.setCamera(CameraOptions(center: Point(coordinates: position)));
     }
@@ -700,44 +699,41 @@ class _TripPageState extends State<TripPage>
   // }
 
   void onEmitterMessage() async {
-    if (mounted) {
-      final String? message =
-          Provider.of<EmitterService>(context, listen: false).lastMessage;
+    final String? message = emitterServiceProvider.lastMessage;
 
-      try {
-        // si es un evento del viaje
-        // final event = EventModel.fromJson(jsonDecode(message!));
-        // if(event.type == "end-trip" && relationName != 'eta.drivers'){
-        //   setState(() {
-        //     Get.back();
-        //   });
-        // }else{
-        //   await event.requestData();
-        // }
-      } catch (e) {
-        //si es un evento posicion
-        final Map<String, dynamic> tracking = jsonDecode(message!);
+    try {
+      // si es un evento del viaje
+      // final event = EventModel.fromJson(jsonDecode(message!));
+      // if(event.type == "end-trip" && relationName != 'eta.drivers'){
+      //   setState(() {
+      //     Get.back();
+      //   });
+      // }else{
+      //   await event.requestData();
+      // }
+    } catch (e) {
+      //si es un evento posicion
+      final Map<String, dynamic> tracking = jsonDecode(message!);
 
-        if (tracking['relation_name'] != null) {
-          final relationName = tracking['relation_name'];
-          final relationId = tracking['relation_id'];
+      if (tracking['relation_name'] != null) {
+        final relationName = tracking['relation_name'];
+        final relationId = tracking['relation_id'];
 
-          if (tracking['payload'] != null) {
-            final Position position = Position(
-                double.parse("${tracking['payload']['longitude']}"),
-                double.parse("${tracking['payload']['latitude']}"));
+        if (tracking['payload'] != null) {
+          final Position position = Position(
+              double.parse("${tracking['payload']['longitude']}"),
+              double.parse("${tracking['payload']['latitude']}"));
 
-            if (relationId != null &&
-                relationName == 'eta.drivers' &&
-                widget.showBus) {
-              print(
-                  "[TripPage.onEmitterMessage.emitter-tracking.driver] $tracking");
-              _updateIcon(position, relationName, relationId);
-            } else if (relationName == 'eta.students' && widget.showStudents) {
-              print(
-                  "[TripPage.onEmitterMessage.emitter-tracking.student] $tracking");
-              _updateIcon(position, relationName, relationId);
-            }
+          if (relationId != null &&
+              relationName == 'eta.drivers' &&
+              widget.showBus) {
+            print(
+                "[TripPage.onEmitterMessage.emitter-tracking.driver] $tracking");
+            _updateIcon(position, relationName, relationId);
+          } else if (relationName == 'eta.students' && widget.showStudents) {
+            print(
+                "[TripPage.onEmitterMessage.emitter-tracking.student] $tracking");
+            _updateIcon(position, relationName, relationId);
           }
         }
       }
