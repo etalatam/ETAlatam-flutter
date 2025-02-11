@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
+import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:flutter/material.dart';
@@ -706,7 +707,13 @@ class _TripPageState extends State<TripPage>
       try {
         // si es un evento del viaje
         final event = EventModel.fromJson(jsonDecode(message!));
-        await event.requestData();
+        if(event.type == "end-trip"){
+          setState(() {
+            Get.back();
+          });
+        }else{
+          await event.requestData();
+        }
       } catch (e) {
         //si es un evento posicion
         final Map<String, dynamic> tracking = jsonDecode(message!);
