@@ -434,30 +434,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
     setState(() {
       if(lastMessage?.status == 'foreground'){
-        showTooltip(lastMessage!.lastMessage);
+        notificationServiceProvider.showTooltip(context, lastMessage!.lastMessage);
       }
 
       loadNotifications();
     });
-  }
-
-  void showTooltip(RemoteMessage? message) {
-    final title = message?.notification!.title ?? "Nuevo mensaje";
-    final snackBar = SnackBar(
-      duration: Duration(seconds: 5),
-      content: AnimatedSnackBarContent(title: title,),
-      backgroundColor: Color.fromARGB(255, 236, 243, 242),
-      shape: RoundedRectangleBorder(
-        side: BorderSide(
-          color: Colors.white, // Color del borde
-          width: 2.0, // Ancho del borde
-        ),
-        borderRadius: BorderRadius.circular(10.0), // Bordes redondeados
-      ),
-      behavior: SnackBarBehavior.floating, // Hace que el SnackBar flote
-      margin: EdgeInsets.all(20.0), // Margen alrededor del SnackBar
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   @override

@@ -1,3 +1,4 @@
+import 'package:eta_school_app/components/animated_snackbar_content.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -100,6 +101,25 @@ class NotificationService with ChangeNotifier {
     } catch (e) {
       print(e);
     }
+  }
+
+  void showTooltip(BuildContext context, RemoteMessage? message) {
+    final title = message?.notification!.title ?? "Nuevo mensaje";
+    final snackBar = SnackBar(
+      duration: Duration(seconds: 5),
+      content: AnimatedSnackBarContent(title: title,),
+      backgroundColor: Color.fromARGB(255, 236, 243, 242),
+      shape: RoundedRectangleBorder(
+        side: BorderSide(
+          color: Colors.white, // Color del borde
+          width: 2.0, // Ancho del borde
+        ),
+        borderRadius: BorderRadius.circular(10.0), // Bordes redondeados
+      ),
+      behavior: SnackBarBehavior.floating, // Hace que el SnackBar flote
+      margin: EdgeInsets.all(20.0), // Margen alrededor del SnackBar
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
 

@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
+import 'package:eta_school_app/Pages/providers/notification_provider.dart';
+import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:flutter/services.dart';
-
 import 'package:eta_school_app/Models/EventModel.dart';
 import 'package:eta_school_app/Pages/attendance_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
@@ -71,15 +73,23 @@ class _TripPageState extends State<TripPage>
 
   // ScreenCoordinate busPulsatingCircleCoordinate = ScreenCoordinate( x: 0, y: 0);
 
+    bool connectivityNone = false;
+
+  final Connectivity _connectivity = Connectivity();
+
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+
+
   @override
   Widget build(BuildContext context) {
     return Material(
       child: showLoader
           ? Loader()
           : Scaffold(
-              body: Stack(children: <Widget>[
+              body: Stack(
+                children: <Widget>[
                 // Column(children: [
-                // if(widget.showBus && !hasBusPosition )
+                // // if(widget.showBus && !hasBusPosition )
                 //   SizedBox(
                 //     height: 15,
                 //     child: LinearProgressIndicator(
@@ -106,6 +116,41 @@ class _TripPageState extends State<TripPage>
                       showPickupLocations(mapboxMap);
                     },
                   ),
+                ),
+
+                if(connectivityNone)
+                Positioned(
+                  // left: 0,
+                  top: 40,
+                  child: SizedBox(
+                    height: 50,
+                    width: 300,
+                    child: Row(
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: AnimatedContainer(
+                          duration: Duration(seconds: 1),
+                          curve: Curves.fastOutSlowIn,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(20), // Cambia el valor para ajustar el radio
+                            ),
+                            padding: EdgeInsets.all(10),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.wifi_off, color: Colors.white),
+                                SizedBox(width: 10),
+                                Text('No hay conexión a Internet', style: TextStyle(color: Colors.white)),
+                              ],
+                            )
+                        ),
+                      ),
+                      ),
+                    ],
+                  )),
                 ),
 
                 // Positioned(
@@ -138,7 +183,7 @@ class _TripPageState extends State<TripPage>
                   maxChildSize: 1,
                   builder: (BuildContext context,
                       ScrollController scrollController) {
-                    return Stack(children: [
+                    return Stack(children: [                      
                       Container(
                         margin: const EdgeInsets.only(top: 0),
                         height: double.infinity,
@@ -286,7 +331,9 @@ class _TripPageState extends State<TripPage>
                 ),
                 showTripReportModal ? TripReport(trip: trip) : const Center(),
               ]),
+              // ])
             ),
+            
     );
   }
 
@@ -438,13 +485,52 @@ class _TripPageState extends State<TripPage>
 
     if (trip.trip_status == "Running") {
       Wakelock.enable();
-    }
 
-    if (widget.showBus || widget.showStudents) {
-      Provider.of<EmitterService>(context, listen: false)
-          .addListener(onEmitterMessage);
+      if (widget.showBus || widget.showStudents) {
+        Provider.of<EmitterService>(context, listen: false)
+            .addListener(onEmitterMessage);
+      }
+      
+      Provider.of<NotificationService>(context, listen: false)
+          .addListener(onPushMessage);
+
+      initConnectivity();
+
+      _connectivitySubscription =
+      _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+
     }
   }
+
+  // Platform messages are asynchronous, so we initialize in an async method.
+  Future<void> initConnectivity() async {
+    late List<ConnectivityResult> result;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      result = await _connectivity.checkConnectivity();
+    } on PlatformException catch (e) {
+      print('Couldn\'t check connectivity status ${e.toString()}');
+      return;
+    }
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) {
+      return Future.value(null);
+    }
+
+    return _updateConnectionStatus(result);
+  }
+
+  Future<void> _updateConnectionStatus(List<ConnectivityResult> results) async {
+    setState(() {
+      connectivityNone = results.any((result) => result == ConnectivityResult.none);
+    });
+    // ignore: avoid_print
+    print('connectivityNone: $connectivityNone');
+  }  
+
 
   @override
   void onPointAnnotationClick(PointAnnotation annotation) {
@@ -650,4 +736,16 @@ class _TripPageState extends State<TripPage>
       }
     }
   }
+
+  onPushMessage(){
+    if(!mounted) return;
+    final LastMessage? lastMessage =
+          Provider.of<NotificationService>(context, listen: false).lastMessage;
+
+    setState(() {
+      if(lastMessage?.status == 'foreground'){
+        notificationServiceProvider.showTooltip(context, lastMessage!.lastMessage);
+      }
+    });
+  }  
 }
