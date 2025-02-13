@@ -429,9 +429,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   onPushMessage(){
     if(!mounted) return;
-    final LastMessage? lastMessage =
-          Provider.of<NotificationService>(context, listen: false).lastMessage;
-
+    // final LastMessage? lastMessage =
+    //       Provider.of<NotificationService>(context, listen: false).lastMessage;
+    final LastMessage? lastMessage = notificationServiceProvider.lastMessage;
     setState(() {
       if(lastMessage?.status == 'foreground'){
         notificationServiceProvider.showTooltip(context, lastMessage!.lastMessage);

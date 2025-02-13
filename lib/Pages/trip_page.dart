@@ -703,14 +703,14 @@ class _TripPageState extends State<TripPage>
 
     try {
       // si es un evento del viaje
-      // final event = EventModel.fromJson(jsonDecode(message!));
-      // if(event.type == "end-trip" && relationName != 'eta.drivers'){
-      //   setState(() {
-      //     Get.back();
-      //   });
-      // }else{
-      //   await event.requestData();
-      // }
+      final event = EventModel.fromJson(jsonDecode(message!));
+      if(event.type == "end-trip" && relationName != 'eta.drivers'){
+        setState(() {
+          Get.back();
+        });
+      }else{
+        await event.requestData();
+      }
     } catch (e) {
       //si es un evento posicion
       final Map<String, dynamic> tracking = jsonDecode(message!);
@@ -725,8 +725,7 @@ class _TripPageState extends State<TripPage>
               double.parse("${tracking['payload']['latitude']}"));
 
           if (relationId != null &&
-              relationName == 'eta.drivers' &&
-              widget.showBus) {
+              relationName == 'eta.drivers' ) {
             print(
                 "[TripPage.onEmitterMessage.emitter-tracking.driver] $tracking");
             _updateIcon(position, relationName, relationId);
@@ -742,9 +741,10 @@ class _TripPageState extends State<TripPage>
 
   onPushMessage() {
     if (!mounted) return;
-    final LastMessage? lastMessage =
-        Provider.of<NotificationService>(context, listen: false).lastMessage;
+    // final LastMessage? lastMessage =
+    //     Provider.of<NotificationService>(context, listen: false).lastMessage;
 
+    final LastMessage? lastMessage = notificationServiceProvider.lastMessage;
     setState(() {
       if (lastMessage?.status == 'foreground') {
         notificationServiceProvider.showTooltip(
