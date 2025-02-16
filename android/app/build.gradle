@@ -56,16 +56,16 @@ android {
 
     signingConfigs {
         debug {
-            // keyAlias localProperties['keyAlias']
-            // keyPassword localProperties['keyPassword']
-            // storeFile localProperties['storeFile'] ? file(localProperties['storeFile']) : null
-            // storePassword localProperties['storePassword']
+            keyAlias localProperties.getProperty('keyAlias')_
+            keyPassword localProperties.getProperty('keyPassword')
+            storeFile localProperties.getProperty('storeFile') ? file(localProperties.getProperty('storeFile')) : null
+            storePassword localProperties.getProperty('storePassword')
         }        
         release {
-            keyAlias localProperties['keyAlias']
-            keyPassword localProperties['keyPassword']
-            storeFile localProperties['storeFile'] ? file(localProperties['storeFile']) : null
-            storePassword localProperties['storePassword']
+            keyAlias localProperties.getProperty('keyAlias')_
+            keyPassword localProperties.getProperty('keyPassword')
+            storeFile localProperties.getProperty('storeFile') ? file(localProperties.getProperty('storeFile')) : null
+            storePassword localProperties.getProperty('storePassword')
         }
     }    
 
