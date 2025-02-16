@@ -484,6 +484,7 @@ class _TripPageState extends State<TripPage>
     _emitterServiceProvider.removeListener(onEmitterMessage);
     _notificationService.removeListener(onPushMessage);
     Wakelock.disable();
+  _timer?.cancel();
     super.dispose();
   }
 
@@ -665,7 +666,9 @@ class _TripPageState extends State<TripPage>
 
         pointAnnotation = await mapboxUtils.createAnnotation(
             annotationManager, position, imageData);
-        annotationsMap["$relationName.$relationId"] = pointAnnotation!;
+        if(pointAnnotation != null){
+          annotationsMap["$relationName.$relationId"] = pointAnnotation;
+        }            
       } else {
         // any user who wishes will be shown on the map, examples for students
         final networkImage = await mapboxUtils.getNetworkImage(
@@ -673,7 +676,9 @@ class _TripPageState extends State<TripPage>
         final circleImage = await mapboxUtils.createCircleImage(networkImage);
         pointAnnotation = await mapboxUtils.createAnnotation(
             annotationManager, position, circleImage);
-        annotationsMap["$relationName.$relationId"] = pointAnnotation!;
+        if(pointAnnotation != null){
+          annotationsMap["$relationName.$relationId"] = pointAnnotation;
+        }
       }
     } else {
       pointAnnotation.geometry = Point(coordinates: position);
@@ -713,7 +718,7 @@ class _TripPageState extends State<TripPage>
 
   void onEmitterMessage() async {
     final String? message = emitterServiceProvider.lastMessage;
-
+    _lastEmitterDate =  DateTime.now();
     try {
       // si es un evento del viaje
       final event = EventModel.fromJson(jsonDecode(message!));
@@ -778,8 +783,8 @@ class _TripPageState extends State<TripPage>
         print("[TripPage.timer.difference] ${difference.inSeconds}s.");
         if (difference.inSeconds >= 30) {
           print("[TripaPage.timer] restaring... ");
-          // stopLocationService();
-          // startLocationService();
+          emitterServiceProvider.close();
+          emitterServiceProvider.connect();
         }
       }else{
         print("[TripPage.timer] _lastPositionDate is null");
