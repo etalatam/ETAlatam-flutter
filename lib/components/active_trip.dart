@@ -1,9 +1,7 @@
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
-import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:provider/provider.dart';
 
 class ActiveTrip extends StatelessWidget {
   const ActiveTrip(this.openTripCallback, this.trip, {super.key});

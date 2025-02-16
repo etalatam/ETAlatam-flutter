@@ -72,9 +72,9 @@ class TripModel {
     if(date == null ) return;
     try {
       initializeDateFormatting('es_ES', null).then((_) {
-        DateFormat formato = DateFormat("yyyy-MM-dd");
-        var dt = formato.parse(date!);
-        DateFormat nuevoFormato = DateFormat("EEEE d 'de' MMMM", 'es_ES');
+        // DateFormat formato = DateFormat.EEEEE("yyyy-MM-ddTHH:mm");
+        var dt = DateTime.parse(date!);
+        DateFormat nuevoFormato = DateFormat("EEEE d 'de' MMMM HH:mm", 'es_ES');
         formatDate  = nuevoFormato.format(dt);
       });
     } catch (e) {

@@ -56,12 +56,12 @@ android {
 
     signingConfigs {
         debug {
-            keyAlias localProperties['keyAlias']
-            keyPassword localProperties['keyPassword']
-            storeFile localProperties['storeFile'] ? file(localProperties['storeFile']) : null
-            storePassword localProperties['storePassword']
+            // keyAlias localProperties['keyAlias']
+            // keyPassword localProperties['keyPassword']
+            // storeFile localProperties['storeFile'] ? file(localProperties['storeFile']) : null
+            // storePassword localProperties['storePassword']
         }        
-        relese {
+        release {
             keyAlias localProperties['keyAlias']
             keyPassword localProperties['keyPassword']
             storeFile localProperties['storeFile'] ? file(localProperties['storeFile']) : null
