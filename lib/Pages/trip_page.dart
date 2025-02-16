@@ -80,6 +80,15 @@ class _TripPageState extends State<TripPage>
 
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
+  Timer? _timer;
+    
+  DateTime? _lastEmitterDate;
+  
+  late EmitterService _emitterServiceProvider;
+  
+  late NotificationService _notificationService;
+
+
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -472,8 +481,10 @@ class _TripPageState extends State<TripPage>
 
   @override
   void dispose() {
-    super.dispose();
+    _emitterServiceProvider.removeListener(onEmitterMessage);
+    _notificationService.removeListener(onPushMessage);
     Wakelock.disable();
+    super.dispose();
   }
 
   @override
@@ -489,16 +500,18 @@ class _TripPageState extends State<TripPage>
     if (trip.trip_status == "Running") {
       Wakelock.enable();
 
-      Provider.of<EmitterService>(context, listen: false)
-          .addListener(onEmitterMessage);
+      _emitterServiceProvider = Provider.of<EmitterService>(context, listen: false);
+      _emitterServiceProvider.addListener(onEmitterMessage);
 
-      Provider.of<NotificationService>(context, listen: false)
-          .addListener(onPushMessage);
+      _notificationService = Provider.of<NotificationService>(context, listen: false);
+      _notificationService.addListener(onPushMessage);
 
       initConnectivity();
 
       _connectivitySubscription =
           _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+
+      _startTimer();
     }
   }
 
@@ -705,9 +718,11 @@ class _TripPageState extends State<TripPage>
       // si es un evento del viaje
       final event = EventModel.fromJson(jsonDecode(message!));
       if(event.type == "end-trip" && relationName != 'eta.drivers'){
-        setState(() {
-          Get.back();
-        });
+        if(mounted){
+          setState(() {
+            Get.back();
+          });
+        }
       }else{
         await event.requestData();
       }
@@ -740,16 +755,36 @@ class _TripPageState extends State<TripPage>
   }
 
   onPushMessage() {
-    if (!mounted) return;
     // final LastMessage? lastMessage =
     //     Provider.of<NotificationService>(context, listen: false).lastMessage;
 
     final LastMessage? lastMessage = notificationServiceProvider.lastMessage;
-    setState(() {
-      if (lastMessage?.status == 'foreground') {
+    if(mounted){
+      setState(() {
+        // if (lastMessage?.status == 'foreground') {
         notificationServiceProvider.showTooltip(
-            context, lastMessage!.lastMessage);
+              context, lastMessage!.lastMessage);
+        // }
+      });
+    }
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(Duration(seconds: 5), (timer) {
+      if (_lastEmitterDate != null) {
+        final now = DateTime.now();
+        final difference = now.difference(_lastEmitterDate!);
+        print("[TripPage.timer.difference] ${difference.inSeconds}s.");
+        if (difference.inSeconds >= 30) {
+          print("[TripaPage.timer] restaring... ");
+          // stopLocationService();
+          // startLocationService();
+        }
+      }else{
+        print("[TripPage.timer] _lastPositionDate is null");
       }
     });
   }
+
 }
