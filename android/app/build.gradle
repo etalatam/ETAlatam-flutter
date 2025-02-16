@@ -60,6 +60,12 @@ android {
             keyPassword localProperties['keyPassword']
             storeFile localProperties['storeFile'] ? file(localProperties['storeFile']) : null
             storePassword localProperties['storePassword']
+        }        
+        relese {
+            keyAlias localProperties['keyAlias']
+            keyPassword localProperties['keyPassword']
+            storeFile localProperties['storeFile'] ? file(localProperties['storeFile']) : null
+            storePassword localProperties['storePassword']
         }
     }    
 
