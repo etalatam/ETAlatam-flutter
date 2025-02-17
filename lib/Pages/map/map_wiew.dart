@@ -50,11 +50,17 @@ class MapWiewState extends State<MapWiew> {
 
     if(widget.navigationMode){
       print('[MapView._onMapCreated.navigationMode] ${widget.navigationMode}');
+      // const double puckScale = 10.0;
+
       this.mapboxMap?.location.updateSettings(LocationComponentSettings(
           enabled: true,
           pulsingEnabled: true,
           showAccuracyRing: true,
-          puckBearingEnabled: true
+          puckBearingEnabled: true,
+          // locationPuck: LocationPuck(
+          //       locationPuck3D: LocationPuck3D(
+          //           modelUri: "assethttps://raw.githubusercontent.com/CesiumGS/cesium/refs/heads/master/Apps/SampleData/models/BoxInstanced/BoxInstanced.gltf",
+          //           modelScale: [puckScale, puckScale, puckScale]))
         ));
       await locationService?.init();
       // listenToCompass();

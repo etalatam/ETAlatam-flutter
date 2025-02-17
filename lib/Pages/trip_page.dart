@@ -466,7 +466,7 @@ class _TripPageState extends State<TripPage>
     print("[TipPage.loadTrip.userId] $userId");
     print("[TipPage.loadTrip.relationNameLocal] $relationNameLocal");
 
-    TripModel? trip_ = await httpService.getTrip(trip.trip_id);
+    TripModel? trip_ = await httpService.getTrip(widget.trip?.trip_id);
     if (trip_.trip_id != 0) {
       setState(() {
         trip = trip_;
@@ -490,11 +490,7 @@ class _TripPageState extends State<TripPage>
   void initState() {
     super.initState();
 
-    loadTrip();
-
-    setState(() {
-      trip = widget.trip!;
-    });
+    trip = widget.trip!;
 
     if (trip.trip_status == "Running") {
       Wakelock.enable();
@@ -512,6 +508,9 @@ class _TripPageState extends State<TripPage>
 
       _startTimer();
     }
+
+    loadTrip();
+
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -639,7 +638,7 @@ class _TripPageState extends State<TripPage>
   Future<void> _updateIcon(
       Position position, String relationName, int relationId) async {
     print(
-        "[TripPage._updateIcon.relationName] $relationName [relationId] $relationId");
+        "[TripPage._updateIcon] [relationName] $relationName [relationId] $relationId");
 
         // is the trip driver?
     if (trip.driver_id != relationId) {
@@ -661,8 +660,6 @@ class _TripPageState extends State<TripPage>
       print("[TripPage._updateIcon]  pointAnnotation exists");
       // is driver?
       if (relationName.indexOf("drivers") > 1) {
-        print(
-            "[TripPage._updateIcon.driver_id] $relationId [trip.driver_id] ${trip.driver_id}");
         final ByteData bytes = await rootBundle.load('assets/moving_car.gif');
         final Uint8List imageData = bytes.buffer.asUint8List();
 
@@ -680,11 +677,12 @@ class _TripPageState extends State<TripPage>
 
       if(pointAnnotation != null){
         annotationsMap["$relationName.$relationId"] = pointAnnotation;
-          print("[TripPage._updateIcon] new annotationsMap");
+          print("[TripPage._updateIcon] new pointAnnotation");
       }
     } else {
       pointAnnotation.geometry = Point(coordinates: position);
       annotationManager?.update(pointAnnotation);
+      print("[TripPage._updateIcon] update pointAnnotation");
     }
 
     if (relationName.indexOf("drivers") > 1) {
