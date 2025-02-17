@@ -7,9 +7,9 @@ import 'package:flutter/foundation.dart';
 class EmitterService extends ChangeNotifier {
   static final EmitterService _instance = EmitterService._internal();
   
-  DateTime? _lastMessageDate;
+  // DateTime? _lastMessageDate;
   
-  Timer? _timer;
+  // Timer? _timer;
   
   factory EmitterService() => _instance;
 
@@ -57,7 +57,7 @@ class EmitterService extends ChangeNotifier {
   void _onMessage(String message) {
     print("[EmitterService.onMessage] $message");
     lastMessage = message;
-    _lastMessageDate = DateTime.now();    
+    // _lastMessageDate = DateTime.now();    
     notifyListeners();
   }
 

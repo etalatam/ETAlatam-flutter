@@ -240,29 +240,42 @@ class _TripPageState extends State<TripPage>
                             padding: const EdgeInsets.all(20),
                             width: double.infinity,
                             child: Column(
-                              crossAxisAlignment: storage
-                                          .getItem('lang')
-                                          .toString()
-                                          .toLowerCase() ==
-                                      'español'
-                                  ? CrossAxisAlignment.end
-                                  : CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.max,
                               children: [
                                 Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                    textDirection: TextDirection.ltr,
+                                    mainAxisSize: MainAxisSize.max,
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Text(
                                       "${lang.translate('Trip')} #${trip.trip_id}",
-                                      style: activeTheme.h3,
+                                      style: activeTheme.h4,
                                     ),
-                                    Text(
-                                      "${trip.trip_date}",
-                                      style: activeTheme.normalText,
-                                    ),
+                                    if(trip.trip_status == "Running")
+                                    const SizedBox(height: 10),
+                                    if(trip.trip_status == "Running")
+                                      Icon(Icons.access_time, size: 20),
+                                    if(trip.trip_status == "Running")
+                                      Text("${trip.trip_date}"),
+                                      const SizedBox(width: 10),
+                                      if(trip.trip_status == "Running")
+                                      Icon(Icons.route,
+                                          color: activeTheme.buttonColor,
+                                          size: 20),
+                                      if(trip.trip_status == "Running")
+                                      Text('${trip.distance} KM'),
+                                      const SizedBox(width: 10),
+                                      if(trip.trip_status == "Running")
+                                      (trip.pickup_locations != null)
+                                          ? Icon(Icons.pin_drop_outlined,
+                                              size: 20)
+                                          : const Center(),
+                                        if(trip.trip_status == "Running")
+                                      (trip.pickup_locations != null)
+                                          ? Text(
+                                              '${trip.pickup_locations!.length.toString()} ',
+                                            )
+                                          : const Center(),
                                     if (trip.trip_status == 'Completed' &&
                                         relationName.contains('eta.drivers'))
                                       GestureDetector(
