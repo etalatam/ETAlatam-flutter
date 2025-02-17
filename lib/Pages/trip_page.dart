@@ -112,13 +112,11 @@ class _TripPageState extends State<TripPage>
                     onMapReady: (MapboxMap mapboxMap) async {
                       _mapboxMapController = mapboxMap;
 
-                      mapboxMap.annotations
-                          .createPointAnnotationManager()
-                          .then((value) async {
-                        annotationManager = value;
-                        annotationManager
-                            ?.addOnPointAnnotationClickListener(this);
-                      });
+                      final value = await  mapboxMap.annotations
+                          .createPointAnnotationManager();
+                      annotationManager = value;
+                      annotationManager
+                                ?.addOnPointAnnotationClickListener(this);
                     },
                     onStyleLoadedListener: (MapboxMap mapboxMap) async {
                       showTripGeoJson(mapboxMap);
@@ -642,6 +640,13 @@ class _TripPageState extends State<TripPage>
       Position position, String relationName, int relationId) async {
     print(
         "[TripPage._updateIcon.relationName] $relationName [relationId] $relationId");
+
+        // is the trip driver?
+    if (trip.driver_id != relationId) {
+      print("[TripPage._updateIcon] is no de driver of this trip");
+      return;
+    }
+
     PointAnnotation? pointAnnotation =
         annotationsMap.containsKey("$relationName.$relationId")
             ? annotationsMap["$relationName.$relationId"]
@@ -653,22 +658,17 @@ class _TripPageState extends State<TripPage>
 
     // If it does not exist, the new element is created on the map
     if (pointAnnotation == null) {
+      print("[TripPage._updateIcon]  pointAnnotation exists");
       // is driver?
       if (relationName.indexOf("drivers") > 1) {
         print(
             "[TripPage._updateIcon.driver_id] $relationId [trip.driver_id] ${trip.driver_id}");
-        // is the trip driver?
-        if (trip.driver_id != relationId) {
-          return;
-        }
         final ByteData bytes = await rootBundle.load('assets/moving_car.gif');
         final Uint8List imageData = bytes.buffer.asUint8List();
 
         pointAnnotation = await mapboxUtils.createAnnotation(
             annotationManager, position, imageData);
-        if(pointAnnotation != null){
-          annotationsMap["$relationName.$relationId"] = pointAnnotation;
-        }            
+            
       } else {
         // any user who wishes will be shown on the map, examples for students
         final networkImage = await mapboxUtils.getNetworkImage(
@@ -676,9 +676,11 @@ class _TripPageState extends State<TripPage>
         final circleImage = await mapboxUtils.createCircleImage(networkImage);
         pointAnnotation = await mapboxUtils.createAnnotation(
             annotationManager, position, circleImage);
-        if(pointAnnotation != null){
-          annotationsMap["$relationName.$relationId"] = pointAnnotation;
-        }
+      }
+
+      if(pointAnnotation != null){
+        annotationsMap["$relationName.$relationId"] = pointAnnotation;
+          print("[TripPage._updateIcon] new annotationsMap");
       }
     } else {
       pointAnnotation.geometry = Point(coordinates: position);
