@@ -54,20 +54,20 @@ android {
         versionName flutterVersionName
     }
 
-    signingConfigs {
-        debug {
-            // keyAlias localProperties.getProperty('keyAlias')
-            // keyPassword localProperties.getProperty('keyPassword')
-            // storeFile localProperties.getProperty('storeFile') ? file(localProperties.getProperty('storeFile')) : null
-            // storePassword localProperties.getProperty('storePassword')
-        }        
-        release {
-            // keyAlias localProperties.getProperty('keyAlias')
-            // keyPassword localProperties.getProperty('keyPassword')
-            // storeFile localProperties.getProperty('storeFile') ? file(localProperties.getProperty('storeFile')) : null
-            // storePassword localProperties.getProperty('storePassword')
-        }
-    }    
+    // signingConfigs {
+    //     debug {
+    //         // keyAlias localProperties.getProperty('keyAlias')
+    //         // keyPassword localProperties.getProperty('keyPassword')
+    //         // storeFile localProperties.getProperty('storeFile') ? file(localProperties.getProperty('storeFile')) : null
+    //         // storePassword localProperties.getProperty('storePassword')
+    //     }        
+    //     release {
+    //         // keyAlias localProperties.getProperty('keyAlias')
+    //         // keyPassword localProperties.getProperty('keyPassword')
+    //         // storeFile localProperties.getProperty('storeFile') ? file(localProperties.getProperty('storeFile')) : null
+    //         // storePassword localProperties.getProperty('storePassword')
+    //     }
+    // }    
 
     buildTypes {
         debug {

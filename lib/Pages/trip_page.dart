@@ -52,8 +52,6 @@ class _TripPageState extends State<TripPage>
     implements OnPointAnnotationClickListener {
   bool showLoader = false;
 
-  bool isActiveTrip = true;
-
   String activeTab = 'pickup';
 
   TripModel trip = TripModel(trip_id: 0);
@@ -470,7 +468,6 @@ class _TripPageState extends State<TripPage>
     if (trip_.trip_id != 0) {
       setState(() {
         trip = trip_;
-        isActiveTrip = true;
         showLoader = false;
         relationName = relationNameLocal;
       });
@@ -729,7 +726,8 @@ class _TripPageState extends State<TripPage>
           });
         }
       }else{
-        await event.requestData();
+        // await event.requestData();
+        loadTrip();
       }
     } catch (e) {
       //si es un evento posicion
