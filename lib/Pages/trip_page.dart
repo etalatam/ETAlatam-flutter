@@ -161,6 +161,26 @@ class _TripPageState extends State<TripPage>
                           ],
                         )),
                   ),
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child:  Consumer<EmitterService>(builder: (context, emitterService, child) {
+                      return Positioned(
+                        bottom: 5,
+                        right: 5,
+                        child: Container(
+                          width: 15,
+                          height: 15,
+                          decoration: BoxDecoration(
+                            color: emitterService.client!.isConnected? Colors.green : Colors.red,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                        ),
+                      );
+                    }),
+
+                  ),
 
                 // Positioned(
                 //   left: 0,
