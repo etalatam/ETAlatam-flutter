@@ -104,7 +104,7 @@ class NotificationService with ChangeNotifier {
   }
 
   void showTooltip(BuildContext context, RemoteMessage? message) {
-    final title = message?.notification!.title ?? "Nuevo mensaje";
+    final title = message?.notification!.body ?? "Nuevo mensaje";
     final snackBar = SnackBar(
       duration: Duration(seconds: 5),
       content: AnimatedSnackBarContent(title: title,),
