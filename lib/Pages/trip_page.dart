@@ -162,13 +162,10 @@ class _TripPageState extends State<TripPage>
                         )),
                   ),
                   Positioned(
-                    top: 10,
+                    top: 40,
                     right: 10,
                     child:  Consumer<EmitterService>(builder: (context, emitterService, child) {
-                      return Positioned(
-                        bottom: 5,
-                        right: 5,
-                        child: Container(
+                      return Container(
                           width: 15,
                           height: 15,
                           decoration: BoxDecoration(
@@ -176,7 +173,6 @@ class _TripPageState extends State<TripPage>
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white, width: 2),
                           ),
-                        ),
                       );
                     }),
 
