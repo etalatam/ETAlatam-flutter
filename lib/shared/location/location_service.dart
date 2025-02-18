@@ -101,7 +101,8 @@ class LocationService extends ChangeNotifier {
   Future<void> startLocationService() async {
     print('[LocationService.startLocationService]');
     var data = <String, dynamic>{'countInit': 1};
-    
+    final relationNameLocal = await storage.getItem('relation_name');
+
     init();
 
     return await BackgroundLocator.registerLocationUpdate(
@@ -115,9 +116,9 @@ class LocationService extends ChangeNotifier {
             distanceFilter: 100,
             stopWithTerminate: true),
         autoStop: false,
-        androidSettings: const AndroidSettings(
+        androidSettings:  AndroidSettings(
             accuracy: LocationAccuracy.NAVIGATION,
-            interval: 5,
+            interval: relationNameLocal == 'wta.drivers' ? 5 : 60,
             distanceFilter: 0,
             client: LocationClient.google,
             androidNotificationSettings: AndroidNotificationSettings(
