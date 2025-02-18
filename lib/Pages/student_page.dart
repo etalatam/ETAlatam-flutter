@@ -345,6 +345,7 @@ class _StudentPageState extends State<StudentPage> {
     // ignore: avoid_print
     print('connectivityNone: $connectivityNone');
   }
+  
   void _startTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(Duration(seconds: 5), (timer) {
@@ -378,11 +379,14 @@ class _StudentPageState extends State<StudentPage> {
       pointAnnotation = await mapboxUtils.createAnnotation(
           annotationManager, position, circleImage);
       annotationsMap["$relationName.$relationId"] = pointAnnotation!;
-      _mapboxMapController?.setCamera(CameraOptions(
-        center: Point(coordinates: position),
-        zoom: 15.5,
-        pitch: 70,
-      ));
+
+      if ("$relationId" == "${widget.student?.student_id}") {
+        _mapboxMapController?.setCamera(CameraOptions(
+          center: Point(coordinates: position),
+          zoom: 15.5,
+          pitch: 70,
+        ));
+      }
     } else {
       pointAnnotation.geometry = Point(coordinates: position);
       annotationManager?.update(pointAnnotation);
