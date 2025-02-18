@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:isolate';
+import 'dart:math';
 import 'dart:ui';
 import 'package:background_locator_2/location_dto.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
@@ -33,11 +34,21 @@ class LocationService extends ChangeNotifier {
     
   DateTime? _lastPositionDate;
 
+  double _totalDistance = 0.0;
+
+  double _lastLatitude = 0;
+
+  double _lastLongitude = 0;
+
+
   static final LocationService _instance = LocationService._internal();
 
   factory LocationService() => _instance;
 
   LocationService._internal();
+
+  double get totalDistance => _totalDistance;
+
 
   init() async {
     print("[LocationService.init]");
@@ -160,6 +171,14 @@ class LocationService extends ChangeNotifier {
 
   trackingDynamic(dynamic locationInfo) async {
     print('[LocationService.trackingDynamic] ${locationInfo.toString()}');
+
+    _totalDistance = _calculateDistance(
+      _lastLatitude, 
+      _lastLongitude, 
+      locationInfo.latitude, 
+      locationInfo.longitude
+    );
+
     try {
       _lastPositionDate = DateTime.now();
       final jsonData = {
@@ -168,7 +187,8 @@ class LocationService extends ChangeNotifier {
         'altitude': locationInfo?['altitude'],
         'accuracy': locationInfo?['accuracy'],
         'heading': locationInfo?['heading'],
-        'time': locationInfo?['time']
+        'time': locationInfo?['time'],
+        'distance': _totalDistance
       };
       await httpService.sendTracking(position: jsonData, userId: _userId);
     } catch (e) {
@@ -185,6 +205,13 @@ class LocationService extends ChangeNotifier {
     (_locationData?['longitude'] != locationInfo.longitude)) {
 
       try {
+        _totalDistance = _calculateDistance(
+          _lastLatitude, 
+          _lastLongitude, 
+          locationInfo.latitude, 
+          locationInfo.longitude
+        );
+
         final jsonData = {
           'latitude': locationInfo.latitude,
           'longitude': locationInfo.longitude,
@@ -193,10 +220,11 @@ class LocationService extends ChangeNotifier {
           'speed': locationInfo.speed,
           'speedAccuracy': locationInfo.speedAccuracy,
           'heading': locationInfo.heading,
-          'time': locationInfo.time
+          'time': locationInfo.time,
+          'distance': _totalDistance
         };
-        // _locationData = jsonData;
-        // notifyListeners();
+        _locationData = jsonData;
+        notifyListeners();
         await httpService.sendTracking(position: jsonData, userId: _userId);
       } catch (e) {
         print('[LocationService.trackingLocationDto.error] ${e.toString()}');
@@ -234,4 +262,26 @@ class LocationService extends ChangeNotifier {
       print('[LocationService.stopLocationService.error] ${e.toString()}');
     }
   }
+
+  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    const double earthRadius = 6371000; // Radio de la Tierra en metros
+
+    double dLat = _toRadians(lat2 - lat1);
+    double dLon = _toRadians(lon2 - lon1);
+
+    double a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(_toRadians(lat1)) * cos(_toRadians(lat2)) *
+        sin(dLon / 2) * sin(dLon / 2);
+
+    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+    _lastLatitude=lat2;
+    _lastLongitude=lon2;
+
+    return earthRadius * c;
+  }
+
+  double _toRadians(double degrees) {
+    return degrees * pi / 180;
+  }  
 }

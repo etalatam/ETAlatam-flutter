@@ -38,6 +38,8 @@ class TripModel {
   int? school_id;
   
   String? formatDate;
+  
+  DateTime? dt;
 
   TripModel({
     required this.trip_id,
@@ -73,9 +75,9 @@ class TripModel {
     try {
       initializeDateFormatting('es_ES', null).then((_) {
         // DateFormat formato = DateFormat.EEEEE("yyyy-MM-ddTHH:mm");
-        var dt = DateTime.parse(date!);
+        dt = DateTime.parse(date!);
         DateFormat nuevoFormato = DateFormat("EEEE d 'de' MMMM HH:mm", 'es_ES');
-        formatDate  = nuevoFormato.format(dt);
+        formatDate  = nuevoFormato.format(dt!);
       });
     } catch (e) {
       print("pretty date error ${e.toString()}");

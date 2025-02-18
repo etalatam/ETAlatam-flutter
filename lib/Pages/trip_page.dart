@@ -86,6 +86,11 @@ class _TripPageState extends State<TripPage>
   late EmitterService _emitterServiceProvider;
   
   late NotificationService _notificationService;
+
+  Duration tripDuration =  Duration(days: 0, hours: 0, minutes: 0, seconds: 0,
+  milliseconds: 0, microseconds: 0);
+  
+  double tripDistance = 0;
   
 
   @override
@@ -258,14 +263,17 @@ class _TripPageState extends State<TripPage>
                                     if(trip.trip_status == "Running")
                                       Icon(Icons.access_time, size: 20),
                                     if(trip.trip_status == "Running")
-                                      Text("${trip.trip_date}"),
+                                      Text(tripDuration.inMinutes > 60?
+                                        "${tripDuration.inHours}h":
+                                        "${tripDuration.inMinutes}min"
+                                        ) ,
                                       const SizedBox(width: 10),
                                       if(trip.trip_status == "Running")
                                       Icon(Icons.route,
                                           color: activeTheme.buttonColor,
                                           size: 20),
                                       if(trip.trip_status == "Running")
-                                      Text('${trip.distance} KM'),
+                                      Text(tripDistance > 1000 ? '$tripDistance KM': '$tripDistance m'),
                                       const SizedBox(width: 10),
                                       if(trip.trip_status == "Running")
                                       (trip.pickup_locations != null)
@@ -762,6 +770,33 @@ class _TripPageState extends State<TripPage>
   void onEmitterMessage() async {
     final String? message = emitterServiceProvider.lastMessage;
     _lastEmitterDate =  DateTime.now();
+
+    try {
+      if(mounted){
+        setState(() {
+          if(trip.dt != null){
+              tripDuration = trip.dt!.difference(DateTime.now());
+          }
+        });
+      }      
+    } catch (e) {
+      print(e);
+    }
+
+    try {
+      if(mounted){
+        setState(() {
+          tripDistance = locationServiceProvider.totalDistance;  
+          if(tripDistance > 1000){
+            tripDistance = tripDistance / 1000;
+          }
+          print("tripDistance $tripDistance");
+        });
+      }      
+    } catch (e) {
+      print(e);
+    }
+
     try {
       // si es un evento del viaje
       final event = EventModel.fromJson(jsonDecode(message!));

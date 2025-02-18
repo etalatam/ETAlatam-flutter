@@ -93,7 +93,7 @@ class MapWiewState extends State<MapWiew> {
         Consumer<LocationService>(builder: (context, locationService, child) {
       final locationData = locationService.locationData;
 
-      print('[MapView.Consumer.LocationService.locationData] $locationData');
+      // print('[MapView.Consumer.LocationService.locationData] $locationData');
       print(
           'MapView.Consumer.LocationService.widget.navigationMode ${widget.navigationMode}');
       if (locationData != null && mapboxMap != null && widget.navigationMode) {
