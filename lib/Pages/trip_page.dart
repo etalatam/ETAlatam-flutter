@@ -23,6 +23,7 @@ import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import 'package:wakelock/wakelock.dart';
 
 import 'map/map_wiew.dart';
@@ -48,7 +49,7 @@ class TripPage extends StatefulWidget {
 }
 
 class _TripPageState extends State<TripPage>
-    with ETAWidgets, MediansTheme
+    with ETAWidgets, MediansTheme, WidgetsBindingObserver
     implements OnPointAnnotationClickListener {
   bool showLoader = false;
 
@@ -85,7 +86,7 @@ class _TripPageState extends State<TripPage>
   late EmitterService _emitterServiceProvider;
   
   late NotificationService _notificationService;
-
+  
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +103,7 @@ class _TripPageState extends State<TripPage>
                 //       color: Colors.white,
                 //       semanticsLabel: "Esperando ubicación del bus...",
                 //     ),
-                //   ),
+                //   ),                               
                 SizedBox(
                   height: MediaQuery.of(context).size.height / 1.40,
                   child: MapWiew(
@@ -509,13 +510,17 @@ class _TripPageState extends State<TripPage>
     _emitterServiceProvider.removeListener(onEmitterMessage);
     _notificationService.removeListener(onPushMessage);
     Wakelock.disable();
-  _timer?.cancel();
+    _timer?.cancel();
+    _connectivitySubscription.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
+
+    WidgetsBinding.instance.addObserver(this);
 
     trip = widget.trip!;
 
@@ -537,8 +542,19 @@ class _TripPageState extends State<TripPage>
     }
 
     loadTrip();
-
   }
+
+ @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.resumed) {
+      // La aplicación está en primer plano (visible)
+      loadTrip();
+    } else if (state == AppLifecycleState.paused) {
+      // La aplicación está en segundo plano (no visible)
+    }
+  }  
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initConnectivity() async {

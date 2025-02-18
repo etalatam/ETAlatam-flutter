@@ -311,6 +311,7 @@ class _StudentPageState extends State<StudentPage> {
     _emitterServiceProvider.removeListener(onEmitterMessage);
     Wakelock.disable();
     _timer?.cancel();
+    _connectivitySubscription.cancel();
     super.dispose();
   }
 
