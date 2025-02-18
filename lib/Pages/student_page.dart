@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
 import 'package:eta_school_app/Models/student_model.dart';
 import 'package:eta_school_app/Pages/map/map_wiew.dart';
 import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
+import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/Pages/upload_picture_page.dart';
 import 'package:eta_school_app/components/custom_row.dart';
 import 'package:eta_school_app/components/loader.dart';
@@ -10,8 +13,10 @@ import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:wakelock/wakelock.dart';
 
 class StudentPage extends StatefulWidget {
   StudentPage({super.key, this.student});
@@ -30,6 +35,19 @@ class _StudentPageState extends State<StudentPage> {
   PointAnnotationManager? annotationManager;
 
   Map<String, PointAnnotation> annotationsMap = {};
+
+  bool connectivityNone = false;
+
+  final Connectivity _connectivity = Connectivity();
+
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+
+  Timer? _timer;
+    
+  DateTime? _lastEmitterDate;
+  
+  late EmitterService _emitterServiceProvider;
+
 
   @override
   Widget build(BuildContext context) {
@@ -51,28 +69,82 @@ class _StudentPageState extends State<StudentPage> {
                     onStyleLoadedListener: (MapboxMap mapboxMap) async {},
                   ),
                 ),
+                if (connectivityNone)
+                  Positioned(
+                    // left: 0,
+                    top: 40,
+                    child: SizedBox(
+                        height: 50,
+                        width: 300,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: AnimatedContainer(
+                                duration: Duration(seconds: 1),
+                                curve: Curves.fastOutSlowIn,
+                                child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      borderRadius: BorderRadius.circular(
+                                          20), // Cambia el valor para ajustar el radio
+                                    ),
+                                    padding: EdgeInsets.all(10),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.wifi_off,
+                                            color: Colors.white),
+                                        SizedBox(width: 10),
+                                        Text('No hay conexión a Internet',
+                                            style:
+                                                TextStyle(color: Colors.white)),
+                                      ],
+                                    )),
+                              ),
+                            ),
+                          ],
+                        )),
+                  ),
+                  Positioned(
+                    top: 40,
+                    right: 10,
+                    child:  Consumer<EmitterService>(builder: (context, emitterService, child) {
+                      return Container(
+                          width: 15,
+                          height: 15,
+                          decoration: BoxDecoration(
+                            color: emitterService.client!.isConnected? Colors.green : Colors.red,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                      );
+                    }),
+
+                  ),
                 DraggableScrollableSheet(
                   snapAnimationDuration: const Duration(seconds: 1),
-                  initialChildSize: .4,
-                  minChildSize: 0.4,
+                  initialChildSize: .35,
+                  minChildSize: 0.35,
                   maxChildSize: 0.7,
                   builder: (BuildContext context,
                       ScrollController scrollController) {
                     return Stack(children: [
-                      Container(
-                        width: double.infinity,
-                        height: 75,
-                        clipBehavior: Clip.antiAlias,
-                        decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withOpacity(0),
-                            Colors.black.withOpacity(.5),
-                          ],
-                        )),
-                      ),
+                      // Container(
+                      //   width: double.infinity,
+                      //   height: 75,
+                      //   clipBehavior: Clip.antiAlias,
+                      //   decoration: BoxDecoration(
+                      //       gradient: LinearGradient(
+                      //     begin: Alignment.topCenter,
+                      //     end: Alignment.bottomCenter,
+                      //     colors: [
+                      //       Colors.black.withOpacity(0),
+                      //       Colors.black.withOpacity(.5),
+                      //     ],
+                      //   )),
+                      // ),
                       Container(
                         margin: EdgeInsets.only(top: 50),
                         height: double.infinity,
@@ -220,9 +292,76 @@ class _StudentPageState extends State<StudentPage> {
   void initState() {
     super.initState();
     showLoader = false;
-    Provider.of<EmitterService>(context, listen: false)
-        .addListener(onEmitterMessage);
+    
+    Wakelock.enable();
+
+    _emitterServiceProvider = Provider.of<EmitterService>(context, listen: false);
+    _emitterServiceProvider.addListener(onEmitterMessage);
+
+    initConnectivity();
+
+    _connectivitySubscription =
+          _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+
+      _startTimer();        
   }
+
+  @override
+  void dispose() {
+    _emitterServiceProvider.removeListener(onEmitterMessage);
+    Wakelock.disable();
+    _timer?.cancel();
+    super.dispose();
+  }
+
+
+  // Platform messages are asynchronous, so we initialize in an async method.
+  Future<void> initConnectivity() async {
+    late List<ConnectivityResult> result;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      result = await _connectivity.checkConnectivity();
+    } on PlatformException catch (e) {
+      print('Couldn\'t check connectivity status ${e.toString()}');
+      return;
+    }
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) {
+      return Future.value(null);
+    }
+
+    return _updateConnectionStatus(result);
+  }
+
+  Future<void> _updateConnectionStatus(List<ConnectivityResult> results) async {
+    setState(() {
+      connectivityNone =
+          results.any((result) => result == ConnectivityResult.none);
+    });
+    // ignore: avoid_print
+    print('connectivityNone: $connectivityNone');
+  }
+  void _startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(Duration(seconds: 5), (timer) {
+      if (_lastEmitterDate != null) {
+        final now = DateTime.now();
+        final difference = now.difference(_lastEmitterDate!);
+        print("[TripPage.timer.difference] ${difference.inSeconds}s.");
+        if (difference.inSeconds >= 30) {
+          print("[TripaPage.timer] restaring... ");
+          emitterServiceProvider.close();
+          emitterServiceProvider.connect();
+        }
+      }else{
+        print("[TripPage.timer] _lastPositionDate is null");
+      }
+    });
+  }
+
 
   Future<void> _updateIcon(
       Position position, String relationName, int relationId) async {

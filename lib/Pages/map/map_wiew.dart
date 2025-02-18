@@ -45,8 +45,11 @@ class MapWiewState extends State<MapWiew> {
         .mapboxMap
         ?.logo
         .updateSettings(LogoSettings(marginRight: 3000, marginTop: 3000));
+    
     this.mapboxMap?.attribution.updateSettings(AttributionSettings(
-        marginRight: 3000, marginTop: 3000, clickable: false));
+        marginRight: 3000, 
+        marginTop: 2500, 
+        clickable: true));
 
     if(widget.navigationMode){
       print('[MapView._onMapCreated.navigationMode] ${widget.navigationMode}');
@@ -67,9 +70,14 @@ class MapWiewState extends State<MapWiew> {
     }
 
     this.mapboxMap?.scaleBar.updateSettings(ScaleBarSettings(
-        enabled: true, position: OrnamentPosition.BOTTOM_LEFT));
+        enabled: true, 
+        position: OrnamentPosition.BOTTOM_LEFT
+    ));
     this.mapboxMap?.compass.updateSettings(CompassSettings(
-        enabled: true, position: OrnamentPosition.BOTTOM_RIGHT));
+        enabled: true, 
+        position: OrnamentPosition.TOP_LEFT,
+        marginTop: 50,
+        clickable: true));
 
     await widget.onMapReady(mapboxMap);
   }

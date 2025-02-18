@@ -87,7 +87,7 @@ class TripModel {
     List<TripPickupLocation> pickupLocations = [];
     try {
       print("[TripModel.fromJson.pickup_points] ${json['pickup_points']}");
-      Iterable l = json["pickup_points"] != '[]' ? json["pickup_points"] : null;
+      Iterable l = json["pickup_points"] != '[]' ? json["pickup_points"] : null;      
       pickupLocations = List<TripPickupLocation>.from(
           l.map((model) => TripPickupLocation.fromJson(model)));
       print('pickup_points of TripModel proccessed');
