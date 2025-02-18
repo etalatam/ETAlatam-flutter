@@ -161,6 +161,7 @@ class _TripPageState extends State<TripPage>
                           ],
                         )),
                   ),
+                  if(trip.trip_status == 'Running')
                   Positioned(
                     top: 40,
                     right: 10,
