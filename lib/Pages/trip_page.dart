@@ -8,6 +8,7 @@ import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
@@ -250,38 +251,51 @@ class _TripPageState extends State<TripPage>
                             child: Column(
                               children: [
                                 Row(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: 200,
+                                      child: Text(
+                                        "${lang.translate('Trip')} #${trip.trip_id} ${trip.route?.route_name}",
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: activeTheme.h6,
+                                      ),
+                                    ),
+                                    Row(children: [
+                                      SvgPicture.asset("assets/svg/bus.svg",
+                                          width: 15,),
+                                      SizedBox(width: 5),
+                                      Text(
+                                        trip.vehicle?.plate_number ?? '',
+                                      )
+                                    ]),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                if(trip.trip_status == "Running")
+                                Row(
                                     textDirection: TextDirection.ltr,
                                     mainAxisSize: MainAxisSize.max,
                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Text(
-                                      "${lang.translate('Trip')} #${trip.trip_id}",
-                                      style: activeTheme.h4,
-                                    ),
-                                    if(trip.trip_status == "Running")
                                     const SizedBox(height: 10),
-                                    if(trip.trip_status == "Running")
                                       Icon(Icons.access_time, size: 20),
-                                    if(trip.trip_status == "Running")
                                       Text(tripDuration.inMinutes > 60?
                                         "${tripDuration.inHours}h":
                                         "${tripDuration.inMinutes}min"
                                         ) ,
                                       const SizedBox(width: 10),
-                                      if(trip.trip_status == "Running")
-                                      Icon(Icons.route,
-                                          color: activeTheme.buttonColor,
-                                          size: 20),
-                                      if(trip.trip_status == "Running")
+                                      Icon(Icons.route,size: 20),
                                       Text(tripDistance > 1000 ? '$tripDistance KM': '$tripDistance m'),
                                       const SizedBox(width: 10),
-                                      if(trip.trip_status == "Running")
                                       (trip.pickup_locations != null)
-                                          ? Icon(Icons.pin_drop_outlined,
-                                              size: 20)
+                                          ? Icon(Icons.pin_drop_outlined,size: 20)
                                           : const Center(),
-                                        if(trip.trip_status == "Running")
                                       (trip.pickup_locations != null)
                                           ? Text(
                                               '${trip.pickup_locations!.length.toString()} ',
