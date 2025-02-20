@@ -85,7 +85,7 @@ class _TripPageState extends State<TripPage>
     
   DateTime? _lastEmitterDate;
   
-  late EmitterService _emitterServiceProvider;
+  EmitterService? _emitterServiceProvider;
   
   late NotificationService _notificationService;
 
@@ -530,7 +530,7 @@ class _TripPageState extends State<TripPage>
 
   @override
   void dispose() {
-    _emitterServiceProvider.removeListener(onEmitterMessage);
+    _emitterServiceProvider?.removeListener(onEmitterMessage);
     _notificationService.removeListener(onPushMessage);
     Wakelock.disable();
     _timer?.cancel();
@@ -551,7 +551,7 @@ class _TripPageState extends State<TripPage>
       Wakelock.enable();
 
       _emitterServiceProvider = Provider.of<EmitterService>(context, listen: false);
-      _emitterServiceProvider.addListener(onEmitterMessage);
+      _emitterServiceProvider?.addListener(onEmitterMessage);
 
       _notificationService = Provider.of<NotificationService>(context, listen: false);
       _notificationService.addListener(onPushMessage);
