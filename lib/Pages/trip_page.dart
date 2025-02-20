@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
@@ -687,7 +688,7 @@ class _TripPageState extends State<TripPage>
   // }
 
   Future<void> _updateIcon(
-      Position position, String relationName, int relationId) async {
+      Position position, String relationName, int relationId, String label) async {
     print(
         "[TripPage._updateIcon] [relationName] $relationName [relationId] $relationId");
 
@@ -715,7 +716,7 @@ class _TripPageState extends State<TripPage>
         final Uint8List imageData = bytes.buffer.asUint8List();
 
         pointAnnotation = await mapboxUtils.createAnnotation(
-            annotationManager, position, imageData);
+            annotationManager, position, imageData, label);
             
       } else {
         // any user who wishes will be shown on the map, examples for students
@@ -723,7 +724,7 @@ class _TripPageState extends State<TripPage>
             httpService.getAvatarUrl(relationId, relationName));
         final circleImage = await mapboxUtils.createCircleImage(networkImage);
         pointAnnotation = await mapboxUtils.createAnnotation(
-            annotationManager, position, circleImage);
+            annotationManager, position, circleImage, label);
       }
 
       if(pointAnnotation != null){
@@ -732,6 +733,7 @@ class _TripPageState extends State<TripPage>
       }
     } else {
       pointAnnotation.geometry = Point(coordinates: position);
+      pointAnnotation.textField = label;
       annotationManager?.update(pointAnnotation);
       print("[TripPage._updateIcon] update pointAnnotation");
     }
@@ -771,30 +773,28 @@ class _TripPageState extends State<TripPage>
     final String? message = emitterServiceProvider.lastMessage;
     _lastEmitterDate =  DateTime.now();
 
-    try {
-      if(mounted){
-        setState(() {
-          if(trip.dt != null){
-              tripDuration = trip.dt!.difference(DateTime.now());
-          }
-        });
-      }      
-    } catch (e) {
-      print(e);
-    }
+    if(mounted){
+      setState(() {
+        try {
+          tripDuration = trip.dt.difference(DateTime.now());
+        } catch (e) {
+          print(e);
+        }
+      });
+    }      
 
-    try {
-      if(mounted){
-        setState(() {
+    if(mounted){
+      setState(() {
+        try {
           tripDistance = locationServiceProvider.totalDistance;  
           if(tripDistance > 1000){
             tripDistance = tripDistance / 1000;
           }
-          print("tripDistance $tripDistance");
-        });
-      }      
-    } catch (e) {
-      print(e);
+          print("tripDistance $tripDistance");          
+        } catch (e) {
+          print(e);
+        }
+      });
     }
 
     try {
@@ -822,21 +822,31 @@ class _TripPageState extends State<TripPage>
           final Position position = Position(
               double.parse("${tracking['payload']['longitude']}"),
               double.parse("${tracking['payload']['latitude']}"));
+          final label = formatUnixEpoch(tracking['payload']['time'].toInt());
 
           if (relationId != null &&
               relationName == 'eta.drivers' ) {
             print(
                 "[TripPage.onEmitterMessage.emitter-tracking.driver] $tracking");
-            _updateIcon(position, relationName, relationId);
+            _updateIcon(position, relationName, relationId,label);
           } else if (relationName == 'eta.students' && widget.showStudents) {
             print(
                 "[TripPage.onEmitterMessage.emitter-tracking.student] $tracking");
-            _updateIcon(position, relationName, relationId);
+            _updateIcon(position, relationName, relationId, label);
           }
         }
       }
     }
   }
+
+  String formatUnixEpoch(int unixEpoch) {
+    // Convierte el Unix Epoch (segundos) a milisegundos
+    DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(unixEpoch);
+
+    // Formatea la fecha como desees
+    return '${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
+  }
+
 
   onPushMessage() {
     // final LastMessage? lastMessage =

@@ -103,9 +103,12 @@ class _HeaderState extends State<Header>{
   
   void fetchLoginInfo() async {
     final info = await httpService.userInfo();
+   if(mounted) {
     setState(() {
       user  =  info;
     });
+   }
+    
   }
 
   @override

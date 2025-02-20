@@ -366,7 +366,7 @@ class _StudentPageState extends State<StudentPage> {
 
 
   Future<void> _updateIcon(
-      Position position, String relationName, int relationId) async {
+      Position position, String relationName, int relationId, String label) async {
     PointAnnotation? pointAnnotation =
         annotationsMap.containsKey("$relationName.$relationId")
             ? annotationsMap["$relationName.$relationId"]
@@ -377,7 +377,7 @@ class _StudentPageState extends State<StudentPage> {
           .getNetworkImage(httpService.getAvatarUrl(relationId, relationName));
       final circleImage = await mapboxUtils.createCircleImage(networkImage);
       pointAnnotation = await mapboxUtils.createAnnotation(
-          annotationManager, position, circleImage);
+          annotationManager, position, circleImage, label);
       annotationsMap["$relationName.$relationId"] = pointAnnotation!;
 
       if ("$relationId" == "${widget.student?.student_id}") {
@@ -389,6 +389,7 @@ class _StudentPageState extends State<StudentPage> {
       }
     } else {
       pointAnnotation.geometry = Point(coordinates: position);
+      pointAnnotation.textField = label;
       annotationManager?.update(pointAnnotation);
     }
 
@@ -421,13 +422,23 @@ class _StudentPageState extends State<StudentPage> {
             final Position position = Position(
                 double.parse("${tracking['payload']['longitude']}"),
                 double.parse("${tracking['payload']['latitude']}"));
+                final label = formatUnixEpoch(tracking['payload']['time'].toInt());
 
             print(
                 "[TripPage.onEmitterMessage.emitter-tracking.student] $tracking");
-            _updateIcon(position, relationName, relationId);
+            _updateIcon(position, relationName, relationId, label);
           }
         }
       }
     }
   }
+
+  String formatUnixEpoch(int unixEpoch) {
+    // Convierte el Unix Epoch (segundos) a milisegundos
+    DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(unixEpoch * 1000);
+
+    // Formatea la fecha como desees
+    return '${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
+  }
+
 }

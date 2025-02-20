@@ -39,7 +39,7 @@ class TripModel {
   
   String? formatDate;
   
-  DateTime? dt;
+  late DateTime dt;
 
   TripModel({
     required this.trip_id,

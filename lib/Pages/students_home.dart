@@ -303,8 +303,11 @@ class _StudentsHomeState extends State<StudentsHome>
   }
 
   onPushMessage() {
-    setState(() {
-      loadResources();
-    });
+    if(mounted){
+      setState(() {
+        loadResources();
+      });
+    }
+    
   }
 }

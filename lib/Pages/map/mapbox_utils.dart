@@ -65,15 +65,17 @@ class MapboxUtils {
   }
 
   Future<PointAnnotation?> createAnnotation(
-      annotationManager, Position position, Uint8List imageData) async {
+      annotationManager, Position position, Uint8List imageData, String label) async {
     return await annotationManager?.create(PointAnnotationOptions(
         geometry: Point(coordinates: position),
-        textField: "",
         textOffset: [0.0, -1.0],
-        textColor: Colors.black.value,
         iconSize: 0.35,
         iconOffset: [0.0, -5.0],
         symbolSortKey: 100,
-        image: imageData));
+        image: imageData,
+        textField: label,
+        textSize: 12.0,
+        textColor: Colors.black.value
+    ));
   }
 }
