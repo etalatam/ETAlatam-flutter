@@ -415,13 +415,15 @@ class _StudentPageState extends State<StudentPage> {
       final String? message =
           Provider.of<EmitterService>(context, listen: false).lastMessage;
 
+          if(message == null) return;
+
       try {
         // si es un evento del viaje
-        final event = EventModel.fromJson(jsonDecode(message!));
+        final event = EventModel.fromJson(jsonDecode(message));
         await event.requestData();
       } catch (e) {
         //si es un evento posicion
-        final Map<String, dynamic> tracking = jsonDecode(message!);
+        final Map<String, dynamic> tracking = jsonDecode(message);
 
         if (tracking['relation_name'] != null &&
             tracking['relation_name'] == 'eta.students') {

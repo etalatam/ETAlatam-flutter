@@ -787,6 +787,8 @@ class _TripPageState extends State<TripPage>
     final String? message = emitterServiceProvider.lastMessage;
     _lastEmitterDate =  DateTime.now();
 
+    if(message == null) return;
+
     if(mounted){
       setState(() {
         try {
@@ -813,7 +815,7 @@ class _TripPageState extends State<TripPage>
 
     try {
       // si es un evento del viaje
-      final event = EventModel.fromJson(jsonDecode(message!));
+      final event = EventModel.fromJson(jsonDecode(message));
       if(event.type == "end-trip" && relationName != 'eta.drivers'){
         if(mounted){
           setState(() {
@@ -826,7 +828,7 @@ class _TripPageState extends State<TripPage>
       }
     } catch (e) {
       //si es un evento posicion
-      final Map<String, dynamic> tracking = jsonDecode(message!);
+      final Map<String, dynamic> tracking = jsonDecode(message);
 
       if (tracking['relation_name'] != null) {
         final relationName = tracking['relation_name'];
