@@ -889,8 +889,6 @@ class _TripPageState extends State<TripPage>
           emitterServiceProvider.close();
           emitterServiceProvider.connect();
         }
-      }else{
-        print("[TripPage.timer] _lastPositionDate is null");
       }
     });
   }

@@ -46,7 +46,7 @@ class _StudentPageState extends State<StudentPage> {
     
   DateTime? _lastEmitterDate;
   
-  late EmitterService _emitterServiceProvider;
+  EmitterService? _emitterServiceProvider;
 
 
   @override
@@ -296,25 +296,37 @@ class _StudentPageState extends State<StudentPage> {
     Wakelock.enable();
 
     _emitterServiceProvider = Provider.of<EmitterService>(context, listen: false);
-    _emitterServiceProvider.addListener(onEmitterMessage);
+    _emitterServiceProvider?.addListener(onEmitterMessage);
 
     initConnectivity();
 
     _connectivitySubscription =
           _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
 
-      _startTimer();        
+    _startTimer();
+
+    if (widget.student?.lastPosition != null) {
+      print("[StudentPage] lasposition ${widget.student?.lastPosition}");
+      final Position position = Position(
+          double.parse("${widget.student?.lastPosition['longitude']}"),
+          double.parse("${widget.student?.lastPosition['latitude']}"));
+          final label = formatUnixEpoch(widget.student?.lastPosition['time'].toInt());
+
+      _updateIcon(position, 
+      'eta.students', 
+        widget.student!.student_id,
+         label);
+    }
   }
 
   @override
   void dispose() {
-    _emitterServiceProvider.removeListener(onEmitterMessage);
+    _emitterServiceProvider?.removeListener(onEmitterMessage);
     Wakelock.disable();
     _timer?.cancel();
     _connectivitySubscription.cancel();
     super.dispose();
   }
-
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initConnectivity() async {
@@ -358,8 +370,6 @@ class _StudentPageState extends State<StudentPage> {
           emitterServiceProvider.close();
           emitterServiceProvider.connect();
         }
-      }else{
-        print("[TripPage.timer] _lastPositionDate is null");
       }
     });
   }

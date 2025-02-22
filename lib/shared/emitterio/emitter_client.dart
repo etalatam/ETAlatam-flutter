@@ -58,7 +58,10 @@ class EmitterClient {
     _client.onAutoReconnect = _onAutoReconnect;
     _client.onAutoReconnected = _onAutoReconnected;
     _client.onBadCertificate = (cert) => true;
-    _client.logging(on: false);
+    _client.logging(on: true);
+    _client.connectionMessage = MqttConnectMessage()
+        .withWillQos(MqttQos.exactlyOnce)
+        .startClean();
   }
 
   Future<void> connect() async {

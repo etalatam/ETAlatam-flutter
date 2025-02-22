@@ -5,7 +5,7 @@ import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 
 class StudentModel {
-  int? student_id;
+  int student_id;
   int? parent_id;
   String? first_name;
   String? last_name;
@@ -26,6 +26,8 @@ class StudentModel {
   bool isEmitterSubcribedToTracking = false;
   EmitterKeyGenModel? emitterKeyGenModelTracking;
 
+  dynamic lastPosition;
+
   StudentModel(
       {required this.student_id,
       required this.parent_id,
@@ -44,7 +46,8 @@ class StudentModel {
       // this.route,
       this.trips_count,
       this.schoolId,
-      this.statusCode});
+      this.statusCode,
+      this.lastPosition});
 
   // Convert the instance to a JSON object
   Map<String, dynamic> toJson() {
@@ -65,8 +68,9 @@ class StudentModel {
       "pickup_points": pickup_points,
       // "destination": destination!.toJson(),
       "schoolId": schoolId,
-      "statuscode": statusCode
+      "statuscode": statusCode,
       // "route" : route!.toJson(),
+      "lastPosition": lastPosition
     };
   }
 
@@ -84,7 +88,7 @@ class StudentModel {
     }
 
     return StudentModel(
-      student_id: json['student_id'] as int?,
+      student_id: json['student_id'] as int,
       parent_id: json['guardian_id'] as int?,
       first_name: json['student_firstname'] as String?,
       last_name: json['student_lastname'] as String?,
@@ -101,6 +105,7 @@ class StudentModel {
       schoolId: json['school_id'],
       statusCode: json['status_code'],
       // route: route,
+      lastPosition: json['last_position']
     );
   }
 
