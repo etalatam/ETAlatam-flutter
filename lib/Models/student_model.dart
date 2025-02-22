@@ -87,6 +87,13 @@ class StudentModel {
       print("StudentModel.fromJson.parsePickupLocation.error: ${e.toString()}");
     }
 
+    var lastPositionWrapper = null;
+    try {
+      lastPositionWrapper = json['last_position'][0];
+    } catch (e) {
+      print(e);
+    }
+
     return StudentModel(
       student_id: json['student_id'] as int,
       parent_id: json['guardian_id'] as int?,
@@ -105,7 +112,7 @@ class StudentModel {
       schoolId: json['school_id'],
       statusCode: json['status_code'],
       // route: route,
-      lastPosition: json['last_position']
+      lastPosition: lastPositionWrapper
     );
   }
 
