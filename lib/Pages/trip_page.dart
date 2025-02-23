@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
@@ -25,7 +24,6 @@ import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 import 'package:wakelock/wakelock.dart';
 
 import 'map/map_wiew.dart';
@@ -800,8 +798,6 @@ class _TripPageState extends State<TripPage>
     final String message = emitterServiceProvider.lastMessage;
     _lastEmitterDate =  DateTime.now();
 
-    if(message.isEmpty) return;
-
     if(mounted){
       setState(() {
         try {
@@ -841,29 +837,33 @@ class _TripPageState extends State<TripPage>
       }
     } catch (e) {
       //si es un evento posicion
-      final Map<String, dynamic> tracking = jsonDecode(message);
+      try {
+        final Map<String, dynamic> tracking = jsonDecode(message);
 
-      if (tracking['relation_name'] != null) {
-        final relationName = tracking['relation_name'];
-        final relationId = tracking['relation_id'];
+        if (tracking['relation_name'] != null) {
+          final relationName = tracking['relation_name'];
+          final relationId = tracking['relation_id'];
 
-        if (tracking['payload'] != null) {
-          final Position position = Position(
-              double.parse("${tracking['payload']['longitude']}"),
-              double.parse("${tracking['payload']['latitude']}"));
-          final label = formatUnixEpoch(tracking['payload']['time'].toInt());
+          if (tracking['payload'] != null) {
+            final Position position = Position(
+                double.parse("${tracking['payload']['longitude']}"),
+                double.parse("${tracking['payload']['latitude']}"));
+            final label = formatUnixEpoch(tracking['payload']['time'].toInt());
 
-          if (relationId != null &&
-              relationName == 'eta.drivers' ) {
-            print(
-                "[TripPage.onEmitterMessage.emitter-tracking.driver] $tracking");
-            _updateIcon(position, relationName, relationId,label);
-          } else if (relationName == 'eta.students' && widget.showStudents) {
-            print(
-                "[TripPage.onEmitterMessage.emitter-tracking.student] $tracking");
-            _updateIcon(position, relationName, relationId, label);
+            if (relationId != null &&
+                relationName == 'eta.drivers' ) {
+              print(
+                  "[TripPage.onEmitterMessage.emitter-tracking.driver] $tracking");
+              _updateIcon(position, relationName, relationId,label);
+            } else if (relationName == 'eta.students' && widget.showStudents) {
+              print(
+                  "[TripPage.onEmitterMessage.emitter-tracking.student] $tracking");
+              _updateIcon(position, relationName, relationId, label);
+            }
           }
         }
+      } catch (e) {
+        print(e);
       }
     }
   }

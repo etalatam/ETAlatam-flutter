@@ -419,31 +419,33 @@ class _StudentPageState extends State<StudentPage> {
       final String message =
           Provider.of<EmitterService>(context, listen: false).lastMessage;
 
-      if(message.isEmpty) return;
-
       try {
         // si es un evento del viaje
         final event = EventModel.fromJson(jsonDecode(message));
         await event.requestData();
       } catch (e) {
-        //si es un evento posicion
-        final Map<String, dynamic> tracking = jsonDecode(message);
+        try {
+            //si es un evento posicion
+          final Map<String, dynamic> tracking = jsonDecode(message);
 
-        if (tracking['relation_name'] != null &&
-            tracking['relation_name'] == 'eta.students') {
-          final relationName = tracking['relation_name'];
-          final relationId = tracking['relation_id'];
+          if (tracking['relation_name'] != null &&
+              tracking['relation_name'] == 'eta.students') {
+            final relationName = tracking['relation_name'];
+            final relationId = tracking['relation_id'];
 
-          if (tracking['payload'] != null) {
-            final Position position = Position(
-                double.parse("${tracking['payload']['longitude']}"),
-                double.parse("${tracking['payload']['latitude']}"));
-                final label = formatUnixEpoch(tracking['payload']['time'].toInt());
+            if (tracking['payload'] != null) {
+              final Position position = Position(
+                  double.parse("${tracking['payload']['longitude']}"),
+                  double.parse("${tracking['payload']['latitude']}"));
+                  final label = formatUnixEpoch(tracking['payload']['time'].toInt());
 
-            print(
-                "[StudentPage.onEmitterMessage.emitter-tracking.student] $tracking");
-            _updateIcon(position, relationName, relationId, label);
+              print(
+                  "[StudentPage.onEmitterMessage.emitter-tracking.student] $tracking");
+              _updateIcon(position, relationName, relationId, label);
+            }
           }
+        } catch (e) {
+          print(e);
         }
       }
     }
