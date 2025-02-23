@@ -54,6 +54,8 @@ class LocationService extends ChangeNotifier {
     print("[LocationService.init]");
     _userId = await storage.getItem('id_usu');
 
+    _startTimer();
+
     askPermission().then((value) async{
       print("[LocationService.askPermission.callback] $value");
       if (value) {
@@ -95,8 +97,7 @@ class LocationService extends ChangeNotifier {
           });
           BackgroundLocator.initialize();
           initialization = true;
-          print("[LocationService._startTimer]");
-          _startTimer();
+          print("[LocationService._startTimer]");          
         }
 
       }else{
@@ -233,7 +234,7 @@ class LocationService extends ChangeNotifier {
   }
 
   void _startTimer() {
-    _timer = Timer.periodic(Duration(seconds: 30), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 5), (timer) {
         final now = DateTime.now();
         final difference = now.difference(_lastPositionDate!);
         print("[LocationService.timer.difference] ${difference.inSeconds}s.");
