@@ -44,10 +44,9 @@ class _StudentPageState extends State<StudentPage> {
 
   Timer? _timer;
     
-  DateTime? _lastEmitterDate;
+  DateTime? _lastEmitterDate = DateTime.now();
   
   EmitterService? _emitterServiceProvider;
-
 
   @override
   Widget build(BuildContext context) {
@@ -359,17 +358,17 @@ class _StudentPageState extends State<StudentPage> {
   }
   
   void _startTimer() {
-    _timer?.cancel();
+
     _timer = Timer.periodic(Duration(seconds: 5), (timer) {
-      if (_lastEmitterDate != null) {
-        final now = DateTime.now();
-        final difference = now.difference(_lastEmitterDate!);
-        print("[TripPage.timer.difference] ${difference.inSeconds}s.");
-        if (difference.inSeconds >= 30) {
-          print("[TripaPage.timer] restaring... ");
-          emitterServiceProvider.close();
-          emitterServiceProvider.connect();
-        }
+      final now = DateTime.now();
+      final difference = now.difference(_lastEmitterDate!);
+      print("[StudentPage.emittertimer.difference] ${difference.inSeconds}s.");
+
+      if (difference.inSeconds >= 30) {
+        print("[StudentPage.emittertimer] restaring... ");
+        emitterServiceProvider.close();
+        emitterServiceProvider.connect();
+        _lastEmitterDate = DateTime.now();
       }
     });
   }
@@ -411,11 +410,13 @@ class _StudentPageState extends State<StudentPage> {
   }
 
   void onEmitterMessage() async {
+
+    _lastEmitterDate = DateTime.now();
     if (mounted) {
-      final String? message =
+      final String message =
           Provider.of<EmitterService>(context, listen: false).lastMessage;
 
-          if(message == null) return;
+      if(message.isEmpty) return;
 
       try {
         // si es un evento del viaje
@@ -437,7 +438,7 @@ class _StudentPageState extends State<StudentPage> {
                 final label = formatUnixEpoch(tracking['payload']['time'].toInt());
 
             print(
-                "[TripPage.onEmitterMessage.emitter-tracking.student] $tracking");
+                "[StudentPage.onEmitterMessage.emitter-tracking.student] $tracking");
             _updateIcon(position, relationName, relationId, label);
           }
         }

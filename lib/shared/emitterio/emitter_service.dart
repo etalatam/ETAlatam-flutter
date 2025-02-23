@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:eta_school_app/shared/emitterio/emitter_client.dart';
 import 'package:flutter/foundation.dart';
-import 'package:mqtt_client/mqtt_client.dart';
 
 class EmitterService extends ChangeNotifier {
   static final EmitterService _instance = EmitterService._internal();
@@ -20,7 +19,7 @@ class EmitterService extends ChangeNotifier {
 
   EmitterClient? client;
 
-  String? lastMessage;
+  String lastMessage = "";
 
   Future<void> connect() async {
     client ??= EmitterClient(
@@ -90,6 +89,7 @@ class EmitterService extends ChangeNotifier {
 
   void _onError(String error) {
     print("[EmitterService.onError] $error");
+    notifyListeners();
   }
 
   void _onConnect() {

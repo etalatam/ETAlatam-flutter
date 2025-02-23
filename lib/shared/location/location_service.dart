@@ -233,8 +233,7 @@ class LocationService extends ChangeNotifier {
   }
 
   void _startTimer() {
-    _timer?.cancel();
-    _timer = Timer.periodic(Duration(seconds: 5), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 30), (timer) {
       if (_lastPositionDate != null) {
         final now = DateTime.now();
         final difference = now.difference(_lastPositionDate!);

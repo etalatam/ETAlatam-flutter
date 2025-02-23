@@ -40,6 +40,8 @@ class TripModel {
   String? formatDate;
   
   late DateTime dt;
+  
+  dynamic lastPosition;
 
   TripModel({
     required this.trip_id,
@@ -61,7 +63,8 @@ class TripModel {
     this.vehicle,
     this.driver,
     this.geoJson,
-    this.school_id
+    this.school_id,
+    this.lastPosition
   }){
     if(trip_status == "Running"){
       subscribeToTripEvents();      
@@ -141,6 +144,14 @@ class TripModel {
       print("[TripModel.routeGeom.error] ${e.toString()}");
     }
 
+    var lastPositionWrapper = null;
+    try {
+      lastPositionWrapper = json['last_position'][0];
+    } catch (e) {
+      print(e);
+    }
+
+
     return TripModel(
       trip_id: json['id_trip'] as int?,
       route_id: json['route_id'] as int?,
@@ -168,7 +179,8 @@ class TripModel {
       vehicle: vehicle,
       driver: driver,
       geoJson: routeGeom,
-      school_id: json['school_id']
+      school_id: json['school_id'],
+      lastPosition: lastPositionWrapper
     );
   }
 

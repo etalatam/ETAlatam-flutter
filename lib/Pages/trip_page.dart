@@ -83,7 +83,7 @@ class _TripPageState extends State<TripPage>
 
   Timer? _timer;
     
-  DateTime? _lastEmitterDate;
+  DateTime? _lastEmitterDate = DateTime.now();
   
   EmitterService? _emitterServiceProvider;
   
@@ -524,6 +524,19 @@ class _TripPageState extends State<TripPage>
         trip = trip_;
         showLoader = false;
         relationName = relationNameLocal;
+
+        if (trip.lastPosition != null  && trip.trip_status == "Running") {
+          print("[StudentPage] lasposition ${trip.lastPosition}");
+          final Position position = Position(
+              double.parse("${trip.lastPosition['longitude']}"),
+              double.parse("${trip.lastPosition['latitude']}"));
+              final label = formatUnixEpoch(trip.lastPosition['time'].toInt());
+
+          _updateIcon(position, 
+          'eta.driver', 
+            trip.driver_id!,
+            label);
+        }
       });
     }
   }
@@ -784,10 +797,10 @@ class _TripPageState extends State<TripPage>
   // }
 
   void onEmitterMessage() async {
-    final String? message = emitterServiceProvider.lastMessage;
+    final String message = emitterServiceProvider.lastMessage;
     _lastEmitterDate =  DateTime.now();
 
-    if(message == null) return;
+    if(message.isEmpty) return;
 
     if(mounted){
       setState(() {
@@ -879,19 +892,19 @@ class _TripPageState extends State<TripPage>
     }
   }
 
-  void _startTimer() {
-    _timer?.cancel();
+  void _startTimer() {    
     _timer = Timer.periodic(Duration(seconds: 5), (timer) {
-      if (_lastEmitterDate != null) {
         final now = DateTime.now();
         final difference = now.difference(_lastEmitterDate!);
-        print("[TripPage.timer.difference] ${difference.inSeconds}s.");
+        print("[TripPage.emittertimer.difference] ${difference.inSeconds}s.");
+
         if (difference.inSeconds >= 30) {
-          print("[TripaPage.timer] restaring... ");
+          print("[TripaPage.ermittertimer] restaring... ");
           emitterServiceProvider.close();
           emitterServiceProvider.connect();
+          _lastEmitterDate = DateTime.now();
         }
-      }
+
     });
   }
 
