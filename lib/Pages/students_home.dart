@@ -232,10 +232,11 @@ class _StudentsHomeState extends State<StudentsHome>
       Get.offAll(Login());
       return;
     }
+    
+    await locationServiceProvider.startLocationService();
+
 
     if(!mounted) return;
-
-    await locationServiceProvider.init();
 
     await storage.getItem('darkmode');
     setState(() {
@@ -258,8 +259,6 @@ class _StudentsHomeState extends State<StudentsHome>
       activeTrip = activeTrip_;
       hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
     });
-
-    await locationServiceProvider.startLocationService();
 
      List<RouteModel> routes = await httpService.getStudentRoutes();
 
@@ -296,9 +295,11 @@ class _StudentsHomeState extends State<StudentsHome>
   @override
   void initState() {
     super.initState();
+
     loadResources();
     Provider.of<NotificationService>(context, listen: false)
         .addListener(onPushMessage);
+
   }
 
   onPushMessage() {
