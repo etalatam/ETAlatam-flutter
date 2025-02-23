@@ -233,7 +233,10 @@ class LocationService extends ChangeNotifier {
     }
   }
 
-  void _startTimer() {
+  void _startTimer() async {
+
+    final relationNameLocal = await storage.getItem('relation_name');
+
     if(_timer != null){
       _timer?.cancel();
 
@@ -242,7 +245,8 @@ class LocationService extends ChangeNotifier {
         final now = DateTime.now();
         final difference = now.difference(_lastPositionDate!);
         print("[LocationService.timer.difference] ${difference.inSeconds}s.");
-        if (difference.inSeconds >= 30) {
+        final max = relationNameLocal.contains('eta.drivers') ? 30 : 60;
+        if (difference.inSeconds >= max) {
           print("[LocationService.timer] restaring... ");
           stopLocationService();
           startLocationService();
