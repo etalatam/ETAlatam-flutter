@@ -892,7 +892,12 @@ class _TripPageState extends State<TripPage>
     }
   }
 
-  void _startTimer() {    
+  void _startTimer() {   
+
+    if(_timer != null){
+      _timer?.cancel();
+    }
+
     _timer = Timer.periodic(Duration(seconds: 5), (timer) {
         final now = DateTime.now();
         final difference = now.difference(_lastEmitterDate!);

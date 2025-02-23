@@ -358,6 +358,9 @@ class _StudentPageState extends State<StudentPage> {
   }
   
   void _startTimer() {
+    if(_timer != null){
+      _timer?.cancel();
+    }
 
     _timer = Timer.periodic(Duration(seconds: 5), (timer) {
       final now = DateTime.now();
