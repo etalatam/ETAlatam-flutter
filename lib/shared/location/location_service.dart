@@ -32,7 +32,7 @@ class LocationService extends ChangeNotifier {
 
   Timer? _timer;
     
-  DateTime? _lastPositionDate;
+  DateTime? _lastPositionDate = DateTime.now();
 
   double _totalDistance = 0.0;
 
@@ -234,7 +234,6 @@ class LocationService extends ChangeNotifier {
 
   void _startTimer() {
     _timer = Timer.periodic(Duration(seconds: 30), (timer) {
-      if (_lastPositionDate != null) {
         final now = DateTime.now();
         final difference = now.difference(_lastPositionDate!);
         print("[LocationService.timer.difference] ${difference.inSeconds}s.");
@@ -242,10 +241,8 @@ class LocationService extends ChangeNotifier {
           print("[LocationService.timer] restaring... ");
           stopLocationService();
           startLocationService();
+          _lastPositionDate = DateTime.now();
         }
-      }else{
-        print("[LocationService.timer] _lastPositionDate is null");
-      }
     });
   }
 
