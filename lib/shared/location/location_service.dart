@@ -62,6 +62,8 @@ class LocationService extends ChangeNotifier {
         
         if(!initialization){
           print('[LocationService.initialization...]');
+
+
           if (IsolateNameServer.lookupPortByName(
                   LocationServiceRepository.isolateName) != null) {
             IsolateNameServer.removePortNameMapping(
@@ -261,6 +263,13 @@ class LocationService extends ChangeNotifier {
       IsolateNameServer.removePortNameMapping(
           LocationServiceRepository.isolateName);
       BackgroundLocator.unRegisterLocationUpdate();
+
+        if (IsolateNameServer.lookupPortByName(
+                LocationServiceRepository.isolateName) != null) {
+          IsolateNameServer.removePortNameMapping(
+              LocationServiceRepository.isolateName);
+        }
+
       initialization = false;
       _timer?.cancel();
     } catch (e) {

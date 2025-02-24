@@ -524,14 +524,14 @@ class _TripPageState extends State<TripPage>
         relationName = relationNameLocal;
 
         if (trip.lastPosition != null  && trip.trip_status == "Running") {
-          print("[StudentPage] lasposition ${trip.lastPosition}");
+          print("[TripPage] lasposition ${trip.lastPosition}");
           final Position position = Position(
               double.parse("${trip.lastPosition['longitude']}"),
               double.parse("${trip.lastPosition['latitude']}"));
               final label = formatUnixEpoch(trip.lastPosition['time'].toInt());
 
           _updateIcon(position, 
-          'eta.driver', 
+          'eta.drivers', 
             trip.driver_id!,
             label);
         }
