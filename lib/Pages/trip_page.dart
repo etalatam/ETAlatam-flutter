@@ -903,7 +903,7 @@ class _TripPageState extends State<TripPage>
         final difference = now.difference(_lastEmitterDate!);
         print("[TripPage.emittertimer.difference] ${difference.inSeconds}s.");
 
-        if (difference.inSeconds >= 30) {
+        if (difference.inSeconds >= 60) {
           print("[TripaPage.ermittertimer] restaring... ");
           emitterServiceProvider.close();
           emitterServiceProvider.connect();

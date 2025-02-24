@@ -247,7 +247,7 @@ class LocationService extends ChangeNotifier {
         final now = DateTime.now();
         final difference = now.difference(_lastPositionDate!);
         print("[LocationService.timer.difference] ${difference.inSeconds}s.");
-        final max = relationNameLocal.contains('eta.drivers') ? 30 : 60;
+        final max = relationNameLocal.contains('eta.drivers') ? 60 : 120;
         if (difference.inSeconds >= max) {
           print("[LocationService.timer] restaring... ");
           stopLocationService();
