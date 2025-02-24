@@ -33,7 +33,8 @@ class _StudentsHomeState extends State<StudentsHome>
   bool hasActiveTrip = false;
 
   // DriverModel driverModel = DriverModel(driver_id: 0, first_name: '');
-  StudentModel student = StudentModel(student_id: 0, parent_id: 0, pickup_points: []);
+  StudentModel student =
+      StudentModel(student_id: 0, parent_id: 0, pickup_points: []);
 
   TripModel? activeTrip;
 
@@ -123,22 +124,26 @@ class _StudentsHomeState extends State<StudentsHome>
                                                   fontWeight:
                                                       activeTheme.h6.fontWeight,
                                                 )))
-                                        : Consumer<EmitterService>(builder:(context, emitterService, child) {
-                                                    try {
-                                                      final jsonMessage = emitterService.jsonMessage();
-                                                      final String type = jsonMessage['event_type'];
+                                        : Consumer<EmitterService>(builder:
+                                            (context, emitterService, child) {
+                                            try {
+                                              final jsonMessage =
+                                                  emitterService.jsonMessage();
+                                              final String type =
+                                                  jsonMessage['event_type'];
 
-                                                      if(type == "end-trip"){
-                                                        setState(() {
-                                                          loadResources();
-                                                        });
-                                                      }
-                                                    } catch (e) {
-                                                      print(e);
-                                                    }
+                                              if (type == "end-trip") {
+                                                setState(() {
+                                                  loadResources();
+                                                });
+                                              }
+                                            } catch (e) {
+                                              print(e);
+                                            }
 
-                                                    return ActiveTrip(openTripcallback, activeTrip);
-                                        }),
+                                            return ActiveTrip(
+                                                openTripcallback, activeTrip);
+                                          }),
                                     ETAWidgets.svgTitle("assets/svg/route.svg",
                                         lang.translate('trips_history')),
 
@@ -159,8 +164,11 @@ class _StudentsHomeState extends State<StudentsHome>
                                                         openNewPage(
                                                             context,
                                                             TripPage(
-                                                              trip: oldTripsList[index],
-                                                              navigationMode: false,
+                                                              trip:
+                                                                  oldTripsList[
+                                                                      index],
+                                                              navigationMode:
+                                                                  false,
                                                               showBus: false,
                                                               showStudents:
                                                                   false,
@@ -232,11 +240,8 @@ class _StudentsHomeState extends State<StudentsHome>
       Get.offAll(Login());
       return;
     }
-    
-    await locationServiceProvider.startLocationService();
 
-
-    if(!mounted) return;
+    if (!mounted) return;
 
     await storage.getItem('darkmode');
     setState(() {
@@ -260,9 +265,9 @@ class _StudentsHomeState extends State<StudentsHome>
       hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
     });
 
-     List<RouteModel> routes = await httpService.getStudentRoutes();
+    List<RouteModel> routes = await httpService.getStudentRoutes();
 
-     for (var route in routes) {
+    for (var route in routes) {
       String routeTopic = "route-${route.route_id}-student";
 
       notificationServiceProvider.subscribeToTopic(routeTopic);
@@ -270,14 +275,17 @@ class _StudentsHomeState extends State<StudentsHome>
       for (var pickupPoint in student.pickup_points) {
         var pickupPointTopic =
             "route-${route.route_id}-pickup_point-${pickupPoint.pickup_id}";
-          notificationServiceProvider.subscribeToTopic(pickupPointTopic);
-      }       
-     }
+        notificationServiceProvider.subscribeToTopic(pickupPointTopic);
+      }
+    }
 
     if (hasActiveTrip) {
       activeTrip?.subscribeToTripTracking();
     }
+
+    locationServiceProvider.startLocationService();
   }
+
   openTripcallback(TripModel trip_) {
     Get.to(TripPage(
       trip: trip_,
@@ -299,15 +307,13 @@ class _StudentsHomeState extends State<StudentsHome>
     loadResources();
     Provider.of<NotificationService>(context, listen: false)
         .addListener(onPushMessage);
-
   }
 
   onPushMessage() {
-    if(mounted){
+    if (mounted) {
       setState(() {
         loadResources();
       });
     }
-    
   }
 }
