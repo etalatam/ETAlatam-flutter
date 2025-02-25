@@ -427,7 +427,7 @@ class _StudentPageState extends State<StudentPage> {
   String formatUnixEpoch(int unixEpoch) {
     // Convierte el Unix Epoch (segundos) a milisegundos
     DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(unixEpoch);
-    return Utils.formatearFecha(dateTime);
+    return Utils.formatearFechaCorta(dateTime);
     // Formatea la fecha como desees
     // return '${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
   }

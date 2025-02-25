@@ -84,13 +84,7 @@ class _TripPageState extends State<TripPage>
 
   late NotificationService _notificationService;
 
-  Duration tripDuration = Duration(
-      days: 0,
-      hours: 0,
-      minutes: 0,
-      seconds: 0,
-      milliseconds: 0,
-      microseconds: 0);
+  String tripDuration = "";
 
   double tripDistance = 0;
 
@@ -302,9 +296,7 @@ class _TripPageState extends State<TripPage>
                                         children: [
                                           const SizedBox(height: 10),
                                           Icon(Icons.access_time, size: 20),
-                                          Text(tripDuration.inMinutes > 60
-                                              ? "${tripDuration.inHours}h"
-                                              : "${tripDuration.inMinutes}min"),
+                                          Text(tripDuration),
                                           const SizedBox(width: 10),
                                           Icon(Icons.route, size: 20),
                                           Text(tripDistance > 1000
@@ -541,40 +533,56 @@ class _TripPageState extends State<TripPage>
   }
 
   loadTrip() async {
-    final LocalStorage storage = LocalStorage('tokens.json');
-    final userId = await storage.getItem('id_usu');
-    final relationNameLocal = await storage.getItem('relation_name');
-    print("[TipPage.loadTrip.userId] $userId");
-    print("[TipPage.loadTrip.relationNameLocal] $relationNameLocal");
+    try {
+      if (relationName.isEmpty) {
+        final LocalStorage storage = LocalStorage('tokens.json');
+        relationName = await storage.getItem('relation_name');
+        print("[TipPage.loadTrip.relationName] $relationName");
+      }
+    } catch (e) {
+      print("[TripaPage.loadTrip.relationName.error] $e");
+    }
 
-    TripModel? trip_ = await httpService.getTrip(widget.trip?.trip_id);
-    if (trip_.trip_id != 0) {
-      setState(() {
-        trip = trip_;
-        showLoader = false;
-        relationName = relationNameLocal;
+    try {
+      TripModel? trip_ = await httpService.getTrip(widget.trip?.trip_id);
+      if (trip_.trip_id != 0) {
+        setState(() {
+          trip = trip_;
+          showLoader = false;
 
-        if (trip.lastPositionPayload != null &&
-            trip.trip_status == "Running" &&
-            !firstPosition) {
-          print("[TripPage] lastPositionPayload ${trip.lastPositionPayload}");
-          final Position position = trip.lastPosition()!;
-          final label =
-              formatUnixEpoch(trip.lastPositionPayload['time'].toInt());
+          if (trip.trip_status == 'Running') {
+            try {
+              tripDuration = Utils.formatElapsedTime(trip.dt!);
+            } catch (e) {
+              print("[TripPage.error] $e");
+            }
 
-          _updateIcon(position, 'eta.drivers', trip.driver_id!, label);
-        }
-      });
+            if (trip.lastPositionPayload != null && !firstPosition) {
+              print(
+                  "[TripPage] lastPositionPayload ${trip.lastPositionPayload}");
+              final Position position = trip.lastPosition()!;
+              final label =
+                  formatUnixEpoch(trip.lastPositionPayload['time'].toInt());
+
+              _updateIcon(position, 'eta.drivers', trip.driver_id!, label);
+            }
+          }
+        });
+      }
+    } catch (e) {
+      print("[TripaPage.getTrip.error] $e");
     }
   }
 
   @override
   void dispose() {
-    _emitterServiceProvider?.removeListener(onEmitterMessage);
-    _notificationService.removeListener(onPushMessage);
-    _connectivitySubscription.cancel();
-    Wakelock.disable();
     super.dispose();
+    if (trip.trip_status == "Running") {
+      _emitterServiceProvider?.removeListener(onEmitterMessage);
+      _notificationService.removeListener(onPushMessage);
+      _connectivitySubscription.cancel();
+      Wakelock.disable();
+    }
   }
 
   @override
@@ -811,25 +819,7 @@ class _TripPageState extends State<TripPage>
 
     if (mounted) {
       setState(() {
-        try {
-          tripDuration = trip.dt.difference(DateTime.now());
-        } catch (e) {
-          print(e);
-        }
-      });
-    }
-
-    if (mounted) {
-      setState(() {
-        try {
-          tripDistance = locationServiceProvider.totalDistance;
-          if (tripDistance > 1000) {
-            tripDistance = tripDistance / 1000;
-          }
-          print("tripDistance $tripDistance");
-        } catch (e) {
-          print(e);
-        }
+        tripDuration = Utils.formatElapsedTime(trip.dt!);
       });
     }
 
@@ -885,7 +875,7 @@ class _TripPageState extends State<TripPage>
     // Convierte el Unix Epoch (segundos) a milisegundos
     DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(unixEpoch);
 
-    return Utils.formatearFecha(dateTime);
+    return Utils.formatearFechaCorta(dateTime);
 
     // Formatea la fecha como desees
     // return '${dateTime.hour}:${dateTime.minute}:${dateTime.second}';

@@ -8,6 +8,7 @@ import 'package:eta_school_app/Models/PickupLocationModel.dart';
 import 'package:eta_school_app/Models/VehicleModel.dart';
 import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
+import 'package:eta_school_app/shared/utils.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -40,7 +41,7 @@ class TripModel {
 
   String? formatDate;
 
-  late DateTime dt;
+  DateTime? dt;
 
   dynamic lastPositionPayload;
 
@@ -66,20 +67,20 @@ class TripModel {
       this.geoJson,
       this.school_id,
       this.lastPositionPayload}) {
+    prettyDate();
+
     if (trip_status == "Running") {
       subscribeToTripEvents();
     }
-
-    prettyDate();
   }
 
   prettyDate() {
-    if (date == null) return;
     try {
       initializeDateFormatting('es_ES', null).then((_) {
-        // DateFormat formato = DateFormat.EEEEE("yyyy-MM-ddTHH:mm");
-        dt = DateTime.parse(date!);
-        DateFormat nuevoFormato = DateFormat("EEEE d 'de' MMMM HH:mm", 'es_ES');
+        //dt = DateTime.parse(date!);
+        dt = Utils.convertirUtcALocal(date!);
+        DateFormat nuevoFormato =
+            DateFormat("EEEE d 'de' MMMM HH:mm a", 'es_ES');
         formatDate = nuevoFormato.format(dt!);
       });
     } catch (e) {

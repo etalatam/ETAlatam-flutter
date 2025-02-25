@@ -1,4 +1,4 @@
-import 'package:intl/intl.dart'; // Para formatear fechas
+import 'package:intl/intl.dart';
 
 class Utils {
   // Método para convertir una fecha UTC a la hora local
@@ -7,7 +7,7 @@ class Utils {
   }
 
   // Método para formatear la fecha según si es el día actual o no
-  static String formatearFecha(DateTime fechaLocal) {
+  static String formatearFechaCorta(DateTime fechaLocal) {
     DateTime ahora = DateTime.now();
 
     if (esHoy(fechaLocal, ahora)) {
@@ -28,16 +28,31 @@ class Utils {
   // Método auxiliar para verificar si una fecha es hoy
   static bool esHoy(DateTime fecha, DateTime ahora) {
     return fecha.year == ahora.year &&
-           fecha.month == ahora.month &&
-           fecha.day == ahora.day;
+        fecha.month == ahora.month &&
+        fecha.day == ahora.day;
   }
 
   // Método auxiliar para verificar si es el mismo minuto
   static bool esMismoMinuto(DateTime fecha, DateTime ahora) {
     return fecha.year == ahora.year &&
-           fecha.month == ahora.month &&
-           fecha.day == ahora.day &&
-           fecha.hour == ahora.hour &&
-           fecha.minute == ahora.minute;
+        fecha.month == ahora.month &&
+        fecha.day == ahora.day &&
+        fecha.hour == ahora.hour &&
+        fecha.minute == ahora.minute;
+  }
+
+  static String formatElapsedTime(DateTime date) {
+    final now = DateTime.now();
+    Duration difference = now.difference(date).abs();
+
+    if (difference.inSeconds < 60) {
+      return '${difference.inSeconds}s';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}min';
+    } else {
+      String hours = difference.inHours.toString().padLeft(2, '0');
+      String minutes = (difference.inMinutes % 60).toString().padLeft(2, '0');
+      return '$hours:$minutes';
+    }
   }
 }
