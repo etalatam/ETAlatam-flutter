@@ -60,9 +60,9 @@ class EmitterClient {
     _client.onBadCertificate = (cert) => true;
     _client.logging(on: true);
     _client.connectionMessage = MqttConnectMessage()
-    //.withWillQos(MqttQos.atLeastOnce)
-    // .withWillQos(MqttQos.exactlyOnce)
-    .startClean();
+        //.withWillQos(MqttQos.atLeastOnce)
+        .withWillQos(MqttQos.exactlyOnce)
+        .startClean();
   }
 
   Future<void> connect() async {

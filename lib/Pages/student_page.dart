@@ -43,11 +43,9 @@ class _StudentPageState extends State<StudentPage> {
 
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
-  Timer? _timer;
-    
-  DateTime? _lastEmitterDate = DateTime.now();
-  
   EmitterService? _emitterServiceProvider;
+
+  bool firstPosition = false;
 
   @override
   Widget build(BuildContext context) {
@@ -107,22 +105,24 @@ class _StudentPageState extends State<StudentPage> {
                           ],
                         )),
                   ),
-                  Positioned(
-                    top: 40,
-                    right: 10,
-                    child:  Consumer<EmitterService>(builder: (context, emitterService, child) {
-                      return Container(
-                          width: 15,
-                          height: 15,
-                          decoration: BoxDecoration(
-                            color: emitterService.client!.isConnected? Colors.green : Colors.red,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                          ),
-                      );
-                    }),
-
-                  ),
+                Positioned(
+                  top: 40,
+                  right: 10,
+                  child: Consumer<EmitterService>(
+                      builder: (context, emitterService, child) {
+                    return Container(
+                      width: 15,
+                      height: 15,
+                      decoration: BoxDecoration(
+                        color: emitterService.client()!.isConnected
+                            ? Colors.green
+                            : Colors.red,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                    );
+                  }),
+                ),
                 DraggableScrollableSheet(
                   snapAnimationDuration: const Duration(seconds: 1),
                   initialChildSize: .35,
@@ -292,30 +292,25 @@ class _StudentPageState extends State<StudentPage> {
   void initState() {
     super.initState();
     showLoader = false;
-    
+
     Wakelock.enable();
 
-    _emitterServiceProvider = Provider.of<EmitterService>(context, listen: false);
+    _emitterServiceProvider =
+        Provider.of<EmitterService>(context, listen: false);
     _emitterServiceProvider?.addListener(onEmitterMessage);
 
     initConnectivity();
 
     _connectivitySubscription =
-          _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+        _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
 
-    _startTimer();
-
-    if (widget.student?.lastPosition != null) {
+    if (widget.student?.lastPositionPayload != null && !firstPosition) {
       print("[StudentPage] lasposition ${widget.student?.lastPosition}");
-      final Position position = Position(
-          double.parse("${widget.student?.lastPosition['longitude']}"),
-          double.parse("${widget.student?.lastPosition['latitude']}"));
-          final label = formatUnixEpoch(widget.student?.lastPosition['time'].toInt());
+      final Position? position = widget.student?.lastPosition()!;
+      final label =
+          formatUnixEpoch(widget.student?.lastPositionPayload['time'].toInt());
 
-      _updateIcon(position, 
-      'eta.students', 
-        widget.student!.student_id,
-         label);
+      _updateIcon(position!, 'eta.students', widget.student!.student_id, label);
     }
   }
 
@@ -323,7 +318,6 @@ class _StudentPageState extends State<StudentPage> {
   void dispose() {
     _emitterServiceProvider?.removeListener(onEmitterMessage);
     Wakelock.disable();
-    _timer?.cancel();
     _connectivitySubscription.cancel();
     super.dispose();
   }
@@ -357,29 +351,9 @@ class _StudentPageState extends State<StudentPage> {
     // ignore: avoid_print
     print('connectivityNone: $connectivityNone');
   }
-  
-  void _startTimer() {
-    if(_timer != null){
-      _timer?.cancel();
-    }
 
-    _timer = Timer.periodic(Duration(seconds: 5), (timer) {
-      final now = DateTime.now();
-      final difference = now.difference(_lastEmitterDate!);
-      print("[StudentPage.emittertimer.difference] ${difference.inSeconds}s.");
-
-      if (difference.inSeconds >= 30) {
-        print("[StudentPage.emittertimer] restaring... ");
-        emitterServiceProvider.close();
-        emitterServiceProvider.connect();
-        _lastEmitterDate = DateTime.now();
-      }
-    });
-  }
-
-
-  Future<void> _updateIcon(
-      Position position, String relationName, int relationId, String label) async {
+  Future<void> _updateIcon(Position position, String relationName,
+      int relationId, String label) async {
     PointAnnotation? pointAnnotation =
         annotationsMap.containsKey("$relationName.$relationId")
             ? annotationsMap["$relationName.$relationId"]
@@ -414,40 +388,38 @@ class _StudentPageState extends State<StudentPage> {
   }
 
   void onEmitterMessage() async {
+    String message = emitterServiceProvider.lastMessage();
 
-    _lastEmitterDate = DateTime.now();
-    if (mounted) {
-      final String message =
-          Provider.of<EmitterService>(context, listen: false).lastMessage;
-
+    try {
+      // si es un evento del viaje
+      final event = EventModel.fromJson(jsonDecode(message));
+      await event.requestData();
+    } catch (e) {
       try {
-        // si es un evento del viaje
-        final event = EventModel.fromJson(jsonDecode(message));
-        await event.requestData();
-      } catch (e) {
-        try {
-            //si es un evento posicion
-          final Map<String, dynamic> tracking = jsonDecode(message);
+        //si es un evento posicion
+        final Map<String, dynamic> tracking = jsonDecode(message);
 
-          if (tracking['relation_name'] != null &&
-              tracking['relation_name'] == 'eta.students') {
-            final relationName = tracking['relation_name'];
-            final relationId = tracking['relation_id'];
+        if (tracking['relation_name'] != null &&
+            tracking['relation_name'] == 'eta.students') {
+          final relationName = tracking['relation_name'];
+          final relationId = tracking['relation_id'];
 
-            if (tracking['payload'] != null) {
-              final Position position = Position(
-                  double.parse("${tracking['payload']['longitude']}"),
-                  double.parse("${tracking['payload']['latitude']}"));
-                  final label = formatUnixEpoch(tracking['payload']['time'].toInt());
+          if (tracking['payload'] != null) {
+            final Position position = Position(
+                double.parse("${tracking['payload']['longitude']}"),
+                double.parse("${tracking['payload']['latitude']}"));
+            final label = formatUnixEpoch(tracking['payload']['time'].toInt());
 
-              print(
-                  "[StudentPage.onEmitterMessage.emitter-tracking.student] $tracking");
-              _updateIcon(position, relationName, relationId, label);
-            }
+            print(
+                "[StudentPage.onEmitterMessage.emitter-tracking.student] $tracking");
+            _updateIcon(position, relationName, relationId, label);
+
+            widget.student?.lastPositionPayload = tracking['payload'];
+            firstPosition = true;
           }
-        } catch (e) {
-          print(e);
         }
+      } catch (e) {
+        print(e);
       }
     }
   }
@@ -459,5 +431,4 @@ class _StudentPageState extends State<StudentPage> {
     // Formatea la fecha como desees
     // return '${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
   }
-
 }

@@ -3,6 +3,7 @@ import 'package:eta_school_app/Models/PickupLocationModel.dart';
 import 'package:eta_school_app/Models/emitter_keygen.dart';
 import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 class StudentModel {
   int student_id;
@@ -26,7 +27,7 @@ class StudentModel {
   bool isEmitterSubcribedToTracking = false;
   EmitterKeyGenModel? emitterKeyGenModelTracking;
 
-  dynamic lastPosition;
+  dynamic lastPositionPayload;
 
   StudentModel(
       {required this.student_id,
@@ -47,7 +48,7 @@ class StudentModel {
       this.trips_count,
       this.schoolId,
       this.statusCode,
-      this.lastPosition});
+      this.lastPositionPayload});
 
   // Convert the instance to a JSON object
   Map<String, dynamic> toJson() {
@@ -70,7 +71,7 @@ class StudentModel {
       "schoolId": schoolId,
       "statuscode": statusCode,
       // "route" : route!.toJson(),
-      "lastPosition": lastPosition
+      "lastPositionPayload": lastPositionPayload
     };
   }
 
@@ -78,10 +79,10 @@ class StudentModel {
     List<PickupLocationModel> pickupLocations = [];
 
     try {
-      if (json['pickup_points'] != null )
-      {
+      if (json['pickup_points'] != null) {
         Iterable l = json["pickup_points"];
-        pickupLocations = List<PickupLocationModel>.from(l.map((model)=> PickupLocationModel.fromJson(model)));
+        pickupLocations = List<PickupLocationModel>.from(
+            l.map((model) => PickupLocationModel.fromJson(model)));
       }
     } catch (e) {
       print("StudentModel.fromJson.parsePickupLocation.error: ${e.toString()}");
@@ -95,32 +96,32 @@ class StudentModel {
     }
 
     return StudentModel(
-      student_id: json['student_id'] as int,
-      parent_id: json['guardian_id'] as int?,
-      first_name: json['student_firstname'] as String?,
-      last_name: json['student_lastname'] as String?,
-      student_name: ("${json['student_firstname']} ${json['student_lastname']}")
-          as String?,
-      date_of_birth: json['student_birthday'] as String?,
-      picture: json['picture'] as String?,
-      contact_number: json['student_phonenumber'] as String?,
-      transfer_status: json['transfer_status'] as String?,
-      gender: json['gender'] as String?,
-      trips_count: json['trips_count'] as int?,
-      pickup_points: pickupLocations,
-      // destination: destination,
-      schoolId: json['school_id'],
-      statusCode: json['status_code'],
-      // route: route,
-      lastPosition: lastPositionWrapper
-    );
+        student_id: json['student_id'] as int,
+        parent_id: json['guardian_id'] as int?,
+        first_name: json['student_firstname'] as String?,
+        last_name: json['student_lastname'] as String?,
+        student_name:
+            ("${json['student_firstname']} ${json['student_lastname']}")
+                as String?,
+        date_of_birth: json['student_birthday'] as String?,
+        picture: json['picture'] as String?,
+        contact_number: json['student_phonenumber'] as String?,
+        transfer_status: json['transfer_status'] as String?,
+        gender: json['gender'] as String?,
+        trips_count: json['trips_count'] as int?,
+        pickup_points: pickupLocations,
+        // destination: destination,
+        schoolId: json['school_id'],
+        statusCode: json['status_code'],
+        // route: route,
+        lastPositionPayload: lastPositionWrapper);
   }
 
   unSubscribeToStudentTracking() async {
     if (isEmitterSubcribedToTracking) return;
 
     try {
-      emitterServiceProvider.client!.unsubscribe(
+      emitterServiceProvider.client().unsubscribe(
           "school/$schoolId/tracking/eta.students/",
           key: emitterKeyGenModelTracking!.key);
     } catch (e) {
@@ -136,11 +137,25 @@ class StudentModel {
       emitterKeyGenModelTracking =
           await httpService.emitterKeyGen(encodedValue);
       if (emitterKeyGenModelTracking != null &&
-          emitterServiceProvider.client!.isConnected) {
-        emitterServiceProvider.client!
+          emitterServiceProvider.client().isConnected) {
+        emitterServiceProvider
+            .client()
             .subscribe(channel, key: emitterKeyGenModelTracking!.key);
         isEmitterSubcribedToTracking = true;
       }
     }
+  }
+
+  Position? lastPosition() {
+    Position? lastPositionWrapper;
+    try {
+      lastPositionWrapper = Position(
+          double.parse("${lastPositionPayload[0]['longitude']}"),
+          double.parse("${lastPositionPayload[0]['latitude']}"));
+    } catch (e) {
+      print(e);
+    }
+
+    return lastPositionWrapper;
   }
 }

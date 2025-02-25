@@ -10,6 +10,7 @@ import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 class TripModel {
   int? trip_id;
@@ -36,51 +37,50 @@ class TripModel {
   bool isEmitterSubcribedToEvents = false;
   bool isEmitterSubcribedToTracking = false;
   int? school_id;
-  
-  String? formatDate;
-  
-  late DateTime dt;
-  
-  dynamic lastPosition;
 
-  TripModel({
-    required this.trip_id,
-    this.driver_id,
-    this.route_id,
-    this.supervisor_id,
-    this.trip_date,
-    this.trip_status,
-    this.distance,
-    this.duration,
-    this.short_date,
-    this.date,
-    this.waiting_locations_count,
-    this.moving_locations_count,
-    this.done_locations_count,
-    this.pickup_locations,
-    this.destinations,
-    this.route,
-    this.vehicle,
-    this.driver,
-    this.geoJson,
-    this.school_id,
-    this.lastPosition
-  }){
-    if(trip_status == "Running"){
-      subscribeToTripEvents();      
+  String? formatDate;
+
+  late DateTime dt;
+
+  dynamic lastPositionPayload;
+
+  TripModel(
+      {required this.trip_id,
+      this.driver_id,
+      this.route_id,
+      this.supervisor_id,
+      this.trip_date,
+      this.trip_status,
+      this.distance,
+      this.duration,
+      this.short_date,
+      this.date,
+      this.waiting_locations_count,
+      this.moving_locations_count,
+      this.done_locations_count,
+      this.pickup_locations,
+      this.destinations,
+      this.route,
+      this.vehicle,
+      this.driver,
+      this.geoJson,
+      this.school_id,
+      this.lastPositionPayload}) {
+    if (trip_status == "Running") {
+      subscribeToTripEvents();
     }
 
     prettyDate();
   }
 
-  prettyDate (){
-    if(date == null ) return;
+  prettyDate() {
+    if (date == null) return;
     try {
       initializeDateFormatting('es_ES', null).then((_) {
         // DateFormat formato = DateFormat.EEEEE("yyyy-MM-ddTHH:mm");
         dt = DateTime.parse(date!);
         DateFormat nuevoFormato = DateFormat("EEEE d 'de' MMMM HH:mm", 'es_ES');
-        formatDate  = nuevoFormato.format(dt!);
+        formatDate = nuevoFormato.format(dt!);
       });
     } catch (e) {
       print("pretty date error ${e.toString()}");
@@ -92,7 +92,7 @@ class TripModel {
     List<TripPickupLocation> pickupLocations = [];
     try {
       print("[TripModel.fromJson.pickup_points] ${json['pickup_points']}");
-      Iterable l = json["pickup_points"] != '[]' ? json["pickup_points"] : null;      
+      Iterable l = json["pickup_points"] != '[]' ? json["pickup_points"] : null;
       pickupLocations = List<TripPickupLocation>.from(
           l.map((model) => TripPickupLocation.fromJson(model)));
       print('pickup_points of TripModel proccessed');
@@ -151,101 +151,109 @@ class TripModel {
       print(e);
     }
 
-
     return TripModel(
-      trip_id: json['id_trip'] as int?,
-      route_id: json['route_id'] as int?,
-      supervisor_id: json['monitor_id'] as int?,
-      driver_id: json['driver_id'] as int?,
-      trip_date: format.format(DateTime.parse(json['start_ts'])) as String?,
-      trip_status: json['running'] ? 'Running' : 'Completed',
-      distance: double.parse(
-          json['distance'].toString().replaceAll(RegExp(r','), '')),
-      duration: json['duration'] as String?,
-      short_date: json['start_ts'] as String?,
-      date: json['start_ts'] as String?,
-      moving_locations_count: json['moving_locations_count'] == null
-          ? 0
-          : json['moving_locations_count'] as int?,
-      waiting_locations_count: json['waiting_locations_count'] == null
-          ? 0
-          : json['waiting_locations_count'] as int?,
-      done_locations_count: json['done_locations_count'] == null
-          ? 0
-          : json['done_locations_count'] as int?,
-      pickup_locations: pickupLocations,
-      destinations: destinations,
-      route: route,
-      vehicle: vehicle,
-      driver: driver,
-      geoJson: routeGeom,
-      school_id: json['school_id'],
-      lastPosition: lastPositionWrapper
-    );
+        trip_id: json['id_trip'] as int?,
+        route_id: json['route_id'] as int?,
+        supervisor_id: json['monitor_id'] as int?,
+        driver_id: json['driver_id'] as int?,
+        trip_date: format.format(DateTime.parse(json['start_ts'])) as String?,
+        trip_status: json['running'] ? 'Running' : 'Completed',
+        distance: double.parse(
+            json['distance'].toString().replaceAll(RegExp(r','), '')),
+        duration: json['duration'] as String?,
+        short_date: json['start_ts'] as String?,
+        date: json['start_ts'] as String?,
+        moving_locations_count: json['moving_locations_count'] == null
+            ? 0
+            : json['moving_locations_count'] as int?,
+        waiting_locations_count: json['waiting_locations_count'] == null
+            ? 0
+            : json['waiting_locations_count'] as int?,
+        done_locations_count: json['done_locations_count'] == null
+            ? 0
+            : json['done_locations_count'] as int?,
+        pickup_locations: pickupLocations,
+        destinations: destinations,
+        route: route,
+        vehicle: vehicle,
+        driver: driver,
+        geoJson: routeGeom,
+        school_id: json['school_id'],
+        lastPositionPayload: lastPositionWrapper);
   }
 
-  endTrip() async{
+  endTrip() async {
     await httpService.endTrip(trip_id.toString());
     unSubscribeToTripEvents();
     unSubscribeToTripTracking();
   }
 
   unSubscribeToTripEvents() async {
-    
-    if( isEmitterSubcribedToEvents ) return;
+    if (isEmitterSubcribedToEvents) return;
 
     try {
-      emitterServiceProvider.client!.unsubscribe(
-        "school/$school_id/$trip_id/event",
-        key: emitterKeyGenModelEvents!.key
-      );
+      emitterServiceProvider.client().unsubscribe(
+          "school/$school_id/$trip_id/event",
+          key: emitterKeyGenModelEvents!.key);
     } catch (e) {
       print("[TripModel.unSubscribeToTripEvents.error] ${e.toString()}");
     }
   }
 
   unSubscribeToTripTracking() async {
-    
-    if( isEmitterSubcribedToTracking ) return;
+    if (isEmitterSubcribedToTracking) return;
 
     try {
-      emitterServiceProvider.client!.unsubscribe(
-        "school/$school_id/$trip_id/tracking",
-        key: emitterKeyGenModelTracking!.key
-      );
+      emitterServiceProvider.client().unsubscribe(
+          "school/$school_id/$trip_id/tracking",
+          key: emitterKeyGenModelTracking!.key);
     } catch (e) {
       print("[TripModel.unSubscribeToTripTracking.error] ${e.toString()}");
     }
-  } 
+  }
 
   subscribeToTripEvents() async {
-    if ( ! isEmitterSubcribedToEvents ) {
-      String encodedValue = Uri.encodeComponent("school/$school_id/trip/$trip_id/event/#/");
-        emitterKeyGenModelEvents = await httpService.emitterKeyGen(encodedValue);
-        if (emitterKeyGenModelEvents != null &&
-          emitterServiceProvider.client!.isConnected) {
-          emitterServiceProvider.client!.subscribe(
+    if (!isEmitterSubcribedToEvents) {
+      String encodedValue =
+          Uri.encodeComponent("school/$school_id/trip/$trip_id/event/#/");
+      emitterKeyGenModelEvents = await httpService.emitterKeyGen(encodedValue);
+      if (emitterKeyGenModelEvents != null &&
+          emitterServiceProvider.client().isConnected) {
+        emitterServiceProvider.client().subscribe(
             "school/$school_id/trip/$trip_id/event/",
-            key: emitterKeyGenModelEvents!.key
-          );
-          isEmitterSubcribedToEvents = true;
-        }
+            key: emitterKeyGenModelEvents!.key);
+        isEmitterSubcribedToEvents = true;
+      }
     }
   }
 
   subscribeToTripTracking() async {
-    if ( ! isEmitterSubcribedToTracking ) {
-        String encodedValue = Uri.encodeComponent("school/$school_id/trip/$trip_id/tracking/#/");
-        emitterKeyGenModelTracking = await httpService.emitterKeyGen(encodedValue);
-        if (emitterKeyGenModelTracking != null &&
-          emitterServiceProvider.client!.isConnected) {
-          emitterServiceProvider.client!.subscribe(
+    if (!isEmitterSubcribedToTracking) {
+      String encodedValue =
+          Uri.encodeComponent("school/$school_id/trip/$trip_id/tracking/#/");
+      emitterKeyGenModelTracking =
+          await httpService.emitterKeyGen(encodedValue);
+      if (emitterKeyGenModelTracking != null &&
+          emitterServiceProvider.client().isConnected) {
+        emitterServiceProvider.client().subscribe(
             "school/$school_id/trip/$trip_id/tracking/",
-            key: emitterKeyGenModelTracking!.key
-          );
-          isEmitterSubcribedToTracking = true;
-        }
+            key: emitterKeyGenModelTracking!.key);
+        isEmitterSubcribedToTracking = true;
+      }
     }
+  }
+
+  Position? lastPosition() {
+    Position? lastPositionWrapper;
+    try {
+      lastPositionWrapper = Position(
+          double.parse("${lastPositionPayload[0]['longitude']}"),
+          double.parse("${lastPositionPayload[0]['latitude']}"));
+    } catch (e) {
+      print(e);
+    }
+
+    return lastPositionWrapper;
   }
 }
 

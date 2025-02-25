@@ -59,9 +59,8 @@ class _TripPageState extends State<TripPage>
 
   TripModel trip = TripModel(trip_id: 0);
 
-  bool showTripReportModal = false;
-
   // Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
+  bool showTripReportModal = false;
 
   MapboxMap? _mapboxMapController;
 
@@ -81,329 +80,352 @@ class _TripPageState extends State<TripPage>
 
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
-  Timer? _timer;
-    
-  DateTime? _lastEmitterDate = DateTime.now();
-  
   EmitterService? _emitterServiceProvider;
-  
+
   late NotificationService _notificationService;
 
-  Duration tripDuration =  Duration(days: 0, hours: 0, minutes: 0, seconds: 0,
-  milliseconds: 0, microseconds: 0);
-  
+  Duration tripDuration = Duration(
+      days: 0,
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+      milliseconds: 0,
+      microseconds: 0);
+
   double tripDistance = 0;
-  
+
+  bool firstPosition = false;
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      child: showLoader
-          ? Loader()
-          : Scaffold(
-              body: VisibilityDetector(
-                          key: Key('student_home_key'),
-                          onVisibilityChanged: (info) {
-                            if (info.visibleFraction > 0) {
-                              loadTrip();
-                            }
-                          }, 
-                      child: Stack(children: <Widget>[
-                // Column(children: [
-                // // if(widget.showBus && !hasBusPosition )
-                //   SizedBox(
-                //     height: 15,
-                //     child: LinearProgressIndicator(
-                //       color: Colors.white,
-                //       semanticsLabel: "Esperando ubicación del bus...",
-                //     ),
-                //   ),                               
-                SizedBox(
-                  height: MediaQuery.of(context).size.height / 1.40,
-                  child: MapWiew(
-                    navigationMode: widget.navigationMode,
-                    onMapReady: (MapboxMap mapboxMap) async {
-                      _mapboxMapController = mapboxMap;
+        child: showLoader
+            ? Loader()
+            : Scaffold(
+                body: VisibilityDetector(
+                  key: Key('student_home_key'),
+                  onVisibilityChanged: (info) {
+                    if (info.visibleFraction > 0) {
+                      loadTrip();
+                    }
+                  },
+                  child: Stack(children: <Widget>[
+                    // Column(children: [
+                    // // if(widget.showBus && !hasBusPosition )
+                    //   SizedBox(
+                    //     height: 15,
+                    //     child: LinearProgressIndicator(
+                    //       color: Colors.white,
+                    //       semanticsLabel: "Esperando ubicación del bus...",
+                    //     ),
+                    //   ),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height / 1.40,
+                      child: MapWiew(
+                        navigationMode: widget.navigationMode,
+                        onMapReady: (MapboxMap mapboxMap) async {
+                          _mapboxMapController = mapboxMap;
 
-                      final value = await  mapboxMap.annotations
-                          .createPointAnnotationManager();
-                      annotationManager = value;
-                      annotationManager
-                                ?.addOnPointAnnotationClickListener(this);
-                    },
-                    onStyleLoadedListener: (MapboxMap mapboxMap) async {
-                      showTripGeoJson(mapboxMap);
-                      showPickupLocations(mapboxMap);
-                    },
-                  ),
-                ),
-
-                if (connectivityNone)
-                  Positioned(
-                    // left: 0,
-                    top: 40,
-                    child: SizedBox(
-                        height: 50,
-                        width: 300,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 1,
-                              child: AnimatedContainer(
-                                duration: Duration(seconds: 1),
-                                curve: Curves.fastOutSlowIn,
-                                child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.red,
-                                      borderRadius: BorderRadius.circular(
-                                          20), // Cambia el valor para ajustar el radio
-                                    ),
-                                    padding: EdgeInsets.all(10),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(Icons.wifi_off,
-                                            color: Colors.white),
-                                        SizedBox(width: 10),
-                                        Text('No hay conexión a Internet',
-                                            style:
-                                                TextStyle(color: Colors.white)),
-                                      ],
-                                    )),
-                              ),
-                            ),
-                          ],
-                        )),
-                  ),
-                  if(trip.trip_status == 'Running')
-                  Positioned(
-                    top: 40,
-                    right: 10,
-                    child:  Consumer<EmitterService>(builder: (context, emitterService, child) {
-                      return Container(
-                          width: 15,
-                          height: 15,
-                          decoration: BoxDecoration(
-                            color: emitterService.client!.isConnected? Colors.green : Colors.red,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                          ),
-                      );
-                    }),
-
-                  ),
-
-                // Positioned(
-                //   left: 0,
-                //   top: 0,
-                //   child: SizedBox(
-                //     height: 10,
-                //     child:
-                //       waitingBusPosition ?
-                //       LinearProgressIndicator() :
-                //       Center()
-                //   ),
-                //   ),
-
-                // if(busPulsatingCircleCoordinate.x.toDouble() > 0)
-                // Positioned(
-                //   left: busPulsatingCircleCoordinate.x.toDouble() - 25,
-                //   top: busPulsatingCircleCoordinate.y.toDouble() - 25,
-                //   child: Consumer<EmitterService>(builder: (context, emitterService, child) {
-                //     return PulsatingCircle(
-                //       color: emitterService.client!.isConnected ? Colors.green :  Colors.red
-                //     );
-                //   })
-                // ),
-
-                DraggableScrollableSheet(
-                  snapAnimationDuration: const Duration(seconds: 1),
-                  initialChildSize: trip.trip_status == 'Running' ? .5 : .29,
-                  minChildSize: 0.29,
-                  maxChildSize: 1,
-                  builder: (BuildContext context,
-                      ScrollController scrollController) {
-                    return Stack(children: [
-                      Container(
-                        margin: const EdgeInsets.only(top: 0),
-                        height: double.infinity,
-                        decoration: BoxDecoration(
-                          color: activeTheme.main_bg,
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(20.0),
-                            topRight: Radius.circular(20.0),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              offset: const Offset(0.0, -3.0),
-                              blurRadius: 5.0,
-                            ),
-                          ],
-                        ),
+                          final value = await mapboxMap.annotations
+                              .createPointAnnotationManager();
+                          annotationManager = value;
+                          annotationManager
+                              ?.addOnPointAnnotationClickListener(this);
+                        },
+                        onStyleLoadedListener: (MapboxMap mapboxMap) async {
+                          showTripGeoJson(mapboxMap);
+                          showPickupLocations(mapboxMap);
+                        },
                       ),
-                      SingleChildScrollView(
-                        controller: scrollController,
-                        child: Stack(children: [
-                          Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 20),
-                            height: 1,
-                            color: activeTheme.main_color.withOpacity(.2),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.only(top: 10),
-                            padding: const EdgeInsets.all(20),
-                            width: double.infinity,
-                            child: Column(
+                    ),
+
+                    if (connectivityNone)
+                      Positioned(
+                        // left: 0,
+                        top: 40,
+                        child: SizedBox(
+                            height: 50,
+                            width: 300,
+                            child: Row(
                               children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: 200,
-                                      child: Text(
-                                        "${lang.translate('Trip')} #${trip.trip_id} ${trip.route?.route_name}",
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: activeTheme.h6,
-                                      ),
-                                    ),
-                                    Row(children: [
-                                      SvgPicture.asset("assets/svg/bus.svg",
-                                          width: 15,),
-                                      SizedBox(width: 5),
-                                      Text(
-                                        trip.vehicle?.plate_number ?? '',
-                                      )
-                                    ]),
-                                  ],
+                                Expanded(
+                                  flex: 1,
+                                  child: AnimatedContainer(
+                                    duration: Duration(seconds: 1),
+                                    curve: Curves.fastOutSlowIn,
+                                    child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.red,
+                                          borderRadius: BorderRadius.circular(
+                                              20), // Cambia el valor para ajustar el radio
+                                        ),
+                                        padding: EdgeInsets.all(10),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.wifi_off,
+                                                color: Colors.white),
+                                            SizedBox(width: 10),
+                                            Text('No hay conexión a Internet',
+                                                style: TextStyle(
+                                                    color: Colors.white)),
+                                          ],
+                                        )),
+                                  ),
                                 ),
-                                const SizedBox(height: 10),
-                                if(trip.trip_status == "Running")
-                                Row(
-                                    textDirection: TextDirection.ltr,
-                                    mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    const SizedBox(height: 10),
-                                      Icon(Icons.access_time, size: 20),
-                                      Text(tripDuration.inMinutes > 60?
-                                        "${tripDuration.inHours}h":
-                                        "${tripDuration.inMinutes}min"
-                                        ) ,
-                                      const SizedBox(width: 10),
-                                      Icon(Icons.route,size: 20),
-                                      Text(tripDistance > 1000 ? '$tripDistance KM': '$tripDistance m'),
-                                      const SizedBox(width: 10),
-                                      (trip.pickup_locations != null)
-                                          ? Icon(Icons.pin_drop_outlined,size: 20)
-                                          : const Center(),
-                                      (trip.pickup_locations != null)
-                                          ? Text(
-                                              '${trip.pickup_locations!.length.toString()} ',
-                                            )
-                                          : const Center(),
-                                    if (trip.trip_status == 'Completed' &&
-                                        relationName.contains('eta.drivers'))
-                                      GestureDetector(
-                                          onTap: (() {
-                                            openNewPage(context,
-                                                AttendancePage(trip: trip));
-                                          }),
-                                          child: Center(
-                                              child: ButtonTextIcon(
-                                                  '',
-                                                  Icon(
-                                                    Icons.list,
-                                                    color: activeTheme.buttonBG,
-                                                  ),
-                                                  activeTheme.buttonColor))),
-                                  ],
+                              ],
+                            )),
+                      ),
+                    if (trip.trip_status == 'Running')
+                      Positioned(
+                        top: 40,
+                        right: 10,
+                        child: Consumer<EmitterService>(
+                            builder: (context, emitterService, child) {
+                          return Container(
+                            width: 15,
+                            height: 15,
+                            decoration: BoxDecoration(
+                              color: emitterService.client().isConnected
+                                  ? Colors.green
+                                  : Colors.red,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                          );
+                        }),
+                      ),
+
+                    // Positioned(
+                    //   left: 0,
+                    //   top: 0,
+                    //   child: SizedBox(
+                    //     height: 10,
+                    //     child:
+                    //       waitingBusPosition ?
+                    //       LinearProgressIndicator() :
+                    //       Center()
+                    //   ),
+                    //   ),
+
+                    // if(busPulsatingCircleCoordinate.x.toDouble() > 0)
+                    // Positioned(
+                    //   left: busPulsatingCircleCoordinate.x.toDouble() - 25,
+                    //   top: busPulsatingCircleCoordinate.y.toDouble() - 25,
+                    //   child: Consumer<EmitterService>(builder: (context, emitterService, child) {
+                    //     return PulsatingCircle(
+                    //       color: emitterService.client!.isConnected ? Colors.green :  Colors.red
+                    //     );
+                    //   })
+                    // ),
+
+                    DraggableScrollableSheet(
+                      snapAnimationDuration: const Duration(seconds: 1),
+                      initialChildSize:
+                          trip.trip_status == 'Running' ? .5 : .29,
+                      minChildSize: 0.29,
+                      maxChildSize: 1,
+                      builder: (BuildContext context,
+                          ScrollController scrollController) {
+                        return Stack(children: [
+                          Container(
+                            margin: const EdgeInsets.only(top: 0),
+                            height: double.infinity,
+                            decoration: BoxDecoration(
+                              color: activeTheme.main_bg,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(20.0),
+                                topRight: Radius.circular(20.0),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  offset: const Offset(0.0, -3.0),
+                                  blurRadius: 5.0,
                                 ),
-                                const SizedBox(
-                                  height: 20,
-                                ),
-                                Container(
-                                  height: 1,
-                                  color: activeTheme.main_color.withOpacity(.3),
-                                ),
-                                const SizedBox(
-                                  height: 20,
-                                ),
-                                trip.trip_status == 'Completed'
-                                    ? ETAWidgets.tripInfoRow(trip)
-                                    : const Center(),
-                                Row(children: [
-                                  if (trip.trip_status == 'Running' &&
-                                      relationName.contains('eta.drivers'))
-                                    GestureDetector(
-                                        onTap: showLoader
-                                            ? null
-                                            : (() {
-                                                endTrip();
-                                              }),
-                                        child: Center(
-                                            child: ButtonTextIcon(
-                                                lang.translate('End trip'),
-                                                Icon(
-                                                  Icons.route,
-                                                  color:
-                                                      activeTheme.buttonColor,
-                                                ),
-                                                showLoader
-                                                    ? Colors.grey
-                                                    : Colors.red))),
-                                  if (trip.trip_status == 'Running')
-                                    const SizedBox(
-                                      width: 20,
-                                    ),
-                                  if (trip.trip_status == 'Running' &&
-                                      relationName.contains('eta.drivers'))
-                                    GestureDetector(
-                                        onTap: (() {
-                                          openNewPage(context,
-                                              AttendancePage(trip: trip));
-                                        }),
-                                        child: Center(
-                                            child: ButtonTextIcon(
-                                                lang.translate('Attendance'),
-                                                Icon(
-                                                  Icons.list,
-                                                  color:
-                                                      activeTheme.buttonColor,
-                                                ),
-                                                Color.fromARGB(
-                                                    255, 226, 187, 32)))),
-                                ]),
-                                SizedBox(
-                                  height: 20,
-                                ),
-                                for (var i = 0;
-                                    i < trip.pickup_locations!.length;
-                                    i++)
-                                  activeTab == 'pickup'
-                                      ? Row(children: [
-                                          tripUser(trip.pickup_locations![i]),
-                                        ])
-                                      : const Center(),
                               ],
                             ),
+                          ),
+                          SingleChildScrollView(
+                            controller: scrollController,
+                            child: Stack(children: [
+                              Container(
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 20),
+                                height: 1,
+                                color: activeTheme.main_color.withOpacity(.2),
+                              ),
+                              Container(
+                                margin: const EdgeInsets.only(top: 10),
+                                padding: const EdgeInsets.all(20),
+                                width: double.infinity,
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      mainAxisSize: MainAxisSize.max,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: 200,
+                                          child: Text(
+                                            "${lang.translate('Trip')} #${trip.trip_id} ${trip.route?.route_name}",
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: activeTheme.h6,
+                                          ),
+                                        ),
+                                        Row(children: [
+                                          SvgPicture.asset(
+                                            "assets/svg/bus.svg",
+                                            width: 15,
+                                          ),
+                                          SizedBox(width: 5),
+                                          Text(
+                                            trip.vehicle?.plate_number ?? '',
+                                          )
+                                        ]),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+                                    if (trip.trip_status == "Running")
+                                      Row(
+                                        textDirection: TextDirection.ltr,
+                                        mainAxisSize: MainAxisSize.max,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          const SizedBox(height: 10),
+                                          Icon(Icons.access_time, size: 20),
+                                          Text(tripDuration.inMinutes > 60
+                                              ? "${tripDuration.inHours}h"
+                                              : "${tripDuration.inMinutes}min"),
+                                          const SizedBox(width: 10),
+                                          Icon(Icons.route, size: 20),
+                                          Text(tripDistance > 1000
+                                              ? '$tripDistance KM'
+                                              : '$tripDistance m'),
+                                          const SizedBox(width: 10),
+                                          (trip.pickup_locations != null)
+                                              ? Icon(Icons.pin_drop_outlined,
+                                                  size: 20)
+                                              : const Center(),
+                                          (trip.pickup_locations != null)
+                                              ? Text(
+                                                  '${trip.pickup_locations!.length.toString()} ',
+                                                )
+                                              : const Center(),
+                                          if (trip.trip_status == 'Completed' &&
+                                              relationName
+                                                  .contains('eta.drivers'))
+                                            GestureDetector(
+                                                onTap: (() {
+                                                  openNewPage(
+                                                      context,
+                                                      AttendancePage(
+                                                          trip: trip));
+                                                }),
+                                                child: Center(
+                                                    child: ButtonTextIcon(
+                                                        '',
+                                                        Icon(
+                                                          Icons.list,
+                                                          color: activeTheme
+                                                              .buttonBG,
+                                                        ),
+                                                        activeTheme
+                                                            .buttonColor))),
+                                        ],
+                                      ),
+                                    const SizedBox(
+                                      height: 20,
+                                    ),
+                                    Container(
+                                      height: 1,
+                                      color: activeTheme.main_color
+                                          .withOpacity(.3),
+                                    ),
+                                    const SizedBox(
+                                      height: 20,
+                                    ),
+                                    trip.trip_status == 'Completed'
+                                        ? ETAWidgets.tripInfoRow(trip)
+                                        : const Center(),
+                                    Row(children: [
+                                      if (trip.trip_status == 'Running' &&
+                                          relationName.contains('eta.drivers'))
+                                        GestureDetector(
+                                            onTap: showLoader
+                                                ? null
+                                                : (() {
+                                                    endTrip();
+                                                  }),
+                                            child: Center(
+                                                child: ButtonTextIcon(
+                                                    lang.translate('End trip'),
+                                                    Icon(
+                                                      Icons.route,
+                                                      color: activeTheme
+                                                          .buttonColor,
+                                                    ),
+                                                    showLoader
+                                                        ? Colors.grey
+                                                        : Colors.red))),
+                                      if (trip.trip_status == 'Running')
+                                        const SizedBox(
+                                          width: 20,
+                                        ),
+                                      if (trip.trip_status == 'Running' &&
+                                          relationName.contains('eta.drivers'))
+                                        GestureDetector(
+                                            onTap: (() {
+                                              openNewPage(context,
+                                                  AttendancePage(trip: trip));
+                                            }),
+                                            child: Center(
+                                                child: ButtonTextIcon(
+                                                    lang.translate(
+                                                        'Attendance'),
+                                                    Icon(
+                                                      Icons.list,
+                                                      color: activeTheme
+                                                          .buttonColor,
+                                                    ),
+                                                    Color.fromARGB(
+                                                        255, 226, 187, 32)))),
+                                    ]),
+                                    SizedBox(
+                                      height: 20,
+                                    ),
+                                    for (var i = 0;
+                                        i < trip.pickup_locations!.length;
+                                        i++)
+                                      activeTab == 'pickup'
+                                          ? Row(children: [
+                                              tripUser(
+                                                  trip.pickup_locations![i]),
+                                            ])
+                                          : const Center(),
+                                  ],
+                                ),
+                              )
+                            ]),
                           )
-                        ]),
-                      )
-                    ]);
-                  },
+                        ]);
+                      },
+                    ),
+                    showTripReportModal
+                        ? TripReport(trip: trip)
+                        : const Center(),
+                  ]),
+                  // ])
                 ),
-                showTripReportModal ? TripReport(trip: trip) : const Center(),
-              ]),
-              // ])
-            ),
-    ));
+              ));
   }
 
   CoordinateBounds getCoordinateBounds(List<Position> points) {
@@ -532,17 +554,15 @@ class _TripPageState extends State<TripPage>
         showLoader = false;
         relationName = relationNameLocal;
 
-        if (trip.lastPosition != null  && trip.trip_status == "Running") {
-          print("[TripPage] lasposition ${trip.lastPosition}");
-          final Position position = Position(
-              double.parse("${trip.lastPosition['longitude']}"),
-              double.parse("${trip.lastPosition['latitude']}"));
-              final label = formatUnixEpoch(trip.lastPosition['time'].toInt());
+        if (trip.lastPositionPayload != null &&
+            trip.trip_status == "Running" &&
+            !firstPosition) {
+          print("[TripPage] lastPositionPayload ${trip.lastPositionPayload}");
+          final Position position = trip.lastPosition()!;
+          final label =
+              formatUnixEpoch(trip.lastPositionPayload['time'].toInt());
 
-          _updateIcon(position, 
-          'eta.drivers', 
-            trip.driver_id!,
-            label);
+          _updateIcon(position, 'eta.drivers', trip.driver_id!, label);
         }
       });
     }
@@ -552,9 +572,8 @@ class _TripPageState extends State<TripPage>
   void dispose() {
     _emitterServiceProvider?.removeListener(onEmitterMessage);
     _notificationService.removeListener(onPushMessage);
-    Wakelock.disable();
-    _timer?.cancel();
     _connectivitySubscription.cancel();
+    Wakelock.disable();
     super.dispose();
   }
 
@@ -567,18 +586,18 @@ class _TripPageState extends State<TripPage>
     if (trip.trip_status == "Running") {
       Wakelock.enable();
 
-      _emitterServiceProvider = Provider.of<EmitterService>(context, listen: false);
+      _emitterServiceProvider =
+          Provider.of<EmitterService>(context, listen: false);
       _emitterServiceProvider?.addListener(onEmitterMessage);
 
-      _notificationService = Provider.of<NotificationService>(context, listen: false);
+      _notificationService =
+          Provider.of<NotificationService>(context, listen: false);
       _notificationService.addListener(onPushMessage);
 
       initConnectivity();
 
       _connectivitySubscription =
           _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
-
-      _startTimer();
     }
 
     loadTrip();
@@ -694,8 +713,8 @@ class _TripPageState extends State<TripPage>
     }
 
     final coordinateBounds = getCoordinateBounds(points);
-    mapboxMap.setCamera(CameraOptions(
-        center: coordinateBounds.southwest, zoom: 18, pitch: 70));
+    mapboxMap.setCamera(
+        CameraOptions(center: coordinateBounds.southwest, zoom: 18, pitch: 70));
   }
 
   // _updatePulsatingCircle(Point point) async{
@@ -706,12 +725,12 @@ class _TripPageState extends State<TripPage>
   //   });
   // }
 
-  Future<void> _updateIcon(
-      Position position, String relationName, int relationId, String label) async {
+  Future<void> _updateIcon(Position position, String relationName,
+      int relationId, String label) async {
     print(
         "[TripPage._updateIcon] [relationName] $relationName [relationId] $relationId");
 
-        // is the trip driver?
+    // is the trip driver?
     if (trip.driver_id != relationId) {
       print("[TripPage._updateIcon] is no de driver of this trip");
       return;
@@ -736,7 +755,6 @@ class _TripPageState extends State<TripPage>
 
         pointAnnotation = await mapboxUtils.createAnnotation(
             annotationManager, position, imageData, label);
-            
       } else {
         // any user who wishes will be shown on the map, examples for students
         final networkImage = await mapboxUtils.getNetworkImage(
@@ -746,9 +764,9 @@ class _TripPageState extends State<TripPage>
             annotationManager, position, circleImage, label);
       }
 
-      if(pointAnnotation != null){
+      if (pointAnnotation != null) {
         annotationsMap["$relationName.$relationId"] = pointAnnotation;
-          print("[TripPage._updateIcon] new pointAnnotation");
+        print("[TripPage._updateIcon] new pointAnnotation");
       }
     } else {
       pointAnnotation.geometry = Point(coordinates: position);
@@ -789,10 +807,9 @@ class _TripPageState extends State<TripPage>
   // }
 
   void onEmitterMessage() async {
-    final String message = emitterServiceProvider.lastMessage;
-    _lastEmitterDate =  DateTime.now();
+    final String message = emitterServiceProvider.lastMessage();
 
-    if(mounted){
+    if (mounted) {
       setState(() {
         try {
           tripDuration = trip.dt.difference(DateTime.now());
@@ -800,16 +817,16 @@ class _TripPageState extends State<TripPage>
           print(e);
         }
       });
-    }      
+    }
 
-    if(mounted){
+    if (mounted) {
       setState(() {
         try {
-          tripDistance = locationServiceProvider.totalDistance;  
-          if(tripDistance > 1000){
+          tripDistance = locationServiceProvider.totalDistance;
+          if (tripDistance > 1000) {
             tripDistance = tripDistance / 1000;
           }
-          print("tripDistance $tripDistance");          
+          print("tripDistance $tripDistance");
         } catch (e) {
           print(e);
         }
@@ -819,13 +836,13 @@ class _TripPageState extends State<TripPage>
     try {
       // si es un evento del viaje
       final event = EventModel.fromJson(jsonDecode(message));
-      if(event.type == "end-trip" && relationName != 'eta.drivers'){
-        if(mounted){
+      if (event.type == "end-trip" && relationName != 'eta.drivers') {
+        if (mounted) {
           setState(() {
             Get.back();
           });
         }
-      }else{
+      } else {
         // await event.requestData();
         loadTrip();
       }
@@ -844,16 +861,18 @@ class _TripPageState extends State<TripPage>
                 double.parse("${tracking['payload']['latitude']}"));
             final label = formatUnixEpoch(tracking['payload']['time'].toInt());
 
-            if (relationId != null &&
-                relationName == 'eta.drivers' ) {
+            if (relationId != null && relationName == 'eta.drivers') {
               print(
                   "[TripPage.onEmitterMessage.emitter-tracking.driver] $tracking");
-              _updateIcon(position, relationName, relationId,label);
+              _updateIcon(position, relationName, relationId, label);
             } else if (relationName == 'eta.students' && widget.showStudents) {
               print(
                   "[TripPage.onEmitterMessage.emitter-tracking.student] $tracking");
               _updateIcon(position, relationName, relationId, label);
             }
+
+            trip.lastPositionPayload = tracking['payload'];
+            firstPosition = true;
           }
         }
       } catch (e) {
@@ -872,43 +891,20 @@ class _TripPageState extends State<TripPage>
     // return '${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
   }
 
-
   onPushMessage() {
     print("[TripPage.onPushMessage]");
 
     final LastMessage? lastMessage = notificationServiceProvider.lastMessage;
     print("[TripPage.onPushMessage] ${lastMessage!}");
-    if(mounted){
+    if (mounted) {
       setState(() {
         // if (lastMessage?.status == 'foreground') {
         notificationServiceProvider.showTooltip(
-              context, lastMessage.lastMessage);
+            context, lastMessage.lastMessage);
         // }
       });
-    }else{
+    } else {
       print("[TripPage.onPushMessage] not mounted");
     }
   }
-
-  void _startTimer() {   
-
-    if(_timer != null){
-      _timer?.cancel();
-    }
-
-    _timer = Timer.periodic(Duration(seconds: 5), (timer) {
-        final now = DateTime.now();
-        final difference = now.difference(_lastEmitterDate!);
-        print("[TripPage.emittertimer.difference] ${difference.inSeconds}s.");
-
-        if (difference.inSeconds >= 40) {
-          print("[TripaPage.ermittertimer] restaring... ");
-          emitterServiceProvider.close();
-          emitterServiceProvider.connect();
-          _lastEmitterDate = DateTime.now();
-        }
-
-    });
-  }
-
 }
