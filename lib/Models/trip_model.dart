@@ -247,8 +247,8 @@ class TripModel {
     Position? lastPositionWrapper;
     try {
       lastPositionWrapper = Position(
-          double.parse("${lastPositionPayload[0]['longitude']}"),
-          double.parse("${lastPositionPayload[0]['latitude']}"));
+          double.parse("${lastPositionPayload['longitude']}"),
+          double.parse("${lastPositionPayload['latitude']}"));
     } catch (e) {
       print(e);
     }
