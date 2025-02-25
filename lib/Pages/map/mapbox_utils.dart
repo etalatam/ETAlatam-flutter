@@ -75,7 +75,10 @@ class MapboxUtils {
         image: imageData,
         textField: label,
         textSize: 14.0,
-        textColor: Colors.black.value
+        textColor: Colors.black.value,
+        textHaloColor: ui.Color.fromARGB(255, 246, 240, 240).value,
+        textHaloWidth: 4.0,
+        textHaloBlur: 1
     ));
   }
 }
