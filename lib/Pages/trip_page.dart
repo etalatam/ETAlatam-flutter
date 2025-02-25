@@ -6,6 +6,7 @@ import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
 import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
+import 'package:eta_school_app/shared/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -24,6 +25,7 @@ import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import 'package:wakelock/wakelock.dart';
 
 import 'map/map_wiew.dart';
@@ -49,7 +51,7 @@ class TripPage extends StatefulWidget {
 }
 
 class _TripPageState extends State<TripPage>
-    with ETAWidgets, MediansTheme, WidgetsBindingObserver
+    with ETAWidgets, MediansTheme
     implements OnPointAnnotationClickListener {
   bool showLoader = false;
 
@@ -99,7 +101,14 @@ class _TripPageState extends State<TripPage>
       child: showLoader
           ? Loader()
           : Scaffold(
-              body: Stack(children: <Widget>[
+              body: VisibilityDetector(
+                          key: Key('student_home_key'),
+                          onVisibilityChanged: (info) {
+                            if (info.visibleFraction > 0) {
+                              loadTrip();
+                            }
+                          }, 
+                      child: Stack(children: <Widget>[
                 // Column(children: [
                 // // if(widget.showBus && !hasBusPosition )
                 //   SizedBox(
@@ -394,7 +403,7 @@ class _TripPageState extends State<TripPage>
               ]),
               // ])
             ),
-    );
+    ));
   }
 
   CoordinateBounds getCoordinateBounds(List<Position> points) {
@@ -421,7 +430,7 @@ class _TripPageState extends State<TripPage>
   }
 
   Widget tripUser(TripPickupLocation pickupLocation) {
-    print('[TripPage.tripUser.pickupLocation]');
+    // print('[TripPage.tripUser.pickupLocation]');
     return GestureDetector(
       onTap: () {
         _mapboxMapController?.setCamera(CameraOptions(
@@ -546,15 +555,12 @@ class _TripPageState extends State<TripPage>
     Wakelock.disable();
     _timer?.cancel();
     _connectivitySubscription.cancel();
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
-
-    WidgetsBinding.instance.addObserver(this);
 
     trip = widget.trip!;
 
@@ -577,18 +583,6 @@ class _TripPageState extends State<TripPage>
 
     loadTrip();
   }
-
- @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-
-    if (state == AppLifecycleState.resumed) {
-      // La aplicación está en primer plano (visible)
-      loadTrip();
-    } else if (state == AppLifecycleState.paused) {
-      // La aplicación está en segundo plano (no visible)
-    }
-  }  
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initConnectivity() async {
@@ -686,8 +680,8 @@ class _TripPageState extends State<TripPage>
           pickupPoint.location!.latitude as double);
       final point = PointAnnotationOptions(
           textField: "${pickupPoint.location?.location_name}",
-          textOffset: [0.0, -2.0],
-          textColor: Color.fromARGB(255, 2, 54, 37).value,
+          textOffset: [0.0, -1.5],
+          textColor: Colors.black.value,
           textLineHeight: 15,
           textSize: 15,
           iconSize: 0.8,
@@ -701,7 +695,7 @@ class _TripPageState extends State<TripPage>
 
     final coordinateBounds = getCoordinateBounds(points);
     mapboxMap.setCamera(CameraOptions(
-        center: coordinateBounds.southwest, zoom: 15.5, pitch: 70));
+        center: coordinateBounds.southwest, zoom: 18, pitch: 70));
   }
 
   // _updatePulsatingCircle(Point point) async{
@@ -872,23 +866,27 @@ class _TripPageState extends State<TripPage>
     // Convierte el Unix Epoch (segundos) a milisegundos
     DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(unixEpoch);
 
+    return Utils.formatearFecha(dateTime);
+
     // Formatea la fecha como desees
-    return '${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
+    // return '${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
   }
 
 
   onPushMessage() {
-    // final LastMessage? lastMessage =
-    //     Provider.of<NotificationService>(context, listen: false).lastMessage;
+    print("[TripPage.onPushMessage]");
 
     final LastMessage? lastMessage = notificationServiceProvider.lastMessage;
+    print("[TripPage.onPushMessage] ${lastMessage!}");
     if(mounted){
       setState(() {
         // if (lastMessage?.status == 'foreground') {
         notificationServiceProvider.showTooltip(
-              context, lastMessage!.lastMessage);
+              context, lastMessage.lastMessage);
         // }
       });
+    }else{
+      print("[TripPage.onPushMessage] not mounted");
     }
   }
 
@@ -903,7 +901,7 @@ class _TripPageState extends State<TripPage>
         final difference = now.difference(_lastEmitterDate!);
         print("[TripPage.emittertimer.difference] ${difference.inSeconds}s.");
 
-        if (difference.inSeconds >= 60) {
+        if (difference.inSeconds >= 40) {
           print("[TripaPage.ermittertimer] restaring... ");
           emitterServiceProvider.close();
           emitterServiceProvider.connect();

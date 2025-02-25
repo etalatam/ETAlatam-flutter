@@ -68,13 +68,13 @@ class MapboxUtils {
       annotationManager, Position position, Uint8List imageData, String label) async {
     return await annotationManager?.create(PointAnnotationOptions(
         geometry: Point(coordinates: position),
-        textOffset: [0.0, -1.0],
+        textOffset: [0.0, -2.0],
         iconSize: 0.35,
         iconOffset: [0.0, -5.0],
         symbolSortKey: 100,
         image: imageData,
         textField: label,
-        textSize: 12.0,
+        textSize: 14.0,
         textColor: Colors.black.value
     ));
   }

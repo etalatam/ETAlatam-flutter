@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:eta_school_app/shared/emitterio/emitter_client.dart';
 import 'package:flutter/foundation.dart';
+import 'package:mqtt_client/mqtt_client.dart';
 
 class EmitterService extends ChangeNotifier {
   static final EmitterService _instance = EmitterService._internal();
@@ -38,8 +39,7 @@ class EmitterService extends ChangeNotifier {
         client?.onDisconnect = _onDisconnect;
         client?.onAutoReconnect = _onAutoReconnect;
         client?.onAutoReconnected = _onAutoReconnected;
-        await client?.connect();
-        
+        await client?.connect();        
       } on Exception catch (e) {
         print("[EmitterService.connect.error] ${e.toString()}");
         client?.disconnect();

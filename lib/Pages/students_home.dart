@@ -18,6 +18,7 @@ import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/components/header.dart';
 import 'package:provider/provider.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class StudentsHome extends StatefulWidget {
   const StudentsHome({super.key});
@@ -27,7 +28,7 @@ class StudentsHome extends StatefulWidget {
 }
 
 class _StudentsHomeState extends State<StudentsHome>
-    with ETAWidgets, MediansTheme, WidgetsBindingObserver {
+    with ETAWidgets, MediansTheme {
   final widgets = ETAWidgets;
 
   bool hasActiveTrip = false;
@@ -56,7 +57,14 @@ class _StudentsHomeState extends State<StudentsHome>
                 body: RefreshIndicator(
                     triggerMode: RefreshIndicatorTriggerMode.onEdge,
                     onRefresh: _refreshData,
-                    child: Stack(
+                    child: VisibilityDetector(
+                          key: Key('student_home_key'),
+                          onVisibilityChanged: (info) {
+                            if (info.visibleFraction > 0) {
+                              loadResources();
+                            }
+                          }, 
+                      child: Stack(
                       children: [
                         Container(
                             color: activeTheme.main_bg,
@@ -199,18 +207,7 @@ class _StudentsHomeState extends State<StudentsHome>
                         //   child: BottomMenu('home', openNewPage)
                         // )
                       ],
-                    ))));
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      // App is going to the background
-      // Perform actions or handle behavior when the app loses focus
-    } else if (state == AppLifecycleState.resumed) {
-      // App is back to the foreground
-      // Perform actions when the app comes back to the foreground
-    }
+                    )))));
   }
 
   // Function to simulate data retrieval or refresh
@@ -219,10 +216,7 @@ class _StudentsHomeState extends State<StudentsHome>
       showLoader = true;
     });
 
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() {
-      loadResources();
-    });
+    loadResources();
   }
 
   openPage(context, page) {
@@ -241,49 +235,72 @@ class _StudentsHomeState extends State<StudentsHome>
       return;
     }
 
-    if (!mounted) return;
-
-    await storage.getItem('darkmode');
-    setState(() {
-      darkMode = storage.getItem('darkmode') == true ? true : false;
-      showLoader = false;
-    });
-
-    final studentQuery = await httpService.getStudent();
-    setState(() {
-      student = studentQuery;
-    });
-
-    List<TripModel>? oldTrips = await httpService.getStudentTrips(studentId);
-    setState(() {
-      oldTripsList = oldTrips;
-    });
-
-    TripModel? activeTrip_ = await httpService.getActiveTrip();
-    setState(() {
-      activeTrip = activeTrip_;
-      hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
-    });
-
-    List<RouteModel> routes = await httpService.getStudentRoutes();
-
-    for (var route in routes) {
-      String routeTopic = "route-${route.route_id}-student";
-
-      notificationServiceProvider.subscribeToTopic(routeTopic);
-
-      for (var pickupPoint in student.pickup_points) {
-        var pickupPointTopic =
-            "route-${route.route_id}-pickup_point-${pickupPoint.pickup_id}";
-        notificationServiceProvider.subscribeToTopic(pickupPointTopic);
+    try {
+      final studentQuery = await httpService.getStudent();
+      if(mounted){
+        setState(() {
+          student = studentQuery;
+        });
+      }else{
+        student = studentQuery;
       }
+    } catch (e) {
+      print("[StudentPage.loadResources.getstudents.error] $e");
     }
 
-    if (hasActiveTrip) {
-      activeTrip?.subscribeToTripTracking();
+    try {
+      List<TripModel>? oldTrips = await httpService.getStudentTrips(studentId);
+      setState(() {
+        oldTripsList = oldTrips;
+      });
+    } catch (e) {
+      print("[StudentPage.loadResources.getstudents.error] $e");
     }
 
-    locationServiceProvider.startLocationService();
+    try {
+      TripModel? activeTrip_ = await httpService.getActiveTrip();
+      if(mounted){
+        setState(() {
+          activeTrip = activeTrip_;
+          hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
+        });
+      }else{
+        activeTrip = activeTrip_;
+        hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
+      }
+
+      if (hasActiveTrip) {
+        activeTrip?.subscribeToTripTracking();
+      }
+
+      locationServiceProvider.startLocationService();
+    } catch (e) {
+      print("[StudentPage.loadResources.getActiveTrip.error] $e");
+    }
+
+    try {
+      List<RouteModel> routes = await httpService.getStudentRoutes();
+      for (var route in routes) {
+        String routeTopic = "route-${route.route_id}-student";
+
+        notificationServiceProvider.subscribeToTopic(routeTopic);
+
+        for (var pickupPoint in student.pickup_points) {
+          var pickupPointTopic =
+              "route-${route.route_id}-pickup_point-${pickupPoint.pickup_id}";
+          notificationServiceProvider.subscribeToTopic(pickupPointTopic);
+        }
+      }
+
+    } catch (e) {
+      print("[StudentPage.loadResources.getActiveTrip.error] $e");
+    }
+
+    if(mounted){
+      setState(() {
+        showLoader = false;
+      });
+    }
   }
 
   openTripcallback(TripModel trip_) {
@@ -304,16 +321,15 @@ class _StudentsHomeState extends State<StudentsHome>
   void initState() {
     super.initState();
 
-    loadResources();
+    showLoader = true;
+
     Provider.of<NotificationService>(context, listen: false)
         .addListener(onPushMessage);
+
+    loadResources();    
   }
 
   onPushMessage() {
-    if (mounted) {
-      setState(() {
-        loadResources();
-      });
-    }
+    loadResources();
   }
 }

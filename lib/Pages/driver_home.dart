@@ -6,7 +6,6 @@ import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/components/active_trip.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
@@ -20,6 +19,7 @@ import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/home_route_block.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
 import 'package:provider/provider.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class DriverHome extends StatefulWidget {
   const DriverHome({super.key});
@@ -29,7 +29,7 @@ class DriverHome extends StatefulWidget {
 }
 
 class _DriverHomeState extends State<DriverHome>
-    with ETAWidgets, MediansTheme, WidgetsBindingObserver {
+    with ETAWidgets, MediansTheme {
   final widgets = ETAWidgets;
 
   // late GoogleMapController mapController;
@@ -58,7 +58,14 @@ class _DriverHomeState extends State<DriverHome>
                 body: RefreshIndicator(
                     triggerMode: RefreshIndicatorTriggerMode.onEdge,
                     onRefresh: _refreshData,
-                    child: Stack(
+                    child: VisibilityDetector(
+                      key: Key('driver_home_key'),
+                      onVisibilityChanged: (info) {
+                        if (info.visibleFraction > 0) {
+                          loadResources();
+                        }
+                      }, 
+                      child: Stack(
                       children: [
                         Container(
                             color: activeTheme.main_bg,
@@ -174,7 +181,7 @@ class _DriverHomeState extends State<DriverHome>
                             )),
                         Positioned(left: 0, right: 0, top: 0, child: Header()),
                       ],
-                    ))));
+                    )))));
   }
 
   /// Create trip
@@ -211,20 +218,6 @@ class _DriverHomeState extends State<DriverHome>
           lang.translate(msg[0]), null);
     }
   }
-
-  void tracking() async {}
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      // App is going to the background
-      // Perform actions or handle behavior when the app loses focus
-    } else if (state == AppLifecycleState.resumed) {
-      // App is back to the foreground
-      // Perform actions when the app comes back to the foreground
-    }
-  }
-
   // Function to simulate data retrieval or refresh
   Future<void> _refreshData() async {
     setState(() {
@@ -245,8 +238,6 @@ class _DriverHomeState extends State<DriverHome>
   /// Load resources through API
   ///
   loadResources() async {
-    if(!mounted) return;
-
     final check = await storage.getItem('id_usu');
 
     if (check == null) {
@@ -254,41 +245,65 @@ class _DriverHomeState extends State<DriverHome>
       return;
     }
 
-    // await storage.getItem('darkmode');
-    setState(() {
-      // darkMode = storage.getItem('darkmode') == true ? true : false;
-      showLoader = false;
-    });
-
-    final driverQuery = await httpService.getDriver();
-    setState(() {
-      driverModel = driverQuery;
-    });
-
-    final todateRoutes = await httpService.todayRoutes();
-    for (var route in todateRoutes) {
-      var routeDriverTopic = "route-${route.route_id}-driver";
-      notificationServiceProvider.subscribeToTopic(routeDriverTopic);
+    try {
+      final driverQuery = await httpService.getDriver();
+      if(mounted){
+        setState(() {
+          driverModel = driverQuery;
+        });
+      }
+    } catch (e) {
+      print("[DriverHome.loadrResources.getdriverinfo.error] $e");
     }
 
-    setState(() {
-      todateRoutesList = todateRoutes;
-    });
-
-    List<TripModel>? oldTrips = await httpService.getDriverTrips(0);
-    setState(() {
-      oldTripsList = oldTrips;
-    });
-
-    TripModel? activeTripWrapper = await httpService.getActiveTrip();
-    setState(() {
-      activeTrip = activeTripWrapper;
-      hasActiveTrip = (activeTripWrapper.trip_id != 0) ? true : false;
-    });
-
-    if (hasActiveTrip) {
-      await locationServiceProvider.startLocationService();
+    try {
+      final todateRoutes = await httpService.todayRoutes();
+      for (var route in todateRoutes) {
+        var routeDriverTopic = "route-${route.route_id}-driver";
+        notificationServiceProvider.subscribeToTopic(routeDriverTopic);
+      }
+      if(mounted){
+        setState(() {
+          todateRoutesList = todateRoutes;
+        });        
+      }else{
+        todateRoutesList = todateRoutes;
+      }
+    } catch (e) {
+      print("[DriverHome.loadrResources.todayRoutes.error] $e");
     }
+
+    try {
+      List<TripModel>? oldTrips = await httpService.getDriverTrips(0);
+      if(mounted){
+        setState(() {
+          oldTripsList = oldTrips;
+        });
+      }else{
+        oldTripsList = oldTrips;
+      }
+    } catch (e) {
+      print("[DriverHome.loadrResources.getDriverTrips.error] $e");
+    }
+
+    try {
+      TripModel? activeTripWrapper = await httpService.getActiveTrip();
+      if(mounted){
+        setState(() {
+          activeTrip = activeTripWrapper;
+          hasActiveTrip = (activeTripWrapper.trip_id != 0) ? true : false;
+        });
+      }else{
+        activeTrip = activeTripWrapper;
+        hasActiveTrip = (activeTripWrapper.trip_id != 0) ? true : false;
+      }
+    } catch (e) {
+      print("[DriverHome.loadrResources.getActiveTrip.error] $e");
+    }finally{
+      if (hasActiveTrip) {
+        await locationServiceProvider.startLocationService();
+      }
+    }    
   }
 
   openTripCallback(TripModel wrapper) {
@@ -308,9 +323,13 @@ class _DriverHomeState extends State<DriverHome>
   @override
   void initState() {
     super.initState();
-    loadResources();
+
+    showLoader = true;      
+
     Provider.of<NotificationService>(context, listen: false)
-          .addListener(onPushMessage);          
+          .addListener(onPushMessage);
+
+    loadResources();
   }
 
   onPushMessage(){

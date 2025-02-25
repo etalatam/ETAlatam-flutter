@@ -17,6 +17,7 @@ import 'package:eta_school_app/Models/parent_model.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/components/loader.dart';
 import 'package:provider/provider.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class GuardiansHome extends StatefulWidget {
   @override
@@ -24,7 +25,7 @@ class GuardiansHome extends StatefulWidget {
 }
 
 class _GuardiansHomeState extends State<GuardiansHome>
-    with ETAWidgets, MediansTheme, WidgetsBindingObserver {
+    with ETAWidgets, MediansTheme {
   final widgets = ETAWidgets;
 
   late GoogleMapController mapController;
@@ -51,8 +52,15 @@ class _GuardiansHomeState extends State<GuardiansHome>
                     triggerMode: RefreshIndicatorTriggerMode.onEdge,
                     onRefresh:
                         _refreshData, // Function to be called on pull-to-refresh
-                    child: Stack(
-                      children: [
+                    child: VisibilityDetector(
+                          key: Key('guardians_home_key'),
+                          onVisibilityChanged: (info) {
+                            if (info.visibleFraction > 0) {
+                              loadParent();
+                            }
+                          }, 
+                      child:Stack(
+                      children: [                        
                         Container(
                             color: activeTheme.main_bg,
                             height: MediaQuery.of(context).size.height,
@@ -186,70 +194,94 @@ class _GuardiansHomeState extends State<GuardiansHome>
                             )),
                         Positioned(left: 0, right: 0, top: 0, child: Header()),
                       ],
-                    ))));
+                    )))));
   }
 
   // Function to simulate data retrieval or refresh
   Future<void> _refreshData() async {
-    setState(() {
-      showLoader = true;
-    });
+    if(mounted){
+      setState(() {
+        showLoader = true;
+      });
+    }
 
-    await Future.delayed(Duration(seconds: 2));
-    setState(() {
-      loadParent();
-    });
+    loadParent();
   }
 
   loadParent() async {
-    setState(() {
-      showLoader = true;
-    });
+    print("[GuardianHome.loadParent]");
 
-    final parentQuery = await httpService.getParent();
-    setState(() {
-      parentModel = parentQuery;
-      showLoader = false;
-    });
-
-    for (var student in parentModel!.students) {
-      student.subscribeToStudentTracking();
-    }
-
-    final List<TripModel> trips = (await httpService.getGuardianTrips("true"));
-    for (var trip in trips) {
-      trip.subscribeToTripTracking();
-    }
-
-    final List<RouteModel> routes = await httpService.getGuardianRoutes();
-
-    for (var route in routes) {
-      var routeTopic = "route-${route.route_id}";
-      var routeTopicGuardian = "$routeTopic-guardian";
-
-      notificationServiceProvider.subscribeToTopic(routeTopicGuardian);
-
-      for (var student in parentModel!.students) {
-        var topic = "$routeTopic-student-${student.student_id}";
-        print("sdssd: ${student.pickup_points}");
-        notificationServiceProvider.subscribeToTopic(topic);
-        for (var pickupPoint in student.pickup_points) {
-          var topic = "$routeTopic-pickup_point-${pickupPoint.pickup_id}";
-          notificationServiceProvider.subscribeToTopic(topic);
-        }
+    try {
+      final parentQuery = await httpService.getParent();
+      if(mounted){
+        setState(() {
+          parentModel = parentQuery;
+          showLoader = false;
+        });
+      }else{
+        parentModel = parentQuery;
+        showLoader = false;
       }
+        
+      for (var student in parentModel!.students) {
+        student.subscribeToStudentTracking();
+      }
+    } catch (e) {
+      print("[GuardianHome.loadParent] error loading parent info : $e");
     }
 
-    setState(() {
-      activeTrips = trips;
-    });
+    try {
+      final List<TripModel> trips = (await httpService.getGuardianTrips("true"));
+      if(mounted){
+        setState(() {
+          activeTrips = trips;
+        });
+      }else{
+        activeTrips = trips;
+      }
+      for (var trip in trips) {
+        trip.subscribeToTripTracking();
+      }
+    } catch (e) {
+      print("[GuardianHome.loadParent] error loading active trips : $e");
+    }
 
-    final List<TripModel> oldTrips =
+    try {
+      final List<RouteModel> routes = await httpService.getGuardianRoutes();
+
+      for (var route in routes) {
+        var routeTopic = "route-${route.route_id}";
+        var routeTopicGuardian = "$routeTopic-guardian";
+
+        notificationServiceProvider.subscribeToTopic(routeTopicGuardian);
+
+        for (var student in parentModel!.students) {
+          var topic = "$routeTopic-student-${student.student_id}";          
+          notificationServiceProvider.subscribeToTopic(topic);
+          for (var pickupPoint in student.pickup_points) {
+            var topic = "$routeTopic-pickup_point-${pickupPoint.pickup_id}";
+            notificationServiceProvider.subscribeToTopic(topic);
+          }
+        }
+      }      
+    } catch (e) {
+      print("[GuardianHome.loadParent] error  subscribing to topics : $e");
+    }
+
+    try {
+      final List<TripModel> oldTrips =
         (await httpService.getGuardianTrips("false"));
 
-    setState(() {
-      oldTripsList = oldTrips;
-    });
+      if(mounted){
+        setState(() {
+          oldTripsList = oldTrips;
+        });
+      }else{
+        oldTripsList = oldTrips;
+      }
+    } catch (e) {
+      print("[GuardianHome.loadParent] error  loading olds trips : $e");
+    }
   }
 
   openTrip(trip) {
@@ -265,12 +297,12 @@ class _GuardiansHomeState extends State<GuardiansHome>
   void initState() {
     super.initState();
 
-    loadParent();
+    showLoader = true;
 
-    if (mounted) {
-      Provider.of<NotificationService>(context, listen: false)
+    Provider.of<NotificationService>(context, listen: false)
           .addListener(onPushMessage);
-    }
+
+    loadParent();
   }
 
   @override
@@ -280,10 +312,6 @@ class _GuardiansHomeState extends State<GuardiansHome>
   }
 
   onPushMessage() {
-    if (mounted) {
-      setState(() {
-        loadParent();
-      });
-    }
+    loadParent();
   }
 }

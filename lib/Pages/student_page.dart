@@ -12,6 +12,7 @@ import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
+import 'package:eta_school_app/shared/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -453,10 +454,10 @@ class _StudentPageState extends State<StudentPage> {
 
   String formatUnixEpoch(int unixEpoch) {
     // Convierte el Unix Epoch (segundos) a milisegundos
-    DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(unixEpoch * 1000);
-
+    DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(unixEpoch);
+    return Utils.formatearFecha(dateTime);
     // Formatea la fecha como desees
-    return '${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
+    // return '${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
   }
 
 }
