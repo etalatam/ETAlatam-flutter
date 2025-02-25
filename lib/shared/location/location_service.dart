@@ -132,7 +132,7 @@ class LocationService extends ChangeNotifier {
         autoStop: false,
         androidSettings:  AndroidSettings(
             accuracy: LocationAccuracy.NAVIGATION,
-            interval: relationNameLocal.contains('eta.drivers') ? 5 : 30,
+            interval: relationNameLocal.contains('eta.drivers') ? 5 : 10,
             distanceFilter: 0,
             client: LocationClient.google,
             androidNotificationSettings: AndroidNotificationSettings(
@@ -247,7 +247,7 @@ class LocationService extends ChangeNotifier {
         final now = DateTime.now();
         final difference = now.difference(_lastPositionDate!);
         print("[LocationService.timer.difference] ${difference.inSeconds}s.");
-        final max = relationNameLocal.contains('eta.drivers') ? 60 : 120;
+        final max = relationNameLocal.contains('eta.drivers') ? 60 : 60;
         if (difference.inSeconds >= max) {
           print("[LocationService.timer] restaring... ");
           stopLocationService();
