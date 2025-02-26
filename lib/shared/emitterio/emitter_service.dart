@@ -125,7 +125,7 @@ class EmitterService extends ChangeNotifier {
       final difference = now.difference(_lastEmitterDate!);
       print("[TripPage.emittertimer.difference] ${difference.inSeconds}s.");
 
-      if (difference.inSeconds >= 30) {
+      if (difference.inSeconds >= 60) {
         print("[TripaPage.ermittertimer] restaring... ");
         close();
         connect();

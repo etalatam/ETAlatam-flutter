@@ -61,7 +61,7 @@ class EmitterClient {
     _client.logging(on: true);
     _client.connectionMessage = MqttConnectMessage()
         // .withWillQos(MqttQos.atLeastOnce)
-        .withWillQos(MqttQos.exactlyOnce)
+        // .withWillQos(MqttQos.exactlyOnce)
         .startClean();
   }
 
