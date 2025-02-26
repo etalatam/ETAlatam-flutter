@@ -39,8 +39,7 @@ class _DriverHomeState extends State<DriverHome>
 
   TripModel? activeTrip;
 
-
-  bool showLoader = true;
+  bool showLoader = false;
 
   List<EventModel> eventsList = [];
   List<RouteModel> todateRoutesList = [];
@@ -236,11 +235,23 @@ class _DriverHomeState extends State<DriverHome>
   /// Load resources through API
   ///
   loadResources() async {
-    final check = await storage.getItem('id_usu');
+    try {
+      final check = await storage.getItem('id_usu');
 
-    if (check == null) {
-      Get.offAll(Login());
-      return;
+      if (check == null) {
+        Get.offAll(Login());
+        return;
+      }
+    } catch (e) {
+      print(e);
+    }
+
+    if(mounted){
+      setState(() {
+        showLoader = false;
+      });
+    }else{
+      showLoader = false;
     }
 
     try {
@@ -322,7 +333,7 @@ class _DriverHomeState extends State<DriverHome>
   void initState() {
     super.initState();
 
-    showLoader = true;      
+    // showLoader = true;
 
     Provider.of<NotificationService>(context, listen: false)
           .addListener(onPushMessage);

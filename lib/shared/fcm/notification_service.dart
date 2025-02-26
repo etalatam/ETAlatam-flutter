@@ -70,12 +70,8 @@ class NotificationService with ChangeNotifier {
         }
       });
 
-      try {
         final userId = await storage.getItem('id_usu');
         messaging.subscribeToTopic("user-$userId");
-      } catch (e) {
-        print(e.toString());
-      }
     } catch (e) {
       print("[FCM] ${e.toString()}");
     }
