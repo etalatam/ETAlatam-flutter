@@ -557,7 +557,7 @@ class _TripPageState extends State<TripPage>
               print("[TripPage.error] $e");
             }
 
-            if (trip.lastPositionPayload != null && !firstPosition) {
+            if (trip.lastPositionPayload != null && !firstPosition && relationName != "eta.drivers") {
               print(
                   "[TripPage] lastPositionPayload ${trip.lastPositionPayload}");
               final Position position = trip.lastPosition()!;
