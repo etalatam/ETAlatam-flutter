@@ -45,6 +45,8 @@ class _StudentPageState extends State<StudentPage> {
 
   EmitterService? _emitterServiceProvider;
 
+  bool firstPosition = false;
+
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -302,7 +304,7 @@ class _StudentPageState extends State<StudentPage> {
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
 
-    if (widget.student?.lastPositionPayload != null) {
+    if (widget.student?.lastPositionPayload != null && !firstPosition) {
       print("[StudentPage] lasposition ${widget.student?.lastPosition}");
       final Position? position = widget.student?.lastPosition()!;
       final label =
@@ -413,6 +415,7 @@ class _StudentPageState extends State<StudentPage> {
             _updateIcon(position, relationName, relationId, label);
 
             widget.student?.lastPositionPayload = tracking['payload'];
+            firstPosition = true;
           }
         }
       } catch (e) {

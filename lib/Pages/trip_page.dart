@@ -88,6 +88,8 @@ class _TripPageState extends State<TripPage>
 
   double tripDistance = 0;
 
+  bool firstPosition = false;
+
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -555,7 +557,7 @@ class _TripPageState extends State<TripPage>
               print("[TripPage.error] $e");
             }
 
-            if (trip.lastPositionPayload != null ) {
+            if (trip.lastPositionPayload != null && !firstPosition) {
               print(
                   "[TripPage] lastPositionPayload ${trip.lastPositionPayload}");
               final Position position = trip.lastPosition()!;
@@ -834,6 +836,7 @@ class _TripPageState extends State<TripPage>
         // await event.requestData();
         loadTrip();
       }
+      firstPosition = false;
     } catch (e) {
       //si es un evento posicion
       try {
@@ -860,9 +863,11 @@ class _TripPageState extends State<TripPage>
             }
 
             trip.lastPositionPayload = tracking['payload'];
+            firstPosition = true;
           }
         }
       } catch (e) {
+        firstPosition = false;
         print(e);
       }
     }
