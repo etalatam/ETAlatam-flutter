@@ -236,6 +236,12 @@ class _StudentsHomeState extends State<StudentsHome>
     }
 
     try {
+      await locationServiceProvider.startLocationService();
+    } catch (e) {
+      print("[StudentPage.loadResources.startLocationService.error] $e");
+    }
+
+    try {
       final studentQuery = await httpService.getStudent();
       if(mounted){
         setState(() {
@@ -273,7 +279,6 @@ class _StudentsHomeState extends State<StudentsHome>
         activeTrip?.subscribeToTripTracking();
       }
 
-      locationServiceProvider.startLocationService();
     } catch (e) {
       print("[StudentPage.loadResources.getActiveTrip.error] $e");
     }

@@ -8,7 +8,6 @@ import 'package:eta_school_app/components/active_trip.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:location/location.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/Models/driver_model.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
@@ -40,7 +39,6 @@ class _DriverHomeState extends State<DriverHome>
 
   TripModel? activeTrip;
 
-  Location location = Location();
 
   bool showLoader = true;
 
