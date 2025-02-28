@@ -151,7 +151,7 @@ class EmitterService extends ChangeNotifier {
         return;
       }
 
-      if (difference.inSeconds >= 60) {
+      if (difference.inSeconds >= 40) {
         print("[TripaPage.ermittertimer] restaring... ");
         _client.disconnect();
         _client.connect();

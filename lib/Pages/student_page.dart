@@ -45,8 +45,6 @@ class _StudentPageState extends State<StudentPage> {
 
   EmitterService? _emitterServiceProvider;
 
-  bool firstPosition = false;
-
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -295,16 +293,17 @@ class _StudentPageState extends State<StudentPage> {
 
     Wakelock.enable();
 
-    _emitterServiceProvider =
-        Provider.of<EmitterService>(context, listen: false);
-    _emitterServiceProvider?.addListener(onEmitterMessage);
-
     initConnectivity();
 
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
 
-    if (widget.student?.lastPositionPayload != null && !firstPosition) {
+    _emitterServiceProvider =
+        Provider.of<EmitterService>(context, listen: false);
+    _emitterServiceProvider?.addListener(onEmitterMessage);
+    _emitterServiceProvider?.startTimer();
+
+    if (widget.student?.lastPositionPayload != null) {
       print("[StudentPage] lasposition ${widget.student?.lastPosition}");
       final Position? position = widget.student?.lastPosition()!;
       final label =
@@ -317,8 +316,9 @@ class _StudentPageState extends State<StudentPage> {
   @override
   void dispose() {
     _emitterServiceProvider?.removeListener(onEmitterMessage);
-    Wakelock.disable();
+    _emitterServiceProvider?.stopTimer();
     _connectivitySubscription.cancel();
+    Wakelock.disable();
     super.dispose();
   }
 
@@ -415,7 +415,6 @@ class _StudentPageState extends State<StudentPage> {
             _updateIcon(position, relationName, relationId, label);
 
             widget.student?.lastPositionPayload = tracking['payload'];
-            firstPosition = true;
           }
         }
       } catch (e) {
