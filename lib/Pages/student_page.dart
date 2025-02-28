@@ -61,6 +61,15 @@ class _StudentPageState extends State<StudentPage> {
                       _mapboxMapController = mapboxMap;
                       annotationManager = await mapboxMap.annotations
                           .createPointAnnotationManager();
+
+                      if (widget.student?.lastPositionPayload != null) {
+                        print("[StudentPage] lasposition ${widget.student?.lastPosition}");
+                        final Position? position = widget.student?.lastPosition()!;
+                        final label =
+                            formatUnixEpoch(widget.student?.lastPositionPayload['time'].toInt());
+
+                        _updateIcon(position!, 'eta.students', widget.student!.student_id, label);
+                      }    
                     },
                     onStyleLoadedListener: (MapboxMap mapboxMap) async {},
                   ),
@@ -302,15 +311,6 @@ class _StudentPageState extends State<StudentPage> {
         Provider.of<EmitterService>(context, listen: false);
     _emitterServiceProvider?.addListener(onEmitterMessage);
     _emitterServiceProvider?.startTimer();
-
-    if (widget.student?.lastPositionPayload != null) {
-      print("[StudentPage] lasposition ${widget.student?.lastPosition}");
-      final Position? position = widget.student?.lastPosition()!;
-      final label =
-          formatUnixEpoch(widget.student?.lastPositionPayload['time'].toInt());
-
-      _updateIcon(position!, 'eta.students', widget.student!.student_id, label);
-    }
   }
 
   @override

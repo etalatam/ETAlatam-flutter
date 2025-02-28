@@ -87,8 +87,6 @@ class _TripPageState extends State<TripPage>
 
   double tripDistance = 0;
 
-  bool firstPosition = false;
-
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -124,6 +122,22 @@ class _TripPageState extends State<TripPage>
                           annotationManager = value;
                           annotationManager
                               ?.addOnPointAnnotationClickListener(this);
+
+                            try {
+                              tripDuration = Utils.formatElapsedTime(trip.dt!);
+                            } catch (e) {
+                              print("[TripPage.initState.formatElapsedTime.error] $e");
+                            }
+
+                            if (trip.lastPositionPayload != null  && relationName != "eta.drivers") {
+                              print(
+                                  "[TripPage.initState] lastPositionPayload ${trip.lastPositionPayload}");
+                              final Position position = trip.lastPosition()!;
+                              final label =
+                                  formatUnixEpoch(trip.lastPositionPayload['time'].toInt());
+
+                              _updateIcon(position, 'eta.drivers', trip.driver_id!, label);
+                            }
                         },
                         onStyleLoadedListener: (MapboxMap mapboxMap) async {
                           showTripGeoJson(mapboxMap);
@@ -604,22 +618,6 @@ class _TripPageState extends State<TripPage>
       _notificationService =
           Provider.of<NotificationService>(context, listen: false);
       _notificationService.addListener(onPushMessage);
-
-      try {
-        tripDuration = Utils.formatElapsedTime(trip.dt!);
-      } catch (e) {
-        print("[TripPage.initState.formatElapsedTime.error] $e");
-      }
-
-      if (trip.lastPositionPayload != null && !firstPosition && relationName != "eta.drivers") {
-        print(
-            "[TripPage.initState] lastPositionPayload ${trip.lastPositionPayload}");
-        final Position position = trip.lastPosition()!;
-        final label =
-            formatUnixEpoch(trip.lastPositionPayload['time'].toInt());
-
-        _updateIcon(position, 'eta.drivers', trip.driver_id!, label);
-      }
                   
     }
 
@@ -851,7 +849,6 @@ class _TripPageState extends State<TripPage>
       } else {
         // await event.requestData();
       }
-      firstPosition = false;
     } catch (e) {
       //si es un evento posicion
       try {
@@ -878,11 +875,9 @@ class _TripPageState extends State<TripPage>
             }
 
             trip.lastPositionPayload = tracking['payload'];
-            firstPosition = true;
           }
         }
       } catch (e) {
-        firstPosition = false;
         print(e);
       }
     }
