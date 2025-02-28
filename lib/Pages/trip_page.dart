@@ -122,22 +122,6 @@ class _TripPageState extends State<TripPage>
                           annotationManager = value;
                           annotationManager
                               ?.addOnPointAnnotationClickListener(this);
-
-                            try {
-                              tripDuration = Utils.formatElapsedTime(trip.dt!);
-                            } catch (e) {
-                              print("[TripPage.initState.formatElapsedTime.error] $e");
-                            }
-
-                            if (trip.lastPositionPayload != null  && relationName != "eta.drivers") {
-                              print(
-                                  "[TripPage.initState] lastPositionPayload ${trip.lastPositionPayload}");
-                              final Position position = trip.lastPosition()!;
-                              final label =
-                                  formatUnixEpoch(trip.lastPositionPayload['time'].toInt());
-
-                              _updateIcon(position, 'eta.drivers', trip.driver_id!, label);
-                            }
                         },
                         onStyleLoadedListener: (MapboxMap mapboxMap) async {
                           showTripGeoJson(mapboxMap);
@@ -521,19 +505,18 @@ class _TripPageState extends State<TripPage>
   }
 
   endTrip() async {
-    if(mounted){
+    if (mounted) {
       setState(() {
         showLoader = true;
       });
     }
 
     try {
-      await trip.endTrip(); 
+      await trip.endTrip();
       setState(() {
         showLoader = false;
         showTripReportModal = true;
       });
-
     } catch (e) {
       print("[TripPage.endTrip.error] ${e.toString()}");
       var msg = e.toString().split('/');
@@ -578,7 +561,7 @@ class _TripPageState extends State<TripPage>
     }
   }
 
-  void cleanResorces(){
+  void cleanResorces() {
     try {
       _emitterServiceProvider?.removeListener(onEmitterMessage);
       _notificationService.removeListener(onPushMessage);
@@ -618,7 +601,6 @@ class _TripPageState extends State<TripPage>
       _notificationService =
           Provider.of<NotificationService>(context, listen: false);
       _notificationService.addListener(onPushMessage);
-                  
     }
 
     loadTrip();
@@ -733,9 +715,25 @@ class _TripPageState extends State<TripPage>
       points.add(position);
     }
 
-    final coordinateBounds = getCoordinateBounds(points);
-    mapboxMap.setCamera(
-        CameraOptions(center: coordinateBounds.southwest, zoom: 18, pitch: 70));
+    try {
+      tripDuration = Utils.formatElapsedTime(trip.dt!);
+    } catch (e) {
+      print("[TripPage.initState.formatElapsedTime.error] $e");
+    }
+
+    if (trip.lastPositionPayload != null && relationName != "eta.drivers") {
+      print(
+          "[TripPage.initState] lastPositionPayload ${trip.lastPositionPayload}");
+      final Position position = trip.lastPosition()!;
+      final label = formatUnixEpoch(trip.lastPositionPayload['time'].toInt());
+
+      _updateIcon(position, 'eta.drivers', trip.driver_id!, label);
+      mapboxMap.setCamera(CameraOptions(zoom: 18, pitch: 70));
+    } else {
+      final coordinateBounds = getCoordinateBounds(points);
+      mapboxMap.setCamera(CameraOptions(
+          center: coordinateBounds.southwest, zoom: 18, pitch: 70));
+    }
   }
 
   // _updatePulsatingCircle(Point point) async{

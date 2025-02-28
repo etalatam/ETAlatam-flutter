@@ -153,6 +153,7 @@ class EmitterService extends ChangeNotifier {
       if (difference.inSeconds >= 40) {
         print("[TripaPage.ermittertimer] restaring... ");
         _client.reconect();
+        _lastEmitterDate = DateTime.now();
         for (var topic in _subscribedTopics) {
           _client.subscribe(topic.name, key: topic.key);
         }
