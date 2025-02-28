@@ -84,6 +84,11 @@ class EmitterClient {
     }
   }
 
+  void reconect() {
+    _client.disconnect();
+    _client.connect();
+  }
+
   void disconnect() {
     _client.disconnect();
   }

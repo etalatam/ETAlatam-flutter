@@ -53,20 +53,19 @@ class EmitterService extends ChangeNotifier {
     return _lastMessage;
   }
 
-  void subscribe(EmitterTopic topic){
+  void subscribe(EmitterTopic topic) {
     _client.subscribe(topic.name, key: topic.key);
     _subscribedTopics.add(topic);
-
   }
 
-  void unsubscribe(EmitterTopic topic){
+  void unsubscribe(EmitterTopic topic) {
     _client.unsubscribe(topic.name, key: topic.key);
     for (var t in _subscribedTopics) {
       _subscribedTopics.remove(topic);
     }
   }
 
-  bool isConnected(){
+  bool isConnected() {
     return _client.isConnected;
   }
 
@@ -141,7 +140,7 @@ class EmitterService extends ChangeNotifier {
       _timer?.cancel();
     }
 
-    _timer = Timer.periodic(Duration(seconds: 5), (timer) {      
+    _timer = Timer.periodic(Duration(seconds: 5), (timer) {
       final now = DateTime.now();
       final difference = now.difference(_lastEmitterDate!);
       print("[TripPage.emittertimer.difference] ${difference.inSeconds}s.");
@@ -153,14 +152,14 @@ class EmitterService extends ChangeNotifier {
 
       if (difference.inSeconds >= 40) {
         print("[TripaPage.ermittertimer] restaring... ");
-        _client.disconnect();
-        _client.connect();
-        _lastEmitterDate = DateTime.now();
+        _client.reconect();
+        for (var topic in _subscribedTopics) {
+          _client.subscribe(topic.name, key: topic.key);
+        }
       }
     });
   }
 }
-
 
 class EmitterTopic {
   String name;
