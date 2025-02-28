@@ -145,11 +145,6 @@ class EmitterService extends ChangeNotifier {
       final difference = now.difference(_lastEmitterDate!);
       print("[TripPage.emittertimer.difference] ${difference.inSeconds}s.");
 
-      if (!_client.isConnected) {
-        print("[TripPage.emittertimer.difference] disconnected");
-        return;
-      }
-
       if (difference.inSeconds >= 40) {
         print("[TripaPage.ermittertimer] restaring... ");
         _client.reconect();
