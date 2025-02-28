@@ -48,7 +48,7 @@ class _UserAvatarState extends State<UserAvatar> {
                 width: 15,
                 height: 15,
                 decoration: BoxDecoration(
-                  color: emitterService.client().isConnected
+                  color: emitterService.isConnected()
                       ? Colors.green
                       : Colors.red,
                   shape: BoxShape.circle,

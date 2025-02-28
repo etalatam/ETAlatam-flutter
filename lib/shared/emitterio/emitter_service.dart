@@ -11,7 +11,7 @@ class EmitterService extends ChangeNotifier {
 
   EmitterService._internal() {
     connect();
-    _startTimer();
+    // _startTimer();
   }
 
   static late EmitterClient _client;
@@ -21,6 +21,8 @@ class EmitterService extends ChangeNotifier {
   static Timer? _timer;
 
   static DateTime? _lastEmitterDate = DateTime.now();
+
+  List<EmitterTopic> _subscribedTopics = [];
 
   Future<void> connect() async {
     _client = EmitterClient(
@@ -51,11 +53,24 @@ class EmitterService extends ChangeNotifier {
     return _lastMessage;
   }
 
-  EmitterClient client() {
-    return _client;
+  void subscribe(EmitterTopic topic){
+    _client.subscribe(topic.name, key: topic.key);
+    _subscribedTopics.add(topic);
+
   }
 
-  close() {
+  void unsubscribe(EmitterTopic topic){
+    _client.unsubscribe(topic.name, key: topic.key);
+    for (var t in _subscribedTopics) {
+      _subscribedTopics.remove(topic);
+    }
+  }
+
+  bool isConnected(){
+    return _client.isConnected;
+  }
+
+  disconnect() {
     try {
       _client.disconnect();
     } catch (e) {
@@ -74,11 +89,6 @@ class EmitterService extends ChangeNotifier {
     return jsonDecode(_lastMessage);
   }
 
-  void stopTimer() {
-    print("[EmitterService.stopTimer]");
-    _timer?.cancel();
-  }
-
   void _onError(String error) {
     print("[EmitterService.onError] $error");
     notifyListeners();
@@ -86,6 +96,11 @@ class EmitterService extends ChangeNotifier {
 
   void _onConnect() {
     print("[EmitterService._onConnect]");
+    // Re-subscribe to previously subscribed topics
+    for (var topic in _subscribedTopics) {
+      _client.subscribe(topic.name, key: topic.key);
+    }
+
     notifyListeners();
   }
 
@@ -115,22 +130,41 @@ class EmitterService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _startTimer() {
+  void stopTimer() {
+    print("[EmitterService.stopTimer]");
+    _timer?.cancel();
+  }
+
+  void startTimer() {
+    // si existe un timer activo se cancela
     if (_timer != null) {
       _timer?.cancel();
     }
 
-    _timer = Timer.periodic(Duration(seconds: 5), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 5), (timer) {      
       final now = DateTime.now();
       final difference = now.difference(_lastEmitterDate!);
       print("[TripPage.emittertimer.difference] ${difference.inSeconds}s.");
 
+      if (!_client.isConnected) {
+        print("[TripPage.emittertimer.difference] disconnected");
+        return;
+      }
+
       if (difference.inSeconds >= 60) {
         print("[TripaPage.ermittertimer] restaring... ");
-        close();
-        connect();
+        _client.disconnect();
+        _client.connect();
         _lastEmitterDate = DateTime.now();
       }
     });
   }
+}
+
+
+class EmitterTopic {
+  String name;
+  String key;
+
+  EmitterTopic(this.name, this.key);
 }

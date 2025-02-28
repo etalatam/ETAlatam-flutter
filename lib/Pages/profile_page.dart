@@ -97,9 +97,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                           width: 15,
                                           height: 15,
                                           decoration: BoxDecoration(
-                                            color: emitterService
-                                                    .client()
-                                                    .isConnected
+                                            color: emitterService.isConnected()
                                                 ? Colors.green
                                                 : Colors.red,
                                             shape: BoxShape.circle,

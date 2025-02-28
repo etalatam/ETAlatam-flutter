@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
-import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/Pages/providers/notification_provider.dart';
+import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:eta_school_app/shared/utils.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +14,6 @@ import 'package:flutter/services.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
 import 'package:eta_school_app/Pages/attendance_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
-import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:get/get.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/components/tripReportPage.dart';
@@ -181,7 +180,7 @@ class _TripPageState extends State<TripPage>
                             width: 15,
                             height: 15,
                             decoration: BoxDecoration(
-                              color: emitterService.client().isConnected
+                              color: emitterService.isConnected()
                                   ? Colors.green
                                   : Colors.red,
                               shape: BoxShape.circle,
@@ -508,17 +507,19 @@ class _TripPageState extends State<TripPage>
   }
 
   endTrip() async {
-    try {
+    if(mounted){
       setState(() {
         showLoader = true;
       });
-      await trip.endTrip();
-      locationServiceProvider.stopLocationService();
-      Wakelock.disable();
+    }
+
+    try {
+      await trip.endTrip(); 
       setState(() {
         showLoader = false;
         showTripReportModal = true;
       });
+
     } catch (e) {
       print("[TripPage.endTrip.error] ${e.toString()}");
       var msg = e.toString().split('/');
@@ -529,6 +530,13 @@ class _TripPageState extends State<TripPage>
           lang.translate(msg[0]), () {
         Get.back();
       });
+    }
+
+    try {
+      locationServiceProvider.stopLocationService();
+      cleanResorces();
+    } catch (e) {
+      print(e);
     }
   }
 
@@ -549,24 +557,6 @@ class _TripPageState extends State<TripPage>
         setState(() {
           trip = trip_;
           showLoader = false;
-
-          if (trip.trip_status == 'Running') {
-            try {
-              tripDuration = Utils.formatElapsedTime(trip.dt!);
-            } catch (e) {
-              print("[TripPage.error] $e");
-            }
-
-            if (trip.lastPositionPayload != null && !firstPosition && relationName != "eta.drivers") {
-              print(
-                  "[TripPage] lastPositionPayload ${trip.lastPositionPayload}");
-              final Position position = trip.lastPosition()!;
-              final label =
-                  formatUnixEpoch(trip.lastPositionPayload['time'].toInt());
-
-              _updateIcon(position, 'eta.drivers', trip.driver_id!, label);
-            }
-          }
         });
       }
     } catch (e) {
@@ -574,14 +564,22 @@ class _TripPageState extends State<TripPage>
     }
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    if (trip.trip_status == "Running") {
+  void cleanResorces(){
+    try {
       _emitterServiceProvider?.removeListener(onEmitterMessage);
       _notificationService.removeListener(onPushMessage);
       _connectivitySubscription.cancel();
       Wakelock.disable();
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    if (trip.trip_status == "Running") {
+      cleanResorces();
     }
   }
 
@@ -594,18 +592,35 @@ class _TripPageState extends State<TripPage>
     if (trip.trip_status == "Running") {
       Wakelock.enable();
 
+      initConnectivity();
+      _connectivitySubscription =
+          _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+
       _emitterServiceProvider =
           Provider.of<EmitterService>(context, listen: false);
       _emitterServiceProvider?.addListener(onEmitterMessage);
+      _emitterServiceProvider?.startTimer();
 
       _notificationService =
           Provider.of<NotificationService>(context, listen: false);
       _notificationService.addListener(onPushMessage);
 
-      initConnectivity();
+      try {
+        tripDuration = Utils.formatElapsedTime(trip.dt!);
+      } catch (e) {
+        print("[TripPage.initState.formatElapsedTime.error] $e");
+      }
 
-      _connectivitySubscription =
-          _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+      if (trip.lastPositionPayload != null && !firstPosition && relationName != "eta.drivers") {
+        print(
+            "[TripPage.initState] lastPositionPayload ${trip.lastPositionPayload}");
+        final Position position = trip.lastPosition()!;
+        final label =
+            formatUnixEpoch(trip.lastPositionPayload['time'].toInt());
+
+        _updateIcon(position, 'eta.drivers', trip.driver_id!, label);
+      }
+                  
     }
 
     loadTrip();
@@ -815,7 +830,7 @@ class _TripPageState extends State<TripPage>
   // }
 
   void onEmitterMessage() async {
-    final String message = emitterServiceProvider.lastMessage();
+    final String message = _emitterServiceProvider!.lastMessage();
 
     if (mounted) {
       setState(() {
@@ -827,6 +842,7 @@ class _TripPageState extends State<TripPage>
       // si es un evento del viaje
       final event = EventModel.fromJson(jsonDecode(message));
       if (event.type == "end-trip" && relationName != 'eta.drivers') {
+        _emitterServiceProvider?.stopTimer();
         if (mounted) {
           setState(() {
             Get.back();
@@ -834,7 +850,6 @@ class _TripPageState extends State<TripPage>
         }
       } else {
         // await event.requestData();
-        loadTrip();
       }
       firstPosition = false;
     } catch (e) {

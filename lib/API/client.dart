@@ -698,7 +698,7 @@ class HttpService {
   // Logout and clear localStorage
   logout() async {
     locationServiceProvider.stopLocationService();
-    emitterServiceProvider.close();
+    emitterServiceProvider.disconnect();
     await notificationServiceProvider.close();
     await storage.clear();    
   }

@@ -8,6 +8,7 @@ import 'package:eta_school_app/Models/PickupLocationModel.dart';
 import 'package:eta_school_app/Models/VehicleModel.dart';
 import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
+import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:eta_school_app/shared/utils.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -193,9 +194,9 @@ class TripModel {
     if (isEmitterSubcribedToEvents) return;
 
     try {
-      emitterServiceProvider.client().unsubscribe(
+      emitterServiceProvider.unsubscribe(EmitterTopic(
           "school/$school_id/$trip_id/event",
-          key: emitterKeyGenModelEvents!.key);
+          emitterKeyGenModelEvents!.key!));
     } catch (e) {
       print("[TripModel.unSubscribeToTripEvents.error] ${e.toString()}");
     }
@@ -205,9 +206,9 @@ class TripModel {
     if (isEmitterSubcribedToTracking) return;
 
     try {
-      emitterServiceProvider.client().unsubscribe(
+      emitterServiceProvider.unsubscribe(EmitterTopic(
           "school/$school_id/$trip_id/tracking",
-          key: emitterKeyGenModelTracking!.key);
+          emitterKeyGenModelTracking!.key!));
     } catch (e) {
       print("[TripModel.unSubscribeToTripTracking.error] ${e.toString()}");
     }
@@ -219,10 +220,10 @@ class TripModel {
           Uri.encodeComponent("school/$school_id/trip/$trip_id/event/#/");
       emitterKeyGenModelEvents = await httpService.emitterKeyGen(encodedValue);
       if (emitterKeyGenModelEvents != null &&
-          emitterServiceProvider.client().isConnected) {
-        emitterServiceProvider.client().subscribe(
+          emitterServiceProvider.isConnected()) {
+        emitterServiceProvider.subscribe(EmitterTopic(
             "school/$school_id/trip/$trip_id/event/",
-            key: emitterKeyGenModelEvents!.key);
+            emitterKeyGenModelEvents!.key!));
         isEmitterSubcribedToEvents = true;
       }
     }
@@ -235,10 +236,10 @@ class TripModel {
       emitterKeyGenModelTracking =
           await httpService.emitterKeyGen(encodedValue);
       if (emitterKeyGenModelTracking != null &&
-          emitterServiceProvider.client().isConnected) {
-        emitterServiceProvider.client().subscribe(
+          emitterServiceProvider.isConnected()) {
+        emitterServiceProvider.subscribe(EmitterTopic(
             "school/$school_id/trip/$trip_id/tracking/",
-            key: emitterKeyGenModelTracking!.key);
+            emitterKeyGenModelTracking!.key!));
         isEmitterSubcribedToTracking = true;
       }
     }
