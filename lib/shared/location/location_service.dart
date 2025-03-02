@@ -54,7 +54,9 @@ class LocationService extends ChangeNotifier {
     print("[LocationService.init]");
     _userId = await storage.getItem('id_usu');
 
-    _startTimer();
+    if(_timer == null){
+      _startTimer();
+    }
 
     askPermission().then((value) async{
       print("[LocationService.askPermission.callback] $value");
@@ -83,18 +85,19 @@ class LocationService extends ChangeNotifier {
               
               try {
                 _lastPositionDate = DateTime.now();
+                _totalDistance = _calculateDistance(
+                  _lastLatitude, 
+                  _lastLongitude, 
+                  _locationData?['latitude'], 
+                  _locationData?['longitude']
+                );
+
+                await trackingDynamic(_locationData);
                 notifyListeners();
               } catch (e) {
                 print(
                     '[LocationService.notifyListeners.error] ${e.toString()}');
               }
-
-              try {
-                // await trackingDynamic(_locationData);
-              } catch (e) {
-                print ('[LocationService.tracking.error] ${e.toString()}');
-              }
-
             }
           });
           BackgroundLocator.initialize();
@@ -175,15 +178,15 @@ class LocationService extends ChangeNotifier {
   trackingDynamic(dynamic locationInfo) async {
     print('[LocationService.trackingDynamic] ${locationInfo.toString()}');
 
-    _totalDistance = _calculateDistance(
-      _lastLatitude, 
-      _lastLongitude, 
-      locationInfo.latitude, 
-      locationInfo.longitude
-    );
-
     try {
       _lastPositionDate = DateTime.now();
+      _totalDistance = _calculateDistance(
+        _lastLatitude, 
+        _lastLongitude, 
+        locationInfo.latitude, 
+        locationInfo.longitude
+      );
+
       final jsonData = {
         'latitude': locationInfo?['latitude'],
         'longitude': locationInfo?['longitude'],
@@ -250,9 +253,9 @@ class LocationService extends ChangeNotifier {
         final max = relationNameLocal.contains('eta.drivers') ? 60 : 60;
         if (difference.inSeconds >= max) {
           print("[LocationService.timer] restaring... ");
+          _lastPositionDate = DateTime.now();
           stopLocationService();
           startLocationService();
-          _lastPositionDate = DateTime.now();
         }
     });
   }
