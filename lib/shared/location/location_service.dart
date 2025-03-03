@@ -183,8 +183,8 @@ class LocationService extends ChangeNotifier {
       _totalDistance = _calculateDistance(
         _lastLatitude, 
         _lastLongitude, 
-        locationInfo.latitude, 
-        locationInfo.longitude
+        locationInfo['latitude'], 
+        locationInfo['longitude']
       );
 
       final jsonData = {
@@ -194,7 +194,8 @@ class LocationService extends ChangeNotifier {
         'accuracy': locationInfo?['accuracy'],
         'heading': locationInfo?['heading'],
         'time': locationInfo?['time'],
-        'distance': _totalDistance
+        'distance': _totalDistance,
+        'background': false
       };
       await httpService.sendTracking(position: jsonData, userId: _userId);
     } catch (e) {
@@ -227,7 +228,8 @@ class LocationService extends ChangeNotifier {
           'speedAccuracy': locationInfo.speedAccuracy,
           'heading': locationInfo.heading,
           'time': locationInfo.time,
-          'distance': _totalDistance
+          'distance': _totalDistance,
+          'background': true
         };
         _locationData = jsonData;
         notifyListeners();

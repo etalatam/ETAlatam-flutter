@@ -104,7 +104,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                                         });
                                                       }
                                                     } catch (e) {
-                                                      print(e);
+                                                      // print("[guardianHome] $e");
                                                     }
 
                                                     return SizedBox(

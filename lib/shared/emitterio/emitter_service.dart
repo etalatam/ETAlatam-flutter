@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_client.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
 class EmitterService extends ChangeNotifier {
   static final EmitterService _instance = EmitterService._internal();
@@ -23,6 +25,13 @@ class EmitterService extends ChangeNotifier {
   static DateTime? _lastEmitterDate = DateTime.now();
 
   List<EmitterTopic> _subscribedTopics = [];
+
+  bool connectivityNone = false;
+
+  final Connectivity _connectivity = Connectivity();
+
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+
 
   Future<void> connect() async {
     _client = EmitterClient(
@@ -140,12 +149,21 @@ class EmitterService extends ChangeNotifier {
       _timer?.cancel();
     }
 
+    initConnectivity();
+    _connectivitySubscription =
+          _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+
+
     _timer = Timer.periodic(Duration(seconds: 5), (timer) {
+      if(connectivityNone){
+        return;
+      }
+
       final now = DateTime.now();
       final difference = now.difference(_lastEmitterDate!);
       print("[TripPage.emittertimer.difference] ${difference.inSeconds}s.");
 
-      if (difference.inSeconds >= 40) {
+      if (difference.inSeconds >= 40 ) {
         print("[TripaPage.ermittertimer] restaring... ");
         _client.reconect();
         _lastEmitterDate = DateTime.now();
@@ -155,6 +173,38 @@ class EmitterService extends ChangeNotifier {
       }
     });
   }
+
+  // Platform messages are asynchronous, so we initialize in an async method.
+  Future<void> initConnectivity() async {
+    late List<ConnectivityResult> result;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      result = await _connectivity.checkConnectivity();
+    } on PlatformException catch (e) {
+      print('Couldn\'t check connectivity status ${e.toString()}');
+      return;
+    }
+
+    return _updateConnectionStatus(result);
+  }
+
+  Future<void> _updateConnectionStatus(List<ConnectivityResult> results) async {
+
+    connectivityNone =
+          results.any((result) => result == ConnectivityResult.none);
+    
+    print('[EmitterService] connectivityNone: $connectivityNone');
+
+    if(connectivityNone && _client.isConnected){
+      disconnect();
+    }
+    
+    if(!connectivityNone && !_client.isConnected){
+      connect();
+    }
+  }
+
+
 }
 
 class EmitterTopic {

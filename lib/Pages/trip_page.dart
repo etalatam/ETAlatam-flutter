@@ -721,7 +721,7 @@ class _TripPageState extends State<TripPage>
       print("[TripPage.initState.formatElapsedTime.error] $e");
     }
 
-    if (trip.lastPositionPayload != null && relationName != "eta.drivers") {
+    if (trip.lastPositionPayload != null && relationName != "eta.drivers" && trip.trip_status == "Running")  {
       print(
           "[TripPage.initState] lastPositionPayload ${trip.lastPositionPayload}");
       final Position position = trip.lastPosition()!;
@@ -732,7 +732,7 @@ class _TripPageState extends State<TripPage>
     } else {
       final coordinateBounds = getCoordinateBounds(points);
       mapboxMap.setCamera(CameraOptions(
-          center: coordinateBounds.southwest, zoom: 18, pitch: 70));
+          center: coordinateBounds.southwest, zoom: 12, pitch: 45));
     }
   }
 
@@ -876,7 +876,7 @@ class _TripPageState extends State<TripPage>
           }
         }
       } catch (e) {
-        print(e);
+        print("[trippage.onEmitterMessage] $e");
       }
     }
   }
