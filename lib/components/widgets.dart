@@ -802,7 +802,7 @@ mixin ETAWidgets {
                 padding: const EdgeInsets.all(5),
                 child: Text(lang.translate('Pickup locations'),
                     style: activeTheme.smallText)),
-            Text(trip.done_locations_count.toString(), style: activeTheme.h6),
+            Text("${trip.visitedLocation()}/${trip.done_locations_count.toString()}", style: activeTheme.h6),
             // Text(trip.pickup_locations!.length.toString(),
             //     style: activeTheme.h6),
           ],
