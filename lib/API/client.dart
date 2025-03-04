@@ -701,7 +701,6 @@ class HttpService {
     emitterServiceProvider.disconnect();
     await notificationServiceProvider.close();
     await storage.clear(); 
-    Workmanager().cancelAll();
    
   }
 

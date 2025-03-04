@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:isolate';
 import 'dart:math';
 import 'dart:ui';
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:background_locator_2/location_dto.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:background_locator_2/background_locator.dart';
@@ -10,6 +11,7 @@ import 'package:background_locator_2/settings/ios_settings.dart';
 import 'package:background_locator_2/settings/locator_settings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:location/location.dart' hide LocationAccuracy;
+import 'package:workmanager/workmanager.dart';
 import 'location_callback_handler.dart';
 import 'location_service_repository.dart';
 
@@ -102,6 +104,18 @@ class LocationService extends ChangeNotifier {
           });
           BackgroundLocator.initialize();
           initialization = true;
+          Workmanager().initialize(
+            callbackDispatcher,
+            isInDebugMode: true,
+          );
+          Workmanager().cancelAll();
+          Workmanager().registerPeriodicTask(
+            "1",
+            "simplePeriodicTask",
+            frequency: Duration(minutes: 15),
+          );
+
+          requestDozeModeExclusion();
           print("[LocationService._startTimer]");          
         }
 
@@ -110,6 +124,30 @@ class LocationService extends ChangeNotifier {
       }
     });
   }
+    void callbackDispatcher() {
+    Workmanager().executeTask((task, inputData) {
+        final now = DateTime.now();
+        final difference = now.difference(_lastPositionDate!);
+        print("[LocationService.timer.difference] ${difference.inSeconds}s.");
+        if (difference.inSeconds >= 60) {
+          print("[LocationService.timer] restaring... ");
+          _lastPositionDate = DateTime.now();
+          stopLocationService();
+          startLocationService();
+        }
+      return Future.value(true);
+    });
+  }
+
+
+  void requestDozeModeExclusion() {
+    final AndroidIntent intent = AndroidIntent(
+      action: 'action_request_ignore_battery_optimizations',
+      data: 'package:com.etalatam.schoolapp',
+    );
+    intent.launch();
+  }
+
 
   // saveLastPosition(data) async {
   //     await storage.setItem('lastPosition', data);
@@ -264,7 +302,7 @@ class LocationService extends ChangeNotifier {
 
   void stopLocationService() {
     print('[LocationService.stopLocationService]');
-    try {
+    try {      
       IsolateNameServer.removePortNameMapping(
           LocationServiceRepository.isolateName);
       BackgroundLocator.unRegisterLocationUpdate();
@@ -277,6 +315,7 @@ class LocationService extends ChangeNotifier {
 
       initialization = false;
       _timer?.cancel();
+      Workmanager().cancelAll();
     } catch (e) {
       print('[LocationService.stopLocationService.error] ${e.toString()}');
     }

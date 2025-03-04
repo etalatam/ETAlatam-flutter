@@ -308,17 +308,7 @@ class _DriverHomeState extends State<DriverHome>
         activeTrip = activeTripWrapper;
         hasActiveTrip = (activeTripWrapper.trip_id != 0) ? true : false;
       }
-      if(hasActiveTrip){
-        Workmanager().initialize(
-          callbackDispatcher,
-          isInDebugMode: true,
-        );
-        Workmanager().registerPeriodicTask(
-          "1",
-          "simplePeriodicTask",
-          frequency: Duration(minutes: 15),
-        );
-      }
+            
     } catch (e) {
       print("[DriverHome.loadrResources.getActiveTrip.error] $e");
     }finally{
@@ -326,23 +316,6 @@ class _DriverHomeState extends State<DriverHome>
         await locationServiceProvider.startLocationService();
       }
     }    
-  }
-
-  void callbackDispatcher() {
-    Workmanager().executeTask((task, inputData) {
-      // Tu lógica para recopilar la ubicación
-      locationServiceProvider.startLocationService();
-      return Future.value(true);
-    });
-  }
-
-
-  void requestDozeModeExclusion() {
-    final AndroidIntent intent = AndroidIntent(
-      action: 'action_request_ignore_battery_optimizations',
-      data: 'package:com.etalatam.schoolapp',
-    );
-    intent.launch();
   }
 
   openTripCallback(TripModel wrapper) {
