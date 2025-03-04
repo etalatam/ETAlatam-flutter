@@ -89,6 +89,26 @@ class TripModel {
     }
   }
 
+  tripDuration(){
+    try {
+      return Utils.formatElapsedTime(dt!);
+    } catch (e) {
+      print("[TripPage.initState.formatElapsedTime.error] $e");
+    }
+  }
+
+  visitedLocation(){
+    int visitedCount = 0;
+
+    for (var item in pickup_locations!) {
+      if (item.status == 'visited') {
+        visitedCount++;
+      }
+    }
+
+    return visitedCount;
+  }
+
   factory TripModel.fromJson(Map<String, dynamic> json) {
     // print('[TripModel.fromJson] $json');
     List<TripPickupLocation> pickupLocations = [];

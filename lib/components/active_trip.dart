@@ -128,7 +128,7 @@ class ActiveTrip extends StatelessWidget {
                                       Text(
                                         trip?.trip_id == 0
                                             ? ""
-                                            : "${trip?.trip_date}",
+                                            : "${trip?.tripDuration()}",
                                         style: TextStyle(
                                             color: activeTheme.buttonColor),
                                       ),
@@ -149,7 +149,7 @@ class ActiveTrip extends StatelessWidget {
                                       (trip != null &&
                                               trip!.pickup_locations != null)
                                           ? Text(
-                                              '${trip!.pickup_locations!.length.toString()} ',
+                                              '${trip!.visitedLocation()}/${trip!.pickup_locations!.length.toString()} ',
                                               style: TextStyle(
                                                   color: activeTheme.buttonColor),
                                             )

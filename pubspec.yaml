@@ -3,12 +3,14 @@ description: APP for ETA School Routes system.
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 1.9.14
+version: 1.9.16
 
 environment:
   sdk: ">=3.2.0 <4.0.0"
   flutter: ">= 3.19.0 <4.0.0"
 dependencies:
+  android_alarm_manager: ^2.0.2
+  android_intent_plus: ^5.3.0
   background_locator_2: ^2.0.6
   cached_network_image: ^3.2.3
   carousel_slider: ^4.2.1

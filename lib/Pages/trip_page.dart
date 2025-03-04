@@ -306,7 +306,7 @@ class _TripPageState extends State<TripPage>
                                               : const Center(),
                                           (trip.pickup_locations != null)
                                               ? Text(
-                                                  '${trip.pickup_locations!.length.toString()} ',
+                                                  '${trip.visitedLocation()}/${trip.pickup_locations!.length.toString()} ',
                                                 )
                                               : const Center(),
                                           if (trip.trip_status == 'Completed' &&
@@ -886,9 +886,6 @@ class _TripPageState extends State<TripPage>
     DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(unixEpoch);
 
     return Utils.formatearFechaCorta(dateTime);
-
-    // Formatea la fecha como desees
-    // return '${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
   }
 
   onPushMessage() {

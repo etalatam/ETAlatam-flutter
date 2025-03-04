@@ -19,6 +19,8 @@ import 'package:eta_school_app/components/home_route_block.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:android_intent_plus/flag.dart';
 
 class DriverHome extends StatefulWidget {
   const DriverHome({super.key});
@@ -313,6 +315,14 @@ class _DriverHomeState extends State<DriverHome>
         await locationServiceProvider.startLocationService();
       }
     }    
+  }
+
+  void requestDozeModeExclusion() {
+    final AndroidIntent intent = AndroidIntent(
+      action: 'action_request_ignore_battery_optimizations',
+      data: 'package:com.etalatam.schoolapp',
+    );
+    intent.launch();
   }
 
   openTripCallback(TripModel wrapper) {
