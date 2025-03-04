@@ -24,6 +24,7 @@ import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/Models/NotificationModel.dart';
 import 'package:flutter/foundation.dart';
+import 'package:workmanager/workmanager.dart';
 
 class HttpService {
   final LocalStorage storage = LocalStorage('tokens.json');
@@ -699,7 +700,9 @@ class HttpService {
     locationServiceProvider.stopLocationService();
     emitterServiceProvider.disconnect();
     await notificationServiceProvider.close();
-    await storage.clear();    
+    await storage.clear(); 
+    Workmanager().cancelAll();
+   
   }
 
   Future<dynamic> sendTracking({required position, required userId}) async {

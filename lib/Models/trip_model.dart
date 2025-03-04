@@ -81,7 +81,7 @@ class TripModel {
         //dt = DateTime.parse(date!);
         dt = Utils.convertirUtcALocal(date!);
         DateFormat nuevoFormato =
-            DateFormat("EEEE d 'de' MMMM HH:mm a", 'es_ES');
+            DateFormat("EEEE d 'de' MMMM hh:mm a", 'es_ES');
         formatDate = nuevoFormato.format(dt!);
       });
     } catch (e) {
@@ -89,9 +89,10 @@ class TripModel {
     }
   }
 
-  tripDuration(){
+  runningTripDuration() {
     try {
-      return Utils.formatElapsedTime(dt!);
+      var localDate = Utils.convertirUtcALocal(trip_date!);
+      return  Utils.formatElapsedTime(localDate);
     } catch (e) {
       print("[TripPage.initState.formatElapsedTime.error] $e");
     }
@@ -155,7 +156,6 @@ class TripModel {
       print("[TripModel.DriverModel.error] ${e.toString()}");
     }
 
-    DateFormat format = DateFormat('HH:mm');
     json['done_locations_count'] = pickupLocations.length;
 
     Map<String, dynamic>? routeGeom;
@@ -178,7 +178,8 @@ class TripModel {
         route_id: json['route_id'] as int?,
         supervisor_id: json['monitor_id'] as int?,
         driver_id: json['driver_id'] as int?,
-        trip_date: format.format(DateTime.parse(json['start_ts'])) as String?,
+        // trip_date: format.format(DateTime.parse(json['start_ts'])) as String?,
+        trip_date: json['start_ts'],
         trip_status: json['running'] ? 'Running' : 'Completed',
         distance: double.parse(
             json['distance'].toString().replaceAll(RegExp(r','), '')),

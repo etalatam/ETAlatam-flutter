@@ -1,5 +1,6 @@
 import 'dart:core';
 
+import 'package:eta_school_app/shared/utils.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 
@@ -36,8 +37,9 @@ class NotificationModel {
     prettyDate (){
     try {
       initializeDateFormatting('es_ES', null).then((_) {
-        var dt = DateTime.parse(date!);
-        DateFormat nuevoFormato = DateFormat("EEEE d 'de' MMMM HH:mm", 'es_ES');
+        //var dt = DateTime.parse(date!);
+        var dt = Utils.convertirUtcALocal(date!);
+        DateFormat nuevoFormato = DateFormat("EEEE d 'de' MMMM hh:mm a", 'es_ES');
         formatDate  = nuevoFormato.format(dt);
       });
     } catch (e) {

@@ -20,7 +20,7 @@ import 'package:eta_school_app/Models/EventModel.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:android_intent_plus/android_intent.dart';
-import 'package:android_intent_plus/flag.dart';
+import 'package:workmanager/workmanager.dart';
 
 class DriverHome extends StatefulWidget {
   const DriverHome({super.key});
@@ -308,6 +308,17 @@ class _DriverHomeState extends State<DriverHome>
         activeTrip = activeTripWrapper;
         hasActiveTrip = (activeTripWrapper.trip_id != 0) ? true : false;
       }
+      if(hasActiveTrip){
+        Workmanager().initialize(
+          callbackDispatcher,
+          isInDebugMode: true,
+        );
+        Workmanager().registerPeriodicTask(
+          "1",
+          "simplePeriodicTask",
+          frequency: Duration(minutes: 15),
+        );
+      }
     } catch (e) {
       print("[DriverHome.loadrResources.getActiveTrip.error] $e");
     }finally{
@@ -316,6 +327,15 @@ class _DriverHomeState extends State<DriverHome>
       }
     }    
   }
+
+  void callbackDispatcher() {
+    Workmanager().executeTask((task, inputData) {
+      // Tu lógica para recopilar la ubicación
+      locationServiceProvider.startLocationService();
+      return Future.value(true);
+    });
+  }
+
 
   void requestDozeModeExclusion() {
     final AndroidIntent intent = AndroidIntent(

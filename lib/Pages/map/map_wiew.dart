@@ -62,7 +62,7 @@ class MapWiewState extends State<MapWiew> {
           puckBearingEnabled: true,
           // locationPuck: LocationPuck(
           //       locationPuck3D: LocationPuck3D(
-          //           modelUri: "assethttps://raw.githubusercontent.com/CesiumGS/cesium/refs/heads/master/Apps/SampleData/models/BoxInstanced/BoxInstanced.gltf",
+          //           modelUri: "https://raw.githubusercontent.com/CesiumGS/cesium/refs/heads/master/Apps/SampleData/models/BoxInstanced/BoxInstanced.gltf",
           //           modelScale: [puckScale, puckScale, puckScale]))
         ));
       await locationService?.init();

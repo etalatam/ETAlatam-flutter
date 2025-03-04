@@ -128,7 +128,7 @@ class ActiveTrip extends StatelessWidget {
                                       Text(
                                         trip?.trip_id == 0
                                             ? ""
-                                            : "${trip?.tripDuration()}",
+                                            : "${trip?.runningTripDuration()}",
                                         style: TextStyle(
                                             color: activeTheme.buttonColor),
                                       ),

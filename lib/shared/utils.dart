@@ -3,7 +3,14 @@ import 'package:intl/intl.dart';
 class Utils {
   // Método para convertir una fecha UTC a la hora local
   static DateTime convertirUtcALocal(String fechaUtc) {
-    return DateTime.parse(fechaUtc).toLocal();
+    // Parsea la fecha UTC a un objeto DateTime
+    DateTime fechaUtcDateTime = DateTime.parse('${fechaUtc}Z');
+
+    // Convierte la fecha UTC a la hora local del dispositivo
+    DateTime fechaLocalDateTime = fechaUtcDateTime.toLocal();
+
+    // Retorna la fecha local como DateTime
+    return fechaLocalDateTime;
   }
 
   // Método para formatear la fecha según si es el día actual o no
@@ -43,6 +50,7 @@ class Utils {
 
   static String formatElapsedTime(DateTime date) {
     final now = DateTime.now();
+    
     Duration difference = now.difference(date).abs();
 
     if (difference.inSeconds < 60) {

@@ -13,17 +13,11 @@ import 'package:eta_school_app/controllers/locale.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:android_alarm_manager/android_alarm_manager.dart';
 
-
-void fnwrapper() {
-  final DateTime now = DateTime.now();
-  print("[$now] AndroidAlarmManager...");
-}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await AndroidAlarmManager.initialize();
+  
   await Firebase.initializeApp();
   final localeController = Get.put(LocaleController());
 
@@ -32,6 +26,10 @@ void main() async {
 
   MapboxOptions.setAccessToken(
       "sk.eyJ1IjoiZWxpZ2FiYXkiLCJhIjoiY20xMm1nYTA4MHV1cjJscXlocXA0MW5zciJ9.N3pZgESYISIcM3dlWrdgTQ");
+
+  if(!emitterServiceProvider.isConnected()){
+    emitterServiceProvider.connect();
+  }
 
   runApp(
     MultiProvider(
@@ -43,12 +41,6 @@ void main() async {
       ],
       child: MyApp(),
     ),
-  );
-
-  await AndroidAlarmManager.periodic(
-    const Duration(hours: 1),
-    0,
-    fnwrapper,
   );
 }
 

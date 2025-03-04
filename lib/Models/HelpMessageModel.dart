@@ -92,8 +92,8 @@ class CommentModel {
       print("[CommentModel] ${e.toString()}");
     }
 
-    DateFormat dateFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
-    DateFormat shortDateFormat = DateFormat("yyyy-MM-dd HH:mm");
+    DateFormat dateFormat = DateFormat("yyyy-MM-dd'T'hh:mm:ss.SSSSSS a");
+    DateFormat shortDateFormat = DateFormat("yyyy-MM-dd hh:mm a");
     DateTime dateTime = dateFormat.parse(json['ts']);
 
     return CommentModel(

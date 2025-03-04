@@ -2,6 +2,7 @@ import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/API/client.dart';
 import 'package:eta_school_app/Pages/driver_home.dart';
+import 'package:eta_school_app/shared/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -252,7 +253,7 @@ class _TripReport extends State<TripReport> {
                                           child: Text(
                                               lang.translate('Trip duration'))),
                                       Text(
-                                        trip!.duration.toString(),
+                                        Utils.formatElapsedTime(trip!.dt!),
                                         style: const TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold),
@@ -309,8 +310,8 @@ class _TripReport extends State<TripReport> {
                                               .translate('Pickup locations'))),
                                       if(trip!.pickup_locations != null)
                                       Text(
-                                        trip!.pickup_locations!.length
-                                            .toString(),
+                                        "${trip!.visitedLocation()}/${trip!.pickup_locations!.length
+                                            .toString()}",
                                         style: const TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold),
