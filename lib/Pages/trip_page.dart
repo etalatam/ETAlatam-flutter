@@ -538,25 +538,24 @@ class _TripPageState extends State<TripPage>
   }
 
   loadTrip() async {
-
-    try{
+    try {
       if (trip.trip_status == "Running") {
-          Wakelock.enable();
+        Wakelock.enable();
 
-          initConnectivity();
-          _connectivitySubscription =
-              _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+        initConnectivity();
+        _connectivitySubscription =
+            _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
 
-          _emitterServiceProvider =
-              Provider.of<EmitterService>(context, listen: false);
-          _emitterServiceProvider?.addListener(onEmitterMessage);
-          _emitterServiceProvider?.startTimer();
+        _emitterServiceProvider =
+            Provider.of<EmitterService>(context, listen: false);
+        _emitterServiceProvider?.addListener(onEmitterMessage);
+        _emitterServiceProvider?.startTimer();
 
-          _notificationService =
-              Provider.of<NotificationService>(context, listen: false);
-          _notificationService.addListener(onPushMessage);
-        }
-    }catch(e){
+        _notificationService =
+            Provider.of<NotificationService>(context, listen: false);
+        _notificationService.addListener(onPushMessage);
+      }
+    } catch (e) {
       print("[TripPage.loadTrip] $e");
     }
     try {
@@ -725,7 +724,9 @@ class _TripPageState extends State<TripPage>
       print("[TripPage.initState.formatElapsedTime.error] $e");
     }
 
-    if (trip.lastPositionPayload != null && relationName != "eta.drivers" && trip.trip_status == "Running")  {
+    if (trip.lastPositionPayload != null &&
+        relationName != "eta.drivers" &&
+        trip.trip_status == "Running") {
       print(
           "[TripPage.initState] lastPositionPayload ${trip.lastPositionPayload}");
       final Position position = trip.lastPosition()!;
@@ -736,7 +737,7 @@ class _TripPageState extends State<TripPage>
     } else {
       final coordinateBounds = getCoordinateBounds(points);
       mapboxMap.setCamera(CameraOptions(
-          center: coordinateBounds.southwest, zoom: 12, pitch: 45));
+          center: coordinateBounds.southwest, zoom: 18, pitch: 45));
     }
   }
 
@@ -758,7 +759,8 @@ class _TripPageState extends State<TripPage>
       return;
     }
     if (trip.driver_id != relationId) {
-      print("[TripPage._updateIcon] is no de driver of this trip [${trip.driver_id}  $relationId]");
+      print(
+          "[TripPage._updateIcon] is no de driver of this trip [${trip.driver_id}  $relationId]");
       return;
     }
 
@@ -859,7 +861,7 @@ class _TripPageState extends State<TripPage>
       try {
         final Map<String, dynamic> tracking = jsonDecode(message);
 
-        // if(trip.lastPositionPayload != null && 
+        // if(trip.lastPositionPayload != null &&
         //   trip.lastPositionPayload['time'].toInt() > tracking['payload']['time'].toInt()){
         //     print("[trippage.onEmitterMessage.ignore position by time]");
         //     return;
