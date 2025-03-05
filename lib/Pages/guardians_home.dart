@@ -39,6 +39,8 @@ class _GuardiansHomeState extends State<GuardiansHome>
 
   List<TripModel> activeTrips = [];
 
+  EmitterService? _emitterServiceProvider;
+
   @override
   Widget build(BuildContext context) {
     activeTheme =
@@ -301,6 +303,13 @@ class _GuardiansHomeState extends State<GuardiansHome>
 
     Provider.of<NotificationService>(context, listen: false)
           .addListener(onPushMessage);
+
+    _emitterServiceProvider =
+        Provider.of<EmitterService>(context, listen: false);
+
+    if(!_emitterServiceProvider!.isConnected()){
+      _emitterServiceProvider?.connect();
+    }
 
     loadParent();
   }

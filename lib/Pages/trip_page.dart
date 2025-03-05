@@ -750,8 +750,9 @@ class _TripPageState extends State<TripPage>
         "[TripPage._updateIcon] [relationName] $relationName [relationId] $relationId");
 
     // is the trip driver?
+    //if (relationName == "eta.drivers" && trip.driver_id != relationId) {
     if (trip.driver_id != relationId) {
-      print("[TripPage._updateIcon] is no de driver of this trip");
+      print("[TripPage._updateIcon] is no de driver of this trip [${trip.driver_id}  $relationId]");
       return;
     }
 

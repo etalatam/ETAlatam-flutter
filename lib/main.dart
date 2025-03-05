@@ -27,10 +27,6 @@ void main() async {
   MapboxOptions.setAccessToken(
       "sk.eyJ1IjoiZWxpZ2FiYXkiLCJhIjoiY20xMm1nYTA4MHV1cjJscXlocXA0MW5zciJ9.N3pZgESYISIcM3dlWrdgTQ");
 
-  if(!emitterServiceProvider.isConnected()){
-    emitterServiceProvider.connect();
-  }
-
   runApp(
     MultiProvider(
       providers: [

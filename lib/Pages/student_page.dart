@@ -309,6 +309,11 @@ class _StudentPageState extends State<StudentPage> {
 
     _emitterServiceProvider =
         Provider.of<EmitterService>(context, listen: false);
+        
+    if(!_emitterServiceProvider!.isConnected()){
+      _emitterServiceProvider?.connect();
+    }
+
     _emitterServiceProvider?.addListener(onEmitterMessage);
     _emitterServiceProvider?.startTimer();
   }
