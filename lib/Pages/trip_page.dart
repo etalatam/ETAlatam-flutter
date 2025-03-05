@@ -538,6 +538,27 @@ class _TripPageState extends State<TripPage>
   }
 
   loadTrip() async {
+
+    try{
+      if (trip.trip_status == "Running") {
+          Wakelock.enable();
+
+          initConnectivity();
+          _connectivitySubscription =
+              _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+
+          _emitterServiceProvider =
+              Provider.of<EmitterService>(context, listen: false);
+          _emitterServiceProvider?.addListener(onEmitterMessage);
+          _emitterServiceProvider?.startTimer();
+
+          _notificationService =
+              Provider.of<NotificationService>(context, listen: false);
+          _notificationService.addListener(onPushMessage);
+        }
+    }catch(e){
+      print("[TripPage.loadTrip] $e");
+    }
     try {
       if (relationName.isEmpty) {
         final LocalStorage storage = LocalStorage('tokens.json');
@@ -585,23 +606,6 @@ class _TripPageState extends State<TripPage>
     super.initState();
 
     trip = widget.trip!;
-
-    if (trip.trip_status == "Running") {
-      Wakelock.enable();
-
-      initConnectivity();
-      _connectivitySubscription =
-          _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
-
-      _emitterServiceProvider =
-          Provider.of<EmitterService>(context, listen: false);
-      _emitterServiceProvider?.addListener(onEmitterMessage);
-      _emitterServiceProvider?.startTimer();
-
-      _notificationService =
-          Provider.of<NotificationService>(context, listen: false);
-      _notificationService.addListener(onPushMessage);
-    }
 
     loadTrip();
   }
@@ -750,7 +754,9 @@ class _TripPageState extends State<TripPage>
         "[TripPage._updateIcon] [relationName] $relationName [relationId] $relationId");
 
     // is the trip driver?
-    //if (relationName == "eta.drivers" && trip.driver_id != relationId) {
+    if (relationName != "eta.drivers") {
+      return;
+    }
     if (trip.driver_id != relationId) {
       print("[TripPage._updateIcon] is no de driver of this trip [${trip.driver_id}  $relationId]");
       return;
