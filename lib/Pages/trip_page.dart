@@ -792,7 +792,7 @@ class _TripPageState extends State<TripPage>
     } else {
       final coordinateBounds = getCoordinateBounds(points);
       mapboxMap.setCamera(CameraOptions(
-          center: coordinateBounds.southwest, zoom: 12, pitch: 45));
+          center: coordinateBounds.southwest, zoom: 18, pitch: 45));
     }
   }
 
