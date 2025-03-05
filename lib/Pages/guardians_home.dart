@@ -234,15 +234,16 @@ class _GuardiansHomeState extends State<GuardiansHome>
 
     try {
       final List<TripModel> trips = (await httpService.getGuardianTrips("true"));
+      for (var trip in trips) {
+        trip.subscribeToTripTracking();
+      }
+
       if(mounted){
         setState(() {
           activeTrips = trips;
         });
       }else{
         activeTrips = trips;
-      }
-      for (var trip in trips) {
-        trip.subscribeToTripTracking();
       }
     } catch (e) {
       print("[GuardianHome.loadParent] error loading active trips : $e");

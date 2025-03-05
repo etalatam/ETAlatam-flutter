@@ -859,11 +859,11 @@ class _TripPageState extends State<TripPage>
       try {
         final Map<String, dynamic> tracking = jsonDecode(message);
 
-        if(trip.lastPositionPayload != null && 
-          trip.lastPositionPayload['time'].toInt() > tracking['payload']['time'].toInt()){
-            print("[trippage.onEmitterMessage.ignore position by time]");
-            return;
-        }
+        // if(trip.lastPositionPayload != null && 
+        //   trip.lastPositionPayload['time'].toInt() > tracking['payload']['time'].toInt()){
+        //     print("[trippage.onEmitterMessage.ignore position by time]");
+        //     return;
+        // }
 
         if (tracking['relation_name'] != null) {
           final relationName = tracking['relation_name'];

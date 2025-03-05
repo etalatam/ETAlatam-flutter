@@ -63,6 +63,7 @@ class EmitterService extends ChangeNotifier {
   }
 
   void subscribe(EmitterTopic topic) {
+    print("[EmitterService] subscribe ${topic.name}");
     _client.subscribe(topic.name, key: topic.key);
     _subscribedTopics.add(topic);
   }
@@ -203,8 +204,6 @@ class EmitterService extends ChangeNotifier {
       connect();
     }
   }
-
-
 }
 
 class EmitterTopic {

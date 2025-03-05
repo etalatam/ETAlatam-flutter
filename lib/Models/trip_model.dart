@@ -72,6 +72,7 @@ class TripModel {
 
     if (trip_status == "Running") {
       subscribeToTripEvents();
+      // subscribeToTripTracking();
     }
   }
 
@@ -240,8 +241,7 @@ class TripModel {
       String encodedValue =
           Uri.encodeComponent("school/$school_id/trip/$trip_id/event/#/");
       emitterKeyGenModelEvents = await httpService.emitterKeyGen(encodedValue);
-      if (emitterKeyGenModelEvents != null &&
-          emitterServiceProvider.isConnected()) {
+      if (emitterKeyGenModelEvents != null ) {
         emitterServiceProvider.subscribe(EmitterTopic(
             "school/$school_id/trip/$trip_id/event/",
             emitterKeyGenModelEvents!.key!));
@@ -259,7 +259,7 @@ class TripModel {
       if (emitterKeyGenModelTracking != null &&
           emitterServiceProvider.isConnected()) {
         emitterServiceProvider.subscribe(EmitterTopic(
-            "school/$school_id/trip/$trip_id/tracking/",
+            "school/$school_id/trip/$trip_id/tracking/eta.drivers/$driver_id/",
             emitterKeyGenModelTracking!.key!));
         isEmitterSubcribedToTracking = true;
       }
