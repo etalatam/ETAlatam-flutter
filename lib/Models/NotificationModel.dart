@@ -1,5 +1,9 @@
 import 'dart:core';
 
+import 'package:eta_school_app/shared/utils.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
+
 class NotificationModel {
   
   int? id;
@@ -12,6 +16,8 @@ class NotificationModel {
   String? notification_model;
   String? model_type;
   double? model_id;
+  
+  String? formatDate;
 
   NotificationModel({
     required this.id,
@@ -24,7 +30,22 @@ class NotificationModel {
     this.notification_model,
     this.model_type,
     this.model_id,
-  });
+  }){
+    prettyDate();
+  }
+
+    prettyDate (){
+    try {
+      initializeDateFormatting('es_ES', null).then((_) {
+        //var dt = DateTime.parse(date!);
+        var dt = Utils.convertirUtcALocal(date!);
+        DateFormat nuevoFormato = DateFormat("EEEE d 'de' MMMM hh:mm a", 'es_ES');
+        formatDate  = nuevoFormato.format(dt);
+      });
+    } catch (e) {
+      print("pretty date error ${e.toString()}");
+    }
+  }
   
   factory NotificationModel.fromJson( json) {
     return NotificationModel(

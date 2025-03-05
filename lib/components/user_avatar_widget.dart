@@ -30,33 +30,33 @@ class _UserAvatarState extends State<UserAvatar> {
         onTap: () {
           openNewPage(context, ProfilePage());
         },
-        child:  Stack(
-          children: [
-            Container(
-                width: 60,
-                height: 60,
-                padding: const EdgeInsets.symmetric(horizontal: 5),
-                child: CircleAvatar(
-                    backgroundColor: Color.fromARGB(255, 234, 244, 243),
-                    radius: 50,
-                    foregroundImage:
-                        NetworkImage(imageUrl, headers: {'Accept': 'image/png'}
-            ))),
-            Consumer<EmitterService>(builder: (context, emitterService, child) {
-              return Positioned(
-                bottom: 5,
-                right: 5,
-                child: Container(
-                  width: 15,
-                  height: 15,
-                  decoration: BoxDecoration(
-                    color: emitterService.client!.isConnected? Colors.green : Colors.red,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
+        child: Stack(children: [
+          Container(
+              width: 60,
+              height: 60,
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              child: CircleAvatar(
+                  backgroundColor: Color.fromARGB(255, 234, 244, 243),
+                  radius: 50,
+                  foregroundImage: NetworkImage(imageUrl,
+                      headers: {'Accept': 'image/png'}))),
+          Consumer<EmitterService>(builder: (context, emitterService, child) {
+            return Positioned(
+              bottom: 5,
+              right: 5,
+              child: Container(
+                width: 15,
+                height: 15,
+                decoration: BoxDecoration(
+                  color: emitterService.isConnected()
+                      ? Colors.green
+                      : Colors.red,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
                 ),
-              );
-            }),
-          ]));
+              ),
+            );
+          }),
+        ]));
   }
 }

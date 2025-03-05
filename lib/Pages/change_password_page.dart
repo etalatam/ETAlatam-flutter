@@ -243,11 +243,11 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                                         setState(() {
                                           showLoader = true;
                                         });
-                                        response =
-                                            await httpService.changePassword(
-                                                current_password,
-                                                password,
-                                                confirm_password);
+                                        // response =
+                                        //     await httpService.changePassword(
+                                        //         current_password,
+                                        //         password,
+                                        //         confirm_password);
                                         setState(() {
                                           showSuccessDialog(
                                               context,

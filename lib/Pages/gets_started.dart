@@ -340,7 +340,6 @@ class SlidePage extends StatelessWidget {
                   child: DropdownButton<String>(
                     value: selectedLang,
                     icon: const Icon(Icons.arrow_downward),
-                    
                     elevation: 16,
                     onChanged: (String? value) {
                       setLang(value);

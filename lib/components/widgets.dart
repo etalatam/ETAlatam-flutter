@@ -530,15 +530,15 @@ mixin ETAWidgets {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    // gradient: LinearGradient(
-                    //   colors: [
-                    //     Color.fromARGB(255, 223, 231, 238),
-                    //     Color.fromARGB(255, 246, 237, 248)
-                    //   ],
-                    //   begin: Alignment.topLeft,
-                    //   end: Alignment.bottomRight,
-                    // ),
-                  ),
+                      // gradient: LinearGradient(
+                      //   colors: [
+                      //     Color.fromARGB(255, 223, 231, 238),
+                      //     Color.fromARGB(255, 246, 237, 248)
+                      //   ],
+                      //   begin: Alignment.topLeft,
+                      //   end: Alignment.bottomRight,
+                      // ),
+                      ),
                   width: double.infinity,
                   // height: 240,
                   padding: const EdgeInsets.all(20),
@@ -557,13 +557,12 @@ mixin ETAWidgets {
                           SizedBox(
                             width: 190,
                             child: Text(
-                              "${lang.translate('Trip')} #${tripInfo.trip_id} (${tripInfo.route?.route_name})",
-                              maxLines: 1, 
+                              "${lang.translate('Trip')} #${tripInfo.trip_id} ${tripInfo.route?.route_name}",
+                              maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: activeTheme.h6,
                             ),
                           ),
-                          
                           Row(children: [
                             SvgPicture.asset("assets/svg/bus.svg",
                                 width: 20, color: activeTheme.main_color),
@@ -578,10 +577,11 @@ mixin ETAWidgets {
                           ]),
                         ],
                       ),
-                      SizedBox(height: 40),
+                      Text("${tripInfo.formatDate}"),
+                      SizedBox(height: 10),
                       SizedBox(
-                        width: double.infinity,                        
-                          child: tripInfoRow(tripInfo),
+                        width: double.infinity,
+                        child: tripInfoRow(tripInfo),
                       )
                     ],
                   ),
@@ -663,6 +663,26 @@ mixin ETAWidgets {
         const SizedBox(
           height: 40,
         ),
+        Column(
+          textDirection: isRTL() ? TextDirection.rtl : TextDirection.ltr,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              lang.translate('Name'),
+              style: activeTheme.h5,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 20),
+                  child: Text("${student.first_name} ${student.last_name}",
+                      style: activeTheme.h6),
+                )
+              ],
+            )
+          ],
+        ),
       ]),
     );
   }
@@ -719,16 +739,14 @@ mixin ETAWidgets {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: ShapeDecoration(
-                color: Color.fromARGB(255, 234,244,243),
+                color: Color.fromARGB(255, 234, 244, 243),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(64),
                 ),
               ),
-              child: Icon(
-                Icons.access_time,
-                // color: activeTheme.main_bg,
-                color: Color.fromARGB(255,15,148,136)
-              ),
+              child: Icon(Icons.access_time,
+                  // color: activeTheme.main_bg,
+                  color: Color.fromARGB(255, 15, 148, 136)),
             ),
             Container(
                 padding: const EdgeInsets.all(5),
@@ -745,14 +763,14 @@ mixin ETAWidgets {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: ShapeDecoration(
-                color: Color.fromARGB(255, 234,244,243),
+                color: Color.fromARGB(255, 234, 244, 243),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(64),
                 ),
               ),
               child: Icon(
                 Icons.route,
-                color: Color.fromARGB(255,15,148,136),
+                color: Color.fromARGB(255, 15, 148, 136),
               ),
             ),
             Container(
@@ -770,21 +788,21 @@ mixin ETAWidgets {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: ShapeDecoration(
-                color: Color.fromARGB(255, 234,244,243),
+                color: Color.fromARGB(255, 234, 244, 243),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(64),
                 ),
               ),
               child: Icon(
                 Icons.pin_drop_outlined,
-                color: Color.fromARGB(255,15,148,136),
+                color: Color.fromARGB(255, 15, 148, 136),
               ),
             ),
             Container(
                 padding: const EdgeInsets.all(5),
                 child: Text(lang.translate('Pickup locations'),
                     style: activeTheme.smallText)),
-            Text(trip.done_locations_count.toString(), style: activeTheme.h6),
+            Text("${trip.visitedLocation()}/${trip.done_locations_count.toString()}", style: activeTheme.h6),
             // Text(trip.pickup_locations!.length.toString(),
             //     style: activeTheme.h6),
           ],
@@ -831,71 +849,104 @@ mixin ETAWidgets {
     );
   }
 
-  static Widget homeStudentBlock(context, StudentModel student)
-  {
-    activeTheme = storage.getItem('darkmode') == true ? DarkTheme() : LightTheme();
+  static Widget infoMessage(String message) {
+    return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        margin: const EdgeInsets.fromLTRB(25, 0, 25, 10),
+        clipBehavior: Clip.antiAlias,
+        decoration: ShapeDecoration(
+          color: Color.fromARGB(255, 228, 201, 119),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          shadows: [
+            BoxShadow(
+              color: activeTheme.main_color.withOpacity(.3),
+              blurRadius: 10,
+              offset: const Offset(0, 1),
+              spreadRadius: 0,
+            )
+          ],
+        ),
+        child: Text(lang.translate(message),
+            style: TextStyle(
+              color: Color.fromARGB(255, 112, 88, 16),
+              fontSize: activeTheme.h5.fontSize,
+              fontFamily: activeTheme.h6.fontFamily,
+              fontWeight: activeTheme.h6.fontWeight,
+            )));
+  }
 
-    return 
-    Container(
-        width: MediaQuery.of(context).size.width / 1.6,
-        margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: Stack( children: [
-          Container(
-            margin: EdgeInsets.only(top:45),
+  static Widget homeStudentBlock(context, StudentModel student) {
+    activeTheme =
+        storage.getItem('darkmode') == true ? DarkTheme() : LightTheme();
+
+    return Container(
+      width: MediaQuery.of(context).size.width / 1.6,
+      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      child: Stack(children: [
+        Container(
+            margin: EdgeInsets.only(top: 45),
             width: double.infinity,
             height: 50,
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               color: activeTheme.buttonBG,
               borderRadius: BorderRadius.circular(30),
-            )
-          ),
-          Container(
-              child: Stack(
-                alignment: Alignment.topCenter,
+            )),
+        Container(
+            child: Stack(
+          alignment: Alignment.topCenter,
+          children: [
+            Container(
+              margin: EdgeInsets.only(top: 50, bottom: 10),
+              width: double.infinity,
+              height: double.infinity,
+              padding:
+                  EdgeInsets.only(top: 60, left: 10, right: 10, bottom: 20),
+              decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: shadowColor.withOpacity(.15),
+                      blurRadius: 15,
+                      offset: Offset(0, 5),
+                      spreadRadius: 0,
+                    )
+                  ],
+                  color: activeTheme.main_bg,
+                  // gradient:  LinearGradient(
+                  //   begin: Alignment.topCenter,
+                  //   end: Alignment.bottomCenter,
+                  //   colors: [
+                  //     activeTheme.main_bg,
+
+                  //     // activeTheme.main_bg,
+                  //     // darkMode == false ? Color.fromRGBO(255, 255, 255, .95) : Color.fromRGBO(201, 206, 223, .95),
+                  //     darkMode == true ? activeTheme.main_bg.withOpacity(.2) : Color.fromRGBO(201, 206, 223, 1),
+                  //   ],
+                  // ),
+                  border: Border.all(
+                      width: 1,
+                      color: activeTheme.border_color.withOpacity(.5)),
+                  borderRadius: BorderRadius.circular(20)),
+              child: Column(
                 children: [
-                  Container(
-                    margin: EdgeInsets.only(top: 50, bottom: 10),
-                    width: double.infinity,
-                    height: double.infinity,
-                    padding: EdgeInsets.only(top: 60, left: 10, right: 10, bottom: 20),
-                    decoration: 
-                    BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                            color: shadowColor.withOpacity(.15),
-                            blurRadius: 15,
-                            offset: Offset(0, 5),
-                            spreadRadius: 0,
-                        )
-                      ],
-                      color: activeTheme.main_bg,
-                      // gradient:  LinearGradient(
-                      //   begin: Alignment.topCenter,
-                      //   end: Alignment.bottomCenter,
-                      //   colors: [
-                      //     activeTheme.main_bg,
- 
-                      //     // activeTheme.main_bg,
-                      //     // darkMode == false ? Color.fromRGBO(255, 255, 255, .95) : Color.fromRGBO(201, 206, 223, .95),
-                      //     darkMode == true ? activeTheme.main_bg.withOpacity(.2) : Color.fromRGBO(201, 206, 223, 1),
-                      //   ],
-                      // ),
-                      border: Border.all(width: 1, color: activeTheme.border_color.withOpacity(.5)),
-                      borderRadius: BorderRadius.circular(20)
-                    ),
-                    child: Column(children: [
-                      
-                      Text("${student.first_name} ${student.last_name}", style: activeTheme.h4,),
-                      SizedBox(height: 20),
-                      Row(children: [
-                        Expanded(
+                  Text(
+                    "${student.first_name} ${student.last_name}",
+                    style: activeTheme.h4,
+                  ),
+                  SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
                           flex: 1,
-                          child: Row(mainAxisAlignment: MainAxisAlignment.start, 
-                          children: [
-                            // Icon(Icons.arrow_right_alt, color: activeTheme.icon_color,),
-                            // Text(lang.translate('View details'), style: activeTheme.h6), 
-                            ])),
+                          child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                // Icon(Icons.arrow_right_alt, color: activeTheme.icon_color,),
+                                // Text(lang.translate('View details'), style: activeTheme.h6),
+                              ])),
                       // Container(
                       //   transformAlignment: Alignment.center,
                       //   padding: EdgeInsets.symmetric(horizontal: 5),
@@ -903,53 +954,54 @@ mixin ETAWidgets {
                       //     color: student.transfer_status.toString().toLowerCase() == 'approved' ? activeTheme.main_color : Colors.red,
                       //     borderRadius: BorderRadius.circular(10)
                       //   ),
-                      //   child: Row(mainAxisAlignment: MainAxisAlignment.center, 
+                      //   child: Row(mainAxisAlignment: MainAxisAlignment.center,
                       //   children: [
                       //     Icon(Icons.arrow_right_alt, color: activeTheme.buttonColor,),
-                      //     Text(lang.translate("${student.transfer_status}"), textAlign: TextAlign.center, style: TextStyle( fontFamily: activeTheme.h6.fontFamily, color: activeTheme.buttonColor,fontSize: activeTheme.h6.fontSize)), 
+                      //     Text(lang.translate("${student.transfer_status}"), textAlign: TextAlign.center, style: TextStyle( fontFamily: activeTheme.h6.fontFamily, color: activeTheme.buttonColor,fontSize: activeTheme.h6.fontSize)),
                       //     ]),
                       // ),
-                      ],)
-                    ],),
+                    ],
+                  )
+                ],
+              ),
+            ),
+            Container(
+              width: 100,
+              height: 100,
+              decoration: ShapeDecoration(
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(
+                    width: 1,
+                    color: activeTheme.border_color.withOpacity(1),
                   ),
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: ShapeDecoration(
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(width: 1, color: activeTheme.border_color.withOpacity(1), ),
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                    ),
-                    child: CircleAvatar(
-                      maxRadius: 50,
-                      backgroundColor: Colors.white,
-                      foregroundImage: NetworkImage( 
-                        httpService.getAvatarUrl(student.student_id,'eta.students'),
-                        headers: {'Accept': 'image/png'}
-                      ),
-                    ),
-                )
-              ],
-          )
-        )]
-      ),
+                  borderRadius: BorderRadius.circular(50),
+                ),
+              ),
+              child: CircleAvatar(
+                maxRadius: 50,
+                backgroundColor: Colors.white,
+                foregroundImage: NetworkImage(
+                    httpService.getAvatarUrl(
+                        student.student_id, 'eta.students'),
+                    headers: {'Accept': 'image/png'}),
+              ),
+            )
+          ],
+        ))
+      ]),
     );
   }
 
-
-  static Widget studentTripBlock(context, TripModel tripInfo)
-  {
-
+  static Widget studentTripBlock(context, TripModel tripInfo) {
     return Container(
-          width: MediaQuery.of(context).size.width/1.2,
-          clipBehavior: Clip.antiAlias,
-          margin: EdgeInsets.all(10),
-          decoration: ShapeDecoration(
+      width: MediaQuery.of(context).size.width / 1.2,
+      clipBehavior: Clip.antiAlias,
+      margin: EdgeInsets.all(10),
+      decoration: ShapeDecoration(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-            side: BorderSide(width: 1, color: activeTheme.main_color.withOpacity(.2))
-          ),
+              borderRadius: BorderRadius.circular(30),
+              side: BorderSide(
+                  width: 1, color: activeTheme.main_color.withOpacity(.2))),
           color: activeTheme.main_bg,
           shadows: [
             BoxShadow(
@@ -959,46 +1011,44 @@ mixin ETAWidgets {
               spreadRadius: 0,
             )
           ]),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                    TextButton(
+                        onPressed: (() => {}),
+                        child: Text(
+                          lang.translate('Trip') +
+                              ' # ' +
+                              tripInfo.trip_id.toString(),
+                          style: activeTheme.h3,
+                        )),
+                    Text(tripInfo.trip_date!),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                    width: double.infinity,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TextButton(
-                            onPressed: (() => {
-                              
-                              }),
-                            child: Text(
-                              lang.translate('Trip') +' # ' + tripInfo.trip_id.toString(),
-                              style: activeTheme.h3,
-                            )),
-                          
-                          Text(tripInfo.trip_date!),
-                            
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                        Row(
                             mainAxisSize: MainAxisSize.max,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -1010,8 +1060,7 @@ mixin ETAWidgets {
                                     decoration: ShapeDecoration(
                                       color: activeTheme.main_color,
                                       shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(64),
+                                        borderRadius: BorderRadius.circular(64),
                                       ),
                                     ),
                                     child: Icon(
@@ -1022,7 +1071,12 @@ mixin ETAWidgets {
                                   Container(
                                       padding: EdgeInsets.all(5),
                                       child: Text(
-                                          lang.translate(tripInfo.trip_status!.toString().toLowerCase() == 'completed' ?  'Trip duration' : 'Estimated time'),
+                                          lang.translate(tripInfo.trip_status!
+                                                      .toString()
+                                                      .toLowerCase() ==
+                                                  'completed'
+                                              ? 'Trip duration'
+                                              : 'Estimated time'),
                                           style: activeTheme.smallText)),
                                   Text(
                                     tripInfo.duration.toString(),
@@ -1040,8 +1094,7 @@ mixin ETAWidgets {
                                     decoration: ShapeDecoration(
                                       color: activeTheme.main_color,
                                       shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(64),
+                                        borderRadius: BorderRadius.circular(64),
                                       ),
                                     ),
                                     child: Icon(
@@ -1051,8 +1104,7 @@ mixin ETAWidgets {
                                   ),
                                   Container(
                                       padding: EdgeInsets.all(5),
-                                      child: Text(
-                                          lang.translate('Distance'),
+                                      child: Text(lang.translate('Distance'),
                                           style: activeTheme.smallText)),
                                   Text(
                                     "${tripInfo.distance.toString()} M",
@@ -1061,250 +1113,245 @@ mixin ETAWidgets {
                                 ],
                               ),
                             ]),
-                                
-                        ],
-                      )
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
-                clipBehavior: Clip.antiAlias,
-                decoration:BoxDecoration(
-                gradient:  LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.white.withOpacity(0),
-                    darkMode == false ? Color.fromRGBO(249, 250, 254, 1) : Color.fromRGBO(249, 250, 254, .15),
-                  ],
-                )),
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                      ],
+                    )),
+              ],
+            ),
+          ),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.white.withOpacity(0),
+                darkMode == false
+                    ? Color.fromRGBO(249, 250, 254, 1)
+                    : Color.fromRGBO(249, 250, 254, .15),
+              ],
+            )),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(),
+                  child: Stack(children: [
                     Container(
-
-                      clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(),
-                      child: Stack(children: [
-                        Container(
-                          padding: EdgeInsets.only(top: 5, right: isRTL() ? 70 : 0, left: isRTL() ? 0 : 70),
-                          child: Text("${tripInfo.driver!.first_name}",style: activeTheme.h5,),
-                        ),
-                        Positioned(
-                          child: 
-                          Container(
+                      padding: EdgeInsets.only(
+                          top: 5,
+                          right: isRTL() ? 70 : 0,
+                          left: isRTL() ? 0 : 70),
+                      child: Text(
+                        "${tripInfo.driver!.first_name}",
+                        style: activeTheme.h5,
+                      ),
+                    ),
+                    Positioned(
+                        child: Container(
                             width: 50,
                             height: 50,
                             margin: EdgeInsets.all(5),
                             decoration: ShapeDecoration(
                               shape: RoundedRectangleBorder(
-                                side: BorderSide(width: 1, color: activeTheme.border_color.withOpacity(1), ),
+                                side: BorderSide(
+                                  width: 1,
+                                  color:
+                                      activeTheme.border_color.withOpacity(1),
+                                ),
                                 borderRadius: BorderRadius.circular(50),
                               ),
                             ),
                             child: CircleAvatar(
                               maxRadius: 40,
                               backgroundColor: Colors.white,
-                              foregroundImage: NetworkImage( (tripInfo.driver!.picture != null)
-                                ? (httpService.croppedImage(tripInfo.driver!.picture ,200, 200))
-                                : httpService.croppedImage("/uploads/images/60x60.png" ,200, 200)
-                              ),
-                            )
-                          )
-                        ),
-                      ]),
-                    ),
-                    const SizedBox(width: 30),
-                    Container(
-                      padding: EdgeInsets.only(top: 10),
-                      child: 
-                      Row(
-                        children: [
-                        SvgPicture.asset(
-                          "assets/svg/bus.svg",
-                          color: activeTheme.main_color,
-                          width: 20,
-                        ),
-                        SizedBox(width: 10),
-                        Text(
-                          "${tripInfo.vehicle!.plate_number}",
-                          style: activeTheme.largeText,
-                        )
-                      ]),
-                    )
-                  
-                  ],
+                              foregroundImage: NetworkImage(
+                                  (tripInfo.driver!.picture != null)
+                                      ? (httpService.croppedImage(
+                                          tripInfo.driver!.picture, 200, 200))
+                                      : httpService.croppedImage(
+                                          "/uploads/images/60x60.png",
+                                          200,
+                                          200)),
+                            ))),
+                  ]),
                 ),
-              ),
-            ],
+                const SizedBox(width: 30),
+                Container(
+                  padding: EdgeInsets.only(top: 10),
+                  child: Row(children: [
+                    SvgPicture.asset(
+                      "assets/svg/bus.svg",
+                      color: activeTheme.main_color,
+                      width: 20,
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      "${tripInfo.vehicle!.plate_number}",
+                      style: activeTheme.largeText,
+                    )
+                  ]),
+                )
+              ],
+            ),
           ),
-        );
+        ],
+      ),
+    );
   }
 
-  Widget parentProfileInfoBlock(ParentModel parentModel ,context)
-  {
-      activeTheme =  storage.getItem('darkmode') == true ? DarkTheme() : LightTheme();
+  Widget parentProfileInfoBlock(ParentModel parentModel, context) {
+    activeTheme =
+        storage.getItem('darkmode') == true ? DarkTheme() : LightTheme();
 
-      return 
-        Container(
+    return Container(
         width: double.infinity,
         margin: EdgeInsets.fromLTRB(30, 20, 30, 20),
-        child: Stack( children: [
-          // Container(
-          //   margin: EdgeInsets.symmetric(horizontal: 2),
-          //   width: double.infinity,
-          //   height: 50,
-          //   clipBehavior: Clip.antiAlias,
-          //   decoration: BoxDecoration(
-          //     color: activeTheme.main_color,
-          //     borderRadius: BorderRadius.circular(30),
-          //   )
-          // ),
-          Container(
-          width: double.infinity,
-          margin: EdgeInsets.only(top: 5),
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            color: activeTheme.main_bg, 
-            borderRadius: BorderRadius.circular(30),
-            boxShadow:  [
-              BoxShadow(
-                color: shadowColor,
-                blurRadius: 10,
-                offset: Offset(0, 5),
-                spreadRadius: 0,
-            )],
-          ),
-        child:  Column(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
+            // Container(
+            //   margin: EdgeInsets.symmetric(horizontal: 2),
+            //   width: double.infinity,
+            //   height: 50,
+            //   clipBehavior: Clip.antiAlias,
+            //   decoration: BoxDecoration(
+            //     color: activeTheme.main_color,
+            //     borderRadius: BorderRadius.circular(30),
+            //   )
+            // ),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(15),
+              margin: EdgeInsets.only(top: 5),
               clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(color: activeTheme.main_bg),
+              decoration: BoxDecoration(
+                color: activeTheme.main_bg,
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: shadowColor,
+                    blurRadius: 10,
+                    offset: Offset(0, 5),
+                    spreadRadius: 0,
+                  )
+                ],
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextButton(
-              onPressed: () {
-                Get.to(ParentPage());
-              },
-              child: Container(
+                  Container(
                     width: double.infinity,
+                    padding: const EdgeInsets.all(15),
                     clipBehavior: Clip.antiAlias,
-                    decoration: BoxDecoration(),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                    decoration: BoxDecoration(color: activeTheme.main_bg),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment:
-                          CrossAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
+                        TextButton(
+                          onPressed: () {
+                            Get.to(ParentPage());
+                          },
                           child: Container(
+                            width: double.infinity,
                             clipBehavior: Clip.antiAlias,
                             decoration: BoxDecoration(),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment:
-                                  MainAxisAlignment.start,
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                GestureDetector(
-                                  onTap: (() => {}),
-                                  child:  Row(
-                                      mainAxisSize:
-                                          MainAxisSize.min,
+                                Expanded(
+                                  child: Container(
+                                    clipBehavior: Clip.antiAlias,
+                                    decoration: BoxDecoration(),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
                                       mainAxisAlignment:
                                           MainAxisAlignment.start,
                                       crossAxisAlignment:
-                                          CrossAxisAlignment
-                                              .center,
+                                          CrossAxisAlignment.center,
                                       children: [
-                                        Container(
-                                          width: 60,
-                                          height: 60,
-                                          decoration:
-                                              ShapeDecoration(
-                                            image:
-                                                DecorationImage(
-                                              image: NetworkImage(httpService.croppedImage("/uploads/images/60x60.png" ,200, 200)),
-                                              fit: BoxFit.fill,
-                                            ),
-                                            shape:
-                                                RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius
-                                                      .circular(
-                                                          50),
-                                            ),
+                                        GestureDetector(
+                                          onTap: (() => {}),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              Container(
+                                                width: 60,
+                                                height: 60,
+                                                decoration: ShapeDecoration(
+                                                  image: DecorationImage(
+                                                    image: NetworkImage(
+                                                        httpService.croppedImage(
+                                                            "/uploads/images/60x60.png",
+                                                            200,
+                                                            200)),
+                                                    fit: BoxFit.fill,
+                                                  ),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            50),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                            child: Container(
+                                          clipBehavior: Clip.antiAlias,
+                                          decoration: BoxDecoration(),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.max,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                parentModel.firstName!,
+                                                style: activeTheme.h5,
+                                              ),
+                                              SizedBox(height: 10),
+                                              SizedBox(
+                                                width: double.infinity,
+                                                child: Text(
+                                                  parentModel.contactNumber!,
+                                                  style: activeTheme.normalText,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )),
                                       ],
                                     ),
+                                  ),
                                 ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Container(
-                                        clipBehavior:
-                                            Clip.antiAlias,
-                                        decoration:
-                                            BoxDecoration(),
-                                        child: Column(
-                                          mainAxisSize:
-                                              MainAxisSize.max,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment
-                                                  .center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment
-                                                  .start,
-                                          children: [
-                                            Text(
-                                              parentModel
-                                                  .firstName!,
-                                              style: activeTheme.h5,
-                                            ),
-                                            SizedBox(height: 10),
-                                            SizedBox(
-                                              width:
-                                                  double.infinity,
-                                              child: Text(
-                                                parentModel
-                                                    .contactNumber!,
-                                                style: activeTheme.normalText,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      )),
                               ],
                             ),
                           ),
                         ),
-                        
                       ],
                     ),
                   ),
-                  ),
                 ],
               ),
-            ),
+            )
           ],
-        ),
-      )],)
-    );
-                    
-}
-
+        ));
+  }
 }

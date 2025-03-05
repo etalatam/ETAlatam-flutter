@@ -1,13 +1,14 @@
 import 'dart:async';
-import 'dart:convert';
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Models/student_model.dart';
 import 'package:eta_school_app/Pages/login_page.dart';
-import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
+import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/components/active_trip.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
+import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
@@ -17,6 +18,9 @@ import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/components/header.dart';
+import 'package:provider/provider.dart';
+import 'package:visibility_detector/visibility_detector.dart';
+import 'package:workmanager/workmanager.dart';
 
 class StudentsHome extends StatefulWidget {
   const StudentsHome({super.key});
@@ -26,13 +30,14 @@ class StudentsHome extends StatefulWidget {
 }
 
 class _StudentsHomeState extends State<StudentsHome>
-    with ETAWidgets, MediansTheme, WidgetsBindingObserver {
+    with ETAWidgets, MediansTheme {
   final widgets = ETAWidgets;
 
   bool hasActiveTrip = false;
 
   // DriverModel driverModel = DriverModel(driver_id: 0, first_name: '');
-  StudentModel student = StudentModel(student_id: 0, parent_id: 0);
+  StudentModel student =
+      StudentModel(student_id: 0, parent_id: 0, pickup_points: []);
 
   TripModel? activeTrip;
 
@@ -54,7 +59,14 @@ class _StudentsHomeState extends State<StudentsHome>
                 body: RefreshIndicator(
                     triggerMode: RefreshIndicatorTriggerMode.onEdge,
                     onRefresh: _refreshData,
-                    child: Stack(
+                    child: VisibilityDetector(
+                          key: Key('student_home_key'),
+                          onVisibilityChanged: (info) {
+                            if (info.visibleFraction > 0) {
+                              loadResources();
+                            }
+                          }, 
+                      child: Stack(
                       children: [
                         Container(
                             color: activeTheme.main_bg,
@@ -122,22 +134,38 @@ class _StudentsHomeState extends State<StudentsHome>
                                                   fontWeight:
                                                       activeTheme.h6.fontWeight,
                                                 )))
-                                        : ActiveTrip(openTrip, activeTrip),
+                                        : Consumer<EmitterService>(builder:
+                                            (context, emitterService, child) {
+                                            try {
+                                              final jsonMessage =
+                                                  emitterService.jsonMessage();
+                                              final String type =
+                                                  jsonMessage['event_type'];
 
-                                    ETAWidgets.svgTitle(
-                                        "assets/svg/bus.svg",
+                                              if (type == "end-trip") {
+                                                setState(() {
+                                                  loadResources();
+                                                });
+                                              }
+                                            } catch (e) {
+                                              print(e);
+                                            }
+
+                                            return ActiveTrip(
+                                                openTripcallback, activeTrip);
+                                          }),
+                                    ETAWidgets.svgTitle("assets/svg/route.svg",
                                         lang.translate('trips_history')),
 
                                     /// Last Trips
                                     oldTripsList.isEmpty
                                         ? const Center()
                                         : SizedBox(
-                                            height: 238,
+                                            height: 260,
                                             child: ListView.builder(
                                                 scrollDirection:
                                                     Axis.horizontal,
-                                                itemCount: oldTripsList
-                                                    .length, // Replace with the total number of items
+                                                itemCount: oldTripsList.length,
                                                 itemBuilder:
                                                     (BuildContext context,
                                                         int index) {
@@ -146,9 +174,15 @@ class _StudentsHomeState extends State<StudentsHome>
                                                         openNewPage(
                                                             context,
                                                             TripPage(
-                                                                trip:
-                                                                    oldTripsList[
-                                                                        index]));
+                                                              trip:
+                                                                  oldTripsList[
+                                                                      index],
+                                                              navigationMode:
+                                                                  false,
+                                                              showBus: false,
+                                                              showStudents:
+                                                                  false,
+                                                            ));
                                                       },
                                                       child: ETAWidgets
                                                           .homeTripBlock(
@@ -156,36 +190,11 @@ class _StudentsHomeState extends State<StudentsHome>
                                                               oldTripsList[
                                                                   index]));
                                                 })),
-                                    // const SizedBox(
-                                    //   height: 30,
-                                    // ),
-
-                                    // Container(
-                                    //   padding: const EdgeInsets.all(20),
-                                    //   child: Text(
-                                    //   "${lang.translate('Events and News')}",
-                                    //   style: activeTheme.h3,
-                                    //   textAlign: TextAlign.start,
-                                    // )),
-
-                                    /// Events carousel
-                                    // Container(
-                                    //   width: MediaQuery.of(context).size.width,
-                                    //   alignment: Alignment.center,
-                                    //   child:  ETAWidgets.eventCarousel(eventsList, context),
-                                    // ),
-
-                                    /// Help / Support Block
-                                    // ETAWidgets.homeHelpBlock(),
                                   ]),
                                 ),
                               ]),
                             )),
-                        Positioned(
-                            left: 0,
-                            right: 0,
-                            top: 0,
-                            child: Header()),
+                        Positioned(left: 0, right: 0, top: 0, child: Header()),
 
                         // Positioned(
                         //   left: 0,
@@ -200,19 +209,7 @@ class _StudentsHomeState extends State<StudentsHome>
                         //   child: BottomMenu('home', openNewPage)
                         // )
                       ],
-                    ))));
-  }
-
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      // App is going to the background
-      // Perform actions or handle behavior when the app loses focus
-    } else if (state == AppLifecycleState.resumed) {
-      // App is back to the foreground
-      // Perform actions when the app comes back to the foreground
-    }
+                    )))));
   }
 
   // Function to simulate data retrieval or refresh
@@ -221,10 +218,7 @@ class _StudentsHomeState extends State<StudentsHome>
       showLoader = true;
     });
 
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() {
-      loadResources();
-    });
+    loadResources();
   }
 
   openPage(context, page) {
@@ -243,53 +237,86 @@ class _StudentsHomeState extends State<StudentsHome>
       return;
     }
 
-    await locationServiceProvider.init();
-
-    await storage.getItem('darkmode');
-    setState(() {
-      darkMode = storage.getItem('darkmode') == true ? true : false;
-      showLoader = false;
-    });
-
-    final studentQuery = await httpService.getStudent();
-    setState(() {
-      student = studentQuery;
-    });
-
-
-    List<TripModel>? oldTrips = await httpService.getStudentTrips(studentId);
-    setState(() {
-      oldTripsList = oldTrips;
-    });
-
-    TripModel? activeTrip_ = await httpService.getActiveTrip();
-    setState(() {
-      activeTrip = activeTrip_;
-      hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
-    });
-
-    if (hasActiveTrip) {
-      await locationServiceProvider.startLocationService();
-
-      String routeTopics = "";
-      notificationSubcribe("route-${activeTrip?.route_id}");
-      routeTopics += "route-${activeTrip?.route_id}";
-      storage.setItem('route-topics', routeTopics);
-    }
-  }
-
-  notificationSubcribe(String topic) {
     try {
-      FirebaseMessaging messaging = FirebaseMessaging.instance;
-      messaging.subscribeToTopic(topic);
+      await locationServiceProvider.startLocationService();
     } catch (e) {
-      print("StudentsHome.notificationSubcribe.error: ${e.toString()}");
+      print("[StudentPage.loadResources.startLocationService.error] $e");
+    }
+
+    try {
+      final studentQuery = await httpService.getStudent();
+      if(mounted){
+        setState(() {
+          student = studentQuery;
+        });
+      }else{
+        student = studentQuery;
+      }
+    } catch (e) {
+      print("[StudentPage.loadResources.getstudents.error] $e");
+    }
+
+    try {
+      List<TripModel>? oldTrips = await httpService.getStudentTrips(studentId);
+      setState(() {
+        oldTripsList = oldTrips;
+      });
+    } catch (e) {
+      print("[StudentPage.loadResources.getstudents.error] $e");
+    }
+
+    try {
+      TripModel? activeTrip_ = await httpService.getActiveTrip();
+      if(mounted){
+        setState(() {
+          activeTrip = activeTrip_;
+          hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
+        });
+      }else{
+        activeTrip = activeTrip_;
+        hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
+      }
+
+      if (hasActiveTrip) {
+        activeTrip?.subscribeToTripTracking();
+      }
+
+    } catch (e) {
+      print("[StudentPage.loadResources.getActiveTrip.error] $e");
+    }
+
+    try {
+      List<RouteModel> routes = await httpService.getStudentRoutes();
+      for (var route in routes) {
+        String routeTopic = "route-${route.route_id}-student";
+
+        notificationServiceProvider.subscribeToTopic(routeTopic);
+
+        for (var pickupPoint in student.pickup_points) {
+          var pickupPointTopic =
+              "route-${route.route_id}-pickup_point-${pickupPoint.pickup_id}";
+          notificationServiceProvider.subscribeToTopic(pickupPointTopic);
+        }
+      }
+
+    } catch (e) {
+      print("[StudentPage.loadResources.getActiveTrip.error] $e");
+    }
+
+    if(mounted){
+      setState(() {
+        showLoader = false;
+      });
     }
   }
 
-
-  openTrip(TripModel trip) {
-    Get.to(TripPage(trip: trip));
+  openTripcallback(TripModel trip_) {
+    Get.to(TripPage(
+      trip: trip_,
+      navigationMode: false,
+      showBus: true,
+      showStudents: false,
+    ));
   }
 
   @override
@@ -300,6 +327,16 @@ class _StudentsHomeState extends State<StudentsHome>
   @override
   void initState() {
     super.initState();
+
+    showLoader = true;
+
+    Provider.of<NotificationService>(context, listen: false)
+        .addListener(onPushMessage);
+
+    loadResources();    
+  }
+
+  onPushMessage() {
     loadResources();
   }
 }

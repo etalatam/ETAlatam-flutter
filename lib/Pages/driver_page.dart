@@ -35,15 +35,13 @@ class _DriverPageState extends State<DriverPage> {
                   height: MediaQuery.of(context).size.height / 2,
                   decoration: ShapeDecoration(
                     image: DecorationImage(
-                      image: NetworkImage((driver.driver_id != null)
-                          ? (httpService.croppedImage(
-                              driver.picture, 800, 1200))
-                          : httpService.croppedImage(
-                              "/avatars/person.svg", 200, 200),
-                              headers: {
-                                "acept": "image/png"
-                              }                         
-                       ),
+                      image: NetworkImage(
+                          (driver.driver_id != null)
+                              ? (httpService.croppedImage(
+                                  driver.picture, 800, 1200))
+                              : httpService.croppedImage(
+                                  "/avatars/person.svg", 200, 200),
+                          headers: {"acept": "image/png"}),
                       fit: BoxFit.fitHeight,
                     ),
                     shape: const RoundedRectangleBorder(),
@@ -108,7 +106,8 @@ class _DriverPageState extends State<DriverPage> {
                                       horizontal: 20),
                                   child: CircleAvatar(
                                       radius: 50,
-                                      backgroundColor: Color.fromARGB(255, 234,244,243),
+                                      backgroundColor:
+                                          Color.fromARGB(255, 234, 244, 243),
                                       foregroundImage: NetworkImage(
                                           (driver.picture != null)
                                               ? (httpService.croppedImage(

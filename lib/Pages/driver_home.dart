@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Pages/login_page.dart';
+import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/components/active_trip.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:location/location.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/Models/driver_model.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
@@ -17,6 +17,10 @@ import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/home_route_block.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
+import 'package:provider/provider.dart';
+import 'package:visibility_detector/visibility_detector.dart';
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:workmanager/workmanager.dart';
 
 class DriverHome extends StatefulWidget {
   const DriverHome({super.key});
@@ -26,7 +30,7 @@ class DriverHome extends StatefulWidget {
 }
 
 class _DriverHomeState extends State<DriverHome>
-    with ETAWidgets, MediansTheme, WidgetsBindingObserver {
+    with ETAWidgets, MediansTheme {
   final widgets = ETAWidgets;
 
   // late GoogleMapController mapController;
@@ -37,12 +41,10 @@ class _DriverHomeState extends State<DriverHome>
 
   TripModel? activeTrip;
 
-  Location location = Location();
-
-  bool showLoader = true;
+  bool showLoader = false;
 
   List<EventModel> eventsList = [];
-  List<RouteModel> routesList = [];
+  List<RouteModel> todateRoutesList = [];
   List<TripModel> oldTripsList = [];
 
   @override
@@ -55,7 +57,14 @@ class _DriverHomeState extends State<DriverHome>
                 body: RefreshIndicator(
                     triggerMode: RefreshIndicatorTriggerMode.onEdge,
                     onRefresh: _refreshData,
-                    child: Stack(
+                    child: VisibilityDetector(
+                      key: Key('driver_home_key'),
+                      onVisibilityChanged: (info) {
+                        if (info.visibleFraction > 0) {
+                          loadResources();
+                        }
+                      }, 
+                      child: Stack(
                       children: [
                         Container(
                             color: activeTheme.main_bg,
@@ -70,80 +79,47 @@ class _DriverHomeState extends State<DriverHome>
                                   child: Column(children: [
                                     /// Has Active Trip
                                     !hasActiveTrip
-                                        ? Container(
-                                            width: double.infinity,
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 12, vertical: 6),
-                                            margin: const EdgeInsets.fromLTRB(
-                                                25, 0, 25, 10),
-                                            clipBehavior: Clip.antiAlias,
-                                            decoration: ShapeDecoration(
-                                              color: Color.fromARGB(
-                                                  255, 228, 201, 119),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(30),
-                                              ),
-                                              shadows: [
-                                                BoxShadow(
-                                                  color: activeTheme.main_color
-                                                      .withOpacity(.3),
-                                                  blurRadius: 10,
-                                                  offset: const Offset(0, 1),
-                                                  spreadRadius: 0,
-                                                )
-                                              ],
-                                            ),
-                                            child: Text(
-                                                lang.translate(
-                                                    "Does not have active trips"),
-                                                style: TextStyle(
-                                                  color: Color.fromARGB(
-                                                      255, 112, 88, 16),
-                                                  fontSize:
-                                                      activeTheme.h5.fontSize,
-                                                  fontFamily:
-                                                      activeTheme.h6.fontFamily,
-                                                  fontWeight:
-                                                      activeTheme.h6.fontWeight,
-                                                )))
-                                        : ActiveTrip(openTrip, activeTrip),
+                                        ? ETAWidgets.infoMessage(lang.translate(
+                                            "Does not have active trips"))
+                                        : ActiveTrip(
+                                            openTripCallback, activeTrip),
 
-                                    ETAWidgets.svgTitle(
-                                        "assets/svg/fire.svg",
+                                    ETAWidgets.svgTitle("assets/svg/route.svg",
                                         lang.translate("Routes")),
 
                                     const SizedBox(height: 10),
 
                                     /// Available Routes
-                                    SizedBox(
-                                        height: 260,
-                                        child: ListView.builder(
-                                            scrollDirection: Axis.horizontal,
-                                            itemCount: routesList
-                                                .length, // Replace with the total number of items
-                                            itemBuilder: (BuildContext context,
-                                                int index) {
-                                              return Container(
-                                                padding: EdgeInsets.symmetric(
-                                                    horizontal:
-                                                        routesList.length < 2
-                                                            ? 20
-                                                            : 0),
-                                                width: routesList.length < 2
-                                                    ? MediaQuery.of(context)
-                                                        .size
-                                                        .width
-                                                    : 400,
-                                                // height: 400,
-                                                child: HomeRouteBlock(
-                                                    route: routesList[index],
-                                                    callback: createTrip),
-                                              );
-                                            })),
+                                    todateRoutesList.isEmpty
+                                        ? ETAWidgets.infoMessage(lang.translate(
+                                            "Does not have next route"))
+                                        : SizedBox(
+                                            height: 260,
+                                            child: ListView.builder(
+                                                scrollDirection:
+                                                    Axis.horizontal,
+                                                itemCount: todateRoutesList
+                                                    .length, // Replace with the total number of items
+                                                itemBuilder:
+                                                    (BuildContext context,
+                                                        int index) {
+                                                  return Container(
+                                                    padding: EdgeInsets.symmetric(
+                                                        horizontal:
+                                                          todateRoutesList.length < 2 ? 20 : 0),
+                                                        width: 
+                                                          todateRoutesList.length < 2 ? MediaQuery.of(context).size.width
+                                                        : 400,
+                                                    // height: 400,
+                                                    child: HomeRouteBlock(
+                                                        route: todateRoutesList[index],
+                                                        callback: createTrip,
+                                                        hasActiveTrip: hasActiveTrip,
+                                                        ),
+                                                  );
+                                                })),
 
-                                    ETAWidgets.svgTitle(
-                                        "assets/svg/bus.svg",
+                                    ETAWidgets.svgTitle("assets/svg/bus.svg",
                                         lang.translate('trips_history')),
 
                                     /// Last Trips
@@ -164,15 +140,18 @@ class _DriverHomeState extends State<DriverHome>
                                                         openNewPage(
                                                             context,
                                                             TripPage(
-                                                                trip:
-                                                                    oldTripsList[
-                                                                        index]));
+                                                              trip:
+                                                                  oldTripsList[index],
+                                                              navigationMode: false,
+                                                              showBus: false,
+                                                              showStudents:
+                                                                  false,
+                                                            ));
                                                       },
                                                       child: ETAWidgets
                                                           .homeTripBlock(
                                                               context,
-                                                              oldTripsList[
-                                                                  index]));
+                                                              oldTripsList[index]));
                                                 })),
                                     // const SizedBox(
                                     //   height: 30,
@@ -199,13 +178,9 @@ class _DriverHomeState extends State<DriverHome>
                                 ),
                               ]),
                             )),
-                        Positioned(
-                            left: 0,
-                            right: 0,
-                            top: 0,
-                            child: Header()),
+                        Positioned(left: 0, right: 0, top: 0, child: Header()),
                       ],
-                    ))));
+                    )))));
   }
 
   /// Create trip
@@ -222,7 +197,13 @@ class _DriverHomeState extends State<DriverHome>
         await locationServiceProvider.startLocationService();
         await Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => TripPage(trip: trip)),
+          MaterialPageRoute(
+              builder: (context) => TripPage(
+                    trip: trip,
+                    navigationMode: true,
+                    showBus: false,
+                    showStudents: false,
+                  )),
         );
         loadResources();
       }
@@ -236,20 +217,6 @@ class _DriverHomeState extends State<DriverHome>
           lang.translate(msg[0]), null);
     }
   }
-
-  void tracking() async {}
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      // App is going to the background
-      // Perform actions or handle behavior when the app loses focus
-    } else if (state == AppLifecycleState.resumed) {
-      // App is back to the foreground
-      // Perform actions when the app comes back to the foreground
-    }
-  }
-
   // Function to simulate data retrieval or refresh
   Future<void> _refreshData() async {
     setState(() {
@@ -265,71 +232,99 @@ class _DriverHomeState extends State<DriverHome>
   openPage(context, page) {
     setState(() => openNewPage(context, page));
   }
- 
-  notificationSubcribe(String topic) {
-    try {
-      FirebaseMessaging messaging = FirebaseMessaging.instance;
-      messaging.subscribeToTopic(topic);
-    } catch (e) {
-      print("DriverHome.notificationSubcribe.error: ${e.toString()}");
-    }
-  }  
 
   ///
   /// Load resources through API
   ///
   loadResources() async {
-    final check = await storage.getItem('id_usu');
+    try {
+      final check = await storage.getItem('id_usu');
 
-    if (check == null) {
-      Get.offAll(Login());
-      return;
+      if (check == null) {
+        Get.offAll(Login());
+        return;
+      }
+    } catch (e) {
+      print(e);
     }
 
-    await locationServiceProvider.init();
-
-    await storage.getItem('darkmode');
-    setState(() {
-      darkMode = storage.getItem('darkmode') == true ? true : false;
+    if(mounted){
+      setState(() {
+        showLoader = false;
+      });
+    }else{
       showLoader = false;
-    });
-
-
-    final driverQuery = await httpService.getDriver();
-    setState(() {
-      driverModel = driverQuery;
-    });
-
-    final routesQuery = await httpService.getRoutes();
-    List<String> routeTopics = [];
-    for (var route in routesQuery) {
-      notificationSubcribe("route-${route.route_id}");
-      routeTopics.add("route-${route.route_id}");
     }
-    storage.setItem('route-topics',routeTopics.toString());
 
-    setState(() {
-      routesList = routesQuery;
-    });
-
-    List<TripModel>? oldTrips = await httpService.getDriverTrips(0);
-    setState(() {
-      oldTripsList = oldTrips;
-    });
-
-    TripModel? activeTripWrapper = await httpService.getActiveTrip();
-    setState(() {
-      activeTrip = activeTripWrapper;
-      hasActiveTrip = (activeTripWrapper.trip_id != 0) ? true : false;
-    });
-
-    if (hasActiveTrip) {
-      await locationServiceProvider.startLocationService();
+    try {
+      final driverQuery = await httpService.getDriver();
+      if(mounted){
+        setState(() {
+          driverModel = driverQuery;
+        });
+      }
+    } catch (e) {
+      print("[DriverHome.loadrResources.getdriverinfo.error] $e");
     }
+
+    try {
+      final todateRoutes = await httpService.todayRoutes();
+      for (var route in todateRoutes) {
+        var routeDriverTopic = "route-${route.route_id}-driver";
+        notificationServiceProvider.subscribeToTopic(routeDriverTopic);
+      }
+      if(mounted){
+        setState(() {
+          todateRoutesList = todateRoutes;
+        });        
+      }else{
+        todateRoutesList = todateRoutes;
+      }
+    } catch (e) {
+      print("[DriverHome.loadrResources.todayRoutes.error] $e");
+    }
+
+    try {
+      List<TripModel>? oldTrips = await httpService.getDriverTrips(0);
+      if(mounted){
+        setState(() {
+          oldTripsList = oldTrips;
+        });
+      }else{
+        oldTripsList = oldTrips;
+      }
+    } catch (e) {
+      print("[DriverHome.loadrResources.getDriverTrips.error] $e");
+    }
+
+    try {
+      TripModel? activeTripWrapper = await httpService.getActiveTrip();
+      if(mounted){
+        setState(() {
+          activeTrip = activeTripWrapper;
+          hasActiveTrip = (activeTripWrapper.trip_id != 0) ? true : false;
+        });
+      }else{
+        activeTrip = activeTripWrapper;
+        hasActiveTrip = (activeTripWrapper.trip_id != 0) ? true : false;
+      }
+            
+    } catch (e) {
+      print("[DriverHome.loadrResources.getActiveTrip.error] $e");
+    }finally{
+      if (hasActiveTrip) {
+        await locationServiceProvider.startLocationService();
+      }
+    }    
   }
 
-  openTrip(TripModel trip) {
-    Get.to(TripPage(trip: trip, navigationMode: "support",));
+  openTripCallback(TripModel wrapper) {
+    Get.to(TripPage(
+      trip: wrapper,
+      navigationMode: true,
+      showBus: false,
+      showStudents: false,
+    ));
   }
 
   @override
@@ -340,6 +335,16 @@ class _DriverHomeState extends State<DriverHome>
   @override
   void initState() {
     super.initState();
+
+    // showLoader = true;
+
+    Provider.of<NotificationService>(context, listen: false)
+          .addListener(onPushMessage);
+
     loadResources();
   }
+
+  onPushMessage(){
+    loadResources();
+  }      
 }

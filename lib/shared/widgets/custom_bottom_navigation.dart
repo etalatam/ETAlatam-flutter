@@ -8,7 +8,7 @@ class CustomBottonNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p.PageController pageController = Get.find<p.PageController>();
-    //Get.put(PageController())
+    Get.put(pageController);
 
     return Obx(() => BottomNavigationBar(
           currentIndex: pageController.currentIndex.value,
@@ -24,7 +24,7 @@ class CustomBottonNavigation extends StatelessWidget {
             BottomNavigationBarItem(
                 icon: Icon(Icons.home_outlined), label: "Inicio"),
             BottomNavigationBarItem(
-                icon: Icon(Icons.notifications), label: "Notificaciones"),                
+                icon: Icon(Icons.notifications), label: "Notificaciones"),
             BottomNavigationBarItem(
                 icon: Icon(Icons.help_outline_outlined), label: 'Ayuda'),
           ],

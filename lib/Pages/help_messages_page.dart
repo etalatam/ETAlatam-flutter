@@ -117,10 +117,7 @@ class _SentMessageState extends State<HelpMessagesPage> {
                                     ))),
                           ),
                           Positioned(
-                            left: 0,
-                            right: 0,
-                            top: 0,
-                            child: Header()),
+                              left: 0, right: 0, top: 0, child: Header()),
                           // Positioned(
                           //     top: 50,
                           //     left: 0,

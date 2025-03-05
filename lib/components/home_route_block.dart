@@ -1,5 +1,4 @@
 import 'package:eta_school_app/Pages/pickups_page.dart';
-import 'package:eta_school_app/Pages/route_map_page.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/methods.dart';
@@ -7,9 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class HomeRouteBlock extends StatelessWidget {
-  const HomeRouteBlock({super.key, required this.route, this.callback});
+   HomeRouteBlock({super.key, required this.route, this.callback, this.hasActiveTrip});
 
   final RouteModel route;
+  bool? hasActiveTrip;
   final Function? callback;
 
   @override
@@ -72,8 +72,8 @@ class HomeRouteBlock extends StatelessWidget {
                               onTap: (() {
                                 // return;
                                 //TODO ir a mapa
-                                openNewPage(context,
-                                    RouteMap(route_id: route.route_id!));
+                                // openNewPage(context,
+                                //     RouteMap(route_id: route.route_id!));
                               }),
                               child: Container(
                                   constraints: const BoxConstraints(
@@ -219,27 +219,30 @@ class HomeRouteBlock extends StatelessWidget {
                               ]),
                       ),
                       GestureDetector(
-                          onTap: () {
+                          onTap: (hasActiveTrip != null && hasActiveTrip == false) ? () {
                             // return;
                             callback!(route);
                             // openNewPage(context, DriverPage(driver: route.driver, vehicle: route.vehicle,));
-                          },
+                          } : null,
                           child: Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
                                   // color: activeTheme.buttonBG,
                                   color:
-                                      // const Color.fromARGB(255, 59, 140, 135),
-                                      const Color.fromARGB(255, 234,244,243),
+                                      (hasActiveTrip != null && hasActiveTrip == false) ?
+                                       Color.fromARGB(255, 234,244,243)
+                                       :
+                                       Color.fromARGB(255, 225, 224, 224),
                                   //     Border.all(width: 1, color: Colors.green),
                                   borderRadius: BorderRadius.circular(10)),
                               child: Row(
                                 children: [
                                   Icon(
                                     Icons.route_rounded,
-                                    // color: activeTheme.buttonColor,
-                                    color: Color.fromARGB(255,15,148,136)
+                                    color: (hasActiveTrip != null && hasActiveTrip == false) ?
+                                    Color.fromARGB(255,15,148,136):
+                                    Colors.grey
                                   ),
                                   const SizedBox(
                                     width: 10,
@@ -250,7 +253,9 @@ class HomeRouteBlock extends StatelessWidget {
                                         fontSize: activeTheme.h6.fontSize,
                                         fontFamily: activeTheme.h6.fontFamily,
                                         // color: activeTheme.buttonColor
-                                        color: Color.fromARGB(255,15,148,136)
+                                        color: (hasActiveTrip != null && hasActiveTrip == false) ?
+                                          Color.fromARGB(255,15,148,136):
+                                          Colors.grey
                                         ),
                                   )
                                 ],

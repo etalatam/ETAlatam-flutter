@@ -305,6 +305,7 @@ class Lang {
     'list_of_your_notifications': 'Lista de notificaciones',
     "list_of_your_added_children": "Estudiantes",
     "active_routes": "Viajes activos",
-    "view_details": "Ver detalles"
+    "view_details": "Ver detalles",
+    "does_not_have_next_route": "No proximas rutas"
   };
 }
