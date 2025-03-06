@@ -540,8 +540,10 @@ class _TripPageState extends State<TripPage>
   }
 
   loadTrip() async {
+    print("[TripPage.loadTrip] ");
     try {
       if (trip.trip_status == "Running") {
+        print("[TripPage.loadTrip][trip.trip_status] ${trip.trip_status}");
         Wakelock.enable();
 
         initConnectivity();
@@ -552,6 +554,8 @@ class _TripPageState extends State<TripPage>
             Provider.of<EmitterService>(context, listen: false);
         _emitterServiceProvider?.addListener(onEmitterMessage);
         _emitterServiceProvider?.startTimer();
+        trip.subscribeToTripEvents(_emitterServiceProvider);
+        trip.subscribeToTripTracking(_emitterServiceProvider);
 
         _notificationService =
             Provider.of<NotificationService>(context, listen: false);
@@ -560,6 +564,7 @@ class _TripPageState extends State<TripPage>
     } catch (e) {
       print("[TripPage.loadTrip] $e");
     }
+
     try {
       if (relationName.isEmpty) {
         final LocalStorage storage = LocalStorage('tokens.json');
@@ -567,20 +572,22 @@ class _TripPageState extends State<TripPage>
         print("[TipPage.loadTrip.relationName] $relationName");
       }
     } catch (e) {
-      print("[TripaPage.loadTrip.relationName.error] $e");
+      print("[TripPage.loadTrip.relationName.error] $e");
     }
 
     try {
       TripModel? trip_ = await httpService.getTrip(widget.trip?.trip_id);
+      print("[TripPage.loadTrip][getTrip] ${trip.trip_status}");
       if (trip_.trip_id != 0) {
         setState(() {
           trip = trip_;
           showLoader = false;
+          print("[TripPage.loadTrip][trip_.lastPositionPayload] ${trip_.lastPositionPayload}");
+          processTrackingMessage(trip_.lastPositionPayload);
         });
       }
-      processTrackingMessage(trip.lastPositionPayload);
     } catch (e) {
-      print("[TripaPage.getTrip.error] $e");
+      print("[TripPage.loadTrip.error] $e");
     }
   }
 
@@ -859,15 +866,16 @@ class _TripPageState extends State<TripPage>
   }
 
   void processTrackingMessage(Map<String, dynamic> tracking) async {      
+    print("[processTrackingMessage] $tracking");
 
     if (_lastPositionPayload != null &&
         _lastPositionPayload?['time'].toInt() >
             tracking['payload']['time'].toInt()) {
-      print("[trippage.onEmitterMessage.ignore position by time]");
+      print("[trippage.processTrackingMessage.ignore position by time]");
       return;
     }
 
-    if (tracking['relation_name'] != null) {
+    if (tracking['relation_name'] != null && tracking['relation_name'] == "eta.drivers") {
       final relationName = tracking['relation_name'];
       final relationId = tracking['relation_id'];
 
@@ -877,15 +885,7 @@ class _TripPageState extends State<TripPage>
             double.parse("${tracking['payload']['latitude']}"));
         final label = formatUnixEpoch(tracking['payload']['time'].toInt());
 
-        if (relationId != null && relationName == 'eta.drivers') {
-          print(
-              "[TripPage.onEmitterMessage.emitter-tracking.driver] $tracking");
-          _updateIcon(position, relationName, relationId, label);
-        } else if (relationName == 'eta.students' && widget.showStudents) {
-          print(
-              "[TripPage.onEmitterMessage.emitter-tracking.student] $tracking");
-          _updateIcon(position, relationName, relationId, label);
-        }
+        _updateIcon(position, relationName, relationId, label);
 
         _lastPositionPayload = tracking['payload'];
       }
@@ -898,6 +898,8 @@ class _TripPageState extends State<TripPage>
       final event = EventModel.fromJson(jsonDecode(message));
       if (event.type == "end-trip" && relationName != 'eta.drivers') {
         _emitterServiceProvider?.stopTimer();
+        trip.unSubscribeToTripEvents(_emitterServiceProvider);
+        trip.unSubscribeToTripTracking(_emitterServiceProvider);
         if (mounted) {
           setState(() {
             Get.back();
