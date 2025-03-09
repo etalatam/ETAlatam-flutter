@@ -20,7 +20,6 @@ import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/components/header.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
-import 'package:workmanager/workmanager.dart';
 
 class StudentsHome extends StatefulWidget {
   const StudentsHome({super.key});
@@ -48,7 +47,7 @@ class _StudentsHomeState extends State<StudentsHome>
   // List<EventModel> eventsList = [];
   List<RouteModel> routesList = [];
   List<TripModel> oldTripsList = [];
-
+  
   @override
   Widget build(BuildContext context) {
     return showLoader
@@ -278,7 +277,13 @@ class _StudentsHomeState extends State<StudentsHome>
       }
 
       if (hasActiveTrip) {
-        activeTrip?.subscribeToTripTracking();
+        // _emitterServiceProvider =
+        //     Provider.of<EmitterService>(context, listen: false);
+        // _emitterServiceProvider?.addListener(onEmitterMessage);
+        // _emitterServiceProvider?.startTimer();
+        // trip.subscribeToTripEvents(_emitterServiceProvider);
+        // trip.subscribeToTripTracking(_emitterServiceProvider);
+        // activeTrip?.subscribeToTripTracking();
       }
 
     } catch (e) {

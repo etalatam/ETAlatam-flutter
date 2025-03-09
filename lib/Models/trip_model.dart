@@ -6,7 +6,6 @@ import 'package:eta_school_app/Models/student_model.dart';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Models/PickupLocationModel.dart';
 import 'package:eta_school_app/Models/VehicleModel.dart';
-import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:eta_school_app/shared/utils.dart';
@@ -70,10 +69,10 @@ class TripModel {
       this.lastPositionPayload}) {
     prettyDate();
 
-    if (trip_status == "Running") {
-      subscribeToTripEvents();
-      // subscribeToTripTracking();
-    }
+    // if (trip_status == "Running") {
+    //   subscribeToTripEvents();
+    //   subscribeToTripTracking();
+    // }
   }
 
   prettyDate() {
@@ -170,6 +169,8 @@ class TripModel {
     var lastPositionWrapper = null;
     try {
       lastPositionWrapper = json['last_position'][0];
+      lastPositionWrapper['relation_name'] = "eta.drivers";
+      lastPositionWrapper['relation_id'] = json['driver_id'];
     } catch (e) {
       print(e);
     }
@@ -208,11 +209,9 @@ class TripModel {
 
   endTrip() async {
     await httpService.endTrip(trip_id.toString());
-    unSubscribeToTripEvents();
-    unSubscribeToTripTracking();
   }
 
-  unSubscribeToTripEvents() async {
+  unSubscribeToTripEvents(emitterServiceProvider) async {
     if (isEmitterSubcribedToEvents) return;
 
     try {
@@ -224,8 +223,8 @@ class TripModel {
     }
   }
 
-  unSubscribeToTripTracking() async {
-    if (isEmitterSubcribedToTracking) return;
+  unSubscribeToTripTracking(emitterServiceProvider) async {
+    // if (isEmitterSubcribedToTracking) return;
 
     try {
       emitterServiceProvider.unsubscribe(EmitterTopic(
@@ -236,9 +235,10 @@ class TripModel {
     }
   }
 
-  subscribeToTripEvents() async {
-    if (!isEmitterSubcribedToEvents) {
-      String encodedValue =
+  subscribeToTripEvents(emitterServiceProvider) async {
+    // if (isEmitterSubcribedToEvents) return;
+
+    String encodedValue =
           Uri.encodeComponent("school/$school_id/trip/$trip_id/event/#/");
       emitterKeyGenModelEvents = await httpService.emitterKeyGen(encodedValue);
       if (emitterKeyGenModelEvents != null ) {
@@ -247,10 +247,9 @@ class TripModel {
             emitterKeyGenModelEvents!.key!));
         isEmitterSubcribedToEvents = true;
       }
-    }
   }
 
-  subscribeToTripTracking() async {
+  subscribeToTripTracking(emitterServiceProvider) async {
     if (!isEmitterSubcribedToTracking) {
       String encodedValue =
           Uri.encodeComponent("school/$school_id/trip/$trip_id/tracking/#/");
