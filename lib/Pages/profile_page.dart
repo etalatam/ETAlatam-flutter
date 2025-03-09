@@ -9,6 +9,7 @@ import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/components/custom_row.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -33,14 +34,15 @@ class _ProfilePageState extends State<ProfilePage> {
           ? Loader()
           : Scaffold(
               body: Stack(children: <Widget>[
-                Container(
-                  height: MediaQuery.of(context).size.height / 2,
-                  decoration: ShapeDecoration(
-                    image: DecorationImage(
-                      image: AssetImage(profilePicture!),
-                      fit: BoxFit.fitHeight,
-                    ),
-                    shape: const RoundedRectangleBorder(),
+                Center(
+                  child: SizedBox(
+                      height: MediaQuery.of(context).size.height / 1.2,
+                      child: QrImageView(                        
+                        data: "Nombre: ${user.firstName} ${user.lastName}, Telefono: ${user.contactNumber}, Correo: ${user.email}",
+                        version: QrVersions.auto,
+                        size: MediaQuery.of(context).size.height / 4,
+                        // backgroundColor: Colors.green,
+                      ),
                   ),
                 ),
                 DraggableScrollableSheet(
