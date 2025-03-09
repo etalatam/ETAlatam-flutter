@@ -38,7 +38,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: SizedBox(
                       height: MediaQuery.of(context).size.height / 1.2,
                       child: QrImageView(                        
-                        data: "Nombre: ${user.firstName} ${user.lastName}, Telefono: ${user.contactNumber}, Correo: ${user.email}",
+                        data: "${user.shareProfileUrl}",
                         version: QrVersions.auto,
                         size: MediaQuery.of(context).size.height / 4,
                         // backgroundColor: Colors.green,

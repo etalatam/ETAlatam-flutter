@@ -9,6 +9,7 @@ class UserModel {
   String? contactNumber;
   String? relationName;
   String? relationId;
+  String? shareProfileUrl;
 
   UserModel({
     required this.id,
@@ -18,7 +19,8 @@ class UserModel {
     this.email,
     this.contactNumber,
     this.relationName,
-    this.relationId
+    this.relationId,
+    this.shareProfileUrl
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -31,7 +33,8 @@ class UserModel {
       email: "${json['user_email']}",
       contactNumber: "${json['user_phone']}",
       relationName: "${json['relation_name']}",
-      relationId: "${json['relation_id']}"
+      relationId: "${json['relation_id']}",
+      shareProfileUrl: "${json['share_profile_url']}"
     );
   }
 
