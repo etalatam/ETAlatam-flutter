@@ -9,6 +9,8 @@ import 'package:flutter/services.dart';
 class EmitterService extends ChangeNotifier {
   static final EmitterService _instance = EmitterService._internal();
 
+  bool _updatelastTime = false;
+
   factory EmitterService() => _instance;
 
   EmitterService._internal() {
@@ -31,7 +33,6 @@ class EmitterService extends ChangeNotifier {
   final Connectivity _connectivity = Connectivity();
 
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
-
 
   Future<void> connect() async {
     _client = EmitterClient(
@@ -62,6 +63,10 @@ class EmitterService extends ChangeNotifier {
     return _lastMessage;
   }
 
+  updateLastEmitterDate(date) {
+    _lastEmitterDate = date;
+  }
+
   void subscribe(EmitterTopic topic) {
     print("[EmitterService] subscribe ${topic.name}");
     _client.subscribe(topic.name, key: topic.key);
@@ -90,7 +95,10 @@ class EmitterService extends ChangeNotifier {
   void _onMessage(String message) {
     print("[EmitterService.onMessage] $message");
     _lastMessage = message;
-    _lastEmitterDate = DateTime.now();
+    if (_updatelastTime) {
+      _lastEmitterDate = DateTime.now();
+    }
+
     notifyListeners();
   }
 
@@ -144,19 +152,20 @@ class EmitterService extends ChangeNotifier {
     _timer?.cancel();
   }
 
-  void startTimer() {
+  void startTimer(bool updatelastTime) {
     // si existe un timer activo se cancela
     if (_timer != null) {
       _timer?.cancel();
     }
 
+    _updatelastTime = updatelastTime;
+
     initConnectivity();
     _connectivitySubscription =
-          _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
-
+        _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
 
     _timer = Timer.periodic(Duration(seconds: 5), (timer) {
-      if(connectivityNone){
+      if (connectivityNone) {
         return;
       }
 
@@ -164,7 +173,7 @@ class EmitterService extends ChangeNotifier {
       final difference = now.difference(_lastEmitterDate!);
       print("[TripPage.emittertimer.difference] ${difference.inSeconds}s.");
 
-      if (difference.inSeconds >= 40 ) {
+      if (difference.inSeconds >= 40) {
         print("[TripaPage.ermittertimer] restaring... ");
         _client.reconect();
         _lastEmitterDate = DateTime.now();
@@ -190,17 +199,16 @@ class EmitterService extends ChangeNotifier {
   }
 
   Future<void> _updateConnectionStatus(List<ConnectivityResult> results) async {
-
     connectivityNone =
-          results.any((result) => result == ConnectivityResult.none);
-    
+        results.any((result) => result == ConnectivityResult.none);
+
     print('[EmitterService] connectivityNone: $connectivityNone');
 
-    if(connectivityNone && _client.isConnected){
+    if (connectivityNone && _client.isConnected) {
       disconnect();
     }
-    
-    if(!connectivityNone && !_client.isConnected){
+
+    if (!connectivityNone && !_client.isConnected) {
       connect();
     }
   }

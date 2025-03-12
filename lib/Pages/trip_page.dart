@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
+import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
@@ -86,7 +87,7 @@ class _TripPageState extends State<TripPage>
   String tripDuration = "";
 
   double tripDistance = 0;
-  
+
   Map<String, dynamic>? _lastPositionPayload;
 
   @override
@@ -553,7 +554,7 @@ class _TripPageState extends State<TripPage>
         _emitterServiceProvider =
             Provider.of<EmitterService>(context, listen: false);
         _emitterServiceProvider?.addListener(onEmitterMessage);
-        _emitterServiceProvider?.startTimer();
+        _emitterServiceProvider?.startTimer(false);
         trip.subscribeToTripEvents(_emitterServiceProvider);
         trip.subscribeToTripTracking(_emitterServiceProvider);
 
@@ -582,7 +583,8 @@ class _TripPageState extends State<TripPage>
         setState(() {
           trip = trip_;
           showLoader = false;
-          print("[TripPage.loadTrip][trip_.lastPositionPayload] ${trip_.lastPositionPayload}");
+          print(
+              "[TripPage.loadTrip][trip_.lastPositionPayload] ${trip_.lastPositionPayload}");
           processTrackingMessage(trip_.lastPositionPayload);
         });
       }
@@ -735,9 +737,8 @@ class _TripPageState extends State<TripPage>
     }
 
     final coordinateBounds = getCoordinateBounds(points);
-      mapboxMap.setCamera(CameraOptions(
-          center: coordinateBounds.southwest, zoom: 18, pitch: 45));
-
+    mapboxMap.setCamera(
+        CameraOptions(center: coordinateBounds.southwest, zoom: 18, pitch: 45));
 
     if (trip.lastPositionPayload != null &&
         relationName != "eta.drivers" &&
@@ -850,7 +851,7 @@ class _TripPageState extends State<TripPage>
   // }
 
   void onEmitterMessage() async {
-    final String message =  _emitterServiceProvider!.lastMessage();
+    final String message = _emitterServiceProvider!.lastMessage();
 
     if (mounted) {
       setState(() {
@@ -865,7 +866,7 @@ class _TripPageState extends State<TripPage>
     }
   }
 
-  void processTrackingMessage(Map<String, dynamic> tracking) async {      
+  void processTrackingMessage(Map<String, dynamic> tracking) async {
     print("[processTrackingMessage] $tracking");
 
     if (_lastPositionPayload != null &&
@@ -875,7 +876,8 @@ class _TripPageState extends State<TripPage>
       return;
     }
 
-    if (tracking['relation_name'] != null && tracking['relation_name'] == "eta.drivers") {
+    if (tracking['relation_name'] != null &&
+        tracking['relation_name'] == "eta.drivers") {
       final relationName = tracking['relation_name'];
       final relationId = tracking['relation_id'];
 
@@ -888,11 +890,12 @@ class _TripPageState extends State<TripPage>
         _updateIcon(position, relationName, relationId, label);
 
         _lastPositionPayload = tracking['payload'];
+        emitterServiceProvider.updateLastEmitterDate(DateTime.now());
       }
     }
   }
 
-  void proccessTripEventMessage (String message){
+  void proccessTripEventMessage(String message) {
     try {
       // si es un evento del viaje
       final event = EventModel.fromJson(jsonDecode(message));
