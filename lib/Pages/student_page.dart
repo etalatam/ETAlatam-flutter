@@ -35,7 +35,7 @@ class _StudentPageState extends State<StudentPage> {
 
   PointAnnotationManager? annotationManager;
 
-  Map<String, PointAnnotation> annotationsMap = {};
+  PointAnnotation? studentPointAnnotation;
 
   bool connectivityNone = false;
 
@@ -363,18 +363,13 @@ class _StudentPageState extends State<StudentPage> {
 
   Future<void> _updateIcon(Position position, String relationName,
       int relationId, String label) async {
-    PointAnnotation? pointAnnotation =
-        annotationsMap.containsKey("$relationName.$relationId")
-            ? annotationsMap["$relationName.$relationId"]
-            : null;
 
-    if (pointAnnotation == null) {
+    if (studentPointAnnotation== null) {
       final networkImage = await mapboxUtils
           .getNetworkImage(httpService.getAvatarUrl(relationId, relationName));
       final circleImage = await mapboxUtils.createCircleImage(networkImage);
-      pointAnnotation = await mapboxUtils.createAnnotation(
+      studentPointAnnotation = await mapboxUtils.createAnnotation(
           annotationManager, position, circleImage, label);
-      annotationsMap["$relationName.$relationId"] = pointAnnotation!;
 
       if ("$relationId" == "${widget.student?.student_id}") {
         _mapboxMapController?.setCamera(CameraOptions(
@@ -384,9 +379,9 @@ class _StudentPageState extends State<StudentPage> {
         ));
       }
     } else {
-      pointAnnotation.geometry = Point(coordinates: position);
-      pointAnnotation.textField = label;
-      annotationManager?.update(pointAnnotation);
+      studentPointAnnotation?.geometry = Point(coordinates: position);
+      studentPointAnnotation?.textField = label;
+      annotationManager?.update(studentPointAnnotation!);
     }
 
     if ("$relationId" == "${widget.student?.student_id}") {
