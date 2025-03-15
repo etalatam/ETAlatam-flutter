@@ -9,6 +9,7 @@ ETAlatam Flutter application
 * A physical Android or an emulator.
 * You can use the `flutter doctor` command to verify that your development environment is configured correctly.
 
+
 **Step 1:**
 
 Download or clone this repo by using the link below:

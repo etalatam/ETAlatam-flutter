@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:eta_school_app/Models/user_model.dart';
 import 'package:eta_school_app/Pages/reset_password_page.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
@@ -24,8 +26,8 @@ class _ProfilePageState extends State<ProfilePage> {
   bool showLoader = true;
 
   UserModel user = UserModel(id: 0, firstName: '');
-
-  String? profilePicture;
+  
+  static Timer? _timer;
 
   @override
   Widget build(BuildContext context) {
@@ -261,18 +263,27 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
-  Future updateProfileBGImage() async {
-    final relationName = await storage.getItem('relation_name');
-
-    setState(() {
-      profilePicture = "assets/$relationName.jpg";
-    });
-  }
-
   @override
   void initState() {
     super.initState();
     loadUser();
-    updateProfileBGImage();
+    startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void startTimer() {
+    // si existe un timer activo se cancela
+    if (_timer != null) {
+      _timer?.cancel();
+    }
+
+    _timer = Timer.periodic(Duration(seconds: 60), (timer) {
+      loadUser();
+    });
   }
 }

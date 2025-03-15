@@ -58,9 +58,9 @@ class EmitterClient {
     _client.onAutoReconnect = _onAutoReconnect;
     _client.onAutoReconnected = _onAutoReconnected;
     _client.onBadCertificate = (cert) => true;
-    _client.logging(on: true);
+    _client.logging(on: false);
     _client.connectionMessage = MqttConnectMessage()
-        .withWillQos(MqttQos.atLeastOnce)
+        // .withWillQos(MqttQos.atLeastOnce)
         .withWillQos(MqttQos.exactlyOnce)
        .startClean();
   }
@@ -69,9 +69,8 @@ class EmitterClient {
     try {
       await _client.connect();
       _client.published!.listen((MqttPublishMessage message) {
-        print("Message receiver");
-        final payload =
-            MqttPublishPayload.bytesToStringAsString(message.payload.message);
+        print("Message received");
+        final payload = MqttPublishPayload.bytesToStringAsString(message.payload.message);
         if (onMessage != null) {
           onMessage!(payload);
         }
@@ -81,6 +80,9 @@ class EmitterClient {
       if (onError != null) {
         onError!(e.toString());
       }
+      // Intentar reconectar después de un error
+      await Future.delayed(Duration(seconds: 5));
+      connect();
     }
   }
 

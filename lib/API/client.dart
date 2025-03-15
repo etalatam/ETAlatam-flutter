@@ -587,6 +587,10 @@ class HttpService {
         } on Exception catch (e) {
           debugPrint('Error saving login info: $e');
         }
+        if(!emitterServiceProvider.isConnected()){
+          emitterServiceProvider.connect();
+        }
+
         return '1';
       } else {
         return "${parseResponseMessage(res)}/${res.statusCode}";
