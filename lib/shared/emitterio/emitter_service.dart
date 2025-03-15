@@ -117,14 +117,14 @@ class EmitterService extends ChangeNotifier {
     for (var topic in _subscribedTopics) {
       _client.subscribe(topic.name, key: topic.key);
     }
-
     notifyListeners();
   }
 
   void _onDisconnect() {
     print("[EmitterService._onDisconnect]");
-    // _stopTimer();
     notifyListeners();
+    // Intentar reconectar después de la desconexión
+    connect();
   }
 
   void _onSubscribed(String topic) {
@@ -166,6 +166,7 @@ class EmitterService extends ChangeNotifier {
 
     _timer = Timer.periodic(Duration(seconds: 5), (timer) {
       if (connectivityNone) {
+        print("[TripaPage.ermittertimer] offline... ");
         return;
       }
 
