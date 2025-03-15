@@ -10,6 +10,7 @@ import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:eta_school_app/shared/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
@@ -88,6 +89,8 @@ class _TripPageState extends State<TripPage>
   String tripDuration = "";
 
   double tripDistance = 0;
+  
+  final numberFormat = NumberFormat("#.##");
 
   Map<String, dynamic>? _lastPositionPayload;
 
@@ -288,7 +291,7 @@ class _TripPageState extends State<TripPage>
                                     const SizedBox(height: 10),
                                     if (trip.trip_status == "Running")
                                       Row(
-                                        textDirection: TextDirection.ltr,
+                                        // textDirection: TextDirection.LTR,
                                         mainAxisSize: MainAxisSize.max,
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceEvenly,
@@ -301,8 +304,8 @@ class _TripPageState extends State<TripPage>
                                           const SizedBox(width: 10),
                                           Icon(Icons.route, size: 20),
                                           Text(tripDistance > 1000
-                                              ? '$tripDistance KM'
-                                              : '$tripDistance m'),
+                                              ? '${numberFormat.format(tripDistance)} KM'
+                                              : '${numberFormat.format(tripDistance)} m'),
                                           const SizedBox(width: 10),
                                           (trip.pickup_locations != null)
                                               ? Icon(Icons.pin_drop_outlined,

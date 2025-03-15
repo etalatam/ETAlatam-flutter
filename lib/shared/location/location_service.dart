@@ -88,16 +88,9 @@ class LocationService extends ChangeNotifier {
                 (_locationData?['latitude'] != data['latitude']) &&
                 (_locationData?['longitude'] != data['longitude'])) {
               _locationData = data;
-              
+
               try {
                 _lastPositionDate = DateTime.now();
-                _totalDistance = _calculateDistance(
-                  _lastLatitude, 
-                  _lastLongitude, 
-                  _locationData?['latitude'], 
-                  _locationData?['longitude']
-                );
-
                 await trackingDynamic(_locationData);
                 notifyListeners();
               } catch (e) {
@@ -230,12 +223,19 @@ class LocationService extends ChangeNotifier {
           difference.inSeconds > 5) {
 
         _lastPositionDate = now;
-        _totalDistance = _calculateDistance(
-          _lastLatitude, 
-          _lastLongitude, 
-          locationInfo['latitude'], 
-          locationInfo['longitude']
-        );
+        
+        try {
+          if(int.parse(_locationData?['speed']) > 5){
+            _totalDistance = _calculateDistance(
+              _lastLatitude, 
+              _lastLongitude, 
+              _locationData?['latitude'], 
+              _locationData?['longitude']
+            );
+          }
+        } catch (e) {
+          //
+        }
 
         final jsonData = {
           'latitude': locationInfo['latitude'],
@@ -270,12 +270,18 @@ class LocationService extends ChangeNotifier {
         difference.inSeconds > 5) {
 
       _lastPositionDate = now;
-      _totalDistance = _calculateDistance(
-        _lastLatitude, 
-        _lastLongitude, 
-        locationInfo.latitude, 
-        locationInfo.longitude
-      );
+      try {
+        if(int.parse(_locationData?['speed']) > 5){
+          _totalDistance = _calculateDistance(
+            _lastLatitude, 
+            _lastLongitude, 
+            _locationData?['latitude'], 
+            _locationData?['longitude']
+          );
+        }
+      } catch (e) {
+        //
+      }
 
       final jsonData = {
         'latitude': locationInfo.latitude,
@@ -334,6 +340,7 @@ class LocationService extends ChangeNotifier {
       initialization = false;
       _timer?.cancel();
       Workmanager().cancelAll();
+      _totalDistance = 0;
     } catch (e) {
       print('[LocationService.stopLocationService.error] ${e.toString()}');
     }
