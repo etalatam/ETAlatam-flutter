@@ -68,7 +68,8 @@ class _TripPageState extends State<TripPage>
 
   PointAnnotationManager? annotationManager;
 
-  Map<String, PointAnnotation> annotationsMap = {};
+  // Map<String, PointAnnotation> annotationsMap = {};
+  PointAnnotation? busPointAnnotation;
 
   bool waitingBusPosition = true;
 
@@ -767,8 +768,13 @@ class _TripPageState extends State<TripPage>
 
   Future<void> _updateIcon(Position position, String relationName,
       int relationId, String label) async {
+    String key = "$relationName.$relationId";
     print(
         "[TripPage._updateIcon] [relationName] $relationName [relationId] $relationId");
+
+    if(key.isEmpty){
+      return;
+    }
 
     // is the trip driver?
     if (relationName != "eta.drivers") {
@@ -780,42 +786,30 @@ class _TripPageState extends State<TripPage>
       return;
     }
 
-    PointAnnotation? pointAnnotation =
-        annotationsMap.containsKey("$relationName.$relationId")
-            ? annotationsMap["$relationName.$relationId"]
-            : null;
+    // PointAnnotation? pointAnnotation =
+    //     annotationsMap.containsKey(key)
+    //         ? annotationsMap[key]
+    //         : null;
 
     // if (relationName.indexOf("drivers") > 1) {
     //   _updatePulsatingCircle(Point(coordinates: position));
     // }
 
     // If it does not exist, the new element is created on the map
-    if (pointAnnotation == null) {
+    if (busPointAnnotation == null) {
       print("[TripPage._updateIcon]  pointAnnotation exists");
       // is driver?
       if (relationName.indexOf("drivers") > 1) {
         final ByteData bytes = await rootBundle.load('assets/moving_car.gif');
         final Uint8List imageData = bytes.buffer.asUint8List();
 
-        pointAnnotation = await mapboxUtils.createAnnotation(
+        busPointAnnotation = await mapboxUtils.createAnnotation(
             annotationManager, position, imageData, label);
-      } else {
-        // any user who wishes will be shown on the map, examples for students
-        final networkImage = await mapboxUtils.getNetworkImage(
-            httpService.getAvatarUrl(relationId, relationName));
-        final circleImage = await mapboxUtils.createCircleImage(networkImage);
-        pointAnnotation = await mapboxUtils.createAnnotation(
-            annotationManager, position, circleImage, label);
-      }
-
-      if (pointAnnotation != null) {
-        annotationsMap["$relationName.$relationId"] = pointAnnotation;
-        print("[TripPage._updateIcon] new pointAnnotation");
-      }
+      } 
     } else {
-      pointAnnotation.geometry = Point(coordinates: position);
-      pointAnnotation.textField = label;
-      annotationManager?.update(pointAnnotation);
+      busPointAnnotation?.geometry = Point(coordinates: position);
+      busPointAnnotation?.textField = label;
+      annotationManager?.update(busPointAnnotation!);
       print("[TripPage._updateIcon] update pointAnnotation");
     }
 
@@ -886,6 +880,12 @@ class _TripPageState extends State<TripPage>
             double.parse("${tracking['payload']['longitude']}"),
             double.parse("${tracking['payload']['latitude']}"));
         final label = formatUnixEpoch(tracking['payload']['time'].toInt());
+
+        try {
+          tripDistance = double.parse("${tracking['payload']['distance']}");
+        } catch (e) {
+          //
+        }
 
         _updateIcon(position, relationName, relationId, label);
 
