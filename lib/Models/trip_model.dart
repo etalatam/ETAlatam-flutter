@@ -250,7 +250,7 @@ class TripModel {
   }
 
   subscribeToTripTracking(emitterServiceProvider) async {
-    if (!isEmitterSubcribedToTracking) {
+    // if (!isEmitterSubcribedToTracking) {
       String encodedValue =
           Uri.encodeComponent("school/$school_id/trip/$trip_id/tracking/#/");
       emitterKeyGenModelTracking =
@@ -262,7 +262,7 @@ class TripModel {
             emitterKeyGenModelTracking!.key!));
         isEmitterSubcribedToTracking = true;
       }
-    }
+    // }
   }
 
   Position? lastPosition() {
