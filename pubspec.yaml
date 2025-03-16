@@ -39,6 +39,7 @@ dependencies:
   localstorage: ^4.0.1+2
   location: ^5.0.3
   mapbox_maps_flutter: ^2.0.0
+  model_viewer_plus: ^1.7.2
   mqtt_client: ^10.3.0
   onesignal_flutter: ^5.0.3
   path_provider: ^2.1.4
