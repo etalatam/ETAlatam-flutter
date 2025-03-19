@@ -13,7 +13,7 @@ class Lang {
     required this.value,
     required this.locale,
   }) {
-    langList.addAll([esLangs, enLangs]);
+    langList.addAll([esLangs, enLangs, arLangs]);
   }
 
   factory Lang.fromJson(Map<String, dynamic> json) {
@@ -183,6 +183,34 @@ class Lang {
     'destinations': 'أماكن التوصيل',
     '': '',
     'login_copyrights': '',
+    'notify_absence': 'إخطار الغياب',
+    'list_of_absences': 'قائمة الغيابات',
+    'absences': 'غيابات',
+    'list': 'قائمة',
+    'notify': 'إخطار',
+    'history': 'تاريخ',
+    "Register Absences": "تسجيل الغيابات",
+    "select_date": "اختر التاريخ",
+    "select_route": "اختر المسار",
+    "description": "الوصف",
+    "absence_reason": "سبب الغياب",
+    "register": "تسجيل",
+    "please_select_route": "الرجاء اختيار مسار",
+    "please_enter_description": "الرجاء إدخال وصف",
+    "absence_registered_successfully": "تم تسجيل الغياب بنجاح",
+    "error_registering_absence": "خطأ في تسجيل الغياب",
+    "select_trip": "اختر الرحلة",
+    "no_trips_available": "لا توجد رحلات متاحة لهذا التاريخ",
+    "note_optional": "ملاحظة (اختياري)",
+    "submit": "إرسال",
+    "already_absence_recorded": "تم تسجيل حالة عدم حضور واحدة بالفعل لهذا التاريخ في هذه الرحلة.",
+    "absence_history": "سجل الغياب",
+    "registered_absences": "حالات الغياب المسجلة",
+    "no_absences_registered": "لا توجد حالات غياب مسجلة",
+    "error_loading_absences": "خطأ في تحميل حالات الغياب",
+    "absence_cancel_successfully": "تم حذف الغياب بنجاح",
+    "error_deleting_absence": "خطأ في حذف الغياب",
+    "cancel_absence": "حذف"
   };
 
   Map<String, dynamic> enLangs = {
@@ -208,6 +236,33 @@ class Lang {
     'change_password_message':
         'You can find your token at your email, and change your password and confirmation',
     '': '',
+    'notify_absence': 'Notify absence',
+    'list_of_absences': 'List of absences',
+    'absences': 'Absences',
+    'list': 'List',
+    'notify': 'Notify',
+    'history': 'History',
+    "select_date": "Select date",
+    "select_route": "Select route",
+    "description": "Description",
+    "absence_reason": "Absence reason",
+    "register": "Register",
+    "please_select_route": "Please select a route",
+    "please_enter_description": "Please enter a description",
+    "absence_registered_successfully": "Absence registered successfully",
+    "error_registering_absence": "Error registering absence",
+    "select_trip": "Select trip",
+    "no_trips_available": "No trips available for this date",
+    "note_optional": "Note (optional)",
+    "submit": "Submit",
+    "already_absence_recorded": "One absence has already been recorded for this date on this trip.",
+    "absence_history": "Absence History",
+    "registered_absences": "Registered Absences",
+    "no_absences_registered": "No absences registered",
+    "error_loading_absences": "Error loading absences",
+    "absence_cancel_successfully": "Absence cancelled successfully",
+    "error_deleting_absence": "Error deleting absence",
+    "cancel_absence": "Cancel"
   };
 
   Map<String, dynamic> esLangs = {
@@ -306,6 +361,35 @@ class Lang {
     "list_of_your_added_children": "Estudiantes",
     "active_routes": "Viajes activos",
     "view_details": "Ver detalles",
-    "does_not_have_next_route": "No proximas rutas"
+    "does_not_have_next_route": "No proximas rutas",
+    "notify_absence": "Notificar inasistencia",
+    "list_of_absences": "Lista de inasistencias",
+    "absences": "Inasistencias",
+    "list": "Lista",
+    "notify": "Notificar",
+    "history": "Historial",
+    "Register Absences": "Registrar Inasistencia",
+    "select_date": "Seleccionar fecha",
+    "select_route": "Seleccionar ruta",
+    "description": "Descripción",
+    "absence_reason": "Motivo de la inasistencia",
+    "register": "Registrar",
+    "please_select_route": "Por favor seleccione una ruta",
+    "please_enter_description": "Por favor ingrese una descripción",
+    "absence_registered_successfully": "Inasistencia registrada exitosamente",
+    "error_registering_absence": "Error al registrar la inasistencia",
+    "no_routes_available": "No hay rutas disponibles para esta fecha",
+    "select_trip": "Seleccionar viaje",
+    "no_trips_available": "No hay viajes disponibles para esta fecha",
+    "note_optional": "Nota (opcional)",
+    "submit": "Enviar",
+    "already_absence_recorded": "Ya se ha registrado una inasistencia para esta fecha en este viaje.",
+    "absence_history": "Historial de Inasistencias",
+    "registered_absences": "Inasistencias Registradas",
+    "no_absences_registered": "No hay inasistencias registradas",
+    "error_loading_absences": "Error al cargar las inasistencias",
+    "absence_cancel_successfully": "Inasistencia cancelada exitosamente",
+    "error_deleting_absence": "Error al eliminar la inasistencia",
+    "cancel_absence": "Cancelar"
   };
 }
