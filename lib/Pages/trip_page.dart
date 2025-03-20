@@ -28,6 +28,8 @@ import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:wakelock/wakelock.dart';
+import 'package:model_viewer_plus/model_viewer_plus.dart';
+
 
 import 'map/map_wiew.dart';
 
@@ -93,6 +95,10 @@ class _TripPageState extends State<TripPage>
   final numberFormat = NumberFormat("#.##");
 
   Map<String, dynamic>? _lastPositionPayload;
+  
+  ScreenCoordinate busModelCoordinate = ScreenCoordinate( x: 0, y: 0);
+  
+  var busHeading = 270;
 
   @override
   Widget build(BuildContext context) {
@@ -128,12 +134,12 @@ class _TripPageState extends State<TripPage>
                               .createPointAnnotationManager();
                           annotationManager = value;
                           annotationManager
-                              ?.addOnPointAnnotationClickListener(this);
+                              ?.addOnPointAnnotationClickListener(this);                            
                         },
                         onStyleLoadedListener: (MapboxMap mapboxMap) async {
                           showTripGeoJson(mapboxMap);
                           showPickupLocations(mapboxMap);
-                        },
+                        }
                       ),
                     ),
 
@@ -206,6 +212,25 @@ class _TripPageState extends State<TripPage>
                     //       Center()
                     //   ),
                     //   ),
+
+                    if(busModelCoordinate.x.toDouble() > 0)
+                    Positioned(
+                      left: busModelCoordinate.x.toDouble() - 35,
+                      top: busModelCoordinate.y.toDouble() - 35,
+                      child: SizedBox(
+                        width: 80,
+                        height: 80,
+                        child: ModelViewer(
+                          src: 'assets/bus.glb', // Ruta al modelo 3D
+                          //src: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
+                          alt: 'Autobús 3D',
+                          ar: false, // Habilita AR (si es compatible)
+                          backgroundColor: Colors.transparent,
+                          autoRotate: false, // Rota el modelo automáticamente
+                          cameraControls: false, // Permite controlar la cámara
+                          disableZoom: true,
+                          orientation: "0deg 0deg ${busHeading}deg",
+                    ),)),
 
                     // if(busPulsatingCircleCoordinate.x.toDouble() > 0)
                     // Positioned(
@@ -769,6 +794,14 @@ class _TripPageState extends State<TripPage>
   //   });
   // }
 
+  _updateBusModelCoordinates(Point point) async{
+      final coordinate = await _mapboxMapController?.pixelForCoordinate(point);
+      print("[_updatePulsatingCircle] ${coordinate?.x}");
+      setState(() {
+        busModelCoordinate = coordinate!;
+      });
+    }  
+
   Future<void> _updateIcon(Position position, String relationName,
       int relationId, String label) async {
     String key = "$relationName.$relationId";
@@ -820,6 +853,7 @@ class _TripPageState extends State<TripPage>
       _mapboxMapController
           ?.setCamera(CameraOptions(center: Point(coordinates: position)));
     }
+    _updateBusModelCoordinates(Point(coordinates: position));
   }
 
   //  void _animateIcon(LatLng start, LatLng end) {
@@ -857,7 +891,9 @@ class _TripPageState extends State<TripPage>
     }
 
     try {
-      processTrackingMessage(jsonDecode(message));
+      if(!widget.navigationMode){
+        processTrackingMessage(jsonDecode(message));
+      }
     } catch (e) {
       proccessTripEventMessage(message);
     }
@@ -893,6 +929,7 @@ class _TripPageState extends State<TripPage>
         _updateIcon(position, relationName, relationId, label);
 
         _lastPositionPayload = tracking['payload'];
+        busHeading = _lastPositionPayload?['heading'] ?? _lastPositionPayload?['heading'];
         emitterServiceProvider.updateLastEmitterDate(DateTime.now());
       }
     }
