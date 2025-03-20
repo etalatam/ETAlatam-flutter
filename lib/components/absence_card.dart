@@ -17,43 +17,47 @@ class AbsenceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-        side: BorderSide(
-          color: DefaultTheme.default_color,
-          width: 2,
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 8),
-            _buildRouteInfo(),
-            const SizedBox(height: 4),
-            _buildBusInfo(),
-            const SizedBox(height: 4),
-            _buildDriverInfo(),
-            if (absence.notes != null && absence.notes!.isNotEmpty) ...[
+    return Column(
+      children: [
+        Container(
+          color: activeTheme.main_bg,
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(context),
               const SizedBox(height: 8),
-              _buildNotes(),
+              _buildRouteInfo(),
+              const SizedBox(height: 4),
+              _buildBusInfo(),
+              const SizedBox(height: 4),
+              _buildDriverInfo(),
+              if (absence.notes != null && absence.notes!.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                _buildNotes(),
+              ],
+              if (isFuture) ...[
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: _buildDeleteButton(context),
+                ),
+              ],
             ],
-            if (isFuture) ...[
-              const SizedBox(height: 12),
-              _buildDeleteButton(context),
-            ],
-          ],
+          ),
         ),
-      ),
+        // Línea divisoria
+        Container(
+          color: activeTheme.main_color.withOpacity(.4),
+          width: double.infinity,
+          height: 1,
+        ),
+      ],
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     String formattedDate = '';
     try {
       DateTime date = DateTime.parse(absence.absenceDate.toString());
@@ -64,15 +68,12 @@ class AbsenceCard extends StatelessWidget {
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: Text(
             formattedDate,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: DefaultTheme.default_color,
-            ),
+            style: activeTheme.h6,
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -145,10 +146,7 @@ class AbsenceCard extends StatelessWidget {
         Expanded(
           child: Text(
             absence.routeName ?? 'Sin ruta',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[700],
-            ),
+            style: activeTheme.normalText,
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -164,10 +162,7 @@ class AbsenceCard extends StatelessWidget {
         Expanded(
           child: Text(
             '${absence.busName ?? 'Sin bus'} (${absence.busPlate ?? 'Sin placa'})',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[700],
-            ),
+            style: activeTheme.normalText,
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -183,10 +178,7 @@ class AbsenceCard extends StatelessWidget {
         Expanded(
           child: Text(
             absence.driverFullname ?? 'Sin conductor',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[700],
-            ),
+            style: activeTheme.normalText,
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -195,35 +187,29 @@ class AbsenceCard extends StatelessWidget {
   }
 
   Widget _buildNotes() {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.note, size: 16, color: Colors.grey[600]),
-          const SizedBox(width: 4),
-          Expanded(
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(Icons.note, size: 16, color: Colors.grey[600]),
+        const SizedBox(width: 4),
+        Expanded(
+          child: SingleChildScrollView(
             child: Text(
               absence.notes ?? '',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[700],
-                fontStyle: FontStyle.italic,
-              ),
+              style: activeTheme.normalText,
+              maxLines: 3,
+              overflow: TextOverflow.fade,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildDeleteButton(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerRight,
+    return SizedBox(
+      height: 24,
+      width: 100, // Ancho fijo para el botón
       child: ElevatedButton.icon(
         onPressed: () {
           if (onDelete != null) {
@@ -233,9 +219,11 @@ class AbsenceCard extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.red,
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+          minimumSize: const Size(0, 24),
+          textStyle: const TextStyle(fontSize: 12),
         ),
-        icon: const Icon(Icons.delete, size: 16),
+        icon: const Icon(Icons.delete, size: 12),
         label: Text(lang.translate('cancel_absence')),
       ),
     );

@@ -210,7 +210,8 @@ class Lang {
     "error_loading_absences": "خطأ في تحميل حالات الغياب",
     "absence_cancel_successfully": "تم حذف الغياب بنجاح",
     "error_deleting_absence": "خطأ في حذف الغياب",
-    "cancel_absence": "حذف"
+    "cancel_absence": "حذف",
+    "register_absences": "تسجيل الغيابات",
   };
 
   Map<String, dynamic> enLangs = {
@@ -262,7 +263,8 @@ class Lang {
     "error_loading_absences": "Error loading absences",
     "absence_cancel_successfully": "Absence cancelled successfully",
     "error_deleting_absence": "Error deleting absence",
-    "cancel_absence": "Cancel"
+    "cancel_absence": "Cancel",
+    "register_absences": "Register Absences"
   };
 
   Map<String, dynamic> esLangs = {
@@ -368,7 +370,7 @@ class Lang {
     "list": "Lista",
     "notify": "Notificar",
     "history": "Historial",
-    "Register Absences": "Registrar Inasistencia",
+    "register_absences": "Registrar Inasistencia",
     "select_date": "Seleccionar fecha",
     "select_route": "Seleccionar ruta",
     "description": "Descripción",
