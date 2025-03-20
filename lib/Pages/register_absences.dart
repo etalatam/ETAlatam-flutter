@@ -143,7 +143,7 @@ class _RegisterAbsencesState extends State<RegisterAbsences> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(lang.translate('Register Absences')),
+        title: Text(lang.translate('register_absences')),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -156,10 +156,7 @@ class _RegisterAbsencesState extends State<RegisterAbsences> {
                 // Fecha
                 Text(
                   lang.translate('select_date'),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: activeTheme.h6,
                 ),
                 const SizedBox(height: 8),
                 InkWell(
@@ -170,7 +167,7 @@ class _RegisterAbsencesState extends State<RegisterAbsences> {
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
+                      border: Border.all(color: DefaultTheme.default_color),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Row(
@@ -178,9 +175,9 @@ class _RegisterAbsencesState extends State<RegisterAbsences> {
                       children: [
                         Text(
                           DateFormat('dd/MM/yyyy').format(_selectedDate),
-                          style: const TextStyle(fontSize: 16),
+                          style: activeTheme.normalText,
                         ),
-                        const Icon(Icons.calendar_today),
+                        Icon(Icons.calendar_today, color: DefaultTheme.default_color),
                       ],
                     ),
                   ),
@@ -190,10 +187,7 @@ class _RegisterAbsencesState extends State<RegisterAbsences> {
                 // Rutas disponibles
                 Text(
                   lang.translate('select_trip'),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: activeTheme.h6,
                 ),
                 const SizedBox(height: 8),
                 
@@ -205,10 +199,7 @@ class _RegisterAbsencesState extends State<RegisterAbsences> {
                   Center(
                     child: Text(
                       lang.translate('no_trips_available'),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.red,
-                      ),
+                      style: activeTheme.normalText.copyWith(color: Colors.red),
                     ),
                   )
                 else
@@ -260,10 +251,7 @@ class _RegisterAbsencesState extends State<RegisterAbsences> {
                 // Descripción
                 Text(
                   lang.translate('note_optional'),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: activeTheme.h6,
                 ),
                 const SizedBox(height: 8),
                 TextFormField(
@@ -274,15 +262,16 @@ class _RegisterAbsencesState extends State<RegisterAbsences> {
                       borderSide: BorderSide(color: DefaultTheme.default_color, width: 2.0),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: DefaultTheme.default_color, width: 2.0), // Borde cuando no está enfocado
+                      borderSide: BorderSide(color: DefaultTheme.default_color, width: 2.0),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: DefaultTheme.default_color, width: 2.0), // Borde cuando está enfocado
+                      borderSide: BorderSide(color: DefaultTheme.default_color, width: 2.0),
                     ),
                   ),
                   maxLines: 3,
+                  style: activeTheme.normalText,
+                  maxLength: 500,
                   validator: (value) {
-                    // La descripción es opcional, no necesita validación
                     return null;
                   },
                 ),

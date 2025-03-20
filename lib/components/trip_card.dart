@@ -30,6 +30,7 @@ class TripCard extends StatelessWidget {
           width: 2,
         ),
       ),
+      color: activeTheme.main_bg,
       child: InkWell(
         onTap: () => onSelect(),
         child: Padding(
@@ -57,11 +58,9 @@ class TripCard extends StatelessWidget {
         Expanded(
           child: Text(
             trip.routeName ?? 'Sin nombre',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: isSelected ? DefaultTheme.default_color : null,
-            ),
+            style: isSelected 
+                ? activeTheme.h6.copyWith(color: DefaultTheme.default_color)
+                : activeTheme.h6,
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -74,7 +73,7 @@ class TripCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: isSelected ? DefaultTheme.default_color : Colors.grey[200],
+        color: DefaultTheme.default_color,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -96,15 +95,15 @@ class TripCard extends StatelessWidget {
         Icon(
           icon,
           size: 12,
-          color: isSelected ? Colors.white : Colors.black87,
+          color: Colors.white,
         ),
         const SizedBox(width: 4),
         Text(
           time,
-          style: TextStyle(
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 12,
-            color: isSelected ? Colors.white : Colors.black87,
+            color: Colors.white,
           ),
         ),
       ],
@@ -119,10 +118,7 @@ class TripCard extends StatelessWidget {
         Expanded(
           child: Text(
             '${trip.busName ?? 'Sin bus'} (${trip.busPlate ?? 'Sin placa'})',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[700],
-            ),
+            style: activeTheme.normalText,
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -138,10 +134,7 @@ class TripCard extends StatelessWidget {
         Expanded(
           child: Text(
             trip.driverFullname ?? 'Sin conductor',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[700],
-            ),
+            style: activeTheme.normalText,
             overflow: TextOverflow.ellipsis,
           ),
         ),

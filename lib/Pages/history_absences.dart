@@ -17,7 +17,7 @@ class _HistoryAbsencesState extends State<HistoryAbsences> {
   List<AbsenceModel> _absences = [];
   bool _isLoading = true;
   bool _isDeleting = false;
-  bool _isInitialLoad = true; // Nueva variable para controlar la carga inicial
+  bool _isInitialLoad = true; 
   
   @override
   void initState() {
@@ -26,7 +26,6 @@ class _HistoryAbsencesState extends State<HistoryAbsences> {
   }
   
   Future<void> _loadAbsences() async {
-    // Solo mostramos el indicador de carga completo en la carga inicial
     setState(() {
       _isLoading = true;
     });
@@ -37,12 +36,12 @@ class _HistoryAbsencesState extends State<HistoryAbsences> {
       setState(() {
         _absences = absences;
         _isLoading = false;
-        _isInitialLoad = false; // Ya no es carga inicial después de la primera carga
+        _isInitialLoad = false; 
       });
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _isInitialLoad = false; // Ya no es carga inicial incluso si hay error
+        _isInitialLoad = false; 
       });
       
       ScaffoldMessenger.of(context).showSnackBar(
@@ -129,13 +128,6 @@ class _HistoryAbsencesState extends State<HistoryAbsences> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                lang.translate('registered_absences'),
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
               const SizedBox(height: 16),
               // Solo mostrar el indicador de carga si es la carga inicial
               if (_isLoading && _isInitialLoad)
