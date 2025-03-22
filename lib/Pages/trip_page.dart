@@ -5,6 +5,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
 import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/Pages/providers/notification_provider.dart';
+import 'package:eta_school_app/components/pulsating_circle.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:eta_school_app/shared/utils.dart';
@@ -76,7 +77,7 @@ class _TripPageState extends State<TripPage>
 
   bool waitingBusPosition = true;
 
-  // ScreenCoordinate busPulsatingCircleCoordinate = ScreenCoordinate( x: 0, y: 0);
+  ScreenCoordinate busPulsatingCircleCoordinate = ScreenCoordinate( x: 0, y: 0);
 
   bool connectivityNone = false;
 
@@ -96,9 +97,9 @@ class _TripPageState extends State<TripPage>
 
   Map<String, dynamic>? _lastPositionPayload;
   
-  ScreenCoordinate busModelCoordinate = ScreenCoordinate( x: 0, y: 0);
+  ScreenCoordinate  busModelCoordinate = ScreenCoordinate( x: 0, y: 0);
   
-  var busHeading = 270;
+  double busHeading = 270;
 
   @override
   Widget build(BuildContext context) {
@@ -141,7 +142,7 @@ class _TripPageState extends State<TripPage>
                                 double.parse("${_lastPositionPayload?['latitude']}")
                             );
                             _updateBusModelCoordinates(Point(coordinates: position));
-
+                            // _updatePulsatingCircle(Point(coordinates: position));
                           });                          
                         },
                         onStyleLoadedListener: (MapboxMap mapboxMap) async {
@@ -220,6 +221,16 @@ class _TripPageState extends State<TripPage>
                     //       Center()
                     //   ),
                     //   ),
+                    if(busPulsatingCircleCoordinate.x.toDouble() > 0)
+                      Positioned(
+                        left: busPulsatingCircleCoordinate.x.toDouble() - 25,
+                        top: busPulsatingCircleCoordinate.y.toDouble() - 25,
+                        child: Consumer<EmitterService>(builder: (context, emitterService, child) {
+                          return PulsatingCircle(
+                            color: emitterService.isConnected() ? Colors.green :  Colors.red
+                          );
+                        })
+                    ),
 
                     if(busModelCoordinate.x.toDouble() > 0)
                     Positioned(
@@ -237,19 +248,10 @@ class _TripPageState extends State<TripPage>
                           autoRotate: false, // Rota el modelo automáticamente
                           cameraControls: false, // Permite controlar la cámara
                           disableZoom: true,
+                          disablePan: true,
+                          disableTap: true,
                           orientation: "0deg 0deg ${busHeading}deg",
                     ),)),
-
-                    // if(busPulsatingCircleCoordinate.x.toDouble() > 0)
-                    // Positioned(
-                    //   left: busPulsatingCircleCoordinate.x.toDouble() - 25,
-                    //   top: busPulsatingCircleCoordinate.y.toDouble() - 25,
-                    //   child: Consumer<EmitterService>(builder: (context, emitterService, child) {
-                    //     return PulsatingCircle(
-                    //       color: emitterService.client!.isConnected ? Colors.green :  Colors.red
-                    //     );
-                    //   })
-                    // ),
 
                     DraggableScrollableSheet(
                       snapAnimationDuration: const Duration(seconds: 1),
@@ -794,13 +796,19 @@ class _TripPageState extends State<TripPage>
     }
   }
 
-  // _updatePulsatingCircle(Point point) async{
-  //   final coordinate = await _mapboxMapController?.pixelForCoordinate(point);
-  //   print("[_updatePulsatingCircle] ${coordinate?.x}");
-  //   setState(() {
-  //     busPulsatingCircleCoordinate = coordinate!;
-  //   });
-  // }
+  _updatePulsatingCircle(Point point) async{
+    final coordinate = await _mapboxMapController?.pixelForCoordinate(point);
+    print("[_updatePulsatingCircle] ${coordinate?.x}");
+    setState(() {
+      busPulsatingCircleCoordinate = coordinate!;
+    });
+
+      Timer(Duration(seconds: 1), () {
+        setState(() {
+          busPulsatingCircleCoordinate.x = 0;
+        });
+      });
+  }
 
   _updateBusModelCoordinates(Point point) async{
       final coordinate = await _mapboxMapController?.pixelForCoordinate(point);
@@ -946,8 +954,9 @@ class _TripPageState extends State<TripPage>
         _lastPositionPayload = tracking['payload'];
         try {
           busHeading = _lastPositionPayload?['heading'] ?? _lastPositionPayload?['heading'];
+          // print("busHeading: $busHeading");
         } catch (e) {
-          // 
+          print("busHeading error $e");
         }
         emitterServiceProvider.updateLastEmitterDate(DateTime.now());
       }
