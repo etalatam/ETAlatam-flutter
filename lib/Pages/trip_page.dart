@@ -134,7 +134,15 @@ class _TripPageState extends State<TripPage>
                               .createPointAnnotationManager();
                           annotationManager = value;
                           annotationManager
-                              ?.addOnPointAnnotationClickListener(this);                            
+                              ?.addOnPointAnnotationClickListener(this);
+                          mapboxMap.setOnMapMoveListener((context) {
+                            final Position position = Position(
+                                double.parse("${_lastPositionPayload?['longitude']}"),
+                                double.parse("${_lastPositionPayload?['latitude']}")
+                            );
+                            _updateBusModelCoordinates(Point(coordinates: position));
+
+                          });                          
                         },
                         onStyleLoadedListener: (MapboxMap mapboxMap) async {
                           showTripGeoJson(mapboxMap);
@@ -796,10 +804,12 @@ class _TripPageState extends State<TripPage>
 
   _updateBusModelCoordinates(Point point) async{
       final coordinate = await _mapboxMapController?.pixelForCoordinate(point);
-      print("[_updatePulsatingCircle] ${coordinate?.x}");
-      setState(() {
-        busModelCoordinate = coordinate!;
-      });
+      print("[_updateBusModelCoordinates] ${coordinate?.x}");
+      if(mounted){
+        setState(() {
+          busModelCoordinate = coordinate!;
+        });
+      }
     }  
 
   Future<void> _updateIcon(Position position, String relationName,
@@ -836,17 +846,22 @@ class _TripPageState extends State<TripPage>
       print("[TripPage._updateIcon]  pointAnnotation exists");
       // is driver?
       if (relationName.indexOf("drivers") > 1) {
-        final ByteData bytes = await rootBundle.load('assets/moving_car.gif');
+        // final ByteData bytes = await rootBundle.load('assets/moving_car.gif');
+        final ByteData bytes = await rootBundle.load('assets/blank.png');
         final Uint8List imageData = bytes.buffer.asUint8List();
 
         busPointAnnotation = await mapboxUtils.createAnnotation(
             annotationManager, position, imageData, label);
       } 
     } else {
-      busPointAnnotation?.geometry = Point(coordinates: position);
-      busPointAnnotation?.textField = label;
-      annotationManager?.update(busPointAnnotation!);
-      print("[TripPage._updateIcon] update pointAnnotation");
+      try {
+        print("[TripPage._updateIcon] update pointAnnotation");
+        busPointAnnotation?.geometry = Point(coordinates: position);
+        busPointAnnotation?.textField = label;
+        annotationManager?.update(busPointAnnotation!);
+      } catch (e) {
+        // 
+      }
     }
 
     if (relationName.indexOf("drivers") > 1) {
@@ -929,7 +944,11 @@ class _TripPageState extends State<TripPage>
         _updateIcon(position, relationName, relationId, label);
 
         _lastPositionPayload = tracking['payload'];
-        busHeading = _lastPositionPayload?['heading'] ?? _lastPositionPayload?['heading'];
+        try {
+          busHeading = _lastPositionPayload?['heading'] ?? _lastPositionPayload?['heading'];
+        } catch (e) {
+          // 
+        }
         emitterServiceProvider.updateLastEmitterDate(DateTime.now());
       }
     }
