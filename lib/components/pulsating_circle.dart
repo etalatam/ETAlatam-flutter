@@ -17,10 +17,10 @@ class _PulsatingCircleState extends State<PulsatingCircle>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(seconds: 1),
+      duration: const Duration(microseconds: 800),
       vsync: this,
     )..repeat(reverse: true);
-    _animation = Tween<double>(begin: 25.0, end: 40.0).animate(_controller);
+    _animation = Tween<double>(begin: 25.0, end: 80.0).animate(_controller);
   }
 
   @override

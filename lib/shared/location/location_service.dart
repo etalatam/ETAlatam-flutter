@@ -67,15 +67,19 @@ class LocationService extends ChangeNotifier {
         if(!initialization){
           print('[LocationService.initialization...]');
 
+          try {
+            if (IsolateNameServer.lookupPortByName(
+                    LocationServiceRepository.isolateName) != null) {
+              print('[LocationService.removePortNameMapping] ${LocationServiceRepository.isolateName}');
+              IsolateNameServer.removePortNameMapping(
+                  LocationServiceRepository.isolateName);
+            }
 
-          if (IsolateNameServer.lookupPortByName(
-                  LocationServiceRepository.isolateName) != null) {
-            IsolateNameServer.removePortNameMapping(
-                LocationServiceRepository.isolateName);
+            IsolateNameServer.registerPortWithName(
+                port.sendPort, LocationServiceRepository.isolateName);
+          } catch (e) {
+            print('[LocationService.error] $e');
           }
-
-          IsolateNameServer.registerPortWithName(
-              port.sendPort, LocationServiceRepository.isolateName);
 
           // ubicacion en foreground
           port.listen((dynamic data) async {
@@ -84,16 +88,9 @@ class LocationService extends ChangeNotifier {
                 (_locationData?['latitude'] != data['latitude']) &&
                 (_locationData?['longitude'] != data['longitude'])) {
               _locationData = data;
-              
+
               try {
                 _lastPositionDate = DateTime.now();
-                _totalDistance = _calculateDistance(
-                  _lastLatitude, 
-                  _lastLongitude, 
-                  _locationData?['latitude'], 
-                  _locationData?['longitude']
-                );
-
                 await trackingDynamic(_locationData);
                 notifyListeners();
               } catch (e) {
@@ -217,25 +214,44 @@ class LocationService extends ChangeNotifier {
     print('[LocationService.trackingDynamic] ${locationInfo.toString()}');
 
     try {
-      _lastPositionDate = DateTime.now();
-      _totalDistance = _calculateDistance(
-        _lastLatitude, 
-        _lastLongitude, 
-        locationInfo['latitude'], 
-        locationInfo['longitude']
-      );
+      final now = DateTime.now();
+      final difference = now.difference(_lastPositionDate!);
 
-      final jsonData = {
-        'latitude': locationInfo?['latitude'],
-        'longitude': locationInfo?['longitude'],
-        'altitude': locationInfo?['altitude'],
-        'accuracy': locationInfo?['accuracy'],
-        'heading': locationInfo?['heading'],
-        'time': locationInfo?['time'],
-        'distance': _totalDistance,
-        'background': false
-      };
-      await httpService.sendTracking(position: jsonData, userId: _userId);
+      // Verificar si la posición es diferente y si el tiempo es mayor a 5 segundos
+      if ((_locationData?['latitude'] != locationInfo['latitude'] ||
+          _locationData?['longitude'] != locationInfo['longitude']) &&
+          difference.inSeconds > 5) {
+
+        _lastPositionDate = now;
+        
+        try {
+          if(int.parse(_locationData?['speed']) > 5){
+            _totalDistance = _calculateDistance(
+              _lastLatitude, 
+              _lastLongitude, 
+              _locationData?['latitude'], 
+              _locationData?['longitude']
+            );
+          }
+        } catch (e) {
+          //
+        }
+
+        final jsonData = {
+          'latitude': locationInfo['latitude'],
+          'longitude': locationInfo['longitude'],
+          'altitude': locationInfo['altitude'],
+          'accuracy': locationInfo['accuracy'],
+          'heading': locationInfo['heading'],
+          'time': locationInfo['time'],
+          'distance': _totalDistance,
+          'background': false
+        };
+
+        await httpService.sendTracking(position: jsonData, userId: _userId);
+      }else{
+        print('[LocationService.trackingDynamic.some location]');
+      }
     } catch (e) {
       print('[LocationService.trackingDynamic.error] ${e.toString()}');
     }
@@ -244,37 +260,45 @@ class LocationService extends ChangeNotifier {
 
   trackingLocationDto(LocationDto locationInfo) async {
     print('[LocationService.trackingLocationDto] ${locationInfo.toString()}');
-    _lastPositionDate = DateTime.now();
 
-    if ((_locationData?['latitude'] != locationInfo.latitude) &&
-    (_locationData?['longitude'] != locationInfo.longitude)) {
+    final now = DateTime.now();
+    final difference = now.difference(_lastPositionDate!);
 
+    // Verificar si la posición es diferente y si el tiempo es mayor a 5 segundos
+    if ((_locationData?['latitude'] != locationInfo.latitude ||
+        _locationData?['longitude'] != locationInfo.longitude) &&
+        difference.inSeconds > 5) {
+
+      _lastPositionDate = now;
       try {
-        _totalDistance = _calculateDistance(
-          _lastLatitude, 
-          _lastLongitude, 
-          locationInfo.latitude, 
-          locationInfo.longitude
-        );
-
-        final jsonData = {
-          'latitude': locationInfo.latitude,
-          'longitude': locationInfo.longitude,
-          'altitude': locationInfo.altitude,
-          'accuracy': locationInfo.accuracy,
-          'speed': locationInfo.speed,
-          'speedAccuracy': locationInfo.speedAccuracy,
-          'heading': locationInfo.heading,
-          'time': locationInfo.time,
-          'distance': _totalDistance,
-          'background': true
-        };
-        _locationData = jsonData;
-        notifyListeners();
-        await httpService.sendTracking(position: jsonData, userId: _userId);
+        if(int.parse(_locationData?['speed']) > 5){
+          _totalDistance = _calculateDistance(
+            _lastLatitude, 
+            _lastLongitude, 
+            _locationData?['latitude'], 
+            _locationData?['longitude']
+          );
+        }
       } catch (e) {
-        print('[LocationService.trackingLocationDto.error] ${e.toString()}');
+        //
       }
+
+      final jsonData = {
+        'latitude': locationInfo.latitude,
+        'longitude': locationInfo.longitude,
+        'altitude': locationInfo.altitude,
+        'accuracy': locationInfo.accuracy,
+        'speed': locationInfo.speed,
+        'speedAccuracy': locationInfo.speedAccuracy,
+        'heading': locationInfo.heading,
+        'time': locationInfo.time,
+        'distance': _totalDistance,
+        'background': true
+      };
+
+      _locationData = jsonData;
+      notifyListeners();
+      await httpService.sendTracking(position: jsonData, userId: _userId);
     }
   }
 
@@ -316,6 +340,7 @@ class LocationService extends ChangeNotifier {
       initialization = false;
       _timer?.cancel();
       Workmanager().cancelAll();
+      _totalDistance = 0;
     } catch (e) {
       print('[LocationService.stopLocationService.error] ${e.toString()}');
     }

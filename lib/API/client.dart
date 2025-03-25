@@ -587,6 +587,10 @@ class HttpService {
         } on Exception catch (e) {
           debugPrint('Error saving login info: $e');
         }
+        if(!emitterServiceProvider.isConnected()){
+          emitterServiceProvider.connect();
+        }
+
         return '1';
       } else {
         return "${parseResponseMessage(res)}/${res.statusCode}";
@@ -717,7 +721,8 @@ class HttpService {
       'speedAccuracy': position['speedAccuracy'],
       'time': position['time'],
       'background': position['background'],
-      'distance': position['distance']
+      'distance': position['distance'],
+      'heading': position['heading']
 
     };
     final jsonData = jsonEncode(data);

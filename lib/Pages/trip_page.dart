@@ -3,12 +3,15 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
+import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/Pages/providers/notification_provider.dart';
+import 'package:eta_school_app/components/pulsating_circle.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:eta_school_app/shared/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
@@ -26,6 +29,8 @@ import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:wakelock/wakelock.dart';
+import 'package:model_viewer_plus/model_viewer_plus.dart';
+
 
 import 'map/map_wiew.dart';
 
@@ -67,11 +72,12 @@ class _TripPageState extends State<TripPage>
 
   PointAnnotationManager? annotationManager;
 
-  Map<String, PointAnnotation> annotationsMap = {};
+  // Map<String, PointAnnotation> annotationsMap = {};
+  PointAnnotation? busPointAnnotation;
 
   bool waitingBusPosition = true;
 
-  // ScreenCoordinate busPulsatingCircleCoordinate = ScreenCoordinate( x: 0, y: 0);
+  ScreenCoordinate busPulsatingCircleCoordinate = ScreenCoordinate( x: 0, y: 0);
 
   bool connectivityNone = false;
 
@@ -86,6 +92,14 @@ class _TripPageState extends State<TripPage>
   String tripDuration = "";
 
   double tripDistance = 0;
+  
+  final numberFormat = NumberFormat("#.##");
+
+  Map<String, dynamic>? _lastPositionPayload;
+  
+  ScreenCoordinate  busModelCoordinate = ScreenCoordinate( x: 0, y: 0);
+  
+  double busHeading = 270;
 
   @override
   Widget build(BuildContext context) {
@@ -122,11 +136,19 @@ class _TripPageState extends State<TripPage>
                           annotationManager = value;
                           annotationManager
                               ?.addOnPointAnnotationClickListener(this);
+                          mapboxMap.setOnMapMoveListener((context) {
+                            final Position position = Position(
+                                double.parse("${_lastPositionPayload?['longitude']}"),
+                                double.parse("${_lastPositionPayload?['latitude']}")
+                            );
+                            _updateBusModelCoordinates(Point(coordinates: position));
+                            // _updatePulsatingCircle(Point(coordinates: position));
+                          });                          
                         },
                         onStyleLoadedListener: (MapboxMap mapboxMap) async {
                           showTripGeoJson(mapboxMap);
                           showPickupLocations(mapboxMap);
-                        },
+                        }
                       ),
                     ),
 
@@ -199,17 +221,37 @@ class _TripPageState extends State<TripPage>
                     //       Center()
                     //   ),
                     //   ),
+                    if(busPulsatingCircleCoordinate.x.toDouble() > 0)
+                      Positioned(
+                        left: busPulsatingCircleCoordinate.x.toDouble() - 25,
+                        top: busPulsatingCircleCoordinate.y.toDouble() - 25,
+                        child: Consumer<EmitterService>(builder: (context, emitterService, child) {
+                          return PulsatingCircle(
+                            color: emitterService.isConnected() ? Colors.green :  Colors.red
+                          );
+                        })
+                    ),
 
-                    // if(busPulsatingCircleCoordinate.x.toDouble() > 0)
-                    // Positioned(
-                    //   left: busPulsatingCircleCoordinate.x.toDouble() - 25,
-                    //   top: busPulsatingCircleCoordinate.y.toDouble() - 25,
-                    //   child: Consumer<EmitterService>(builder: (context, emitterService, child) {
-                    //     return PulsatingCircle(
-                    //       color: emitterService.client!.isConnected ? Colors.green :  Colors.red
-                    //     );
-                    //   })
-                    // ),
+                    if(busModelCoordinate.x.toDouble() > 0)
+                    Positioned(
+                      left: busModelCoordinate.x.toDouble() - 35,
+                      top: busModelCoordinate.y.toDouble() - 35,
+                      child: SizedBox(
+                        width: 80,
+                        height: 80,
+                        child: ModelViewer(
+                          src: 'assets/bus.glb', // Ruta al modelo 3D
+                          //src: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
+                          alt: 'Autobús 3D',
+                          ar: false, // Habilita AR (si es compatible)
+                          backgroundColor: Colors.transparent,
+                          autoRotate: false, // Rota el modelo automáticamente
+                          cameraControls: false, // Permite controlar la cámara
+                          disableZoom: true,
+                          disablePan: true,
+                          disableTap: true,
+                          orientation: "0deg 0deg ${busHeading}deg",
+                    ),)),
 
                     DraggableScrollableSheet(
                       snapAnimationDuration: const Duration(seconds: 1),
@@ -284,7 +326,7 @@ class _TripPageState extends State<TripPage>
                                     const SizedBox(height: 10),
                                     if (trip.trip_status == "Running")
                                       Row(
-                                        textDirection: TextDirection.ltr,
+                                        // textDirection: TextDirection.LTR,
                                         mainAxisSize: MainAxisSize.max,
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceEvenly,
@@ -297,8 +339,8 @@ class _TripPageState extends State<TripPage>
                                           const SizedBox(width: 10),
                                           Icon(Icons.route, size: 20),
                                           Text(tripDistance > 1000
-                                              ? '$tripDistance KM'
-                                              : '$tripDistance m'),
+                                              ? '${numberFormat.format(tripDistance)} KM'
+                                              : '${numberFormat.format(tripDistance)} m'),
                                           const SizedBox(width: 10),
                                           (trip.pickup_locations != null)
                                               ? Icon(Icons.pin_drop_outlined,
@@ -538,8 +580,10 @@ class _TripPageState extends State<TripPage>
   }
 
   loadTrip() async {
+    print("[TripPage.loadTrip] ");
     try {
       if (trip.trip_status == "Running") {
+        print("[TripPage.loadTrip][trip.trip_status] ${trip.trip_status}");
         Wakelock.enable();
 
         initConnectivity();
@@ -549,7 +593,9 @@ class _TripPageState extends State<TripPage>
         _emitterServiceProvider =
             Provider.of<EmitterService>(context, listen: false);
         _emitterServiceProvider?.addListener(onEmitterMessage);
-        _emitterServiceProvider?.startTimer();
+        _emitterServiceProvider?.startTimer(false);
+        trip.subscribeToTripEvents(_emitterServiceProvider);
+        trip.subscribeToTripTracking(_emitterServiceProvider);
 
         _notificationService =
             Provider.of<NotificationService>(context, listen: false);
@@ -558,6 +604,7 @@ class _TripPageState extends State<TripPage>
     } catch (e) {
       print("[TripPage.loadTrip] $e");
     }
+
     try {
       if (relationName.isEmpty) {
         final LocalStorage storage = LocalStorage('tokens.json');
@@ -565,19 +612,23 @@ class _TripPageState extends State<TripPage>
         print("[TipPage.loadTrip.relationName] $relationName");
       }
     } catch (e) {
-      print("[TripaPage.loadTrip.relationName.error] $e");
+      print("[TripPage.loadTrip.relationName.error] $e");
     }
 
     try {
       TripModel? trip_ = await httpService.getTrip(widget.trip?.trip_id);
+      print("[TripPage.loadTrip][getTrip] ${trip.trip_status}");
       if (trip_.trip_id != 0) {
         setState(() {
           trip = trip_;
           showLoader = false;
+          print(
+              "[TripPage.loadTrip][trip_.lastPositionPayload] ${trip_.lastPositionPayload}");
+          processTrackingMessage(trip_.lastPositionPayload);
         });
       }
     } catch (e) {
-      print("[TripaPage.getTrip.error] $e");
+      print("[TripPage.loadTrip.error] $e");
     }
   }
 
@@ -724,6 +775,10 @@ class _TripPageState extends State<TripPage>
       print("[TripPage.initState.formatElapsedTime.error] $e");
     }
 
+    final coordinateBounds = getCoordinateBounds(points);
+    mapboxMap.setCamera(
+        CameraOptions(center: coordinateBounds.southwest, zoom: 18, pitch: 45));
+
     if (trip.lastPositionPayload != null &&
         relationName != "eta.drivers" &&
         trip.trip_status == "Running") {
@@ -741,18 +796,39 @@ class _TripPageState extends State<TripPage>
     }
   }
 
-  // _updatePulsatingCircle(Point point) async{
-  //   final coordinate = await _mapboxMapController?.pixelForCoordinate(point);
-  //   print("[_updatePulsatingCircle] ${coordinate?.x}");
-  //   setState(() {
-  //     busPulsatingCircleCoordinate = coordinate!;
-  //   });
-  // }
+  _updatePulsatingCircle(Point point) async{
+    final coordinate = await _mapboxMapController?.pixelForCoordinate(point);
+    print("[_updatePulsatingCircle] ${coordinate?.x}");
+    setState(() {
+      busPulsatingCircleCoordinate = coordinate!;
+    });
+
+      Timer(Duration(seconds: 1), () {
+        setState(() {
+          busPulsatingCircleCoordinate.x = 0;
+        });
+      });
+  }
+
+  _updateBusModelCoordinates(Point point) async{
+      final coordinate = await _mapboxMapController?.pixelForCoordinate(point);
+      print("[_updateBusModelCoordinates] ${coordinate?.x}");
+      if(mounted){
+        setState(() {
+          busModelCoordinate = coordinate!;
+        });
+      }
+    }  
 
   Future<void> _updateIcon(Position position, String relationName,
       int relationId, String label) async {
+    String key = "$relationName.$relationId";
     print(
         "[TripPage._updateIcon] [relationName] $relationName [relationId] $relationId");
+
+    if(key.isEmpty){
+      return;
+    }
 
     // is the trip driver?
     if (relationName != "eta.drivers") {
@@ -764,49 +840,43 @@ class _TripPageState extends State<TripPage>
       return;
     }
 
-    PointAnnotation? pointAnnotation =
-        annotationsMap.containsKey("$relationName.$relationId")
-            ? annotationsMap["$relationName.$relationId"]
-            : null;
+    // PointAnnotation? pointAnnotation =
+    //     annotationsMap.containsKey(key)
+    //         ? annotationsMap[key]
+    //         : null;
 
     // if (relationName.indexOf("drivers") > 1) {
     //   _updatePulsatingCircle(Point(coordinates: position));
     // }
 
     // If it does not exist, the new element is created on the map
-    if (pointAnnotation == null) {
+    if (busPointAnnotation == null) {
       print("[TripPage._updateIcon]  pointAnnotation exists");
       // is driver?
       if (relationName.indexOf("drivers") > 1) {
-        final ByteData bytes = await rootBundle.load('assets/moving_car.gif');
+        // final ByteData bytes = await rootBundle.load('assets/moving_car.gif');
+        final ByteData bytes = await rootBundle.load('assets/blank.png');
         final Uint8List imageData = bytes.buffer.asUint8List();
 
-        pointAnnotation = await mapboxUtils.createAnnotation(
+        busPointAnnotation = await mapboxUtils.createAnnotation(
             annotationManager, position, imageData, label);
-      } else {
-        // any user who wishes will be shown on the map, examples for students
-        final networkImage = await mapboxUtils.getNetworkImage(
-            httpService.getAvatarUrl(relationId, relationName));
-        final circleImage = await mapboxUtils.createCircleImage(networkImage);
-        pointAnnotation = await mapboxUtils.createAnnotation(
-            annotationManager, position, circleImage, label);
-      }
-
-      if (pointAnnotation != null) {
-        annotationsMap["$relationName.$relationId"] = pointAnnotation;
-        print("[TripPage._updateIcon] new pointAnnotation");
-      }
+      } 
     } else {
-      pointAnnotation.geometry = Point(coordinates: position);
-      pointAnnotation.textField = label;
-      annotationManager?.update(pointAnnotation);
-      print("[TripPage._updateIcon] update pointAnnotation");
+      try {
+        print("[TripPage._updateIcon] update pointAnnotation");
+        busPointAnnotation?.geometry = Point(coordinates: position);
+        busPointAnnotation?.textField = label;
+        annotationManager?.update(busPointAnnotation!);
+      } catch (e) {
+        // 
+      }
     }
 
     if (relationName.indexOf("drivers") > 1) {
       _mapboxMapController
           ?.setCamera(CameraOptions(center: Point(coordinates: position)));
     }
+    _updateBusModelCoordinates(Point(coordinates: position));
   }
 
   //  void _animateIcon(LatLng start, LatLng end) {
@@ -844,10 +914,63 @@ class _TripPageState extends State<TripPage>
     }
 
     try {
+      if(!widget.navigationMode){
+        processTrackingMessage(jsonDecode(message));
+      }
+    } catch (e) {
+      proccessTripEventMessage(message);
+    }
+  }
+
+  void processTrackingMessage(Map<String, dynamic> tracking) async {
+    print("[processTrackingMessage] $tracking");
+
+    if (_lastPositionPayload != null &&
+        _lastPositionPayload?['time'].toInt() >
+            tracking['payload']['time'].toInt()) {
+      print("[trippage.processTrackingMessage.ignore position by time]");
+      return;
+    }
+
+    if (tracking['relation_name'] != null &&
+        tracking['relation_name'] == "eta.drivers") {
+      final relationName = tracking['relation_name'];
+      final relationId = tracking['relation_id'];
+
+      if (tracking['payload'] != null) {
+        final Position position = Position(
+            double.parse("${tracking['payload']['longitude']}"),
+            double.parse("${tracking['payload']['latitude']}"));
+        final label = formatUnixEpoch(tracking['payload']['time'].toInt());
+
+        try {
+          tripDistance = double.parse("${tracking['payload']['distance']}");
+        } catch (e) {
+          //
+        }
+
+        _updateIcon(position, relationName, relationId, label);
+
+        _lastPositionPayload = tracking['payload'];
+        try {
+          busHeading = _lastPositionPayload?['heading'] ?? _lastPositionPayload?['heading'];
+          // print("busHeading: $busHeading");
+        } catch (e) {
+          print("busHeading error $e");
+        }
+        emitterServiceProvider.updateLastEmitterDate(DateTime.now());
+      }
+    }
+  }
+
+  void proccessTripEventMessage(String message) {
+    try {
       // si es un evento del viaje
       final event = EventModel.fromJson(jsonDecode(message));
       if (event.type == "end-trip" && relationName != 'eta.drivers') {
         _emitterServiceProvider?.stopTimer();
+        trip.unSubscribeToTripEvents(_emitterServiceProvider);
+        trip.unSubscribeToTripTracking(_emitterServiceProvider);
         if (mounted) {
           setState(() {
             Get.back();
@@ -857,43 +980,7 @@ class _TripPageState extends State<TripPage>
         // await event.requestData();
       }
     } catch (e) {
-      //si es un evento posicion
-      try {
-        final Map<String, dynamic> tracking = jsonDecode(message);
-
-        if (trip.lastPositionPayload != null &&
-            trip.lastPositionPayload['time'].toInt() >
-                tracking['payload']['time'].toInt()) {
-          print("[trippage.onEmitterMessage.ignore position by time]");
-          return;
-        }
-
-        if (tracking['relation_name'] != null) {
-          final relationName = tracking['relation_name'];
-          final relationId = tracking['relation_id'];
-
-          if (tracking['payload'] != null) {
-            final Position position = Position(
-                double.parse("${tracking['payload']['longitude']}"),
-                double.parse("${tracking['payload']['latitude']}"));
-            final label = formatUnixEpoch(tracking['payload']['time'].toInt());
-
-            if (relationId != null && relationName == 'eta.drivers') {
-              print(
-                  "[TripPage.onEmitterMessage.emitter-tracking.driver] $tracking");
-              _updateIcon(position, relationName, relationId, label);
-            } else if (relationName == 'eta.students' && widget.showStudents) {
-              print(
-                  "[TripPage.onEmitterMessage.emitter-tracking.student] $tracking");
-              _updateIcon(position, relationName, relationId, label);
-            }
-
-            trip.lastPositionPayload = tracking['payload'];
-          }
-        }
-      } catch (e) {
-        print("[trippage.onEmitterMessage] $e");
-      }
+      print("[TripPage] $e");
     }
   }
 

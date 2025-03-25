@@ -235,7 +235,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
     try {
       final List<TripModel> trips = (await httpService.getGuardianTrips("true"));
       for (var trip in trips) {
-        trip.subscribeToTripTracking();
+        trip.subscribeToTripTracking(_emitterServiceProvider);
       }
 
       if(mounted){
