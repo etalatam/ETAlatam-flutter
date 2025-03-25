@@ -671,12 +671,13 @@ class HttpService {
   }
 
   /// Load Routes for Student by Date
-  Future<List<TripStudentModel>> getTripsStudentByDate(int studentId, String date) async {
+  Future<List<TripStudentModel>> getTripsStudentByDate(int studentId, String date, String endDate) async {
     const endpoint = "/rpc/next_trips_students";
-    var res = await getQuery("$endpoint?_id_student=$studentId&local_timestamp=$date");
+    var queryParams = "studentid=$studentId&start_date=$date&end_date=$endDate";
+    var res = await getQuery("$endpoint?$queryParams");
     print("[$endpoint] res.statusCode: ${res.statusCode}");
     print("[$endpoint] res.body: ${res.body}");
-
+    
     if (res.statusCode == 200) {
       try {
         List<dynamic> body = jsonDecode(res.body);
@@ -691,12 +692,12 @@ class HttpService {
   }
 
   /// Register Student Absence
-  Future<Map<String, dynamic>> registerStudentAbsence(AbsenceModel absence) async {
+  Future<Map<String, dynamic>> registerStudentAbsence(String jsonBody) async {
     const endpoint = "/rpc/request_absence";
     try {
       http.Response res = await postQuery(
         endpoint,
-        jsonEncode(absence.toJson()),
+        jsonBody,
         contentType: 'application/json',
       );
       

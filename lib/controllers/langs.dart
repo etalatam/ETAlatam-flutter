@@ -211,7 +211,9 @@ class Lang {
     "absence_cancel_successfully": "تم حذف الغياب بنجاح",
     "error_deleting_absence": "خطأ في حذف الغياب",
     "cancel_absence": "حذف",
+    "accept": "قبول",
     "register_absences": "تسجيل الغيابات",
+    "register_absences_on_all": "تسجيل الغياب في جميع الرحلات في التاريخ المحدد",
   };
 
   Map<String, dynamic> enLangs = {
@@ -264,7 +266,9 @@ class Lang {
     "absence_cancel_successfully": "Absence cancelled successfully",
     "error_deleting_absence": "Error deleting absence",
     "cancel_absence": "Cancel",
-    "register_absences": "Register Absences"
+    "register_absences": "Register Absences",
+    "accept": "Accept",
+    "register_absences_on_all": "Register absence on all trips of the selected date",
   };
 
   Map<String, dynamic> esLangs = {
@@ -392,6 +396,8 @@ class Lang {
     "error_loading_absences": "Error al cargar las inasistencias",
     "absence_cancel_successfully": "Inasistencia cancelada exitosamente",
     "error_deleting_absence": "Error al eliminar la inasistencia",
-    "cancel_absence": "Cancelar"
+    "cancel_absence": "Cancelar",
+    "accept": "Aceptar",
+    "register_absences_on_all": "Registrar inasistencia en todos los viajes de la fecha seleccionada"
   };
 }

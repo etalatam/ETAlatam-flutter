@@ -91,24 +91,10 @@ class TripStudentModel {
     };
   }
 
-  // Método para obtener una fecha formateada para mostrar
   String getFormattedTime() {
     if (scheduleStartTime != null) {
-      // Extraer solo la parte de la hora del formato HH:MM:SS
       return scheduleStartTime!.substring(0, 5);
     }
     return '';
-  }
-
-  // Método para obtener la fecha programada como DateTime
-  DateTime? getScheduledDateTime() {
-    if (scheduledDatetime != null) {
-      try {
-        return DateTime.parse(scheduledDatetime!);
-      } catch (e) {
-        return null;
-      }
-    }
-    return null;
   }
 }

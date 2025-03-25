@@ -1,10 +1,14 @@
+import 'dart:convert';
+
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:eta_school_app/API/client.dart';
 import 'package:eta_school_app/Models/absence_model.dart';
 import 'package:eta_school_app/Models/trips_students_model.dart';
 import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:eta_school_app/components/trip_card.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class RegisterAbsences extends StatefulWidget {
   final int studentId;
@@ -19,16 +23,22 @@ class _RegisterAbsencesState extends State<RegisterAbsences> {
   final TextEditingController _descriptionController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   
-  DateTime _selectedDate = DateTime.now();
+  DateTime? _rangeStart;
+  DateTime? _rangeEnd;
   
   List<TripStudentModel> _availableTrips = [];
   TripStudentModel? _selectedTrip;
+  bool _isChecked = false;
   bool _isLoading = false;
   bool _isLoadingTrips = false;
   
   @override
   void initState() {
     super.initState();
+    initializeDateFormatting('es_ES', null).then((_) {
+      setState(() {});
+    });
+    _rangeStart = DateTime.now();
     _loadTripsForDate();
   }
   
@@ -44,12 +54,19 @@ class _RegisterAbsencesState extends State<RegisterAbsences> {
       _selectedTrip = null;
     });
     
-    final formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    final formattedStartDate = DateFormat('yyyy-MM-dd').format(_rangeStart!);
+    String formattedEndDate;
+    if (_rangeEnd == null) {
+      formattedEndDate = formattedStartDate;
+    } else {
+      formattedEndDate = DateFormat('yyyy-MM-dd').format(_rangeEnd!);
+    }
     
     try {
       final trips = await _httpService.getTripsStudentByDate(
         widget.studentId, 
-        formattedDate
+        formattedStartDate,
+        formattedEndDate
       );
       
       setState(() {
@@ -71,28 +88,23 @@ class _RegisterAbsencesState extends State<RegisterAbsences> {
   }
   
   Future<void> _selectDate(BuildContext context) async {
-  final DateTime? picked = await showDatePicker(
-    context: context,
-    initialDate: _selectedDate,
-    firstDate: DateTime.now(),
-    lastDate: DateTime.now().add(const Duration(days: 365)),
-    builder: (BuildContext context, Widget? child) {
-      return Theme(
-        data: ThemeData.light().copyWith(
-          colorScheme: ColorScheme.light(primary: DefaultTheme.default_color),
-        ),
-        child: child!,
-      );
-    },
-  );
-
-  if (picked != null && picked != _selectedDate) {
-    setState(() {
-      _selectedDate = picked;
-    });
-    _loadTripsForDate();
+    final result = await showDialog<Map<String, DateTime?>>(
+      context: context,
+      builder: (BuildContext context) {
+        return _DateRangePickerDialog(
+          initialDate: _rangeStart!,
+        );
+      },
+    );
+    
+    if (result != null) {
+      setState(() {
+        _rangeStart = result['start'];
+        _rangeEnd = result['end'];
+      });
+      _loadTripsForDate();
+    }
   }
-}
   
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate() && _selectedTrip != null) {
@@ -101,14 +113,19 @@ class _RegisterAbsencesState extends State<RegisterAbsences> {
       });
       
       try {
-        final absence = AbsenceModel(
-          idStudent: widget.studentId,
-          idSchedule: _selectedTrip!.scheduleId!,
-          absenceDate: _selectedDate,
-          notes: _descriptionController.text,
-        );
+        final endDate = _rangeEnd ?? _rangeStart!;
         
-        final response = await _httpService.registerStudentAbsence(absence);
+        // Crear un solo objeto de ausencia con el rango completo de fechas
+        final absence = {
+          'idStudent': widget.studentId,
+          'idSchedule': _selectedTrip!.scheduleId!,
+          'notes': _descriptionController.text,
+          'isAllTrips': _isChecked,
+          'dateStart': _rangeStart!.toIso8601String(),
+          'dateEnd': endDate.toIso8601String(),
+        };
+
+        final response = await _httpService.registerStudentAbsence(jsonEncode(absence));
         
         if (response['success']) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -117,9 +134,10 @@ class _RegisterAbsencesState extends State<RegisterAbsences> {
           
           Navigator.of(context).pop();
         } else {
+          String errorMessage = response['message'] ?? 'Error al registrar ausencia';
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(lang.translate(response['message'])),
+              content: Text(lang.translate(errorMessage)),
               backgroundColor: Colors.red,
             ),
           );
@@ -174,7 +192,9 @@ class _RegisterAbsencesState extends State<RegisterAbsences> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          DateFormat('dd/MM/yyyy').format(_selectedDate),
+                          _rangeEnd == null
+                              ? DateFormat('dd/MM/yyyy').format(_rangeStart!)
+                              : '${DateFormat('dd/MM/yyyy').format(_rangeStart!)} - ${DateFormat('dd/MM/yyyy').format(_rangeEnd!)}',
                           style: activeTheme.normalText,
                         ),
                         Icon(Icons.calendar_today, color: DefaultTheme.default_color),
@@ -182,13 +202,38 @@ class _RegisterAbsencesState extends State<RegisterAbsences> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
-                
+                const SizedBox(height: 8),
+                if(_availableTrips.isNotEmpty)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Checkbox(
+                      activeColor: DefaultTheme.default_color,
+                      value: _isChecked,
+                      onChanged: (bool? value) {
+                        setState(() {
+                        _isChecked = value ?? false;
+                      });
+                    },
+                  ),
+                  Flexible(
+                    child: Text(
+                      lang.translate('register_absences_on_all'),
+                      style: activeTheme.normalText,
+                      softWrap: true,
+                      overflow: TextOverflow.visible,
+                    ),
+                  ),
+                ],),
+                const SizedBox(height: 8),     
                 // Rutas disponibles
-                Text(
-                  lang.translate('select_trip'),
-                  style: activeTheme.h6,
-                ),
+                if(!_isChecked)
+                  Text(
+                    lang.translate('select_trip'),
+                    style: activeTheme.h6,
+                  ),
+                  
+                if(!_isChecked)  
                 const SizedBox(height: 8),
                 
                 if (_isLoadingTrips)
@@ -202,7 +247,7 @@ class _RegisterAbsencesState extends State<RegisterAbsences> {
                       style: activeTheme.normalText.copyWith(color: Colors.red),
                     ),
                   )
-                else
+                else if(!_isChecked)
                   // Lista de tarjetas seleccionables para los viajes
                   Container(
                     constraints: BoxConstraints(
@@ -231,12 +276,14 @@ class _RegisterAbsencesState extends State<RegisterAbsences> {
                         
                         final startTime = formatTimeToAmPm(trip.scheduleStartTime);
                         final endTime = formatTimeToAmPm(trip.scheduleEndTime);
+                        final date = trip.scheduledDatetime;
                         
                         return TripCard(
                           trip: trip,
                           isSelected: isSelected,
                           startTime: startTime,
                           endTime: endTime,
+                          date: date,
                           onSelect: () {
                             setState(() {
                               _selectedTrip = trip;
@@ -246,7 +293,8 @@ class _RegisterAbsencesState extends State<RegisterAbsences> {
                       },
                     ),
                   ),
-                const SizedBox(height: 24),
+                  if(!_isChecked)
+                  const SizedBox(height: 14),
                 
                 // Descripción
                 Text(
@@ -305,6 +353,163 @@ class _RegisterAbsencesState extends State<RegisterAbsences> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _DateRangePickerDialog extends StatefulWidget {
+  final DateTime initialDate;
+
+  const _DateRangePickerDialog({
+    Key? key,
+    required this.initialDate,
+  }) : super(key: key);
+
+  @override
+  _DateRangePickerDialogState createState() => _DateRangePickerDialogState();
+}
+
+class _DateRangePickerDialogState extends State<_DateRangePickerDialog> {
+  late DateTime _focusedDay;
+  DateTime? _rangeStart;
+  DateTime? _rangeEnd;
+  CalendarFormat _calendarFormat = CalendarFormat.month;
+  RangeSelectionMode _rangeSelectionMode = RangeSelectionMode.toggledOn;
+
+  @override
+  void initState() {
+    super.initState();
+    initializeDateFormatting('es_ES', null).then((_) {
+      setState(() {});
+    });
+    _focusedDay = widget.initialDate;
+    _rangeStart = widget.initialDate;
+  }
+
+  bool _isMaxRangeExceeded() {
+    if (_rangeStart == null || _rangeEnd == null) return false;
+    
+    final difference = _rangeEnd!.difference(_rangeStart!).inDays;
+    return difference > 90; // Máximo 3 meses
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_rangeStart != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                children: [
+                  Text(
+                    _rangeEnd == null
+                        ? DateFormat('dd/MM/yyyy').format(_rangeStart!)
+                        : '${DateFormat('dd/MM/yyyy').format(_rangeStart!)} - ${DateFormat('dd/MM/yyyy').format(_rangeEnd!)}',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            TableCalendar(
+              firstDay: DateTime.now(),
+              lastDay: DateTime.now().add(const Duration(days: 365)),
+              focusedDay: _focusedDay,
+              calendarFormat: _calendarFormat,
+              rangeStartDay: _rangeStart,
+              rangeEndDay: _rangeEnd,
+              rangeSelectionMode: _rangeSelectionMode,
+              locale: 'es_ES',
+              onRangeSelected: (start, end, focusedDay) {
+                setState(() {
+                  _focusedDay = focusedDay;
+                  _rangeStart = start;
+                  _rangeEnd = end;
+                });
+              },
+              onFormatChanged: (format) {
+                setState(() {
+                  _calendarFormat = format;
+                });
+              },
+              onPageChanged: (focusedDay) {
+                _focusedDay = focusedDay;
+              },
+              calendarStyle: CalendarStyle(
+                todayDecoration: BoxDecoration(
+                  color: DefaultTheme.default_color.withOpacity(0.5),
+                  shape: BoxShape.circle,
+                ),
+                selectedDecoration: BoxDecoration(
+                  color: DefaultTheme.default_color,
+                  shape: BoxShape.circle,
+                ),
+                rangeHighlightColor: DefaultTheme.default_color.withOpacity(0.2),
+                rangeStartDecoration: BoxDecoration(
+                  color: DefaultTheme.default_color,
+                  shape: BoxShape.circle,
+                ),
+                rangeEndDecoration: BoxDecoration(
+                  color: DefaultTheme.default_color,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              headerStyle: HeaderStyle(
+                formatButtonVisible: true,
+                titleCentered: true,
+                formatButtonShowsNext: false,
+              ),
+            ),
+            if (_isMaxRangeExceeded())
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text(
+                '(Máximo 3 meses)',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 12,
+                ),
+              ),
+            ),  
+            Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: DefaultTheme.default_color,
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(lang.translate('cancel_absence')),
+                ),
+                SizedBox(width: 8),
+                TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: DefaultTheme.default_color,
+                  ),
+                  onPressed: _isMaxRangeExceeded()
+                      ? null
+                      : () {
+                          Navigator.of(context).pop({
+                            'start': _rangeStart,
+                            'end': _rangeEnd,
+                          });
+                        },
+                  child: Text(lang.translate('accept')),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
