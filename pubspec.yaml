@@ -49,6 +49,7 @@ dependencies:
   rflutter_alert: ^2.0.7
   sensors_plus: ^6.1.1
   shared_preferences: ^2.0.17
+  table_calendar: ^3.0.9
   url_launcher: ^6.0.0
   visibility_detector: ^0.4.0+2
   wakelock: ^0.6.2

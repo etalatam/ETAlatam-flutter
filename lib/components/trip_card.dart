@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:eta_school_app/Models/trips_students_model.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
+import 'package:intl/intl.dart';
 
 class TripCard extends StatelessWidget {
   final TripStudentModel trip;
@@ -8,6 +9,7 @@ class TripCard extends StatelessWidget {
   final Function onSelect;
   final String startTime;
   final String endTime;
+  final String? date;
 
   const TripCard({
     Key? key,
@@ -16,6 +18,7 @@ class TripCard extends StatelessWidget {
     required this.onSelect,
     required this.startTime,
     required this.endTime,
+    required this.date
   }) : super(key: key);
 
   @override
@@ -43,6 +46,9 @@ class TripCard extends StatelessWidget {
               _buildBusInfo(),
               const SizedBox(height: 4),
               _buildDriverInfo(),
+              const SizedBox(height: 4),
+              _buildDate(),
+              const SizedBox(height: 4),
               if (isSelected) _buildSelectionIndicator(),
             ],
           ),
@@ -140,6 +146,34 @@ class TripCard extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Widget _buildDate() {
+    try {
+      final formattedDate = DateFormat('dd/MM/yyyy').format(DateTime.parse(date ?? ''));
+      return Row(
+        children: [
+          Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
+          const SizedBox(width: 4),
+          Text(
+            formattedDate,
+            style: activeTheme.normalText,
+          ),
+        ],
+      );
+    } catch (e) {
+      // Si hay un error al parsear la fecha, mostrar un valor predeterminado
+      return Row(
+        children: [
+          Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
+          const SizedBox(width: 4),
+          Text(
+            "Fecha no disponible",
+            style: activeTheme.normalText,
+          ),
+        ],
+      );
+    }
   }
 
   Widget _buildSelectionIndicator() {
