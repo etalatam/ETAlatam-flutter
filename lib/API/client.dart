@@ -432,12 +432,12 @@ class HttpService {
     if (res.statusCode == 200) {
       try {
         var body = jsonDecode(res.body);
-        if (body == null) return TripModel(trip_id: 0);
+        if (body == null ) return TripModel(trip_id: 0);
 
         final TripModel trips = TripModel.fromJson(body[0]);
         return trips;
       } catch (e) {
-        print("[getActiveTrip] ${e.toString()}");
+        print("[httpservice.getActiveTrip.error] ${e.toString()}");
       }
     }
     return TripModel(trip_id: 0);

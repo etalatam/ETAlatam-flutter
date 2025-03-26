@@ -46,7 +46,7 @@ class RouteModel {
 
     List<PickupLocationModel> pickupLocations = [];
     try {
-      print("[RouteModel.fromJson.pickup_points] ${json['pickup_points']}");
+      // print("[RouteModel.fromJson.pickup_points] ${json['pickup_points']}");
       if (json['pickup_points'] != null )
       {
           Iterable l = json["pickup_points"];
