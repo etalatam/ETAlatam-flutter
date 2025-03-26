@@ -670,136 +670,6 @@ class HttpService {
     return requestAccessRes;
   }
 
-  /// Load Routes for Student by Date
-  Future<List<TripStudentModel>> getTripsStudentByDate(int studentId, String date, String endDate) async {
-    const endpoint = "/rpc/next_trips_students";
-    var queryParams = "studentid=$studentId&start_date=$date&end_date=$endDate";
-    var res = await getQuery("$endpoint?$queryParams");
-    print("[$endpoint] res.statusCode: ${res.statusCode}");
-    print("[$endpoint] res.body: ${res.body}");
-    
-    if (res.statusCode == 200) {
-      try {
-        List<dynamic> body = jsonDecode(res.body);
-        return body.map((item) => TripStudentModel.fromJson(item)).toList();
-      } catch (e) {
-        print("getTripsStudentByDate error: ${e.toString()}");
-        return [];
-      }
-    }
-
-    return [];
-  }
-
-  /// Register Student Absence
-  Future<Map<String, dynamic>> registerStudentAbsence(String jsonBody) async {
-    const endpoint = "/rpc/request_absence";
-    try {
-      http.Response res = await postQuery(
-        endpoint,
-        jsonBody,
-        contentType: 'application/json',
-      );
-      
-      print("[$endpoint] res.statusCode: ${res.statusCode}");
-      print("[$endpoint] res.body: ${res.body}");
-      
-      // Intentar parsear la respuesta
-      Map<String, dynamic> responseData = {};
-      try {
-        responseData = jsonDecode(res.body);
-      } catch (e) {
-        print("Error parsing response: ${e.toString()}");
-      }
-      
-      final bool isSuccess = res.statusCode == 200 || res.statusCode == 201;
-      final String status = responseData['status'] ?? (isSuccess ? 'success' : 'error');
-      final String message = responseData['message'] ?? (isSuccess ? 'Operación exitosa' : 'Error en la operación');
-      
-      return {
-        'success': status == 'success',
-        'message': message,
-      };
-    } catch (e) {
-      print("registerStudentAbsence error: ${e.toString()}");
-      return {
-        'success': false,
-        'message': e.toString(),
-      };
-    }
-  }
-
-  /// Get Student Absences
-  Future<List<AbsenceModel>> getStudentAbsences(int studentId) async {
-    const endpoint = "/rpc/get_absences";
-    var res = await getQuery("$endpoint?id_student=eq.$studentId&order=absence_date.desc");
-    print("[$endpoint] res.statusCode: ${res.statusCode}");
-    print("[$endpoint] res.body: ${res.body}");
-
-    if (res.statusCode == 200) {
-      try {
-        List<dynamic> body = jsonDecode(res.body);
-        return body.map((dynamic item) => AbsenceModel.fromJson(item)).toList();
-      } catch (e) {
-        print("getStudentAbsences error: ${e.toString()}");
-        return [];
-      }
-    }
-
-    return [];
-  }
-
-  /// Cancel Student Absence
-  Future<Map<String, dynamic>> cancelStudentAbsence(AbsenceModel absence) async {
-    const endpoint = "/rpc/cancel_absence";
-    
-    // Crear un mapa con solo los parámetros requeridos por la función de PostgreSQL
-    final Map<String, dynamic> requestData = {
-      '_student_id': absence.idStudent,
-      '_absence_date': absence.absenceDate.toIso8601String(),
-      '_id_schedule': absence.idSchedule,
-    };
-    
-    try {
-      http.Response res = await postQuery(
-        endpoint,
-        jsonEncode(requestData),
-        contentType: 'application/json',
-      );
-      
-      print("[$endpoint] res.statusCode: ${res.statusCode}");
-      print("[$endpoint] res.body: ${res.body}");
-      
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        final jsonResponse = jsonDecode(res.body);
-        final status = jsonResponse['status'];
-        
-        if (status == 'success') {
-          return {
-            'success': true,
-            'message': jsonResponse['message'] ?? 'Inasistencia cancelada exitosamente',
-          };
-        } else {
-          return {
-            'success': false,
-            'message': jsonResponse['message'] ?? 'Error al cancelar la inasistencia',
-          };
-        }
-      } else {
-        return {
-          'success': false,
-          'message': parseResponseMessage(res) ?? 'Error al cancelar la inasistencia',
-        };
-      }
-    } catch (e) {
-      print("[$endpoint] Error: $e");
-      return {
-        'success': false,
-        'message': e.toString(),
-      };
-    }
-  }
-
   // get message error from request response
   parseResponseMessage(http.Response res) {
     try {
@@ -946,6 +816,137 @@ class HttpService {
   
   handleHttpError(e) {
     print("userInfo error: ${e.toString()}");
+  }
+
+
+  /// Load Routes for Student by Date
+  Future<List<TripStudentModel>> getTripsStudentByDate(int studentId, String date, String endDate) async {
+    const endpoint = "/rpc/next_trips_students";
+    var queryParams = "studentid=$studentId&start_date=$date&end_date=$endDate";
+    var res = await getQuery("$endpoint?$queryParams");
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
+    
+    if (res.statusCode == 200) {
+      try {
+        List<dynamic> body = jsonDecode(res.body);
+        return body.map((item) => TripStudentModel.fromJson(item)).toList();
+      } catch (e) {
+        print("getTripsStudentByDate error: ${e.toString()}");
+        return [];
+      }
+    }
+
+    return [];
+  }
+
+  /// Register Student Absence
+  Future<Map<String, dynamic>> registerStudentAbsence(String jsonBody) async {
+    const endpoint = "/rpc/request_absence";
+    try {
+      http.Response res = await postQuery(
+        endpoint,
+        jsonBody,
+        contentType: 'application/json',
+      );
+      
+      print("[$endpoint] res.statusCode: ${res.statusCode}");
+      print("[$endpoint] res.body: ${res.body}");
+      
+      // Intentar parsear la respuesta
+      Map<String, dynamic> responseData = {};
+      try {
+        responseData = jsonDecode(res.body);
+      } catch (e) {
+        print("Error parsing response: ${e.toString()}");
+      }
+      
+      final bool isSuccess = res.statusCode == 200 || res.statusCode == 201;
+      final String status = responseData['status'] ?? (isSuccess ? 'success' : 'error');
+      final String message = responseData['message'] ?? (isSuccess ? 'Operación exitosa' : 'Error en la operación');
+      
+      return {
+        'success': status == 'success',
+        'message': message,
+      };
+    } catch (e) {
+      print("registerStudentAbsence error: ${e.toString()}");
+      return {
+        'success': false,
+        'message': e.toString(),
+      };
+    }
+  }
+
+  /// Get Student Absences
+  Future<List<AbsenceModel>> getStudentAbsences(int studentId) async {
+    const endpoint = "/rpc/get_absences";
+    var res = await getQuery("$endpoint?id_student=eq.$studentId&order=absence_date.desc");
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
+
+    if (res.statusCode == 200) {
+      try {
+        List<dynamic> body = jsonDecode(res.body);
+        return body.map((dynamic item) => AbsenceModel.fromJson(item)).toList();
+      } catch (e) {
+        print("getStudentAbsences error: ${e.toString()}");
+        return [];
+      }
+    }
+
+    return [];
+  }
+
+  /// Cancel Student Absence
+  Future<Map<String, dynamic>> cancelStudentAbsence(AbsenceModel absence) async {
+    const endpoint = "/rpc/cancel_absence";
+    
+    // Crear un mapa con solo los parámetros requeridos por la función de PostgreSQL
+    final Map<String, dynamic> requestData = {
+      '_student_id': absence.idStudent,
+      '_absence_date': absence.absenceDate.toIso8601String(),
+      '_id_schedule': absence.idSchedule,
+    };
+    
+    try {
+      http.Response res = await postQuery(
+        endpoint,
+        jsonEncode(requestData),
+        contentType: 'application/json',
+      );
+      
+      print("[$endpoint] res.statusCode: ${res.statusCode}");
+      print("[$endpoint] res.body: ${res.body}");
+      
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        final jsonResponse = jsonDecode(res.body);
+        final status = jsonResponse['status'];
+        
+        if (status == 'success') {
+          return {
+            'success': true,
+            'message': jsonResponse['message'] ?? 'Inasistencia cancelada exitosamente',
+          };
+        } else {
+          return {
+            'success': false,
+            'message': jsonResponse['message'] ?? 'Error al cancelar la inasistencia',
+          };
+        }
+      } else {
+        return {
+          'success': false,
+          'message': parseResponseMessage(res) ?? 'Error al cancelar la inasistencia',
+        };
+      }
+    } catch (e) {
+      print("[$endpoint] Error: $e");
+      return {
+        'success': false,
+        'message': e.toString(),
+      };
+    }
   }
 
 }
