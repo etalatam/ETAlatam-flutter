@@ -3,10 +3,13 @@ import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
 import 'package:eta_school_app/Models/student_model.dart';
+import 'package:eta_school_app/Pages/history_absences.dart';
 import 'package:eta_school_app/Pages/map/map_wiew.dart';
 import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
 import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
+import 'package:eta_school_app/Pages/register_absences.dart';
 import 'package:eta_school_app/Pages/upload_picture_page.dart';
+import 'package:eta_school_app/components/button_text_icon.dart';
 import 'package:eta_school_app/components/custom_row.dart';
 import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
@@ -271,6 +274,56 @@ class _StudentPageState extends State<StudentPage> {
                                     height: 1,
                                     color:
                                         activeTheme.main_color.withOpacity(.3),
+                                  ),
+
+                                  SizedBox(height: 20,),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(lang.translate('absences'),style: activeTheme.h5),
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 20),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                      Column(
+                                        children: [
+                                          GestureDetector(
+                                            onTap: () {
+                                              openNewPage(context, HistoryAbsences(studentId: widget.student!.student_id));
+                                            },
+                                            child: ButtonTextIcon(
+                                              lang.translate('history'),
+                                              Icon(
+                                                Icons.history,
+                                                color: activeTheme.buttonColor,
+                                              ),
+                                              Color.fromARGB(
+                                                  255, 226, 187, 32)),
+                                          )
+                                        ]
+                                      ),
+                                      const SizedBox(width: 20,),
+                                      Column(
+                                        children: [
+                                         GestureDetector(
+                                            onTap: () {
+                                              openNewPage(context, RegisterAbsences(studentId: widget.student!.student_id));
+                                            },
+                                            child: ButtonTextIcon(
+                                            lang.translate('notify'),
+                                            Icon(
+                                              Icons.note_alt,
+                                              color: activeTheme.buttonColor,
+                                            ),
+                                            Colors.green)
+                                          )
+                                        ]
+                                      ),
+                                      ],
+                                    ),
                                   ),
                                 ]),
                           )
