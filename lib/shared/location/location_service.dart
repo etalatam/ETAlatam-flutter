@@ -42,6 +42,7 @@ class LocationService extends ChangeNotifier {
 
   double _lastLongitude = 0;
 
+  StreamSubscription? _portSubscription;
 
   static final LocationService _instance = LocationService._internal();
 
@@ -60,68 +61,71 @@ class LocationService extends ChangeNotifier {
       _startTimer();
     }
 
-    askPermission().then((value) async{
+    askPermission().then((value) async {
       print("[LocationService.askPermission.callback] $value");
       if (value) {
-        
         if(!initialization){
           print('[LocationService.initialization...]');
 
           try {
+            // Clean up any existing port mapping and subscription
             if (IsolateNameServer.lookupPortByName(
                     LocationServiceRepository.isolateName) != null) {
               print('[LocationService.removePortNameMapping] ${LocationServiceRepository.isolateName}');
               IsolateNameServer.removePortNameMapping(
                   LocationServiceRepository.isolateName);
             }
+            
+            // Cancel any existing subscription
+            await _portSubscription?.cancel();
+            _portSubscription = null;
 
             IsolateNameServer.registerPortWithName(
                 port.sendPort, LocationServiceRepository.isolateName);
-          } catch (e) {
-            print('[LocationService.error] $e');
-          }
 
-          // ubicacion en foreground
-          port.listen((dynamic data) async {
-            print('[LocationService.port.listen.callback] $data');
-            if (data != null &&
-                (_locationData?['latitude'] != data['latitude']) &&
-                (_locationData?['longitude'] != data['longitude'])) {
-              _locationData = data;
-
-              try {
-                _lastPositionDate = DateTime.now();
-                await trackingDynamic(_locationData);
-                notifyListeners();
-              } catch (e) {
-                print(
-                    '[LocationService.notifyListeners.error] ${e.toString()}');
+            // Set up new listener
+            _portSubscription = port.listen((dynamic data) async {
+              print('[LocationService.port.listen.callback] $data');
+              if (data != null &&
+                  (_locationData?['latitude'] != data['latitude']) &&
+                  (_locationData?['longitude'] != data['longitude'])) {
+                _locationData = data;
+                try {
+                  _lastPositionDate = DateTime.now();
+                  await trackingDynamic(_locationData);
+                  notifyListeners();
+                } catch (e) {
+                  print('[LocationService.notifyListeners.error] ${e.toString()}');
+                }
               }
-            }
-          });
-          BackgroundLocator.initialize();
-          initialization = true;
-          Workmanager().initialize(
-            callbackDispatcher,
-            isInDebugMode: true,
-          );
-          Workmanager().cancelAll();
-          Workmanager().registerPeriodicTask(
-            "1",
-            "simplePeriodicTask",
-            frequency: Duration(minutes: 15),
-          );
+            });
+            
+            BackgroundLocator.initialize();
+            initialization = true;
+            Workmanager().initialize(
+              callbackDispatcher,
+              isInDebugMode: true,
+            );
+            Workmanager().cancelAll();
+            Workmanager().registerPeriodicTask(
+              "1",
+              "simplePeriodicTask",
+              frequency: Duration(minutes: 15),
+            );
 
-          requestDozeModeExclusion();
-          print("[LocationService._startTimer]");          
+            requestDozeModeExclusion();
+            print("[LocationService._startTimer]");          
+          } catch (e) {
+            print('[LocationService.init.error] $e');
+          }
+        } else {
+          print('[LocationService.init] already initialized');
         }
-
-      }else{
-        print('[LocationService.init] allready initialize');
       }
     });
   }
-    void callbackDispatcher() {
+  
+  void callbackDispatcher() {
     Workmanager().executeTask((task, inputData) {
         final now = DateTime.now();
         final difference = now.difference(_lastPositionDate!);
@@ -329,13 +333,18 @@ class LocationService extends ChangeNotifier {
     try {      
       IsolateNameServer.removePortNameMapping(
           LocationServiceRepository.isolateName);
+          
+      // Cancel the port subscription
+      _portSubscription?.cancel();
+      _portSubscription = null;
+      
       BackgroundLocator.unRegisterLocationUpdate();
 
-        if (IsolateNameServer.lookupPortByName(
-                LocationServiceRepository.isolateName) != null) {
-          IsolateNameServer.removePortNameMapping(
-              LocationServiceRepository.isolateName);
-        }
+      if (IsolateNameServer.lookupPortByName(
+              LocationServiceRepository.isolateName) != null) {
+        IsolateNameServer.removePortNameMapping(
+            LocationServiceRepository.isolateName);
+      }
 
       initialization = false;
       _timer?.cancel();
@@ -345,7 +354,7 @@ class LocationService extends ChangeNotifier {
       print('[LocationService.stopLocationService.error] ${e.toString()}');
     }
   }
-
+  
   double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
     const double earthRadius = 6371000; // Radio de la Tierra en metros
 
