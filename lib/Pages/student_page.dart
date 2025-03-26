@@ -139,7 +139,7 @@ class _StudentPageState extends State<StudentPage> {
                 ),
                 DraggableScrollableSheet(
                   snapAnimationDuration: const Duration(seconds: 1),
-                  initialChildSize: .35,
+                  initialChildSize: .55,
                   minChildSize: 0.35,
                   maxChildSize: 0.7,
                   builder: (BuildContext context,

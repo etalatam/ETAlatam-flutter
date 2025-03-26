@@ -39,20 +39,28 @@ class _GetStartedAppState extends State<GetStartedApp> {
           Container(
               color: Colors.white,
               height: MediaQuery.of(context).size.height,
-              child: SingleChildScrollView(
-                child: Container(
-                  color: Colors.white,
-                  height: MediaQuery.of(context).size.height,
-                  child: showLoader == true
-                      ? Loader()
-                      : PageView(
-                          pageSnapping: true,
-                          controller: _controller,
-                          children: _slides,
-                          onPageChanged: (value) {},
-                        ),
+              child: OrientationBuilder(
+                builder: (context, orientation) {
+                    return SingleChildScrollView(
+                      scrollDirection: orientation == Orientation.portrait ? Axis.horizontal : Axis.vertical,
+                      child: Container(
+                        color: Colors.white,
+                        width: MediaQuery.of(context).size.width, // Ajusta el ancho para modo 
+                        height: orientation == Orientation.portrait ?
+                          MediaQuery.of(context).size.height:
+                          MediaQuery.of(context).size.height * 1.8,
+                        child: showLoader == true
+                            ? Loader()
+                            : PageView(
+                                pageSnapping: true,
+                                controller: _controller,
+                                children: _slides,
+                                onPageChanged: (value) {},
+                              ),
+                      ),
+                    );
+                  })
                 ),
-              ))
         ]));
   }
 
