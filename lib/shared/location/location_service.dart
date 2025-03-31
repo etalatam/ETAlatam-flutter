@@ -68,20 +68,32 @@ class LocationService extends ChangeNotifier {
           print('[LocationService.initialization...]');
 
           try {
-            // Clean up any existing port mapping and subscription
-            if (IsolateNameServer.lookupPortByName(
-                    LocationServiceRepository.isolateName) != null) {
-              print('[LocationService.removePortNameMapping] ${LocationServiceRepository.isolateName}');
-              IsolateNameServer.removePortNameMapping(
-                  LocationServiceRepository.isolateName);
+            try {
+              // Clean up any existing port mapping and subscription
+              if (IsolateNameServer.lookupPortByName(
+                      LocationServiceRepository.isolateName) != null) {
+                print('[LocationService.removePortNameMapping] ${LocationServiceRepository.isolateName}');
+                IsolateNameServer.removePortNameMapping(
+                    LocationServiceRepository.isolateName);
+              }
+            } catch (e) {
+              //
             }
             
-            // Cancel any existing subscription
-            await _portSubscription?.cancel();
-            _portSubscription = null;
+            try {
+                // Cancel any existing subscription
+              await _portSubscription?.cancel();
+              _portSubscription = null;
+            } catch (e) {
+              //
+            }
 
-            IsolateNameServer.registerPortWithName(
+            try {
+              IsolateNameServer.registerPortWithName(
                 port.sendPort, LocationServiceRepository.isolateName);
+            } catch (e) {
+              //
+            }
 
             // Set up new listener
             _portSubscription = port.listen((dynamic data) async {
