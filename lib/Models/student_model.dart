@@ -20,6 +20,8 @@ class StudentModel {
   String? gender;
   String? status;
   int? trips_count;
+  bool? avatar;
+  String? notes;
   List<PickupLocationModel> pickup_points = [];
   //DestinationModel? destination;
   //RouteModel? route;
@@ -49,7 +51,9 @@ class StudentModel {
       this.trips_count,
       this.schoolId,
       this.statusCode,
-      this.lastPositionPayload});
+      this.lastPositionPayload,
+      this.avatar,
+      this.notes});
 
   // Convert the instance to a JSON object
   Map<String, dynamic> toJson() {
@@ -115,7 +119,9 @@ class StudentModel {
         schoolId: json['school_id'],
         statusCode: json['status_code'],
         // route: route,
-        lastPositionPayload: lastPositionWrapper);
+        lastPositionPayload: lastPositionWrapper,
+        avatar: json['avatar'] as bool?,
+        notes: json['notes'] as String?);
   }
 
   unSubscribeToStudentTracking() async {

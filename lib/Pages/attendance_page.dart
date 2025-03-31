@@ -1,6 +1,7 @@
 import 'package:eta_school_app/Models/student_model.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:eta_school_app/components/image_default.dart';
 import 'package:flutter/material.dart';
 
 import '../components/icon_button_with_text.dart';
@@ -27,6 +28,7 @@ class _DriverPageState extends State<AttendancePage> {
   bool loading = true;
 
   int? _editingIndex;
+  int? _viewNoteIndex;
 
   int? _loadingIndex;
 
@@ -79,6 +81,7 @@ class _DriverPageState extends State<AttendancePage> {
       setState(() {
         _editingIndex = null;
         _loadingIndex = null;
+        _viewNoteIndex = null;
         list[index].statusCode = result.statusCode;
       });
     } catch (e) {
@@ -104,172 +107,226 @@ class _DriverPageState extends State<AttendancePage> {
         //   ),
         // ],
       ),
-      body: Column(
-        children: [
-          TextField(
-            controller: _queryController,
-            onSubmitted: (value) {
-              _page = 1;
-              fetchData();
-            },
-            style: TextStyle(color: Colors.black),
-            decoration: InputDecoration(
-              labelText: lang.translate('Search'),
-              labelStyle: TextStyle(color: Colors.black),
-              // focusedBorder: OutlineInputBorder(
-              //   borderSide: BorderSide(color: Colors.black),
-
-              // ),
-              // enabledBorder: OutlineInputBorder(
-              //   borderSide: BorderSide(color: Colors.grey),
-              // ),
-              suffixIcon: IconButton(
-                icon: Icon(Icons.search),
-                onPressed: () {
-                  _page = 1;
-                  fetchData();
-                },
+      body: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Column(
+          children: [
+            TextField(
+              controller: _queryController,
+              onSubmitted: (value) {
+                _page = 1;
+                fetchData();
+              },
+              style: TextStyle(color: Colors.black),
+              decoration: InputDecoration(
+                labelText: lang.translate('Search'),
+                labelStyle: TextStyle(color: Colors.black),
+                // focusedBorder: OutlineInputBorder(
+                //   borderSide: BorderSide(color: Colors.black),
+        
+                // ),
+                // enabledBorder: OutlineInputBorder(
+                //   borderSide: BorderSide(color: Colors.grey),
+                // ),
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.search),
+                  onPressed: () {
+                    _page = 1;
+                    fetchData();
+                  },
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: loading && _page == 1
-                ? Center(
-                    child: CircularProgressIndicator(
-                        color: activeTheme.main_color))
-                : RefreshIndicator(
-                    onRefresh: () async {
-                      _page = 1;
-                      fetchData();
-                    },
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      itemCount: list.length + (loading ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (index == list.length) {
-                          return Center(child: CircularProgressIndicator());
-                        }
-                        final item = list[index];
-                        return GestureDetector(
-                            onTap: widget.trip.trip_status != 'Running'
-                                ? null
-                                : () => {
-                                      setState(() {
-                                        _editingIndex = index;
-                                      })
-                                    },
-                            child: Card(
-                                color: _editingIndex == index
-                                    ? Color.fromARGB(255, 245, 243, 236)
-                                    : Colors.white,
-                                margin: EdgeInsets.all(8.0),
-                                child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 16),
-                                    child: Column(children: [
-                                      ListTile(
-                                          leading: CircleAvatar(
-                                              backgroundColor: Color.fromARGB(
-                                                  255, 234, 244, 243),
-                                              backgroundImage:
-                                                  CachedNetworkImageProvider(
-                                                      'https://ui-avatars.com/api/?background=random&name=${item.first_name!}')),
-                                          title: Text(
-                                              '${item.first_name!} ${item.last_name}'),
-                                          trailing: Column(
-                                            children: [
-                                              if (_editingIndex != index)
-                                                IconButton(
-                                                  icon: Icon(Icons.check_circle,
-                                                      color: getStatusColor(
-                                                          item.statusCode)),
-                                                  onPressed: null,
-                                                ),
-                                            ],
-                                          )),
-                                      SizedBox(
-                                        height: 10,
-                                      ),
-                                      if (_editingIndex == index)
-                                        Container(
-                                          width: 350.0,
-                                          height: 1.0,
-                                          color: Colors.grey,
-                                        ),
-                                      if (_editingIndex == index)
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 16, horizontal: 16.0),
-                                          child: _loadingIndex == index
-                                              ? Center(
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                  color: activeTheme.main_color,
-                                                ))
-                                              : Row(
-                                                  children: [
-                                                    IconButtonWithText(
-                                                      label: Text(lang.translate(
-                                                          'Will not board')),
-                                                      icon: Icon(
-                                                          Icons.check_circle,
-                                                          color: Colors.orange),
-                                                      onPressed: () =>
-                                                          updateAttendance(
-                                                              item,
-                                                              'WILL_NOT_BOARD',
-                                                              index),
-                                                    ),
-                                                    SizedBox(
-                                                      width: 30,
-                                                    ),
-                                                    IconButtonWithText(
-                                                      label: Text(
-                                                          lang.translate(
-                                                              'Not boarding')),
-                                                      icon: Icon(
-                                                          Icons.check_circle,
-                                                          color: Colors.red),
-                                                      onPressed: () =>
-                                                          updateAttendance(
-                                                              item,
-                                                              'NOT_BOARDING',
-                                                              index),
-                                                    ),
-                                                    SizedBox(
-                                                      width: 30,
-                                                    ),
-                                                    IconButtonWithText(
-                                                      label: Text(
-                                                          lang.translate(
-                                                              'Boarding')),
-                                                      icon: Icon(
-                                                          Icons.check_circle,
-                                                          color: Colors.green),
-                                                      onPressed: () =>
-                                                          updateAttendance(
-                                                              item,
-                                                              'BOARDING',
-                                                              index),
-                                                    ),
-                                                    Spacer(),
-                                                    IconButton(
-                                                      icon: Icon(Icons.close),
-                                                      onPressed: () {
-                                                        setState(() {
-                                                          _editingIndex = null;
-                                                        });
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
-                                        ),
-                                    ]))));
+            Expanded(
+              child: loading && _page == 1
+                  ? Center(
+                      child: CircularProgressIndicator(
+                          color: activeTheme.main_color))
+                  : RefreshIndicator(
+                      onRefresh: () async {
+                        _page = 1;
+                        fetchData();
                       },
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        itemCount: list.length + (loading ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index == list.length) {
+                            return Center(child: CircularProgressIndicator());
+                          }
+                          final item = list[index];
+                          return GestureDetector(
+                              onTap: widget.trip.trip_status != 'Running'
+                                  ? null
+                                  : () => {
+                                        setState(() {
+                                          _editingIndex = index;
+                                          _viewNoteIndex = null;
+                                        })
+                                      },
+                              child: Card(
+                                  color: _editingIndex == index
+                                      ? Color.fromARGB(255, 245, 243, 236)
+                                      : Colors.white,
+                                  margin: EdgeInsets.all(8.0),
+                                  child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 16),
+                                      child: Column(children: [
+                                        ListTile(
+                                            leading: item.avatar == true ? 
+                                            ClipRRect(
+                                              borderRadius: BorderRadius.circular(50),
+                                              child: Image.network(
+                                                httpService.getImage(
+                                                    item.student_id,'eta.students'),
+                                                fit: BoxFit.fill,
+                                                height: 50,
+                                                width: 50,
+                                                loadingBuilder: (context, child, loadingProgress) {
+                                                  if (loadingProgress == null) {
+                                                    return child;
+                                                  }
+                                                  return CircularProgressIndicator();
+                                                },
+                                                errorBuilder: (context, error, stackTrace) => ImageDefault(name: item.first_name!, height: 50, width: 50),
+                                              ),
+                                            ) : 
+                                            ImageDefault(name: item.first_name!, height: 50, width: 50),
+                                            title: Text(
+                                                '${item.first_name!} ${item.last_name}', style: activeTheme.normalText),
+                                            trailing: Row(
+                                               mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                if(item.statusCode == 'WILL_NOT_BOARD' && 
+                                                  item.notes!.isNotEmpty &&
+                                                  _viewNoteIndex != index &&
+                                                  _editingIndex != index)
+                                                IconButton(
+                                                  icon: Icon(Icons.note_alt_rounded, color: Colors.grey),
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      _viewNoteIndex = index;
+                                                      _editingIndex = null;
+                                                    });
+                                                  },
+                                                ),
+                                                if (_editingIndex != index && _viewNoteIndex != index)
+                                                  IconButton(
+                                                    icon: Icon(Icons.check_circle,
+                                                        color: getStatusColor(
+                                                            item.statusCode)),
+                                                    onPressed: null,
+                                                  ),
+                                              ],
+                                            )),
+                                        SizedBox(
+                                          height: 10,
+                                        ),
+                                        if (_editingIndex == index || _viewNoteIndex == index)
+                                          Container(
+                                            width: 350.0,
+                                            height: 1.0,
+                                            color: Colors.grey,
+                                          ),
+                                        if (_editingIndex == index)
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 16, horizontal: 16.0),
+                                            child: _loadingIndex == index
+                                                ? Center(
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                    color: activeTheme.main_color,
+                                                  ))
+                                                : Row(
+                                                    children: [
+                                                      IconButtonWithText(
+                                                        label: Text(lang.translate(
+                                                            'Will not board'), style: activeTheme.smallText),
+                                                        icon: Icon(
+                                                            Icons.check_circle,
+                                                            color: Colors.orange),
+                                                        onPressed: () =>
+                                                            updateAttendance(
+                                                                item,
+                                                                'WILL_NOT_BOARD',
+                                                                index),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 30,
+                                                      ),
+                                                      IconButtonWithText(
+                                                        label: Text(
+                                                            lang.translate(
+                                                                'Not boarding'), style: activeTheme.smallText),
+                                                        icon: Icon(
+                                                            Icons.check_circle,
+                                                            color: Colors.red),
+                                                        onPressed: () =>
+                                                            updateAttendance(
+                                                                item,
+                                                                'NOT_BOARDING',
+                                                                index),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 30,
+                                                      ),
+                                                      IconButtonWithText(
+                                                        label: Text(
+                                                            lang.translate(
+                                                                'Boarding'), style: activeTheme.smallText),
+                                                        icon: Icon(
+                                                            Icons.check_circle,
+                                                            color: Colors.green),
+                                                        onPressed: () =>
+                                                            updateAttendance(
+                                                                item,
+                                                                'BOARDING',
+                                                                index),
+                                                      ),
+                                                      Spacer(),
+                                                      IconButton(
+                                                        icon: Icon(Icons.close),
+                                                        onPressed: () {
+                                                          setState(() {
+                                                            _editingIndex = null;
+                                                          });
+                                                        },
+                                                      ),
+                                                    ],
+                                                  ),
+                                          ),
+                                          if(_viewNoteIndex==index)
+                                          Container(
+                                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                            alignment: Alignment.center, 
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              mainAxisSize: MainAxisSize.min,                    
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                SizedBox(width: 320, 
+                                                child: Text(item.notes!, style: activeTheme.smallText)
+                                                ),
+                                                IconButton(
+                                                  icon: Icon(Icons.close),
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      _viewNoteIndex = null;
+                                                    });
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                      ]))));
+                        },
+                      ),
                     ),
-                  ),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -281,6 +338,7 @@ class _DriverPageState extends State<AttendancePage> {
   }
 
   Color getStatusColor(String? statusCode) {
+
     Color color = Color.fromARGB(255, 149, 148, 146);
 
     if (statusCode == 'WILL_NOT_BOARD') {
@@ -293,4 +351,5 @@ class _DriverPageState extends State<AttendancePage> {
 
     return color;
   }
+  
 }
