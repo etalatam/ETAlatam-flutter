@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:eta_school_app/Models/user_model.dart';
 import 'package:eta_school_app/Pages/reset_password_page.dart';
+import 'package:eta_school_app/components/image_default.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
@@ -81,7 +82,31 @@ class _ProfilePageState extends State<ProfilePage> {
                                     Container(
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 5),
-                                        child: CircleAvatar(
+                                        child: SizedBox(
+                                          width: 100,
+                                          height: 100,
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(50),
+                                            child: Image.network(
+                                                httpService.getImage(
+                                                  user.relationId,
+                                                  user.relationName,
+                                                ),
+                                                headers: {
+                                                  'Accept': 'image/png'
+                                                },
+                                                loadingBuilder: (context, child, loadingProgress){
+                                                  if (loadingProgress == null) {
+                                                    return child;
+                                                  }
+                                                  return CircularProgressIndicator();
+                                                },
+                                                errorBuilder: (context, error, stackTrace) => ImageDefault(name: user.firstName!, height: 100, width: 100),
+                                              ),
+                                          ),
+                                        ),
+                                        
+                                         /*CircleAvatar(
                                             radius: 50,
                                             backgroundColor: Color.fromARGB(
                                                 255, 234, 244, 243),
@@ -91,7 +116,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                                     user.relationName),
                                                 headers: {
                                                   'Accept': 'image/png'
-                                                }))),
+                                                },
+                                                ))*/
+                                    ),
                                     Consumer<EmitterService>(builder:
                                         (context, emitterService, child) {
                                       return Positioned(

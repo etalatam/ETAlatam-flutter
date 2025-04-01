@@ -45,6 +45,13 @@ class HttpService {
     return url;
   }
 
+  String getImage(relationId, relationName) {
+    final url =
+        "$apiURL/rpc/get_image?_relation_name=$relationName&_relation_id=$relationId";
+    print("getImage: $url");
+    return url;
+  }
+
   String getImageUrl({relationName = "eta.usuarios", relationId = 0}) {
     // return "$apiURL/app/image.php?src=";
     return "$apiURL/rpc/get_reource_image?_relation_name=$relationName&_relation_id=$relationId";
@@ -579,6 +586,8 @@ class HttpService {
             'relation_name', body['relation_name'] ?? body['relation_name']);
         await storage.setItem(
             'relation_id', body['relation_id'] ?? body['relation_id']);
+        await storage.setItem(
+            'nom_usu', body['nom_usu'] ?? body['nom_usu']);
 
         try {
           final LoginInformation login =
