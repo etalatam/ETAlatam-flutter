@@ -199,6 +199,7 @@ class _DriverPageState extends State<AttendancePage> {
                                                mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 if(item.statusCode == 'WILL_NOT_BOARD' && 
+                                                  item.notes != null &&
                                                   item.notes!.isNotEmpty &&
                                                   _viewNoteIndex != index &&
                                                   _editingIndex != index)
