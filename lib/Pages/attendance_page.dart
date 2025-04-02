@@ -8,9 +8,9 @@ import '../components/icon_button_with_text.dart';
 import '../controllers/helpers.dart';
 
 class AttendancePage extends StatefulWidget {
-  TripModel trip;
-
-  AttendancePage({super.key, required this.trip});
+  final TripModel trip;
+  final bool isMonitor;
+  AttendancePage({super.key, required this.trip, this.isMonitor = false});
 
   @override
   State<AttendancePage> createState() => _DriverPageState();
@@ -72,6 +72,7 @@ class _DriverPageState extends State<AttendancePage> {
     try {
       setState(() {
         _loadingIndex = index;
+        list[index].statusCode = statusCode;
       });
       final result =
           await httpService.updateAttendance(widget.trip, student, statusCode);
@@ -111,6 +112,8 @@ class _DriverPageState extends State<AttendancePage> {
         padding: EdgeInsets.symmetric(horizontal: 12),
         child: Column(
           children: [
+            if (widget.isMonitor)
+              Text(widget.trip.route?.route_name ?? '', style: activeTheme.h5),
             TextField(
               controller: _queryController,
               onSubmitted: (value) {
@@ -198,7 +201,7 @@ class _DriverPageState extends State<AttendancePage> {
                                             trailing: Row(
                                                mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                if(item.statusCode == 'WILL_NOT_BOARD' && 
+                                                if(item.statusCode == 'WILL_NOT_BOARD' && item.notes != null &&
                                                   item.notes!.isNotEmpty &&
                                                   _viewNoteIndex != index &&
                                                   _editingIndex != index)

@@ -178,7 +178,7 @@ class _DriverHomeState extends State<DriverHome>
                                 ),
                               ]),
                             )),
-                        Positioned(left: 0, right: 0, top: 0, child: Header()),
+                        Positioned(left: 0, right: 0, top: 0, child: Header()),  
                       ],
                     )))));
   }
