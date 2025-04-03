@@ -1,6 +1,7 @@
 import 'package:eta_school_app/Models/student_model.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/image_default.dart';
 import 'package:flutter/material.dart';
 
@@ -96,7 +97,7 @@ class _DriverPageState extends State<AttendancePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: widget.isMonitor ? null: AppBar(
         title: Text(lang.translate('Attendance')),
         // actions: [
         //   IconButton(
@@ -112,6 +113,10 @@ class _DriverPageState extends State<AttendancePage> {
         padding: EdgeInsets.symmetric(horizontal: 12),
         child: Column(
           children: [
+            if (widget.isMonitor)
+              Header(),
+            if (widget.isMonitor)
+              SizedBox(height: 20),
             if (widget.isMonitor)
               Text(widget.trip.route?.route_name ?? '', style: activeTheme.h5),
             TextField(
