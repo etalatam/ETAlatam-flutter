@@ -106,6 +106,25 @@ class HttpService {
     return [];
   }
 
+  Future<List<TripModel>> getMonitorActiveTrips() async {
+    const endpoint = "/rpc/trips_monitor";
+    http.Response res = await getQuery(
+        "$endpoint?select=*&running=eq.true&limit=1&order=start_ts.desc");
+
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
+
+    if (res.statusCode == 200) {
+      List<dynamic> body = jsonDecode(res.body);
+      final List<TripModel> trips = await Future.wait(
+        body.map((dynamic item) async => TripModel.fromJson(item)).toList(),
+      );
+      return trips;
+    }
+    debugPrint(res.body.toString());
+    return [];
+  }
+
   /// Load Trips
   Future<List<TripModel>> getStudentTrips(studentId) async {
     const endpoint = "/rpc/student_trips";
@@ -588,6 +607,8 @@ class HttpService {
             'relation_id', body['relation_id'] ?? body['relation_id']);
         await storage.setItem(
             'nom_usu', body['nom_usu'] ?? body['nom_usu']);
+        await storage.setItem(
+            'monitor', body['monitor'] ?? body['monitor']);    
 
         try {
           final LoginInformation login =
