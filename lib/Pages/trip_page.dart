@@ -133,19 +133,23 @@ class _TripPageState extends State<TripPage>
                         onMapReady: (MapboxMap mapboxMap) async {
                           _mapboxMapController = mapboxMap;
 
-                          final value = await mapboxMap.annotations
-                              .createPointAnnotationManager();
-                          annotationManager = value;
-                          annotationManager
-                              ?.addOnPointAnnotationClickListener(this);
-                          mapboxMap.setOnMapMoveListener((context) {
-                            final Position position = Position(
-                                double.parse("${_lastPositionPayload?['longitude']}"),
-                                double.parse("${_lastPositionPayload?['latitude']}")
-                            );
-                            _updateBusModelCoordinates(Point(coordinates: position));
-                            // _updatePulsatingCircle(Point(coordinates: position));
-                          });                          
+                          // Asegurar que el annotationManager esté creado
+                          if (annotationManager == null) {
+                            final value = await mapboxMap.annotations.createPointAnnotationManager();
+                            annotationManager = value;
+                            annotationManager?.addOnPointAnnotationClickListener(this);
+                          }
+
+                            mapboxMap.setOnMapMoveListener((context) {
+
+                              if (_lastPositionPayload != null) {
+                                final Position position = Position(
+                                  double.parse("${_lastPositionPayload?['longitude']}"),
+                                  double.parse("${_lastPositionPayload?['latitude']}")
+                                );
+                                _updateBusModelCoordinates(Point(coordinates: position));
+                              }
+                            });
                         },
                         onStyleLoadedListener: (MapboxMap mapboxMap) async {
                           showTripGeoJson(mapboxMap);
@@ -234,7 +238,7 @@ class _TripPageState extends State<TripPage>
                         })
                     ),
 
-                    if(busModelCoordinate.x.toDouble() > 0)
+                    if(busModelCoordinate.x.toDouble() > 0 && annotationManager != null)
                     Positioned(
                       left: busModelCoordinate.x.toDouble() - 35,
                       top: busModelCoordinate.y.toDouble() - 35,
@@ -647,6 +651,11 @@ class _TripPageState extends State<TripPage>
   @override
   void dispose() {
     super.dispose();
+    // Limpiar las anotaciones
+    annotationManager?.deleteAll();
+    annotationManager = null;
+    busPointAnnotation = null;
+
     if (trip.trip_status == "Running") {
       cleanResorces();
     }
@@ -657,6 +666,7 @@ class _TripPageState extends State<TripPage>
     super.initState();
 
     trip = widget.trip!;
+    _lastPositionPayload = trip.lastPositionPayload;
 
     loadTrip();
   }
@@ -821,65 +831,64 @@ class _TripPageState extends State<TripPage>
       }
     }  
 
-  Future<void> _updateIcon(Position position, String relationName,
-      int relationId, String label) async {
-    String key = "$relationName.$relationId";
-    print(
-        "[TripPage._updateIcon] [relationName] $relationName [relationId] $relationId");
-
-    if(key.isEmpty){
-      return;
-    }
-
-    // is the trip driver?
-    if (relationName != "eta.drivers") {
-      return;
-    }
-    if (trip.driver_id != relationId) {
+    Future<void> _updateIcon(Position position, String relationName,
+        int relationId, String label) async {
+      String key = "$relationName.$relationId";
       print(
-          "[TripPage._updateIcon] is no de driver of this trip [${trip.driver_id}  $relationId]");
-      return;
-    }
+          "[TripPage._updateIcon] [relationName] $relationName [relationId] $relationId");
 
-    // PointAnnotation? pointAnnotation =
-    //     annotationsMap.containsKey(key)
-    //         ? annotationsMap[key]
-    //         : null;
+      if(key.isEmpty){
+        return;
+      }
 
-    // if (relationName.indexOf("drivers") > 1) {
-    //   _updatePulsatingCircle(Point(coordinates: position));
-    // }
+      // is the trip driver?
+      if (relationName != "eta.drivers") {
+        return;
+      }
+      if (trip.driver_id != relationId) {
+        print(
+            "[TripPage._updateIcon] is not the driver of this trip [${trip.driver_id}  $relationId]");
+        return;
+      }
 
-    // If it does not exist, the new element is created on the map
-    if (busPointAnnotation == null) {
-      print("[TripPage._updateIcon]  pointAnnotation exists");
-      // is driver?
-      if (relationName.indexOf("drivers") > 1) {
-        // final ByteData bytes = await rootBundle.load('assets/moving_car.gif');
-        final ByteData bytes = await rootBundle.load('assets/blank.png');
-        final Uint8List imageData = bytes.buffer.asUint8List();
-
-        busPointAnnotation = await mapboxUtils.createAnnotation(
-            annotationManager, position, imageData, label);
-      } 
-    } else {
       try {
-        print("[TripPage._updateIcon] update pointAnnotation");
-        busPointAnnotation?.geometry = Point(coordinates: position);
-        busPointAnnotation?.textField = label;
-        annotationManager?.update(busPointAnnotation!);
+        // If the annotation doesn't exist, create it
+        if (busPointAnnotation == null) {
+          print("[TripPage._updateIcon] creating new point annotation");
+          final ByteData bytes = await rootBundle.load('assets/blank.png');
+          final Uint8List imageData = bytes.buffer.asUint8List();
+
+          busPointAnnotation = await annotationManager?.create(PointAnnotationOptions(
+            geometry: Point(coordinates: position),
+            image: imageData,
+            textField: label,
+            textOffset: [0.0, -1.5],
+            textColor: Colors.black.value,
+          ));
+        } 
+        // If it exists, update it
+        else if (annotationManager != null) {
+          print("[TripPage._updateIcon] updating existing point annotation");
+          busPointAnnotation?.geometry = Point(coordinates: position);
+          busPointAnnotation?.textField = label;
+          await annotationManager?.update(busPointAnnotation!);
+        }
+
+        if (relationName.indexOf("drivers") > 1) {
+          _mapboxMapController?.setCamera(CameraOptions(
+            center: Point(coordinates: position),
+            zoom: 18,
+            pitch: 70
+          ));
+        }
+        _updateBusModelCoordinates(Point(coordinates: position));
       } catch (e) {
-        // 
+        print("[TripPage._updateIcon] error: ${e.toString()}");
+        // If update fails, recreate the annotation
+        busPointAnnotation = null;
+        _updateIcon(position, relationName, relationId, label);
       }
     }
-
-    if (relationName.indexOf("drivers") > 1) {
-      _mapboxMapController
-          ?.setCamera(CameraOptions(center: Point(coordinates: position)));
-    }
-    _updateBusModelCoordinates(Point(coordinates: position));
-  }
-
   //  void _animateIcon(LatLng start, LatLng end) {
   //   const int animationDuration = 1000; // Duración en milisegundos
   //   const int frameRate = 60; // Frames por segundo
