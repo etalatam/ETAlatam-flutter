@@ -919,7 +919,7 @@ class _TripPageState extends State<TripPage>
         processTrackingMessage(jsonDecode(message));
       }
     } catch (e) {
-      proccessTripEventMessage(message);
+      await proccessTripEventMessage(message);
     }
   }
 
@@ -964,21 +964,31 @@ class _TripPageState extends State<TripPage>
     }
   }
 
-  void proccessTripEventMessage(String message) {
+  Future<void> proccessTripEventMessage(String message) async {
     try {
       // si es un evento del viaje
       final event = EventModel.fromJson(jsonDecode(message));
       if (event.type == "end-trip" && relationName != 'eta.drivers') {
-        _emitterServiceProvider?.stopTimer();
-        trip.unSubscribeToTripEvents(_emitterServiceProvider);
-        trip.unSubscribeToTripTracking(_emitterServiceProvider);
+        try {
+          _emitterServiceProvider?.stopTimer();
+          trip.unSubscribeToTripEvents(_emitterServiceProvider);
+          trip.unSubscribeToTripTracking(_emitterServiceProvider);
+        } catch (e) {
+          //
+        }
+        
         if (mounted) {
           setState(() {
             Get.back();
           });
         }
       } else {
-        // await event.requestData();
+        final updatedTrip = await httpService.getTrip(trip.trip_id);
+        if (mounted) {
+          setState(() {
+            trip = updatedTrip;
+          });
+        }
       }
     } catch (e) {
       print("[TripPage] $e");
