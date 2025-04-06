@@ -103,6 +103,8 @@ class _TripPageState extends State<TripPage>
 
   @override
   Widget build(BuildContext context) {
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Material(
         child: showLoader
             ? Loader()
@@ -255,9 +257,8 @@ class _TripPageState extends State<TripPage>
 
                     DraggableScrollableSheet(
                       snapAnimationDuration: const Duration(seconds: 1),
-                      initialChildSize:
-                          trip.trip_status == 'Running' ? .5 : .29,
-                      minChildSize: 0.29,
+                      initialChildSize: isLandscape ? 0.3 : (trip.trip_status == 'Running' ? 0.5 : 0.29),
+                      minChildSize: isLandscape ? 0.2 : 0.29,
                       maxChildSize: 1,
                       builder: (BuildContext context,
                           ScrollController scrollController) {
