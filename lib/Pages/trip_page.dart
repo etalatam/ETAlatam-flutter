@@ -140,16 +140,15 @@ class _TripPageState extends State<TripPage>
                             annotationManager?.addOnPointAnnotationClickListener(this);
                           }
 
-                            mapboxMap.setOnMapMoveListener((context) {
-
-                              if (_lastPositionPayload != null) {
-                                final Position position = Position(
-                                  double.parse("${_lastPositionPayload?['longitude']}"),
-                                  double.parse("${_lastPositionPayload?['latitude']}")
-                                );
-                                _updateBusModelCoordinates(Point(coordinates: position));
-                              }
-                            });
+                          mapboxMap.setOnMapMoveListener((context) {
+                            if (_lastPositionPayload != null) {
+                              final Position position = Position(
+                                double.parse("${_lastPositionPayload?['longitude']}"),
+                                double.parse("${_lastPositionPayload?['latitude']}")
+                              );
+                              _updateBusModelCoordinates(Point(coordinates: position));
+                            }
+                          });
                         },
                         onStyleLoadedListener: (MapboxMap mapboxMap) async {
                           showTripGeoJson(mapboxMap);
@@ -825,8 +824,11 @@ class _TripPageState extends State<TripPage>
       final coordinate = await _mapboxMapController?.pixelForCoordinate(point);
       print("[_updateBusModelCoordinates] ${coordinate?.x}");
       if(mounted){
+        final bearing = (await _mapboxMapController?.getCameraState())?.bearing;
+        print("[_updateBusModelCoordinates] $bearing");
         setState(() {
           busModelCoordinate = coordinate!;
+          // busHeading = busHeading + double.parse("$bearing");
         });
       }
     }  
