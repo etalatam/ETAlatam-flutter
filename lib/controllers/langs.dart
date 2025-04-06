@@ -214,6 +214,8 @@ class Lang {
     "accept": "قبول",
     "register_absences": "تسجيل الغيابات",
     "register_absences_on_all": "تسجيل الغياب في جميع الرحلات في التاريخ المحدد",
+    "please_wait_for_a_trip": "يرجى الانتظار حتى تبدأ الرحلة أو التحقق من اتصالك",
+    "refresh": "ينعش",
   };
 
   Map<String, dynamic> enLangs = {
@@ -269,6 +271,8 @@ class Lang {
     "register_absences": "Register Absences",
     "accept": "Accept",
     "register_absences_on_all": "Register absence on all trips of the selected date",
+    "please_wait_for_a_trip": "Please wait for a trip to start or check your connection.",
+    "refresh": "Refresh",
   };
 
   Map<String, dynamic> esLangs = {
@@ -398,6 +402,8 @@ class Lang {
     "error_deleting_absence": "Error al eliminar la inasistencia",
     "cancel_absence": "Cancelar",
     "accept": "Aceptar",
-    "register_absences_on_all": "Registrar inasistencia en todos los viajes de la fecha seleccionada"
+    "register_absences_on_all": "Registrar inasistencia en todos los viajes de la fecha seleccionada",
+    "please_wait_for_a_trip": "Por favor, espere a que se inicie un viaje o revise su conexión.",
+    "refresh": "Refrescar",
   };
 }
