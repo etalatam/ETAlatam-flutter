@@ -24,6 +24,41 @@ class NotificationsPage extends StatefulWidget {
 
 class _NotificationsPageState extends State<NotificationsPage> {
 
+  IconData _getIconByName(String iconName) {
+    if (iconName.isEmpty) return Icons.notifications;
+    
+    String normalizedName = iconName.toLowerCase().trim();
+
+    switch (normalizedName) {
+      case 'arrow_circle_up':
+        return Icons.arrow_circle_up;
+      case 'departure_board':
+        return Icons.departure_board;
+      case 'medical_services':
+        return Icons.medical_services;
+      case 'flag':
+        return Icons.flag;
+      case 'adjust':
+        return Icons.adjust;
+      case 'location_on':
+        return Icons.location_on;
+      case 'no_transfer':
+        return Icons.no_transfer;
+      case 'arrow_circle_down':
+        return Icons.arrow_circle_down;
+      case 'sports_score':
+        return Icons.sports_score;
+      case 'bus_alert':
+        return Icons.bus_alert;
+      case 'notifications':
+        return Icons.notifications;
+      default:
+        // Si el icono no está mapeado, devolver un icono predeterminado
+        print('Icono no mapeado: $iconName');
+        return Icons.notifications;
+    }
+  }
+  
   List<NotificationModel> notificationsList = [];
 
   ParentModel? parent;
@@ -128,7 +163,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                                 backgroundColor: Colors.red,
                                                 foregroundColor: Colors.white,
                                                 icon: Icons.delete_forever,
-                                                label: lang.translate('Remove'),
+                                                label: lang.translate('remove'),
                                               ),
                                               SlidableAction(
                                                 // An action can be bigger than the others.
@@ -138,7 +173,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                                 icon:
                                                     Icons.notifications_active,
                                                 label:
-                                                    lang.translate('Mark read'),
+                                                    lang.translate('mark_read'),
                                               )
                                             ],
                                             GestureDetector(
@@ -179,22 +214,40 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                                         Container(
                                                           width: 32,
                                                           height: 32,
-                                                          clipBehavior:
-                                                              Clip.antiAlias,
-                                                          decoration:
-                                                              ShapeDecoration(
-                                                            color: const Color(
-                                                                0xFF61C677),
-                                                            shape:
-                                                                RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          20),
-                                                            ),
+                                                          clipBehavior: Clip.antiAlias,
+                                                          decoration: BoxDecoration(
+                                                            color: const Color(0xFF61C677),
+                                                            borderRadius: BorderRadius.circular(20),
                                                           ),
                                                           child: Stack(
                                                             children: [
+                                                              notificationsList[i].icon != null ? 
+                                                               Positioned(
+                                                                left: 0,
+                                                                top: 0,
+                                                                child: SizedBox(
+                                                                  width: 32,
+                                                                  height: 32,
+                                                                  child: Stack(
+                                                                    children: [
+                                                                      Positioned(
+                                                                        left: 0,
+                                                                        top: 0,
+                                                                        child:
+                                                                        SizedBox(
+                                                                          width: 32,
+                                                                          height:32,
+                                                                          child: Icon(
+                                                                            _getIconByName(notificationsList[i].icon ?? 'notifications'),
+                                                                            color: Colors.white,
+                                                                            size: 24,
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ): 
                                                               Positioned(
                                                                 left: 0,
                                                                 top: 0,
