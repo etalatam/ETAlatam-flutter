@@ -659,8 +659,8 @@ class _TripPageState extends State<TripPage>
       
       // Desuscribirse de eventos
       if (trip.trip_status == "Running") {
-        trip.unSubscribeToTripEvents(_emitterServiceProvider);
         trip.unSubscribeToTripTracking(_emitterServiceProvider);
+        trip.unSubscribeToTripEvents(_emitterServiceProvider);        
       }
     } catch (e) {
       print("Error cleaning resources: $e");
@@ -1032,7 +1032,7 @@ class _TripPageState extends State<TripPage>
         }
       }
     } catch (e) {
-      print("[TripPage] $e");
+      // print("[TripPage] $e");
     }
   }
 

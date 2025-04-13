@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import 'package:wakelock/wakelock.dart';
 
 class StudentPage extends StatefulWidget {
@@ -47,6 +48,8 @@ class _StudentPageState extends State<StudentPage> {
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
   EmitterService? _emitterServiceProvider;
+  
+  bool _isVisible = true;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +58,17 @@ class _StudentPageState extends State<StudentPage> {
       child: showLoader
           ? Loader()
           : Scaffold(
-              body: Stack(children: <Widget>[
+              body: VisibilityDetector(
+                  key: Key('student_home_key'),
+                  onVisibilityChanged: (info) {
+                      _isVisible = info.visibleFraction > 0;
+                    if (info.visibleFraction > 0) {
+                      // loadTrip();
+                    }else{
+                      cleanResources();
+                    }
+                  },
+                  child: Stack(children: <Widget>[
                 SizedBox(
                   height: MediaQuery.of(context).size.height / 1.40,
                   child: MapWiew(
@@ -334,7 +347,7 @@ class _StudentPageState extends State<StudentPage> {
                 ),
               ]),
             ),
-    );
+    ));
   }
 
   /// Open map to set location
@@ -377,11 +390,8 @@ class _StudentPageState extends State<StudentPage> {
 
   @override
   void dispose() {
-    _emitterServiceProvider?.removeListener(onEmitterMessage);
-    _emitterServiceProvider?.stopTimer();
-    _connectivitySubscription.cancel();
-    Wakelock.disable();
     super.dispose();
+    cleanResources();
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -486,5 +496,13 @@ class _StudentPageState extends State<StudentPage> {
     return Utils.formatearFechaCorta(dateTime);
     // Formatea la fecha como desees
     // return '${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
+  }
+  
+  void cleanResources() {
+    _emitterServiceProvider?.removeListener(onEmitterMessage);
+    _emitterServiceProvider?.stopTimer();
+    _connectivitySubscription.cancel();
+    Wakelock.disable();
+    super.dispose();
   }
 }
