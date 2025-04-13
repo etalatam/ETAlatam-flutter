@@ -261,7 +261,8 @@ class _TripPageState extends State<TripPage>
                             disableZoom: true,
                             disablePan: true,
                             disableTap: true,
-                            orientation: "0deg 0deg ${busHeading}deg",
+                            orientation: "0deg 0deg ${busHeading.toStringAsFixed(1)}deg",
+                            interactionPrompt: InteractionPrompt.none,
                           ))
                         )
                       ),
@@ -832,18 +833,32 @@ class _TripPageState extends State<TripPage>
       });
   }
 
-  _updateBusModelCoordinates(Point point) async{
+  Future<void> _updateBusModelCoordinates(Point point) async {
+    try {
       final coordinate = await _mapboxMapController?.pixelForCoordinate(point);
-      print("[_updateBusModelCoordinates] ${coordinate?.x}");
-      if(mounted){
-        final bearing = (await _mapboxMapController?.getCameraState())?.bearing ?? 0;
-        print("[_updateBusModelCoordinates] $bearing");
+      if (coordinate == null || !mounted) return;
+
+      // Obtener el estado actual de la cámara
+      final cameraState = await _mapboxMapController?.getCameraState();
+      final mapBearing = cameraState?.bearing ?? 0;
+      
+      // Heading real del bus desde GPS (norte verdadero)
+      final busTrueHeading = _lastPositionPayload?['heading']?.toDouble() ?? 270;
+      
+      // Calcular el heading visual ajustado
+      // Restamos el bearing del mapa para compensar la rotación de la cámara
+      final adjustedHeading = (busTrueHeading - mapBearing + 360) % 360;
+
+      if (mounted) {
         setState(() {
-          busModelCoordinate = coordinate!;
-          busHeading = (busHeading + double.parse("$bearing")) % 360;
+          busModelCoordinate = coordinate;
+          busHeading = adjustedHeading;
         });
       }
-    }  
+    } catch (e) {
+      print("Error en _updateBusModelCoordinates: $e");
+    }
+  }
 
     Future<void> _updateIcon(Position position, String relationName,
         int relationId, String label) async {
