@@ -100,6 +100,8 @@ class _TripPageState extends State<TripPage>
   ScreenCoordinate  busModelCoordinate = ScreenCoordinate( x: 0, y: 0);
   
   double busHeading = 270;
+  
+  bool _isVisible = true;
 
   @override
   Widget build(BuildContext context) {
@@ -112,8 +114,11 @@ class _TripPageState extends State<TripPage>
                 body: VisibilityDetector(
                   key: Key('student_home_key'),
                   onVisibilityChanged: (info) {
+                      _isVisible = info.visibleFraction > 0;
                     if (info.visibleFraction > 0) {
                       loadTrip();
+                    }else{
+                      cleanResources();
                     }
                   },
                   child: Stack(children: <Widget>[
@@ -242,21 +247,24 @@ class _TripPageState extends State<TripPage>
                       left: busModelCoordinate.x.toDouble() - 35,
                       top: busModelCoordinate.y.toDouble() - 35,
                       child: SizedBox(
-                        width: 80,
-                        height: 80,
-                        child: ModelViewer(
-                          src: 'assets/bus.glb', // Ruta al modelo 3D
-                          //src: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
-                          alt: 'Autobús 3D',
-                          ar: false, // Habilita AR (si es compatible)
-                          backgroundColor: Colors.transparent,
-                          autoRotate: false, // Rota el modelo automáticamente
-                          cameraControls: false, // Permite controlar la cámara
-                          disableZoom: true,
-                          disablePan: true,
-                          disableTap: true,
-                          orientation: "0deg 0deg ${busHeading}deg",
-                    ),)),
+                        width: 60,
+                        height: 60,
+                        child: IgnorePointer(
+                          child: ModelViewer(
+                            src: 'assets/bus.glb', // Ruta al modelo 3D
+                            //src: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
+                            alt: 'Autobús 3D',
+                            ar: false, // Habilita AR (si es compatible)
+                            backgroundColor: Colors.transparent,
+                            autoRotate: false, // Rota el modelo automáticamente
+                            cameraControls: false, // Permite controlar la cámara
+                            disableZoom: true,
+                            disablePan: true,
+                            disableTap: true,
+                            orientation: "0deg 0deg ${busHeading}deg",
+                          ))
+                        )
+                      ),
 
                     DraggableScrollableSheet(
                       snapAnimationDuration: const Duration(seconds: 1),
@@ -577,7 +585,7 @@ class _TripPageState extends State<TripPage>
 
     try {
       locationServiceProvider.stopLocationService();
-      cleanResorces();
+      cleanResources();
     } catch (e) {
       print(e);
     }
@@ -636,28 +644,32 @@ class _TripPageState extends State<TripPage>
     }
   }
 
-  void cleanResorces() {
+  void cleanResources() {
     try {
       _emitterServiceProvider?.removeListener(onEmitterMessage);
       _notificationService.removeListener(onPushMessage);
       _connectivitySubscription.cancel();
       Wakelock.disable();
+      
+      // Limpiar el mapa
+      annotationManager?.deleteAll();
+      annotationManager = null;
+      busPointAnnotation = null;
+      
+      // Desuscribirse de eventos
+      if (trip.trip_status == "Running") {
+        trip.unSubscribeToTripEvents(_emitterServiceProvider);
+        trip.unSubscribeToTripTracking(_emitterServiceProvider);
+      }
     } catch (e) {
-      print(e);
+      print("Error cleaning resources: $e");
     }
   }
 
   @override
   void dispose() {
     super.dispose();
-    // Limpiar las anotaciones
-    annotationManager?.deleteAll();
-    annotationManager = null;
-    busPointAnnotation = null;
-
-    if (trip.trip_status == "Running") {
-      cleanResorces();
-    }
+    cleanResources();
   }
 
   @override
@@ -824,11 +836,11 @@ class _TripPageState extends State<TripPage>
       final coordinate = await _mapboxMapController?.pixelForCoordinate(point);
       print("[_updateBusModelCoordinates] ${coordinate?.x}");
       if(mounted){
-        final bearing = (await _mapboxMapController?.getCameraState())?.bearing;
+        final bearing = (await _mapboxMapController?.getCameraState())?.bearing ?? 0;
         print("[_updateBusModelCoordinates] $bearing");
         setState(() {
           busModelCoordinate = coordinate!;
-          // busHeading = busHeading + double.parse("$bearing");
+          busHeading = (busHeading + double.parse("$bearing")) % 360;
         });
       }
     }  
@@ -917,6 +929,9 @@ class _TripPageState extends State<TripPage>
   // }
 
   void onEmitterMessage() async {
+
+    if (!_isVisible) return; // No procesar si no está visible
+
     final String message = _emitterServiceProvider!.lastMessage();
 
     if (mounted) {
