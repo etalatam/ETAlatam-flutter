@@ -16,7 +16,7 @@ class NotificationModel {
   String? notification_model;
   String? model_type;
   double? model_id;
-  
+  String? icon;
   String? formatDate;
 
   NotificationModel({
@@ -30,6 +30,7 @@ class NotificationModel {
     this.notification_model,
     this.model_type,
     this.model_id,
+    this.icon
   }){
     prettyDate();
   }
@@ -59,6 +60,7 @@ class NotificationModel {
       model_id: json['model_id'] as double?,
       date: json['ts'] as String?,
       notification_model: json['notification_model'] as String?,
+      icon: json['icon'] as String?
     );
   }
 
