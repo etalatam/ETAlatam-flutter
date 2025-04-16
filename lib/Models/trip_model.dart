@@ -38,10 +38,10 @@ class TripModel {
   bool isEmitterSubcribedToEvents = false;
   bool isEmitterSubcribedToTracking = false;
   int? school_id;
-
   String? formatDate;
-
   DateTime? dt;
+  Map<String, dynamic>? route_attributes;
+  String? bus_color;
 
   dynamic lastPositionPayload;
 
@@ -66,7 +66,9 @@ class TripModel {
       this.driver,
       this.geoJson,
       this.school_id,
-      this.lastPositionPayload}) {
+      this.lastPositionPayload,
+      this.route_attributes,
+      this.bus_color}) {
     prettyDate();
 
     // if (trip_status == "Running") {
@@ -204,7 +206,10 @@ class TripModel {
         driver: driver,
         geoJson: routeGeom,
         school_id: json['school_id'],
-        lastPositionPayload: lastPositionWrapper);
+        lastPositionPayload: lastPositionWrapper,
+        route_attributes: json['route_attributes'],
+        bus_color: json['bus_color'],
+      );
   }
 
   endTrip() async {
@@ -292,6 +297,7 @@ class TripPickupLocation {
   double? longitude;
   PickupLocationModel? location;
   StudentModel? student;
+  
 
   TripPickupLocation({
     this.trip_pickup_id,

@@ -12,6 +12,7 @@ class PickupLocationModel {
   String? picture;
   String? student_name;
   bool? status;
+  String? point_type;
   // bool saturday;
   // bool sunday;
   // bool monday;
@@ -32,6 +33,7 @@ class PickupLocationModel {
     this.distance,
     this.contact_number,
     this.status,
+    this.point_type,
     // this.saturday = false,
     // this.sunday = false,
     // this.monday = false,
@@ -54,6 +56,7 @@ class PickupLocationModel {
       "distance": distance,
       "student_name": student_name,
       "picture": picture,
+      "point_type": point_type,
       // "saturday": saturday,
       // "sunday": sunday,
       // "monday": monday,
@@ -105,6 +108,7 @@ class PickupLocationModel {
       contact_number: json['contact_number'] as String?,
       picture: json['picture'] ?? "",
       student_name: json['student_name'] as String?,
+      point_type: json['pickup_point_point_type'] as String?,
       // status: json['status'] == 1 ? true : false as bool?,
       // saturday: json['saturdays'].toString().isNotEmpty ? true : false,
       // sunday: json['sundays'].toString().isNotEmpty ? true : false,

@@ -30,8 +30,8 @@ import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
-
-
+import 'dart:ui' as ui;
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'map/map_wiew.dart';
 
 class TripPage extends StatefulWidget {
@@ -104,7 +104,8 @@ class _TripPageState extends State<TripPage>
   @override
   Widget build(BuildContext context) {
     final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
-
+    final int busColor = trip.bus_color != null ? _convertColor(trip.bus_color!) : Colors.blue.value;
+    
     return Material(
         child: showLoader
             ? Loader()
@@ -242,9 +243,37 @@ class _TripPageState extends State<TripPage>
                       left: busModelCoordinate.x.toDouble() - 35,
                       top: busModelCoordinate.y.toDouble() - 35,
                       child: SizedBox(
-                        width: 80,
-                        height: 80,
-                        child: ModelViewer(
+                        width: 40,
+                        height: 40,
+                        child: Container(
+                          height: 40,
+                          width: 40,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Color(busColor),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 5,
+                                spreadRadius: 1,
+                              )
+                            ],
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.all(4.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                image: DecorationImage(
+                                  image: AssetImage('assets/bus_color.png'),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Comentado: ModelViewer 3D
+                        /*child: ModelViewer(
                           src: 'assets/bus.glb', // Ruta al modelo 3D
                           //src: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
                           alt: 'Autobús 3D',
@@ -256,7 +285,7 @@ class _TripPageState extends State<TripPage>
                           disablePan: true,
                           disableTap: true,
                           orientation: "0deg 0deg ${busHeading}deg",
-                    ),)),
+                        ),*/)),
 
                     DraggableScrollableSheet(
                       snapAnimationDuration: const Duration(seconds: 1),
@@ -737,6 +766,10 @@ class _TripPageState extends State<TripPage>
     print("[TripPage.showTripGeoJson]");
 
     Map<String, dynamic> data = trip.geoJson!;
+    int lineColorValue = Colors.blue.value;
+    if (trip.route_attributes != null && trip.route_attributes!["lineColor"] != null) {
+      lineColorValue = _convertColor(trip.route_attributes!["lineColor"]);
+    }
 
     await mapboxMap.style
         .addSource(GeoJsonSource(id: "trip_source", data: jsonEncode(data)));
@@ -746,35 +779,141 @@ class _TripPageState extends State<TripPage>
         sourceId: "trip_source",
         lineJoin: LineJoin.ROUND,
         lineCap: LineCap.ROUND,
-        lineColor: Colors.blue.value,
+        lineColor: lineColorValue,
         lineBlur: 1.0,
         lineDasharray: [1.0, 2.0],
         lineWidth: 6.0,
         lineSortKey: 0));
   }
 
+  int _convertColor(String colorStr) {
+    colorStr = colorStr.trim();
+    if (colorStr.toLowerCase().startsWith('rgba')) {
+      final regExp = RegExp(
+        r'rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([\d.]+)\s*\)',
+      );
+      final match = regExp.firstMatch(colorStr);
+
+      if (match != null) {
+        int r = int.parse(match.group(1)!);
+        int g = int.parse(match.group(2)!);
+        int b = int.parse(match.group(3)!);
+        double a = double.parse(match.group(4)!);
+
+        int alpha = (a * 255).round() & 0xFF;
+        return (alpha << 24) | (r << 16) | (g << 8) | b;
+      } 
+    }else if (colorStr.toLowerCase().startsWith('rgb')) {
+        final regExp = RegExp(r'rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)');
+        final match = regExp.firstMatch(colorStr);
+
+        if (match != null) {
+          int r = int.parse(match.group(1)!);
+          int g = int.parse(match.group(2)!);
+          int b = int.parse(match.group(3)!);
+          return (0xFF << 24) | (r << 16) | (g << 8) | b;
+        }
+    } else {
+        colorStr = colorStr.toUpperCase().replaceAll('#', '');
+
+        if (colorStr.length == 3) {
+          colorStr = colorStr.split('').map((c) => c + c).join('');
+        }
+
+        if (colorStr.length == 6) {
+          colorStr = 'FF$colorStr';
+        }
+        return int.parse(colorStr, radix: 16);
+    }
+    return 0xFF000000;
+  }
+  //hay que probar
+  Future<Uint8List> createCircleMarkerImage({
+    required Color circleColor,
+    required IconData icon,
+    double size = 160,
+    Color iconColor = Colors.white,
+    double iconSize = 80,
+  }) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+
+    final paint = Paint()..color = circleColor;
+    final center = Offset(size / 2, size / 2);
+
+    canvas.drawCircle(center, size / 2, paint);
+
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: String.fromCharCode(icon.codePoint),
+        style: TextStyle(
+          fontSize: iconSize,
+          fontFamily: icon.fontFamily,
+          color: iconColor,
+          package: icon.fontPackage,
+        ),
+      ),
+      textDirection: ui.TextDirection.ltr,  
+    )..layout();
+
+    textPainter.paint(
+      canvas,
+      center - Offset(textPainter.width / 2, textPainter.height / 2),
+    );
+
+    final picture = recorder.endRecording();
+    final img = await picture.toImage(size.toInt(), size.toInt());
+    final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
+    return byteData!.buffer.asUint8List();
+  }
+
+  IconData _getIconByType(String iconName) {
+    if (iconName.isEmpty) return FontAwesomeIcons.locationDot;
+    
+    String normalizedName = iconName.toLowerCase().trim();
+
+    switch (normalizedName) {
+      case 'pickup-point':
+        return FontAwesomeIcons.personShelter;
+      case 'school':
+        return FontAwesomeIcons.school;
+      case 'parking':
+        return FontAwesomeIcons.squareParking;
+      case 'waypoint':
+        return FontAwesomeIcons.mapPin;
+      default:
+        return FontAwesomeIcons.locationDot;
+    }
+  }
+
+
   void showPickupLocations(MapboxMap mapboxMap) async {
     print("[TripPage.showPickupLocations]");
-    final ByteData bytes =
-        await rootBundle.load('assets/markers/marker-start-route.png');
-    final Uint8List imageData = bytes.buffer.asUint8List();
-
+    
     List<Position> points = [];
 
     for (var pickupPoint in trip.pickup_locations!) {
       final position = Position(pickupPoint.location!.longitude as double,
           pickupPoint.location!.latitude as double);
+      final Uint8List customMarker = await createCircleMarkerImage(
+        circleColor: Colors.green,  
+        icon: _getIconByType(pickupPoint.location?.point_type ?? ''),  
+        size: 130, 
+        iconColor: Colors.white,  
+        iconSize: 70,  
+      );
+          
       final point = PointAnnotationOptions(
           textField: "${pickupPoint.location?.location_name}",
           textOffset: [0.0, -1.5],
           textColor: Colors.black.value,
           textLineHeight: 15,
           textSize: 15,
-          iconSize: 0.8,
+          iconSize: 0.9,  
           iconOffset: [0.0, -5.0],
           symbolSortKey: 1,
           geometry: Point(coordinates: position),
-          image: imageData);
+          image: customMarker);  
       annotationManager?.create(point);
       points.add(position);
     }
