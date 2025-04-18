@@ -217,7 +217,7 @@ class TripModel {
   }
 
   unSubscribeToTripEvents(emitterServiceProvider) async {
-    if (isEmitterSubcribedToEvents) return;
+    // if (isEmitterSubcribedToEvents) return;
 
     try {
       emitterServiceProvider.unsubscribe(EmitterTopic(
