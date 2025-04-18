@@ -186,7 +186,7 @@ class LocationService extends ChangeNotifier {
         autoStop: false,
         androidSettings:  AndroidSettings(
             accuracy: LocationAccuracy.NAVIGATION,
-            interval: relationNameLocal.contains('eta.drivers') ? 5 : 10,
+            // interval: relationNameLocal.contains('eta.drivers') ? 5 : 10,
             distanceFilter: 0,
             client: LocationClient.google,
             androidNotificationSettings: AndroidNotificationSettings(
