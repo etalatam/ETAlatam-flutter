@@ -157,8 +157,20 @@ class _TripPageState extends State<TripPage>
                           });
                         },
                         onStyleLoadedListener: (MapboxMap mapboxMap) async {
-                          showTripGeoJson(mapboxMap);
-                          showPickupLocations(mapboxMap);
+                          // 1. Elimina capas existentes
+                          if (await mapboxMap.style.styleSourceExists("trip_source")) {
+                            mapboxMap.style.removeStyleLayer("line_layer");
+                            mapboxMap.style.removeStyleSource("trip_source");
+                          }
+
+                          // 2. Agrega línea primero
+                          showTripGeoJson(mapboxMap); // LineLayer
+
+                          // 3. Espera 100ms
+                          await Future.delayed(Duration(milliseconds: 100));
+                          
+                          // 4. Agrega marcadores
+                          showPickupLocations(mapboxMap); // PointAnnotation
                         }
                       ),
                     ),
@@ -247,7 +259,39 @@ class _TripPageState extends State<TripPage>
                     Positioned(
                       left: busModelCoordinate.x.toDouble() - 35,
                       top: busModelCoordinate.y.toDouble() - 35,
-                      child: SizedBox(
+                      child:SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: Container(
+                          height: 40,
+                          width: 40,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Color(busColor),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 5,
+                                spreadRadius: 1,
+                              )
+                            ],
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.all(4.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                image: DecorationImage(
+                                  image: AssetImage('assets/bus_color.png'),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      )
+                      
+                      /* SizedBox(
                         width: 60,
                         height: 60,
                         child: IgnorePointer(
@@ -265,7 +309,7 @@ class _TripPageState extends State<TripPage>
                             orientation: "0deg 0deg ${busHeading.toStringAsFixed(1)}deg",
                             interactionPrompt: InteractionPrompt.none,
                           ))
-                        )
+                        )*/
                       ),
 
                     DraggableScrollableSheet(
@@ -878,8 +922,13 @@ class _TripPageState extends State<TripPage>
     List<Position> points = [];
 
     for (var pickupPoint in trip.pickup_locations!) {
-      final position = Position(pickupPoint.location!.longitude as double,
-          pickupPoint.location!.latitude as double);
+      if (pickupPoint.location == null) continue;
+      
+      final position = Position(
+        pickupPoint.location!.longitude as double,
+        pickupPoint.location!.latitude as double
+      );
+      
       final Uint8List customMarker = await createCircleMarkerImage(
         circleColor: Colors.green,  
         icon: _getIconByType(pickupPoint.location?.point_type ?? ''),  
@@ -887,18 +936,20 @@ class _TripPageState extends State<TripPage>
         iconColor: Colors.white,  
         iconSize: 70,  
       );
-          
+      
       final point = PointAnnotationOptions(
-          textField: "${pickupPoint.location?.location_name}",
-          textOffset: [0.0, -1.5],
-          textColor: Colors.black.value,
-          textLineHeight: 15,
-          textSize: 15,
-          iconSize: 0.9,  
-          iconOffset: [0.0, -5.0],
-          symbolSortKey: 1,
-          geometry: Point(coordinates: position),
-          image: customMarker);  
+        textField: "${pickupPoint.location?.location_name}",
+        textOffset: [0.0, -1.5],
+        textColor: Colors.black.value,
+        textLineHeight: 1,
+        textSize: 15,
+        iconSize: 0.9,  
+        iconOffset: [0.0, -5.0],
+        symbolSortKey: 1,
+        geometry: Point(coordinates: position),
+        image: customMarker
+      );  
+      
       annotationManager?.create(point);
       points.add(position);
     }
@@ -909,10 +960,6 @@ class _TripPageState extends State<TripPage>
       print("[TripPage.initState.formatElapsedTime.error] $e");
     }
 
-    final coordinateBounds = getCoordinateBounds(points);
-    mapboxMap.setCamera(
-        CameraOptions(center: coordinateBounds.southwest, zoom: 18, pitch: 45));
-
     if (trip.lastPositionPayload != null &&
         relationName != "eta.drivers" &&
         trip.trip_status == "Running") {
@@ -921,7 +968,7 @@ class _TripPageState extends State<TripPage>
       final Position position = trip.lastPosition()!;
       final label = formatUnixEpoch(trip.lastPositionPayload['time'].toInt());
 
-      _updateIcon(position, 'eta.drivers', trip.driver_id!, label);
+      _updateIcon(position, 'eta.drivers', trip.driver_id!, label); // aqui es la cosa
       mapboxMap.setCamera(CameraOptions(zoom: 18, pitch: 70));
     } else {
       final coordinateBounds = getCoordinateBounds(points);
@@ -1002,7 +1049,7 @@ class _TripPageState extends State<TripPage>
             geometry: Point(coordinates: position),
             image: imageData,
             textField: label,
-            textOffset: [0.0, -1.5],
+            textOffset: [0.0, -2.8],
             textColor: Colors.black.value,
           ));
         } 
