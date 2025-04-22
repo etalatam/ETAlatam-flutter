@@ -157,20 +157,14 @@ class _TripPageState extends State<TripPage>
                           });
                         },
                         onStyleLoadedListener: (MapboxMap mapboxMap) async {
-                          // 1. Elimina capas existentes
                           if (await mapboxMap.style.styleSourceExists("trip_source")) {
                             mapboxMap.style.removeStyleLayer("line_layer");
                             mapboxMap.style.removeStyleSource("trip_source");
                           }
 
-                          // 2. Agrega línea primero
-                          showTripGeoJson(mapboxMap); // LineLayer
-
-                          // 3. Espera 100ms
-                          await Future.delayed(Duration(milliseconds: 100));
-                          
-                          // 4. Agrega marcadores
-                          showPickupLocations(mapboxMap); // PointAnnotation
+                          showTripGeoJson(mapboxMap); 
+                          await Future.delayed(Duration(milliseconds: 100));            
+                          showPickupLocations(mapboxMap);
                         }
                       ),
                     ),
@@ -816,7 +810,9 @@ class _TripPageState extends State<TripPage>
   }
 
   int _convertColor(String colorStr) {
+    if (colorStr.isEmpty) return Colors.blue.value;
     colorStr = colorStr.trim();
+    
     if (colorStr.toLowerCase().startsWith('rgba')) {
       final regExp = RegExp(
         r'rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([\d.]+)\s*\)',
@@ -829,10 +825,17 @@ class _TripPageState extends State<TripPage>
         int b = int.parse(match.group(3)!);
         double a = double.parse(match.group(4)!);
 
+        r = r.clamp(0, 255);
+        g = g.clamp(0, 255);
+        b = b.clamp(0, 255);
+        a = a.clamp(0.0, 1.0);
+
         int alpha = (a * 255).round() & 0xFF;
         return (alpha << 24) | (r << 16) | (g << 8) | b;
       } 
-    }else if (colorStr.toLowerCase().startsWith('rgb')) {
+    }
+
+    else if (colorStr.toLowerCase().startsWith('rgb')) {
         final regExp = RegExp(r'rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)');
         final match = regExp.firstMatch(colorStr);
 
@@ -840,9 +843,16 @@ class _TripPageState extends State<TripPage>
           int r = int.parse(match.group(1)!);
           int g = int.parse(match.group(2)!);
           int b = int.parse(match.group(3)!);
+          
+          r = r.clamp(0, 255);
+          g = g.clamp(0, 255);
+          b = b.clamp(0, 255);
+          
           return (0xFF << 24) | (r << 16) | (g << 8) | b;
         }
-    } else {
+    } 
+
+    else {
         colorStr = colorStr.toUpperCase().replaceAll('#', '');
 
         if (colorStr.length == 3) {
@@ -852,11 +862,15 @@ class _TripPageState extends State<TripPage>
         if (colorStr.length == 6) {
           colorStr = 'FF$colorStr';
         }
-        return int.parse(colorStr, radix: 16);
+        
+        if (RegExp(r'^[0-9A-F]{8}$').hasMatch(colorStr)) {
+          return int.parse(colorStr, radix: 16);
+        }
     }
-    return 0xFF000000;
+    
+    return Colors.blue.value;
   }
-  //hay que probar
+  
   Future<Uint8List> createCircleMarkerImage({
     required Color circleColor,
     required IconData icon,
