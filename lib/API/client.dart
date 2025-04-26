@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:eta_school_app/Models/attendance_model.dart';
 import 'package:eta_school_app/Models/driver_model.dart';
 import 'package:eta_school_app/Models/emitter_keygen.dart';
 import 'package:eta_school_app/Models/login_information_model.dart';
@@ -143,6 +144,26 @@ class HttpService {
     }
     debugPrint(res.body.toString());
     return [];
+  }
+
+  Future<List<AttendanceModel>> getStudentActiveTrips(studentId) async {
+    const endpoint = "/rpc/attendance";
+    http.Response res = await getQuery(
+        "$endpoint?select=*&running=eq.true&limit=1&order=start_ts.desc&id_student=eq.$studentId");
+
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
+
+    if (res.statusCode == 200) {
+      List<dynamic> body = jsonDecode(res.body);
+      final List<AttendanceModel> trips = await Future.wait(
+        body.map((dynamic item) async => AttendanceModel.fromJson(item)).toList(),
+      );
+      return trips;
+    }
+    debugPrint(res.body.toString());
+    return [];
+
   }
 
   /// Load Latest Notifications

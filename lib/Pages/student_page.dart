@@ -12,6 +12,7 @@ import 'package:eta_school_app/Pages/upload_picture_page.dart';
 import 'package:eta_school_app/components/button_text_icon.dart';
 import 'package:eta_school_app/components/custom_row.dart';
 import 'package:eta_school_app/components/loader.dart';
+import 'package:eta_school_app/components/image_default.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
@@ -24,9 +25,11 @@ import 'package:visibility_detector/visibility_detector.dart';
 import 'package:wakelock/wakelock.dart';
 
 class StudentPage extends StatefulWidget {
-  StudentPage({super.key, this.student});
+  StudentPage({super.key, this.student, this.hasActiveTrip = false, this.isOnBoard = false});
 
   final StudentModel? student;
+  final bool hasActiveTrip;
+  final bool isOnBoard;
 
   @override
   State<StudentPage> createState() => _StudentPageState();
@@ -50,6 +53,7 @@ class _StudentPageState extends State<StudentPage> {
   EmitterService? _emitterServiceProvider;
   
   bool _isVisible = true;
+  late bool hasActiveTrip;
 
   @override
   Widget build(BuildContext context) {
@@ -207,15 +211,50 @@ class _StudentPageState extends State<StudentPage> {
                                 child: Container(
                                     padding:
                                         EdgeInsets.symmetric(horizontal: 20),
-                                    child: CircleAvatar(
-                                        radius: 50,
-                                        backgroundColor: Colors.white,
-                                        foregroundImage: NetworkImage(
-                                            httpService.getAvatarUrl(
-                                                widget.student?.student_id,
-                                                'eta.students'),
-                                            headers: {'Accept': 'image/png'}))),
-                              ),
+                                    child: Container(
+                                       decoration: hasActiveTrip 
+                                         ? BoxDecoration(
+                                             shape: BoxShape.circle,
+                                             border: Border.all(
+                                               color: widget.isOnBoard ? Colors.green : Colors.red,
+                                               width: 3,
+                                             ),
+                                             boxShadow: [
+                                               BoxShadow(
+                                                 color: Colors.black.withOpacity(0.2),
+                                                 blurRadius: 5,
+                                                 spreadRadius: 1,
+                                               )
+                                             ],
+                                           )
+                                         : null,
+                                       child: ClipOval(
+                                         child: Container(
+                                           width: 100,
+                                           height: 100,
+                                           color: Colors.white,
+                                           child: Image.network(
+                                             httpService.getAvatarUrl(
+                                               widget.student?.student_id,
+                                               'eta.students'),
+                                             headers: {'Accept': 'image/png'},
+                                             fit: BoxFit.cover,
+                                             width: 100,
+                                             height: 100,
+                                             loadingBuilder: (context, child, loadingProgress) {
+                                               if (loadingProgress == null) {
+                                                 return child;
+                                               }
+                                               return Center(
+                                                 child: CircularProgressIndicator(),
+                                               );
+                                             },
+                                             errorBuilder: (context, error, stackTrace) => 
+                                               ImageDefault(name: widget.student?.first_name ?? "", height: 100, width: 100),
+                                           ),
+                                         ),
+                                       ),
+                                     ))),
                               Column(
                                 textDirection: isRTL()
                                     ? TextDirection.rtl
@@ -282,7 +321,7 @@ class _StudentPageState extends State<StudentPage> {
                                         activeTheme.main_color.withOpacity(.3),
                                   ),
                                   CustomRow(lang.translate('Contact number'),
-                                      widget.student?.contact_number),
+                                      widget.student?.contact_number ?? ''),
                                   Container(
                                     height: 1,
                                     color:
@@ -369,6 +408,7 @@ class _StudentPageState extends State<StudentPage> {
   void initState() {
     super.initState();
     showLoader = false;
+    hasActiveTrip = widget.hasActiveTrip;
 
     Wakelock.enable();
 
@@ -428,9 +468,18 @@ class _StudentPageState extends State<StudentPage> {
       int relationId, String label) async {
 
     if (studentPointAnnotation== null) {
+      String studentName = "";
+      if (widget.student != null) {
+        studentName = widget.student!.first_name ?? '';
+      }
+      
       final networkImage = await mapboxUtils
-          .getNetworkImage(httpService.getAvatarUrl(relationId, relationName));
-      final circleImage = await mapboxUtils.createCircleImage(networkImage);
+          .getNetworkImage(
+            httpService.getAvatarUrl(relationId, relationName),
+            name: studentName
+          );
+          
+      final circleImage = await mapboxUtils.createCircleImage(networkImage, hasActiveTrip: hasActiveTrip, isOnBoard: widget.isOnBoard);
       studentPointAnnotation = await mapboxUtils.createAnnotation(
           annotationManager, position, circleImage, label);
 

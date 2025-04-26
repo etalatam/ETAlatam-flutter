@@ -13,23 +13,67 @@ class MapboxUtils {
 
   MapboxUtils._internal();
 
-  Future<Uint8List> getNetworkImage(String imageUrl) async {
-    final http.Response response =
-        await http.get(Uri.parse(imageUrl), headers: {'Accept': 'image/png'});
-    final Uint8List bytes = response.bodyBytes;
+  Future<Uint8List> getNetworkImage(String imageUrl, {String name = ""}) async {
+    try {
+      final http.Response response =
+          await http.get(Uri.parse(imageUrl), headers: {'Accept': 'image/png'});
+      
+      if (response.statusCode != 200 || response.bodyBytes.isEmpty) {
 
-    final ui.Codec codec = await ui.instantiateImageCodec(bytes);
-    final ui.FrameInfo frameInfo = await codec.getNextFrame();
-    final ui.Image image = frameInfo.image;
+        return await _generateDefaultImage(name);
+      }
+      
+      final Uint8List bytes = response.bodyBytes;
 
-    final ByteData? byteData =
-        await image.toByteData(format: ui.ImageByteFormat.png);
-    final Uint8List imageData = byteData!.buffer.asUint8List();
+      final ui.Codec codec = await ui.instantiateImageCodec(bytes);
+      final ui.FrameInfo frameInfo = await codec.getNextFrame();
+      final ui.Image image = frameInfo.image;
 
-    return imageData;
+      final ByteData? byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+      final Uint8List imageData = byteData!.buffer.asUint8List();
+
+      return imageData;
+    } catch (e) {
+      print("Error cargando imagen: $e");
+      return await _generateDefaultImage(name);
+    }
+  }
+  
+
+  Future<Uint8List> _generateDefaultImage(String name) async {
+    try {
+
+      final http.Response response = await http.get(
+        Uri.parse('https://ui-avatars.com/api/?background=0D8ABC&format=png&name=$name'),
+      );
+      
+      return response.bodyBytes;
+    } catch (e) {
+      print("Error generando imagen por defecto: $e");
+      return await _createBlankImage();
+    }
+  }
+  
+  Future<Uint8List> _createBlankImage() async {
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+    const double size = 100.0;
+    
+    canvas.drawCircle(
+      Offset(size / 2, size / 2),
+      size / 2,
+      Paint()..color = Color(0xFF0D8ABC),
+    );
+    
+    final ui.Picture picture = pictureRecorder.endRecording();
+    final ui.Image image = await picture.toImage(size.toInt(), size.toInt());
+    final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    
+    return byteData!.buffer.asUint8List();
   }
 
-  Future<Uint8List> createCircleImage(Uint8List imageData) async {
+  Future<Uint8List> createCircleImage(Uint8List imageData, {bool hasActiveTrip = false, bool isOnBoard = false}) async {
     final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(pictureRecorder);
     final Paint paint = Paint();
@@ -41,11 +85,17 @@ class MapboxUtils {
         borderSize, borderSize, size - 2 * borderSize, size - 2 * borderSize);
     final Path path = Path()..addOval(rect);
 
-    // Dibujar el borde blanco
     canvas.drawOval(
         Rect.fromLTWH(0, 0, size + 2, size + 2), Paint()..color = Colors.black);
     canvas.drawOval(
-        Rect.fromLTWH(0, 0, size, size), Paint()..color = Colors.white);
+        Rect.fromLTWH(0, 0, size, size), 
+        Paint()..color = hasActiveTrip ? (isOnBoard ? Colors.green : Colors.red) : Colors.white);
+    
+    if (hasActiveTrip) {
+      canvas.drawOval(
+          Rect.fromLTWH(5, 5, size - 10, size - 10), 
+          Paint()..color = Colors.white);
+    }
 
     // Dibujar la imagen circular
     canvas.clipPath(path);
@@ -76,9 +126,9 @@ class MapboxUtils {
         textField: label,
         textSize: 14.0,
         textColor: Colors.black.value,
-        textHaloColor: ui.Color.fromARGB(255, 246, 240, 240).value,
-        textHaloWidth: 4.0,
-        textHaloBlur: 1
+        textHaloColor: Colors.white.value,
+        textHaloWidth: 2.0,
+        textHaloBlur: 0.5
     ));
   }
 }

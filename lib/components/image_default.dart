@@ -11,7 +11,7 @@ class ImageDefault extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(50),
       child: Image.network(
-        'https://ui-avatars.com/api/?background=random&name=$name',
+        'https://ui-avatars.com/api/?background=0D8ABC&format=png&name=$name',
         fit: BoxFit.fill,
         height: height,
         width: width,
@@ -23,7 +23,7 @@ class ImageDefault extends StatelessWidget {
         },
         errorBuilder: (context, error, stackTrace) {
           print("[ImageDefault] error: $error");
-          return Icon(Icons.error, size: height);
+          return Icon(Icons.person, size: height);
         },
       ),
     );
