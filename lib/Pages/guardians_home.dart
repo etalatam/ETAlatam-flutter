@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:eta_school_app/Models/attendance_model.dart';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/Pages/student_page.dart';
@@ -38,8 +39,28 @@ class _GuardiansHomeState extends State<GuardiansHome>
   List<TripModel> oldTripsList = [];
 
   List<TripModel> activeTrips = [];
+  
+  List<Map<String, dynamic>> studentsTrips = [];
 
   EmitterService? _emitterServiceProvider;
+
+  bool _studentHasActiveTrip(int studentId) {
+    for (var studentInfo in studentsTrips) {
+      if (studentInfo['studentId'] == studentId) {
+        return studentInfo['hasActiveTrip'] ?? false;
+      }
+    }
+    return false; 
+  }
+
+  bool _studentIsOnBoard(int studentId) {
+    for (var studentInfo in studentsTrips) {
+      if (studentInfo['studentId'] == studentId) {
+        return studentInfo['isOnBoard'] ?? false;
+      }
+    }
+    return false; 
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -145,14 +166,18 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                                           StudentPage(
                                                               student: parentModel!
                                                                       .students[
-                                                                  index]));
+                                                                  index],
+                                                              hasActiveTrip: _studentHasActiveTrip(parentModel!.students[index].student_id),
+                                                              isOnBoard: _studentIsOnBoard(parentModel!.students[index].student_id)));
                                                     },
                                                     child: ETAWidgets
                                                         .homeStudentBlock(
                                                             context,
                                                             parentModel!
                                                                     .students[
-                                                                index]));
+                                                                index],
+                                                            hasActiveTrip: _studentHasActiveTrip(parentModel!.students[index].student_id),
+                                                            isOnBoard: _studentIsOnBoard(parentModel!.students[index].student_id)));
                                               },
                                             ),
                                           ),
@@ -225,8 +250,34 @@ class _GuardiansHomeState extends State<GuardiansHome>
         showLoader = false;
       }
         
+      studentsTrips.clear();
+      
       for (var student in parentModel!.students) {
         student.subscribeToStudentTracking();
+        
+        try {
+          final List<AttendanceModel> studentTrips = await httpService.getStudentActiveTrips(student.student_id);
+          final bool hasActiveTrip = studentTrips.isNotEmpty;
+          bool isOnBoard = false;
+          
+          if (hasActiveTrip) {
+            isOnBoard = studentTrips[0].onBoarding();
+          }
+          
+          studentsTrips.add({
+            'studentId': student.student_id,
+            'hasActiveTrip': hasActiveTrip,
+            'isOnBoard': isOnBoard
+          });
+          print('Student ${student.student_id} has active trip: $hasActiveTrip, isOnBoard: $isOnBoard');
+        } catch (e) {
+          print('Error al verificar viaje activo para estudiante ${student.student_id}: $e');
+          studentsTrips.add({
+            'studentId': student.student_id,
+            'hasActiveTrip': false,
+            'isOnBoard': false
+          });
+        }
       }
     } catch (e) {
       print("[GuardianHome.loadParent] error loading parent info : $e");

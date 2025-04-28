@@ -4,6 +4,7 @@ import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/Pages/event_page.dart';
 import 'package:eta_school_app/Pages/help_messages_page.dart';
 import 'package:eta_school_app/Pages/parent_page.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
@@ -13,6 +14,7 @@ import 'package:eta_school_app/methods.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:eta_school_app/components/image_default.dart';
 
 Widget buttonText(callback, index, text) {
   return Center(
@@ -878,7 +880,7 @@ mixin ETAWidgets {
             )));
   }
 
-  static Widget homeStudentBlock(context, StudentModel student) {
+  static Widget homeStudentBlock(context, StudentModel student, {bool hasActiveTrip = false, bool isOnBoard = false}) {
     activeTheme =
         storage.getItem('darkmode') == true ? DarkTheme() : LightTheme();
 
@@ -895,7 +897,7 @@ mixin ETAWidgets {
               color: activeTheme.buttonBG,
               borderRadius: BorderRadius.circular(30),
             )),
-        Container(
+        SizedBox(
             child: Stack(
           alignment: Alignment.topCenter,
           children: [
@@ -968,22 +970,38 @@ mixin ETAWidgets {
             Container(
               width: 100,
               height: 100,
-              decoration: ShapeDecoration(
-                shape: RoundedRectangleBorder(
-                  side: BorderSide(
-                    width: 1,
-                    color: activeTheme.border_color.withOpacity(1),
-                  ),
-                  borderRadius: BorderRadius.circular(50),
+              decoration: hasActiveTrip 
+                ? ShapeDecoration(
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(
+                        width: 3,
+                        color: isOnBoard ? Colors.green : Colors.red,
+                      ),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                  )
+                : null,
+              child: ClipOval(
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  color: Colors.white,
+                  child:Image.network(
+                        httpService.getAvatarUrl(student.student_id, 'eta.students'),
+                        headers: {'Accept': 'image/png'},
+                        fit: BoxFit.cover,
+                        width: 100,
+                        height: 100,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) {
+                            return child;
+                          }
+                           return CircularProgressIndicator();
+                        },
+                        errorBuilder: (context, error, stackTrace) => 
+                          ImageDefault(name: student.first_name ?? "", height: 100, width: 100),
+                      )
                 ),
-              ),
-              child: CircleAvatar(
-                maxRadius: 50,
-                backgroundColor: Colors.white,
-                foregroundImage: NetworkImage(
-                    httpService.getAvatarUrl(
-                        student.student_id, 'eta.students'),
-                    headers: {'Accept': 'image/png'}),
               ),
             )
           ],

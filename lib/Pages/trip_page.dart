@@ -57,8 +57,14 @@ class TripPage extends StatefulWidget {
 class _TripPageState extends State<TripPage>
     with ETAWidgets, MediansTheme
     implements OnPointAnnotationClickListener {
+  @override
+  void onPointAnnotationClick(PointAnnotation annotation) {
+    print("Annotation clicked: ${annotation.id}");
+  }
   bool showLoader = false;
-
+  bool isLandscape = false;
+  bool isPanelExpanded = true;
+  final DraggableScrollableController draggableScrollableController = DraggableScrollableController();
   String activeTab = 'pickup';
 
   TripModel trip = TripModel(trip_id: 0);
@@ -104,8 +110,62 @@ class _TripPageState extends State<TripPage>
   bool _isVisible = true;
 
   @override
+  void initState() {
+    super.initState();
+
+    trip = widget.trip!;
+    _lastPositionPayload = trip.lastPositionPayload;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final currentOrientation = MediaQuery.of(context).orientation;
+      setState(() {
+        isLandscape = currentOrientation == Orientation.landscape;
+        isPanelExpanded = !isLandscape; 
+        if (isLandscape) {
+          try {
+            draggableScrollableController.jumpTo(0.15);
+          } catch (e) {
+            print("Error al ajustar el panel: $e");
+          }
+        }
+      });
+    });
+
+    loadTrip();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final currentIsLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    if (currentIsLandscape != isLandscape) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          isLandscape = currentIsLandscape;
+          isPanelExpanded = !isLandscape;
+          
+          // Ajustar el panel según la orientación
+          try {
+            if (isLandscape) {
+              // Minimizar en landscape al mismo nivel que el botón minimizar
+              draggableScrollableController.animateTo(
+                0.15,
+                duration: Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+            } else if (isPanelExpanded) {
+              // Expandir en portrait si estaba expandido
+              draggableScrollableController.animateTo(
+                0.5,
+                duration: Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+            }
+          } catch (e) {
+            print("Error al ajustar el panel: $e");
+          }
+        });
+      });
+    }
     final int busColor = trip.bus_color != null ? _convertColor(trip.bus_color!) : Colors.blue.value;
     
     return Material(
@@ -118,8 +178,28 @@ class _TripPageState extends State<TripPage>
                       _isVisible = info.visibleFraction > 0;
                     if (info.visibleFraction > 0) {
                       loadTrip();
-                    }else{
-                      cleanResources();
+                      // Si el mapa está listo pero no hay marcadores, volvemos a mostrarlos
+                      if (_mapboxMapController != null && (annotationManager == null || trip.pickup_locations != null && trip.pickup_locations!.isNotEmpty)) {
+                        Future.delayed(Duration(milliseconds: 300), () {
+                          if (_mapboxMapController != null) {
+                            if (annotationManager == null) {
+                              _mapboxMapController!.annotations.createPointAnnotationManager().then((value) {
+                                if (mounted) {
+                                  annotationManager = value;
+                                  annotationManager?.addOnPointAnnotationClickListener(this);
+                                  showTripGeoJson(_mapboxMapController!);
+                                  showPickupLocations(_mapboxMapController!);
+                                }
+                              });
+                            } else {
+                              showTripGeoJson(_mapboxMapController!);
+                              showPickupLocations(_mapboxMapController!);
+                            }
+                          }
+                        });
+                      }
+                    } else {
+                      cleanResources(fullCleanup: false);
                     }
                   },
                   child: Stack(children: <Widget>[
@@ -132,8 +212,9 @@ class _TripPageState extends State<TripPage>
                     //       semanticsLabel: "Esperando ubicación del bus...",
                     //     ),
                     //   ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height / 1.40,
+                    // El mapa ocupa todo el espacio disponible menos el tamaño mínimo del panel
+                    Positioned.fill(
+                      bottom: MediaQuery.of(context).size.height * (isLandscape ? 0.15 : 0.15),
                       child: MapWiew(
                         navigationMode: widget.navigationMode,
                         onMapReady: (MapboxMap mapboxMap) async {
@@ -157,10 +238,6 @@ class _TripPageState extends State<TripPage>
                           });
                         },
                         onStyleLoadedListener: (MapboxMap mapboxMap) async {
-                          if (await mapboxMap.style.styleSourceExists("trip_source")) {
-                            mapboxMap.style.removeStyleLayer("line_layer");
-                            mapboxMap.style.removeStyleSource("trip_source");
-                          }
 
                           showTripGeoJson(mapboxMap); 
                           await Future.delayed(Duration(milliseconds: 100));            
@@ -249,7 +326,7 @@ class _TripPageState extends State<TripPage>
                         })
                     ),
 
-                    if(busModelCoordinate.x.toDouble() > 0 && annotationManager != null)
+                    if(busModelCoordinate.x.toDouble() > 0 && annotationManager != null && !relationName.contains('eta.drivers'))
                     Positioned(
                       left: busModelCoordinate.x.toDouble() - 35,
                       top: busModelCoordinate.y.toDouble() - 35,
@@ -272,15 +349,7 @@ class _TripPageState extends State<TripPage>
                           ),
                           child: Padding(
                             padding: EdgeInsets.all(4.0),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                  image: AssetImage('assets/bus_color.png'),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
+                            child: _buildBusMarker(Color(busColor)),
                           ),
                         )
                       )
@@ -306,10 +375,50 @@ class _TripPageState extends State<TripPage>
                         )*/
                       ),
 
+                    Positioned(
+                      top: 60,
+                      right: 5,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            isPanelExpanded = !isPanelExpanded;
+                            if (isPanelExpanded) {
+                              // Expandir el panel
+                              draggableScrollableController.animateTo(
+                                isLandscape ? 0.7 : 0.8,
+                                duration: Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            } else {
+                              // Minimizar el panel
+                              draggableScrollableController.animateTo(
+                                0.15, 
+                                duration: Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            }
+                          });
+                        },
+                        child: Icon(
+                          isPanelExpanded ? Icons.fullscreen_exit : Icons.fullscreen,
+                          color: activeTheme.main_color,
+                          size: 30,
+                          shadows: [
+                            Shadow(
+                              blurRadius: 5.0,
+                              color: Colors.black.withOpacity(0.3),
+                              offset: Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    
                     DraggableScrollableSheet(
+                      controller: draggableScrollableController,
                       snapAnimationDuration: const Duration(seconds: 1),
-                      initialChildSize: isLandscape ? 0.3 : (trip.trip_status == 'Running' ? 0.5 : 0.29),
-                      minChildSize: isLandscape ? 0.2 : 0.29,
+                      initialChildSize: isLandscape ? 0.15 : (trip.trip_status == 'Running' ? 0.5 : 0.15),
+                      minChildSize: isLandscape ? 0.15 : 0.15,
                       maxChildSize: 1,
                       builder: (BuildContext context,
                           ScrollController scrollController) {
@@ -625,7 +734,7 @@ class _TripPageState extends State<TripPage>
 
     try {
       locationServiceProvider.stopLocationService();
-      cleanResources();
+      cleanResources(fullCleanup: true);
     } catch (e) {
       print(e);
     }
@@ -684,17 +793,20 @@ class _TripPageState extends State<TripPage>
     }
   }
 
-  void cleanResources() {
+  void cleanResources({bool fullCleanup = false}) {
     try {
       _emitterServiceProvider?.removeListener(onEmitterMessage);
       _notificationService.removeListener(onPushMessage);
       _connectivitySubscription.cancel();
       Wakelock.disable();
       
-      // Limpiar el mapa
-      annotationManager?.deleteAll();
-      annotationManager = null;
-      busPointAnnotation = null;
+      // Limpiar el mapa solo si es una limpieza completa (cuando se destruye la página)
+      if (fullCleanup) {
+        print("Realizando limpieza completa de recursos");
+        annotationManager?.deleteAll();
+        annotationManager = null;
+        busPointAnnotation = null;
+      }
       
       // Desuscribirse de eventos
       if (trip.trip_status == "Running") {
@@ -709,17 +821,7 @@ class _TripPageState extends State<TripPage>
   @override
   void dispose() {
     super.dispose();
-    cleanResources();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    trip = widget.trip!;
-    _lastPositionPayload = trip.lastPositionPayload;
-
-    loadTrip();
+    cleanResources(fullCleanup: true);
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -752,10 +854,7 @@ class _TripPageState extends State<TripPage>
     print('connectivityNone: $connectivityNone');
   }
 
-  @override
-  void onPointAnnotationClick(PointAnnotation annotation) {
-    // _showInfoWindow(annotation);
-  }
+
 
   // void _showInfoWindow(PointAnnotation annotation) {
   //   showModalBottomSheet(
@@ -804,7 +903,7 @@ class _TripPageState extends State<TripPage>
         lineCap: LineCap.ROUND,
         lineColor: lineColorValue,
         lineBlur: 1.0,
-        lineDasharray: [1.0, 2.0],
+        lineDasharray: [1.0, 2.2],
         lineWidth: 6.0,
         lineSortKey: 0));
   }
@@ -877,7 +976,7 @@ class _TripPageState extends State<TripPage>
     double size = 160,
     Color iconColor = Colors.white,
     double iconSize = 80,
-  }) async {
+  }) async { 
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
 
@@ -929,6 +1028,40 @@ class _TripPageState extends State<TripPage>
     }
   }
 
+  static final Map<int, Uint8List?> _busMarkerCache = {};
+
+  Widget _buildBusMarker(Color busColor) {
+    if (_busMarkerCache.containsKey(busColor.value) && 
+        _busMarkerCache[busColor.value] != null) {
+      return Image.memory(_busMarkerCache[busColor.value]!);
+    }
+    
+    return FutureBuilder<Uint8List>(
+      future: () async {
+        final markerImage = await createCircleMarkerImage(
+          circleColor: busColor,
+          icon: FontAwesomeIcons.bus,
+          size: 104,
+          iconColor: Colors.white,
+          iconSize: 60,
+        );
+        
+        // Lo guardamos en caché
+        _busMarkerCache[busColor.value] = markerImage;
+        
+        return markerImage;
+      }(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done && 
+            snapshot.hasData) {
+          return Image.memory(snapshot.data!);
+        }
+        // Mientras se carga, no mostramos nada
+        return SizedBox.shrink();
+      },
+    );
+  }
+
 
   void showPickupLocations(MapboxMap mapboxMap) async {
     print("[TripPage.showPickupLocations]");
@@ -946,22 +1079,24 @@ class _TripPageState extends State<TripPage>
       final Uint8List customMarker = await createCircleMarkerImage(
         circleColor: Colors.green,  
         icon: _getIconByType(pickupPoint.location?.point_type ?? ''),  
-        size: 130, 
+        size: 104, 
         iconColor: Colors.white,  
-        iconSize: 70,  
+        iconSize: 56,  
       );
       
       final point = PointAnnotationOptions(
         textField: "${pickupPoint.location?.location_name}",
-        textOffset: [0.0, -1.5],
+        textOffset: [0.0, -1.8],
         textColor: Colors.black.value,
         textLineHeight: 1,
-        textSize: 15,
+        textSize: 11,
         iconSize: 0.9,  
         iconOffset: [0.0, -5.0],
         symbolSortKey: 1,
         geometry: Point(coordinates: position),
-        image: customMarker
+        image: customMarker,
+        textHaloColor: Colors.white.value,
+        textHaloWidth: 2,
       );  
       
       annotationManager?.create(point);
@@ -1010,15 +1145,11 @@ class _TripPageState extends State<TripPage>
       final coordinate = await _mapboxMapController?.pixelForCoordinate(point);
       if (coordinate == null || !mounted) return;
 
-      // Obtener el estado actual de la cámara
       final cameraState = await _mapboxMapController?.getCameraState();
       final mapBearing = cameraState?.bearing ?? 0;
-      
-      // Heading real del bus desde GPS (norte verdadero)
+
       final busTrueHeading = _lastPositionPayload?['heading']?.toDouble() ?? 270;
       
-      // Calcular el heading visual ajustado
-      // Restamos el bearing del mapa para compensar la rotación de la cámara
       final adjustedHeading = (busTrueHeading - mapBearing + 360) % 360;
 
       if (mounted) {
@@ -1062,9 +1193,12 @@ class _TripPageState extends State<TripPage>
           busPointAnnotation = await annotationManager?.create(PointAnnotationOptions(
             geometry: Point(coordinates: position),
             image: imageData,
+            textSize: 14,
             textField: label,
             textOffset: [0.0, -2.8],
             textColor: Colors.black.value,
+            textHaloColor: Colors.white.value,
+            textHaloWidth: 2,
           ));
         } 
         // If it exists, update it
