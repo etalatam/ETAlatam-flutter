@@ -88,8 +88,7 @@ class _StudentPageState extends State<StudentPage> {
                         final Position? position =
                             widget.student?.lastPosition()!;
                         final label = formatUnixEpoch(widget
-                            .student?.lastPositionPayload['time']
-                            .toInt());
+                            .student?.lastPositionPayload['time']?.toInt());
 
                         _updateIcon(position!, 'eta.students',
                             widget.student!.student_id, label);
@@ -524,7 +523,7 @@ class _StudentPageState extends State<StudentPage> {
             final Position position = Position(
                 double.parse("${tracking['payload']['longitude']}"),
                 double.parse("${tracking['payload']['latitude']}"));
-            final label = formatUnixEpoch(tracking['payload']['time'].toInt());
+            final label = formatUnixEpoch(tracking['payload']['time']?.toInt());
 
             print(
                 "[StudentPage.onEmitterMessage.emitter-tracking.student] $tracking");
@@ -539,12 +538,13 @@ class _StudentPageState extends State<StudentPage> {
     }
   }
 
-  String formatUnixEpoch(int unixEpoch) {
-    // Convierte el Unix Epoch (segundos) a milisegundos
-    DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(unixEpoch);
-    return Utils.formatearFechaCorta(dateTime);
-    // Formatea la fecha como desees
-    // return '${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
+  String formatUnixEpoch(int? unixEpoch) {
+    if (unixEpoch == null) {
+      return ''; 
+    }
+    DateTime dateTimeUtc = DateTime.fromMillisecondsSinceEpoch(unixEpoch);
+    DateTime dateTimeLocal = dateTimeUtc.toLocal();
+    return Utils.formatearFechaCorta(dateTimeLocal);
   }
   
   void cleanResources() {

@@ -1086,7 +1086,7 @@ class _TripPageState extends State<TripPage>
       
       final point = PointAnnotationOptions(
         textField: "${pickupPoint.location?.location_name}",
-        textOffset: [0.0, -1.8],
+        textOffset: [0.0, -2.9],
         textColor: Colors.black.value,
         textLineHeight: 1,
         textSize: 11,
@@ -1115,9 +1115,8 @@ class _TripPageState extends State<TripPage>
       print(
           "[TripPage.initState] lastPositionPayload ${trip.lastPositionPayload}");
       final Position position = trip.lastPosition()!;
-      final label = formatUnixEpoch(trip.lastPositionPayload['time'].toInt());
-
-      _updateIcon(position, 'eta.drivers', trip.driver_id!, label); // aqui es la cosa
+      final label = formatUnixEpoch(trip.lastPositionPayload['time']?.toInt());
+      _updateIcon(position, 'eta.drivers', trip.driver_id!, label);
       mapboxMap.setCamera(CameraOptions(zoom: 18, pitch: 70));
     } else {
       final coordinateBounds = getCoordinateBounds(points);
@@ -1195,13 +1194,13 @@ class _TripPageState extends State<TripPage>
             image: imageData,
             textSize: 14,
             textField: label,
-            textOffset: [0.0, -2.8],
+            textOffset: [0.0, -3.1],
             textColor: Colors.black.value,
             textHaloColor: Colors.white.value,
             textHaloWidth: 2,
           ));
         } 
-        // If it exists, update it
+
         else if (annotationManager != null) {
           print("[TripPage._updateIcon] updating existing point annotation");
           busPointAnnotation?.geometry = Point(coordinates: position);
@@ -1271,11 +1270,13 @@ class _TripPageState extends State<TripPage>
   }
 
   void processTrackingMessage(Map<String, dynamic> tracking) async {
-    print("[processTrackingMessage] $tracking");
+    print("[processTrackingMessage1] $tracking");
 
-    if (_lastPositionPayload != null &&
-        _lastPositionPayload?['time'].toInt() >
-            tracking['payload']['time'].toInt()) {
+
+    final lastTime = _lastPositionPayload?['time']?.toInt();
+    final currentTime = tracking['payload']?['time']?.toInt();
+    
+    if (_lastPositionPayload != null && lastTime != null && currentTime != null && lastTime > currentTime) {
       print("[trippage.processTrackingMessage.ignore position by time]");
       return;
     }
@@ -1289,7 +1290,7 @@ class _TripPageState extends State<TripPage>
         final Position position = Position(
             double.parse("${tracking['payload']['longitude']}"),
             double.parse("${tracking['payload']['latitude']}"));
-        final label = formatUnixEpoch(tracking['payload']['time'].toInt());
+        final label = formatUnixEpoch(tracking['payload']['time']?.toInt());
 
         try {
           tripDistance = double.parse("${tracking['payload']['distance']}");
@@ -1342,11 +1343,13 @@ class _TripPageState extends State<TripPage>
     }
   }
 
-  String formatUnixEpoch(int unixEpoch) {
-    // Convierte el Unix Epoch (segundos) a milisegundos
-    DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(unixEpoch);
-
-    return Utils.formatearFechaCorta(dateTime);
+  String formatUnixEpoch(int? unixEpoch) {
+    if (unixEpoch == null) {
+      return ''; 
+    }
+    DateTime dateTimeUtc = DateTime.fromMillisecondsSinceEpoch(unixEpoch);
+    DateTime dateTimeLocal = dateTimeUtc.toLocal();
+    return Utils.formatearFechaCorta(dateTimeLocal);
   }
 
   onPushMessage() {
