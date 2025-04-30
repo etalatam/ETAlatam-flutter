@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
 import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
@@ -108,6 +111,9 @@ class _TripPageState extends State<TripPage>
   ScreenCoordinate busModelCoordinate = ScreenCoordinate(x: 0, y: 0);
 
   double busHeading = 270;
+  
+  // Color del autobús para el marcador en el mapa
+  late int busColor;
 
   bool _isVisible = true;
 
@@ -169,7 +175,8 @@ class _TripPageState extends State<TripPage>
         });
       });
     }
-    final int busColor = trip.bus_color != null
+    // Actualizar el color del autobús para el marcador
+    busColor = trip.bus_color != null
         ? _convertColor(trip.bus_color!)
         : Colors.blue.value;
 
@@ -341,55 +348,30 @@ class _TripPageState extends State<TripPage>
                                     : Colors.red);
                           })),
 
-                    if (busModelCoordinate.x.toDouble() > 0 &&
-                        annotationManager != null &&
-                        !relationName.contains('eta.drivers'))
-                      Positioned(
-                          left: busModelCoordinate.x.toDouble() - 35,
-                          top: busModelCoordinate.y.toDouble() - 35,
-                          child: SizedBox(
-                              width: 40,
-                              height: 40,
-                              child: Container(
-                                height: 40,
-                                width: 40,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Color(busColor),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
-                                      blurRadius: 5,
-                                      spreadRadius: 1,
-                                    )
-                                  ],
-                                ),
-                                child: Padding(
-                                  padding: EdgeInsets.all(4.0),
-                                  child: _buildBusMarker(Color(busColor)),
-                                ),
-                              ))
+                    // Eliminado el marcador personalizado en la interfaz
+                    // Ahora solo se usa el marcador nativo de Mapbox
 
-                          /* SizedBox(
-                        width: 60,
-                        height: 60,
-                        child: IgnorePointer(
-                          child: ModelViewer(
-                            src: 'assets/bus.glb', // Ruta al modelo 3D
-                            //src: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
-                            alt: 'Autobús 3D',
-                            ar: false, // Habilita AR (si es compatible)
-                            backgroundColor: Colors.transparent,
-                            autoRotate: false, // Rota el modelo automáticamente
-                            cameraControls: false, // Permite controlar la cámara
-                            disableZoom: true,
-                            disablePan: true,
-                            disableTap: true,
-                            orientation: "0deg 0deg ${busHeading.toStringAsFixed(1)}deg",
-                            interactionPrompt: InteractionPrompt.none,
-                          ))
-                        )*/
-                          ),
+                    /* Código comentado del modelo 3D que no se está usando
+                    SizedBox(
+                      width: 60,
+                      height: 60,
+                      child: IgnorePointer(
+                        child: ModelViewer(
+                          src: 'assets/bus.glb', // Ruta al modelo 3D
+                          alt: 'Autobús 3D',
+                          ar: false, // Habilita AR (si es compatible)
+                          backgroundColor: Colors.transparent,
+                          autoRotate: false, // Rota el modelo automáticamente
+                          cameraControls: false, // Permite controlar la cámara
+                          disableZoom: true,
+                          disablePan: true,
+                          disableTap: true,
+                          orientation: "0deg 0deg ${busHeading.toStringAsFixed(1)}deg",
+                          interactionPrompt: InteractionPrompt.none,
+                        )
+                      )
+                    )
+                    */
 
                     Positioned(
                       top: 60,
@@ -991,36 +973,60 @@ class _TripPageState extends State<TripPage>
 
   Future<Uint8List> createCircleMarkerImage({
     required Color circleColor,
-    required IconData icon,
+    IconData? icon,
+    ui.Image? image,
     double size = 160,
     Color iconColor = Colors.white,
     double iconSize = 80,
+    double imageSize = 80,
   }) async {
+    assert(icon != null || image != null, 'Debe proporcionar un icono o una imagen');
+    
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
 
     final paint = Paint()..color = circleColor;
     final center = Offset(size / 2, size / 2);
 
+    // Dibujar el círculo de fondo
     canvas.drawCircle(center, size / 2, paint);
 
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: String.fromCharCode(icon.codePoint),
-        style: TextStyle(
-          fontSize: iconSize,
-          fontFamily: icon.fontFamily,
-          color: iconColor,
-          package: icon.fontPackage,
+    if (image != null) {
+      // Si se proporciona una imagen, dibujarla en el centro
+      final srcRect = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
+      final destSize = imageSize;
+      final destRect = Rect.fromCenter(
+        center: center,
+        width: destSize,
+        height: destSize,
+      );
+      
+      canvas.drawImageRect(
+        image, 
+        srcRect, 
+        destRect, 
+        Paint(),
+      );
+    } else if (icon != null) {
+      // Si se proporciona un icono, dibujarlo como antes
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: String.fromCharCode(icon.codePoint),
+          style: TextStyle(
+            fontSize: iconSize,
+            fontFamily: icon.fontFamily,
+            color: iconColor,
+            package: icon.fontPackage,
+          ),
         ),
-      ),
-      textDirection: ui.TextDirection.ltr,
-    )..layout();
+        textDirection: ui.TextDirection.ltr,
+      )..layout();
 
-    textPainter.paint(
-      canvas,
-      center - Offset(textPainter.width / 2, textPainter.height / 2),
-    );
+      textPainter.paint(
+        canvas,
+        center - Offset(textPainter.width / 2, textPainter.height / 2),
+      );
+    }
 
     final picture = recorder.endRecording();
     final img = await picture.toImage(size.toInt(), size.toInt());
@@ -1049,36 +1055,19 @@ class _TripPageState extends State<TripPage>
 
   static final Map<int, Uint8List?> _busMarkerCache = {};
 
-  Widget _buildBusMarker(Color busColor) {
-    if (_busMarkerCache.containsKey(busColor.value) &&
-        _busMarkerCache[busColor.value] != null) {
-      return Image.memory(_busMarkerCache[busColor.value]!);
-    }
+  Future<ui.Image> loadImageFromAsset(String assetPath) async {
+    final ByteData data = await rootBundle.load(assetPath);
+    final Uint8List bytes = data.buffer.asUint8List();
+    final ui.Codec codec = await ui.instantiateImageCodec(bytes);
+    final ui.FrameInfo fi = await codec.getNextFrame();
+    return fi.image;
+  }
 
-    return FutureBuilder<Uint8List>(
-      future: () async {
-        final markerImage = await createCircleMarkerImage(
-          circleColor: busColor,
-          icon: FontAwesomeIcons.bus,
-          size: 104,
-          iconColor: Colors.white,
-          iconSize: 60,
-        );
-
-        // Lo guardamos en caché
-        _busMarkerCache[busColor.value] = markerImage;
-
-        return markerImage;
-      }(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done &&
-            snapshot.hasData) {
-          return Image.memory(snapshot.data!);
-        }
-        // Mientras se carga, no mostramos nada
-        return SizedBox.shrink();
-      },
-    );
+  Future<ui.Image> loadImageFromFile(File file) async {
+    final Uint8List bytes = await file.readAsBytes();
+    final ui.Codec codec = await ui.instantiateImageCodec(bytes);
+    final ui.FrameInfo fi = await codec.getNextFrame();
+    return fi.image;
   }
 
   void showPickupLocations(MapboxMap mapboxMap) async {
@@ -1107,7 +1096,7 @@ class _TripPageState extends State<TripPage>
         textLineHeight: 1,
         textSize: 11,
         iconSize: 0.9,
-        iconOffset: [0.0, -5.0],
+        iconOffset: [0.0, -4.0],
         symbolSortKey: 1,
         geometry: Point(coordinates: position),
         image: customMarker,
@@ -1205,8 +1194,24 @@ class _TripPageState extends State<TripPage>
       // If the annotation doesn't exist, create it
       if (busPointAnnotation == null) {
         print("[TripPage._updateIcon] creating new point annotation");
-        final ByteData bytes = await rootBundle.load('assets/blank.png');
-        final Uint8List imageData = bytes.buffer.asUint8List();
+        
+        final int currentBusColor = trip.bus_color != null
+            ? _convertColor(trip.bus_color!)
+            : Colors.blue.value;
+            
+        Uint8List? imageData;
+        if (_busMarkerCache.containsKey(currentBusColor) && _busMarkerCache[currentBusColor] != null) {
+          imageData = _busMarkerCache[currentBusColor]!;
+        } else {
+          final ui.Image busImage = await loadImageFromAsset('assets/bus_color.png');
+          imageData = await createCircleMarkerImage(
+            circleColor: Color(currentBusColor),
+            image: busImage,
+            size: 104,
+            imageSize: 60,
+          );
+          _busMarkerCache[currentBusColor] = imageData;
+        }
 
         busPointAnnotation =
             await annotationManager?.create(PointAnnotationOptions(
@@ -1214,13 +1219,14 @@ class _TripPageState extends State<TripPage>
           image: imageData,
           textSize: 14,
           textField: label,
-          textOffset: [0.0, -2.8],
+          textOffset: [0.0, -2.0],
           textColor: Colors.black.value,
           textHaloColor: Colors.white.value,
           textHaloWidth: 2,
+          symbolSortKey: 2,
         ));
       }
-      // If it exists, update it
+      // Si ya existe, solo actualizamos la posición y el texto
       else if (annotationManager != null) {
         print("[TripPage._updateIcon] updating existing point annotation");
         busPointAnnotation?.geometry = Point(coordinates: position);
@@ -1286,7 +1292,7 @@ class _TripPageState extends State<TripPage>
   }
 
   void processTrackingMessage(Map<String, dynamic> tracking) async {
-    print("[processTrackingMessage1] $tracking");
+    print("[processTrackingMessage] $tracking");
 
 
     final lastTime = _lastPositionPayload?['time']?.toInt();
