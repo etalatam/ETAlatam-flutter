@@ -4,12 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 class NotificationService with ChangeNotifier {
-
   LastMessage? lastMessage;
 
   // Declaración del singleton
   static final NotificationService _instance = NotificationService._internal();
-  
+
   List<String> topicsList = [];
 
   // Constructor privado
@@ -19,15 +18,15 @@ class NotificationService with ChangeNotifier {
 
   // Método factory para retornar la misma instancia del singleton
   factory NotificationService() {
-    return _instance;    
+    return _instance;
   }
 
   subscribeToTopic(String topic) {
     print("notificationService.subscribeToTopic: $topic");
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
-      
-      if(!topicsList.contains(topic)){
+
+      if (!topicsList.contains(topic)) {
         topicsList.add(topic);
         messaging.subscribeToTopic(topic);
       }
@@ -56,8 +55,7 @@ class NotificationService with ChangeNotifier {
 
       // Manejar mensajes en segundo plano
       FirebaseMessaging.onBackgroundMessage(
-          _firebaseMessagingBackgroundHandler
-      );
+          _firebaseMessagingBackgroundHandler);
 
       // Manejar mensajes cuando la app está en primer plano
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -70,8 +68,8 @@ class NotificationService with ChangeNotifier {
         }
       });
 
-        final userId = await storage.getItem('id_usu');
-        messaging.subscribeToTopic("user-$userId");
+      final userId = await storage.getItem('id_usu');
+      messaging.subscribeToTopic("user-$userId");
     } catch (e) {
       print("[FCM] ${e.toString()}");
     }
@@ -103,7 +101,9 @@ class NotificationService with ChangeNotifier {
     final title = message?.notification!.body ?? "Nuevo mensaje";
     final snackBar = SnackBar(
       duration: Duration(seconds: 5),
-      content: AnimatedSnackBarContent(title: title,),
+      content: AnimatedSnackBarContent(
+        title: title,
+      ),
       backgroundColor: Color.fromARGB(255, 236, 243, 242),
       shape: RoundedRectangleBorder(
         side: BorderSide(
@@ -120,10 +120,9 @@ class NotificationService with ChangeNotifier {
 }
 
 class LastMessage {
-
-  final RemoteMessage lastMessage;
+  final RemoteMessage message;
 
   final String status;
 
-  LastMessage(this.lastMessage, this.status);
+  LastMessage(this.message, this.status);
 }
