@@ -894,7 +894,7 @@ class _TripPageState extends State<TripPage>
     int lineColorValue = Colors.blue.value;
     if (trip.route_attributes != null &&
         trip.route_attributes!["lineColor"] != null) {
-      lineColorValue = _convertColor(trip.route_attributes!["lineColor"]);
+      // lineColorValue = _convertColor(trip.route_attributes!["lineColor"]);
     }
 
     await mapboxMap.style
