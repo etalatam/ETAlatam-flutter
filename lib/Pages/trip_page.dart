@@ -892,6 +892,8 @@ class _TripPageState extends State<TripPage>
 
     Map<String, dynamic> data = trip.geoJson!;
     int lineColorValue = Colors.blue.value;
+    Color transparentColor = originalColor.withOpacity(0.5); 
+
     if (trip.route_attributes != null &&
         trip.route_attributes!["lineColor"] != null) {
       // lineColorValue = _convertColor(trip.route_attributes!["lineColor"]);
@@ -905,7 +907,8 @@ class _TripPageState extends State<TripPage>
         sourceId: "trip_source",
         lineJoin: LineJoin.ROUND,
         lineCap: LineCap.ROUND,
-        lineColor: lineColorValue,
+        //lineColor: lineColorValue,
+        lineColor: transparentColor,
         lineBlur: 1.0,
         lineDasharray: [1.0, 2.2],
         lineWidth: 6.0,
@@ -934,7 +937,8 @@ class _TripPageState extends State<TripPage>
         b = b.clamp(0, 255);
         a = a.clamp(0.0, 1.0);
 
-        int alpha = (a * 255).round() & 0xFF;
+        //int alpha = (a * 255).round() & 0xFF;
+        int alpha = 255;
         return (alpha << 24) | (r << 16) | (g << 8) | b;
       }
     } else if (colorStr.toLowerCase().startsWith('rgb')) {
