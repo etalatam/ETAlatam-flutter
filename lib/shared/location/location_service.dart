@@ -294,7 +294,7 @@ class LocationService extends ChangeNotifier {
       if (_shouldCalculateDistance) {
         // Solo calcular distancia si está habilitado
         try {
-          if (int.parse(_locationData?['speed'] ?? '0') > 1) {
+          if (locationInfo.speed > 1) {
             _totalDistance += _calculateDistance(_lastLatitude, _lastLongitude,
                 locationInfo.latitude, locationInfo.longitude);
           }
