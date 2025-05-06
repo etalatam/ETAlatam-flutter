@@ -111,7 +111,7 @@ class _TripPageState extends State<TripPage>
   ScreenCoordinate busModelCoordinate = ScreenCoordinate(x: 0, y: 0);
 
   double busHeading = 270;
-  
+
   // Color del autobús para el marcador en el mapa
   late int busColor;
 
@@ -205,13 +205,14 @@ class _TripPageState extends State<TripPage>
                                   annotationManager = value;
                                   annotationManager
                                       ?.addOnPointAnnotationClickListener(this);
-                                  showTripGeoJson(_mapboxMapController!);
+
                                   showPickupLocations(_mapboxMapController!);
+                                  showTripGeoJson(_mapboxMapController!);
                                 }
                               });
                             } else {
-                              showTripGeoJson(_mapboxMapController!);
                               showPickupLocations(_mapboxMapController!);
+                              showTripGeoJson(_mapboxMapController!);
                             }
                           }
                         });
@@ -891,8 +892,7 @@ class _TripPageState extends State<TripPage>
     print("[TripPage.showTripGeoJson]");
 
     Map<String, dynamic> data = trip.geoJson!;
-    int lineColorValue = Colors.blue.value;
-    Color transparentColor = originalColor.withOpacity(0.5); 
+    int lineColorValue = Colors.blue.withOpacity(0.5).value;
 
     if (trip.route_attributes != null &&
         trip.route_attributes!["lineColor"] != null) {
@@ -908,12 +908,11 @@ class _TripPageState extends State<TripPage>
         lineJoin: LineJoin.ROUND,
         lineCap: LineCap.ROUND,
         //lineColor: lineColorValue,
-        lineColor: transparentColor,
+        lineColor: lineColorValue,
         lineBlur: 1.0,
         lineDasharray: [1.0, 2.2],
         lineWidth: 6.0,
-        lineSortKey: 1
-    ));
+        lineSortKey: 1));
   }
 
   int _convertColor(String colorStr) {
@@ -985,8 +984,9 @@ class _TripPageState extends State<TripPage>
     double iconSize = 80,
     double imageSize = 80,
   }) async {
-    assert(icon != null || image != null, 'Debe proporcionar un icono o una imagen');
-    
+    assert(icon != null || image != null,
+        'Debe proporcionar un icono o una imagen');
+
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
 
@@ -998,18 +998,19 @@ class _TripPageState extends State<TripPage>
 
     if (image != null) {
       // Si se proporciona una imagen, dibujarla en el centro
-      final srcRect = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
+      final srcRect =
+          Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
       final destSize = imageSize;
       final destRect = Rect.fromCenter(
         center: center,
         width: destSize,
         height: destSize,
       );
-      
+
       canvas.drawImageRect(
-        image, 
-        srcRect, 
-        destRect, 
+        image,
+        srcRect,
+        destRect,
         Paint(),
       );
     } else if (icon != null) {
@@ -1198,16 +1199,18 @@ class _TripPageState extends State<TripPage>
       // If the annotation doesn't exist, create it
       if (busPointAnnotation == null) {
         print("[TripPage._updateIcon] creating new point annotation");
-        
+
         final int currentBusColor = trip.bus_color != null
             ? _convertColor(trip.bus_color!)
             : Colors.blue.value;
-            
+
         Uint8List? imageData;
-        if (_busMarkerCache.containsKey(currentBusColor) && _busMarkerCache[currentBusColor] != null) {
+        if (_busMarkerCache.containsKey(currentBusColor) &&
+            _busMarkerCache[currentBusColor] != null) {
           imageData = _busMarkerCache[currentBusColor]!;
         } else {
-          final ui.Image busImage = await loadImageFromAsset('assets/bus_color.png');
+          final ui.Image busImage =
+              await loadImageFromAsset('assets/bus_color.png');
           imageData = await createCircleMarkerImage(
             circleColor: Color(currentBusColor),
             image: busImage,
@@ -1223,19 +1226,20 @@ class _TripPageState extends State<TripPage>
           image: imageData,
           textSize: 14,
           textField: label,
-          textOffset: [0.0, -2.0],  // Ajustado de -3.5 a -2.0 para acercar el texto
+          textOffset: [
+            0.0,
+            -2.0
+          ], // Ajustado de -3.5 a -2.0 para acercar el texto
           textColor: Colors.black.value,
           textHaloColor: Colors.white.value,
           textHaloWidth: 2,
-          iconSize: 1.0,  // Reducido de 1.2 a 1.0 para tamaño más adecuado
+          iconSize: 1.0, // Reducido de 1.2 a 1.0 para tamaño más adecuado
           symbolSortKey: 3,
         ));
 
         // Solo ajustar el zoom la primera vez
         _mapboxMapController?.setCamera(CameraOptions(
-            center: Point(coordinates: position),
-            zoom: 18,
-            pitch: 70));
+            center: Point(coordinates: position), zoom: 18, pitch: 70));
       }
       // Si ya existe, solo actualizamos la posición y el texto
       else if (annotationManager != null) {
@@ -1245,8 +1249,8 @@ class _TripPageState extends State<TripPage>
         await annotationManager?.update(busPointAnnotation!);
 
         // Solo actualizar posición, no el zoom
-        _mapboxMapController?.setCamera(CameraOptions(
-            center: Point(coordinates: position)));
+        _mapboxMapController
+            ?.setCamera(CameraOptions(center: Point(coordinates: position)));
       }
 
       _updateBusModelCoordinates(Point(coordinates: position));
@@ -1256,7 +1260,7 @@ class _TripPageState extends State<TripPage>
       busPointAnnotation = null;
       _updateIcon(position, relationName, relationId, label);
     }
-  }  
+  }
   //  void _animateIcon(LatLng start, LatLng end) {
   //   const int animationDuration = 1000; // Duración en milisegundos
   //   const int frameRate = 60; // Frames por segundo
@@ -1307,8 +1311,11 @@ class _TripPageState extends State<TripPage>
 
     final lastTime = _lastPositionPayload?['time']?.toInt();
     final currentTime = tracking['payload']?['time']?.toInt();
-    
-    if (_lastPositionPayload != null && lastTime != null && currentTime != null && lastTime > currentTime) {
+
+    if (_lastPositionPayload != null &&
+        lastTime != null &&
+        currentTime != null &&
+        lastTime > currentTime) {
       print("[trippage.processTrackingMessage.ignore position by time]");
       return;
     }
@@ -1380,7 +1387,7 @@ class _TripPageState extends State<TripPage>
 
   String formatUnixEpoch(int? unixEpoch) {
     if (unixEpoch == null) {
-      return ''; 
+      return '';
     }
     DateTime dateTimeUtc = DateTime.fromMillisecondsSinceEpoch(unixEpoch);
     DateTime dateTimeLocal = dateTimeUtc.toLocal();
