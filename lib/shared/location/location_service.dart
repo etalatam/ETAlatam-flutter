@@ -10,6 +10,7 @@ import 'package:background_locator_2/settings/android_settings.dart';
 import 'package:background_locator_2/settings/ios_settings.dart';
 import 'package:background_locator_2/settings/locator_settings.dart';
 import 'package:flutter/foundation.dart';
+import 'package:google_maps_flutter_platform_interface/src/types/location.dart';
 import 'package:location/location.dart' hide LocationAccuracy;
 import 'package:workmanager/workmanager.dart';
 import 'location_callback_handler.dart';
@@ -51,6 +52,8 @@ class LocationService extends ChangeNotifier {
   LocationService._internal();
 
   double get totalDistance => _totalDistance;
+
+  bool _shouldCalculateDistance = false;
 
 
   init() async {
@@ -146,7 +149,7 @@ class LocationService extends ChangeNotifier {
           print("[LocationService.timer] restaring... ");
           _lastPositionDate = DateTime.now();
           stopLocationService();
-          startLocationService();
+          startLocationService(calculateDistance: _shouldCalculateDistance);
         }
       return Future.value(true);
     });
@@ -166,8 +169,9 @@ class LocationService extends ChangeNotifier {
   //     await storage.setItem('lastPosition', data);
   // }
 
-  Future<void> startLocationService() async {
+  Future<void> startLocationService({bool calculateDistance = false}) async {
     print('[LocationService.startLocationService]');
+    _shouldCalculateDistance = calculateDistance; // Establecer si se debe calcular la distancia
     var data = <String, dynamic>{'countInit': 1};
     final relationNameLocal = await storage.getItem('relation_name');
 
@@ -240,17 +244,19 @@ class LocationService extends ChangeNotifier {
 
         _lastPositionDate = now;
         
-        try {
-          if(int.parse(_locationData?['speed']) > 5){
-            _totalDistance = _calculateDistance(
-              _lastLatitude, 
-              _lastLongitude, 
-              _locationData?['latitude'], 
-              _locationData?['longitude']
-            );
+        if (_shouldCalculateDistance) { // Solo calcular distancia si está habilitado
+          try {
+            if (int.parse(_locationData?['speed'] ?? '0') > 5) {
+              _totalDistance += _calculateDistance(
+                _lastLatitude, 
+                _lastLongitude, 
+                locationInfo['latitude'], 
+                locationInfo['longitude']
+              );
+            }
+          } catch (e) {
+            print('[LocationService.distanceCalculation.error] ${e.toString()}');
           }
-        } catch (e) {
-          //
         }
 
         final jsonData = {
@@ -286,17 +292,19 @@ class LocationService extends ChangeNotifier {
         difference.inSeconds > 5) {
 
       _lastPositionDate = now;
-      try {
-        if(int.parse(_locationData?['speed']) > 5){
-          _totalDistance = _calculateDistance(
-            _lastLatitude, 
-            _lastLongitude, 
-            _locationData?['latitude'], 
-            _locationData?['longitude']
-          );
+      if (_shouldCalculateDistance) { // Solo calcular distancia si está habilitado
+        try {
+          if (int.parse(_locationData?['speed'] ?? '0') > 5) {
+            _totalDistance += _calculateDistance(
+              _lastLatitude, 
+              _lastLongitude, 
+              locationInfo.latitude, 
+              locationInfo.longitude
+            );
+          }
+        } catch (e) {
+          print('[LocationService.distanceCalculation.error] ${e.toString()}');
         }
-      } catch (e) {
-        //
       }
 
       final jsonData = {

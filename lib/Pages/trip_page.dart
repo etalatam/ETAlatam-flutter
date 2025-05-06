@@ -909,7 +909,8 @@ class _TripPageState extends State<TripPage>
         lineBlur: 1.0,
         lineDasharray: [1.0, 2.2],
         lineWidth: 6.0,
-        lineSortKey: 0));
+        lineSortKey: -1
+    ));
   }
 
   int _convertColor(String colorStr) {
@@ -1091,12 +1092,11 @@ class _TripPageState extends State<TripPage>
 
       final point = PointAnnotationOptions(
         textField: "${pickupPoint.location?.location_name}",
-        textOffset: [0.0, -2.9],
         textColor: Colors.black.value,
         textLineHeight: 1,
         textSize: 11,
-        iconSize: 0.9,
-        iconOffset: [0.0, -4.0],
+        iconSize: 0.8,
+        textOffset: [0.0, -2.0],
         symbolSortKey: 1,
         geometry: Point(coordinates: position),
         image: customMarker,
@@ -1219,11 +1219,11 @@ class _TripPageState extends State<TripPage>
           image: imageData,
           textSize: 14,
           textField: label,
-          textOffset: [0.0, -3.5], // Aumentado para mayor separación
+          textOffset: [0.0, -2.0],  // Ajustado de -3.5 a -2.0 para acercar el texto
           textColor: Colors.black.value,
           textHaloColor: Colors.white.value,
           textHaloWidth: 2,
-          iconSize: 1.2, // Aumentado de 0.9 a 1.2 (20% más grande)
+          iconSize: 1.0,  // Reducido de 1.2 a 1.0 para tamaño más adecuado
           symbolSortKey: 2,
         ));
 
