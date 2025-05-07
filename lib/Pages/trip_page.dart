@@ -67,7 +67,7 @@ class _TripPageState extends State<TripPage>
 
   bool showLoader = false;
   bool isLandscape = false;
-  bool isPanelExpanded = true;
+  bool isMapExpand = false;
   final DraggableScrollableController draggableScrollableController =
       DraggableScrollableController();
   String activeTab = 'pickup';
@@ -128,10 +128,10 @@ class _TripPageState extends State<TripPage>
       final currentOrientation = MediaQuery.of(context).orientation;
       setState(() {
         isLandscape = currentOrientation == Orientation.landscape;
-        isPanelExpanded = !isLandscape;
+        // isMapExpand = !isLandscape;
         if (isLandscape) {
           try {
-            draggableScrollableController.jumpTo(0.15);
+            draggableScrollableController.jumpTo(0.05);
           } catch (e) {
             print("Error al ajustar el panel: $e");
           }
@@ -150,18 +150,18 @@ class _TripPageState extends State<TripPage>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
           isLandscape = currentIsLandscape;
-          isPanelExpanded = !isLandscape;
+          // isMapExpand = !isLandscape;
 
           // Ajustar el panel según la orientación
           try {
             if (isLandscape) {
               // Minimizar en landscape al mismo nivel que el botón minimizar
               draggableScrollableController.animateTo(
-                0.15,
+                0.05,
                 duration: Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
               );
-            } else if (isPanelExpanded) {
+            } else  {
               // Expandir en portrait si estaba expandido
               draggableScrollableController.animateTo(
                 0.5,
@@ -234,7 +234,7 @@ class _TripPageState extends State<TripPage>
                     // El mapa ocupa todo el espacio disponible menos el tamaño mínimo del panel
                     Positioned.fill(
                       bottom: MediaQuery.of(context).size.height *
-                          (isLandscape ? 0.15 : 0.15),
+                          (isLandscape ? 0.05 : 0.15),
                       child: MapWiew(
                           navigationMode: widget.navigationMode,
                           onMapReady: (MapboxMap mapboxMap) async {
@@ -372,56 +372,41 @@ class _TripPageState extends State<TripPage>
                         )
                       )
                     )
-                    */
+                    // */
 
-                    Positioned(
-                      top: 60,
-                      right: 5,
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            isPanelExpanded = !isPanelExpanded;
-                            if (isPanelExpanded) {
-                              // Expandir el panel
-                              draggableScrollableController.animateTo(
-                                isLandscape ? 0.7 : 0.8,
-                                duration: Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            } else {
-                              // Minimizar el panel
-                              draggableScrollableController.animateTo(
-                                0.15,
-                                duration: Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            }
-                          });
-                        },
-                        child: Icon(
-                          isPanelExpanded
-                              ? Icons.fullscreen_exit
-                              : Icons.fullscreen,
-                          color: activeTheme.main_color,
-                          size: 30,
-                          shadows: [
-                            Shadow(
-                              blurRadius: 5.0,
-                              color: Colors.black.withOpacity(0.3),
-                              offset: Offset(0, 1),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
+                    // Positioned(
+                    //   top: 60,
+                    //   right: 5,
+                    //   child: GestureDetector(
+                    //     onTap: () {
+                    //       setState(() {
+                    //         isMapExpand = !isMapExpand;                            
+                    //       });
+                    //     },
+                    //     child: Icon(
+                    //       isMapExpand
+                    //           ? Icons.fullscreen_exit
+                    //           : Icons.fullscreen,
+                    //       color: activeTheme.main_color,
+                    //       size: 30,
+                    //       shadows: [
+                    //         Shadow(
+                    //           blurRadius: 5.0,
+                    //           color: Colors.black.withOpacity(0.3),
+                    //           offset: Offset(0, 1),
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ),
+                    // ),
+                    if(!isMapExpand)
                     DraggableScrollableSheet(
                       controller: draggableScrollableController,
                       snapAnimationDuration: const Duration(seconds: 1),
                       initialChildSize: isLandscape
-                          ? 0.15
+                          ? 0.05 
                           : (trip.trip_status == 'Running' ? 0.5 : 0.15),
-                      minChildSize: isLandscape ? 0.15 : 0.15,
+                      minChildSize: isLandscape ? 0.05 : 0.15,
                       maxChildSize: 1,
                       builder: (BuildContext context,
                           ScrollController scrollController) {
@@ -983,6 +968,7 @@ class _TripPageState extends State<TripPage>
     Color iconColor = Colors.white,
     double iconSize = 80,
     double imageSize = 80,
+    Color borderColor = Colors.black12
   }) async {
     assert(icon != null || image != null,
         'Debe proporcionar un icono o una imagen');
@@ -993,8 +979,12 @@ class _TripPageState extends State<TripPage>
     final paint = Paint()..color = circleColor;
     final center = Offset(size / 2, size / 2);
 
+    canvas.drawOval(
+        Rect.fromLTWH(0, 0, size + 3, size + 3), Paint()..color = borderColor);
+
     // Dibujar el círculo de fondo
     canvas.drawCircle(center, size / 2, paint);
+
 
     if (image != null) {
       // Si se proporciona una imagen, dibujarla en el centro
@@ -1092,7 +1082,7 @@ class _TripPageState extends State<TripPage>
         icon: _getIconByType(pickupPoint.location?.point_type ?? ''),
         size: 104,
         iconColor: Colors.white,
-        iconSize: 56,
+        iconSize: 56
       );
 
       final point = PointAnnotationOptions(
@@ -1200,25 +1190,26 @@ class _TripPageState extends State<TripPage>
       if (busPointAnnotation == null) {
         print("[TripPage._updateIcon] creating new point annotation");
 
-        final int currentBusColor = trip.bus_color != null
-            ? _convertColor(trip.bus_color!)
-            : Colors.blue.value;
+        // final int currentBusColor = trip.bus_color != null
+        //     ? _convertColor(trip.bus_color!)
+        //     : Colors.blue.value;
+        final int currentBusColor = Colors.white.value;
 
         Uint8List? imageData;
-        if (_busMarkerCache.containsKey(currentBusColor) &&
-            _busMarkerCache[currentBusColor] != null) {
-          imageData = _busMarkerCache[currentBusColor]!;
-        } else {
+        // if (_busMarkerCache.containsKey(currentBusColor) &&
+        //     _busMarkerCache[currentBusColor] != null) {
+        //   imageData = _busMarkerCache[currentBusColor]!;
+        // // } else {
           final ui.Image busImage =
               await loadImageFromAsset('assets/bus_color.png');
           imageData = await createCircleMarkerImage(
             circleColor: Color(currentBusColor),
             image: busImage,
-            size: 124, // Aumentado de 104 a 124 (20% más grande)
-            imageSize: 72, // Aumentado de 60 a 72 (20% más grande)
+            size: 96,
+            imageSize: 72
           );
           _busMarkerCache[currentBusColor] = imageData;
-        }
+        // }
 
         busPointAnnotation =
             await annotationManager?.create(PointAnnotationOptions(
