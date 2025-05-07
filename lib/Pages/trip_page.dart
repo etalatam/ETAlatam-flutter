@@ -378,7 +378,7 @@ class _TripPageState extends State<TripPage>
                     // */
 
                     Positioned(
-                      top: 65,
+                      top: trip.trip_status == 'Running' ? 65 : 40,
                       right: 5,
                       child: GestureDetector(
                         onTap: () {
