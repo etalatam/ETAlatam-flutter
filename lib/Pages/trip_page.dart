@@ -60,6 +60,8 @@ class TripPage extends StatefulWidget {
 class _TripPageState extends State<TripPage>
     with ETAWidgets, MediansTheme
     implements OnPointAnnotationClickListener {
+      bool existsTripGeoJson = false;
+    
   @override
   void onPointAnnotationClick(PointAnnotation annotation) {
     print("Annotation clicked: ${annotation.id}");
@@ -376,7 +378,7 @@ class _TripPageState extends State<TripPage>
                     // */
 
                     Positioned(
-                      top: 60,
+                      top: 65,
                       right: 5,
                       child: GestureDetector(
                         onTap: () {
@@ -393,7 +395,7 @@ class _TripPageState extends State<TripPage>
                           shadows: [
                             Shadow(
                               blurRadius: 5.0,
-                              color: Colors.black.withOpacity(0.3),
+                              color: Colors.white,
                               offset: Offset(0, 1),
                             ),
                           ],
@@ -878,6 +880,8 @@ class _TripPageState extends State<TripPage>
   void showTripGeoJson(MapboxMap mapboxMap) async {
     print("[TripPage.showTripGeoJson]");
 
+    if(existsTripGeoJson) return;
+
     Map<String, dynamic> data = trip.geoJson!;
     int lineColorValue = Colors.blue.withOpacity(0.4).value;
 
@@ -888,6 +892,7 @@ class _TripPageState extends State<TripPage>
 
     await mapboxMap.style
         .addSource(GeoJsonSource(id: "trip_source", data: jsonEncode(data)));
+        
 
     await mapboxMap.style.addLayer(LineLayer(
         id: "line_layer",
@@ -899,7 +904,9 @@ class _TripPageState extends State<TripPage>
         lineBlur: 1.0,
         lineDasharray: [1.0, 2.2],
         lineWidth: 6.0,
-        lineSortKey: 1));
+        lineSortKey: 1000));
+
+    existsTripGeoJson = true;
   }
 
   int _convertColor(String colorStr) {
@@ -1094,7 +1101,7 @@ class _TripPageState extends State<TripPage>
         textSize: 11,
         iconSize: 0.8,
         textOffset: [0.0, -2.0],
-        symbolSortKey: 2,
+        symbolSortKey: 1,
         geometry: Point(coordinates: position),
         image: customMarker,
         textHaloColor: Colors.white.value,
@@ -1227,7 +1234,7 @@ class _TripPageState extends State<TripPage>
           textHaloColor: Colors.white.value,
           textHaloWidth: 2,
           iconSize: 1.0, // Reducido de 1.2 a 1.0 para tamaño más adecuado
-          symbolSortKey: 3,
+          symbolSortKey: 0,
         ));
 
         // Solo ajustar el zoom la primera vez
