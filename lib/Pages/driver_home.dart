@@ -194,7 +194,7 @@ class _DriverHomeState extends State<DriverHome>
     try {
       trip = await httpService.startTrip(route);
       if (trip.trip_id != 0) {
-        await locationServiceProvider.startLocationService();
+        await locationServiceProvider.startLocationService(calculateDistance: true);
         await Navigator.push(
           context,
           MaterialPageRoute(
@@ -313,7 +313,7 @@ class _DriverHomeState extends State<DriverHome>
       print("[DriverHome.loadrResources.getActiveTrip.error] $e");
     }finally{
       if (hasActiveTrip) {
-        await locationServiceProvider.startLocationService();
+        await locationServiceProvider.startLocationService(calculateDistance: true);
       }
     }    
   }

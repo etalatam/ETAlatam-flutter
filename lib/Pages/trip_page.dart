@@ -60,6 +60,8 @@ class TripPage extends StatefulWidget {
 class _TripPageState extends State<TripPage>
     with ETAWidgets, MediansTheme
     implements OnPointAnnotationClickListener {
+      bool existsTripGeoJson = false;
+    
   @override
   void onPointAnnotationClick(PointAnnotation annotation) {
     print("Annotation clicked: ${annotation.id}");
@@ -67,7 +69,7 @@ class _TripPageState extends State<TripPage>
 
   bool showLoader = false;
   bool isLandscape = false;
-  bool isPanelExpanded = true;
+  bool isMapExpand = false;
   final DraggableScrollableController draggableScrollableController =
       DraggableScrollableController();
   String activeTab = 'pickup';
@@ -111,7 +113,7 @@ class _TripPageState extends State<TripPage>
   ScreenCoordinate busModelCoordinate = ScreenCoordinate(x: 0, y: 0);
 
   double busHeading = 270;
-  
+
   // Color del autobús para el marcador en el mapa
   late int busColor;
 
@@ -128,10 +130,10 @@ class _TripPageState extends State<TripPage>
       final currentOrientation = MediaQuery.of(context).orientation;
       setState(() {
         isLandscape = currentOrientation == Orientation.landscape;
-        isPanelExpanded = !isLandscape;
+        // isMapExpand = !isLandscape;
         if (isLandscape) {
           try {
-            draggableScrollableController.jumpTo(0.15);
+            draggableScrollableController.jumpTo(0.05);
           } catch (e) {
             print("Error al ajustar el panel: $e");
           }
@@ -150,21 +152,21 @@ class _TripPageState extends State<TripPage>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
           isLandscape = currentIsLandscape;
-          isPanelExpanded = !isLandscape;
+          // isMapExpand = !isLandscape;
 
           // Ajustar el panel según la orientación
           try {
             if (isLandscape) {
               // Minimizar en landscape al mismo nivel que el botón minimizar
               draggableScrollableController.animateTo(
-                0.15,
+                0.05,
                 duration: Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
               );
-            } else if (isPanelExpanded) {
+            } else  {
               // Expandir en portrait si estaba expandido
               draggableScrollableController.animateTo(
-                0.5,
+                0.4,
                 duration: Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
               );
@@ -205,13 +207,14 @@ class _TripPageState extends State<TripPage>
                                   annotationManager = value;
                                   annotationManager
                                       ?.addOnPointAnnotationClickListener(this);
-                                  showTripGeoJson(_mapboxMapController!);
+
                                   showPickupLocations(_mapboxMapController!);
+                                  showTripGeoJson(_mapboxMapController!);
                                 }
                               });
                             } else {
-                              showTripGeoJson(_mapboxMapController!);
                               showPickupLocations(_mapboxMapController!);
+                              showTripGeoJson(_mapboxMapController!);
                             }
                           }
                         });
@@ -232,8 +235,9 @@ class _TripPageState extends State<TripPage>
                     //   ),
                     // El mapa ocupa todo el espacio disponible menos el tamaño mínimo del panel
                     Positioned.fill(
-                      bottom: MediaQuery.of(context).size.height *
-                          (isLandscape ? 0.15 : 0.15),
+                      bottom: isMapExpand 
+                        ? 0
+                        : MediaQuery.of(context).size.height * (isLandscape ? 0.15 : 0.15), // Ocupar toda la pantalla cuando el panel está oculto
                       child: MapWiew(
                           navigationMode: widget.navigationMode,
                           onMapReady: (MapboxMap mapboxMap) async {
@@ -371,34 +375,19 @@ class _TripPageState extends State<TripPage>
                         )
                       )
                     )
-                    */
+                    // */
 
                     Positioned(
-                      top: 60,
+                      top: trip.trip_status == 'Running' ? 65 : 40,
                       right: 5,
                       child: GestureDetector(
                         onTap: () {
                           setState(() {
-                            isPanelExpanded = !isPanelExpanded;
-                            if (isPanelExpanded) {
-                              // Expandir el panel
-                              draggableScrollableController.animateTo(
-                                isLandscape ? 0.7 : 0.8,
-                                duration: Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            } else {
-                              // Minimizar el panel
-                              draggableScrollableController.animateTo(
-                                0.15,
-                                duration: Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            }
+                            isMapExpand = !isMapExpand;                            
                           });
                         },
                         child: Icon(
-                          isPanelExpanded
+                          isMapExpand
                               ? Icons.fullscreen_exit
                               : Icons.fullscreen,
                           color: activeTheme.main_color,
@@ -406,22 +395,23 @@ class _TripPageState extends State<TripPage>
                           shadows: [
                             Shadow(
                               blurRadius: 5.0,
-                              color: Colors.black.withOpacity(0.3),
+                              color: Colors.white,
                               offset: Offset(0, 1),
                             ),
                           ],
                         ),
                       ),
                     ),
-
+                    if(!isMapExpand)
                     DraggableScrollableSheet(
                       controller: draggableScrollableController,
                       snapAnimationDuration: const Duration(seconds: 1),
                       initialChildSize: isLandscape
-                          ? 0.15
-                          : (trip.trip_status == 'Running' ? 0.5 : 0.15),
-                      minChildSize: isLandscape ? 0.15 : 0.15,
-                      maxChildSize: 1,
+                          ? 0.05 
+                          : isMapExpand ? (trip.trip_status == 'Running' ? 0.05 : 0.15)  :
+                          (trip.trip_status == 'Running' ? 0.4 : 0.25),
+                      minChildSize: isLandscape ? 0.05 : (isMapExpand ? 0.05: 0.25),
+                      maxChildSize: 0.95,
                       builder: (BuildContext context,
                           ScrollController scrollController) {
                         return Stack(children: [
@@ -890,26 +880,33 @@ class _TripPageState extends State<TripPage>
   void showTripGeoJson(MapboxMap mapboxMap) async {
     print("[TripPage.showTripGeoJson]");
 
+    if(existsTripGeoJson) return;
+
     Map<String, dynamic> data = trip.geoJson!;
-    int lineColorValue = Colors.blue.value;
+    int lineColorValue = Colors.blue.withOpacity(0.4).value;
+
     if (trip.route_attributes != null &&
         trip.route_attributes!["lineColor"] != null) {
-      lineColorValue = _convertColor(trip.route_attributes!["lineColor"]);
+      // lineColorValue = _convertColor(trip.route_attributes!["lineColor"]);
     }
 
     await mapboxMap.style
         .addSource(GeoJsonSource(id: "trip_source", data: jsonEncode(data)));
+        
 
     await mapboxMap.style.addLayer(LineLayer(
         id: "line_layer",
         sourceId: "trip_source",
         lineJoin: LineJoin.ROUND,
         lineCap: LineCap.ROUND,
+        //lineColor: lineColorValue,
         lineColor: lineColorValue,
         lineBlur: 1.0,
         lineDasharray: [1.0, 2.2],
         lineWidth: 6.0,
-        lineSortKey: 0));
+        lineSortKey: 1000));
+
+    existsTripGeoJson = true;
   }
 
   int _convertColor(String colorStr) {
@@ -933,7 +930,8 @@ class _TripPageState extends State<TripPage>
         b = b.clamp(0, 255);
         a = a.clamp(0.0, 1.0);
 
-        int alpha = (a * 255).round() & 0xFF;
+        //int alpha = (a * 255).round() & 0xFF;
+        int alpha = 255;
         return (alpha << 24) | (r << 16) | (g << 8) | b;
       }
     } else if (colorStr.toLowerCase().startsWith('rgb')) {
@@ -979,32 +977,39 @@ class _TripPageState extends State<TripPage>
     Color iconColor = Colors.white,
     double iconSize = 80,
     double imageSize = 80,
+    Color borderColor = Colors.black12
   }) async {
-    assert(icon != null || image != null, 'Debe proporcionar un icono o una imagen');
-    
+    assert(icon != null || image != null,
+        'Debe proporcionar un icono o una imagen');
+
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
 
     final paint = Paint()..color = circleColor;
     final center = Offset(size / 2, size / 2);
 
+    canvas.drawOval(
+        Rect.fromLTWH(0, 0, size + 3, size + 3), Paint()..color = borderColor);
+
     // Dibujar el círculo de fondo
     canvas.drawCircle(center, size / 2, paint);
 
+
     if (image != null) {
       // Si se proporciona una imagen, dibujarla en el centro
-      final srcRect = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
+      final srcRect =
+          Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
       final destSize = imageSize;
       final destRect = Rect.fromCenter(
         center: center,
         width: destSize,
         height: destSize,
       );
-      
+
       canvas.drawImageRect(
-        image, 
-        srcRect, 
-        destRect, 
+        image,
+        srcRect,
+        destRect,
         Paint(),
       );
     } else if (icon != null) {
@@ -1086,17 +1091,16 @@ class _TripPageState extends State<TripPage>
         icon: _getIconByType(pickupPoint.location?.point_type ?? ''),
         size: 104,
         iconColor: Colors.white,
-        iconSize: 56,
+        iconSize: 56
       );
 
       final point = PointAnnotationOptions(
         textField: "${pickupPoint.location?.location_name}",
-        textOffset: [0.0, -2.9],
         textColor: Colors.black.value,
         textLineHeight: 1,
         textSize: 11,
-        iconSize: 0.9,
-        iconOffset: [0.0, -4.0],
+        iconSize: 0.8,
+        textOffset: [0.0, -2.0],
         symbolSortKey: 1,
         geometry: Point(coordinates: position),
         image: customMarker,
@@ -1194,24 +1198,27 @@ class _TripPageState extends State<TripPage>
       // If the annotation doesn't exist, create it
       if (busPointAnnotation == null) {
         print("[TripPage._updateIcon] creating new point annotation");
-        
-        final int currentBusColor = trip.bus_color != null
-            ? _convertColor(trip.bus_color!)
-            : Colors.blue.value;
-            
+
+        // final int currentBusColor = trip.bus_color != null
+        //     ? _convertColor(trip.bus_color!)
+        //     : Colors.blue.value;
+        final int currentBusColor = Colors.white.value;
+
         Uint8List? imageData;
-        if (_busMarkerCache.containsKey(currentBusColor) && _busMarkerCache[currentBusColor] != null) {
-          imageData = _busMarkerCache[currentBusColor]!;
-        } else {
-          final ui.Image busImage = await loadImageFromAsset('assets/bus_color.png');
+        // if (_busMarkerCache.containsKey(currentBusColor) &&
+        //     _busMarkerCache[currentBusColor] != null) {
+        //   imageData = _busMarkerCache[currentBusColor]!;
+        // // } else {
+          final ui.Image busImage =
+              await loadImageFromAsset('assets/bus_color.png');
           imageData = await createCircleMarkerImage(
             circleColor: Color(currentBusColor),
             image: busImage,
-            size: 104,
-            imageSize: 60,
+            size: 96,
+            imageSize: 72
           );
           _busMarkerCache[currentBusColor] = imageData;
-        }
+        // }
 
         busPointAnnotation =
             await annotationManager?.create(PointAnnotationOptions(
@@ -1219,12 +1226,20 @@ class _TripPageState extends State<TripPage>
           image: imageData,
           textSize: 14,
           textField: label,
-          textOffset: [0.0, -2.0],
+          textOffset: [
+            0.0,
+            -2.0
+          ], // Ajustado de -3.5 a -2.0 para acercar el texto
           textColor: Colors.black.value,
           textHaloColor: Colors.white.value,
           textHaloWidth: 2,
-          symbolSortKey: 2,
+          iconSize: 1.0, // Reducido de 1.2 a 1.0 para tamaño más adecuado
+          symbolSortKey: 0,
         ));
+
+        // Solo ajustar el zoom la primera vez
+        _mapboxMapController?.setCamera(CameraOptions(
+            center: Point(coordinates: position), zoom: 18, pitch: 70));
       }
       // Si ya existe, solo actualizamos la posición y el texto
       else if (annotationManager != null) {
@@ -1232,12 +1247,12 @@ class _TripPageState extends State<TripPage>
         busPointAnnotation?.geometry = Point(coordinates: position);
         busPointAnnotation?.textField = label;
         await annotationManager?.update(busPointAnnotation!);
+
+        // Solo actualizar posición, no el zoom
+        _mapboxMapController
+            ?.setCamera(CameraOptions(center: Point(coordinates: position)));
       }
 
-      if (relationName.indexOf("drivers") > 1) {
-        _mapboxMapController?.setCamera(CameraOptions(
-            center: Point(coordinates: position), zoom: 18, pitch: 70));
-      }
       _updateBusModelCoordinates(Point(coordinates: position));
     } catch (e) {
       print("[TripPage._updateIcon] error: ${e.toString()}");
@@ -1294,11 +1309,13 @@ class _TripPageState extends State<TripPage>
   void processTrackingMessage(Map<String, dynamic> tracking) async {
     print("[processTrackingMessage] $tracking");
 
-
     final lastTime = _lastPositionPayload?['time']?.toInt();
     final currentTime = tracking['payload']?['time']?.toInt();
-    
-    if (_lastPositionPayload != null && lastTime != null && currentTime != null && lastTime > currentTime) {
+
+    if (_lastPositionPayload != null &&
+        lastTime != null &&
+        currentTime != null &&
+        lastTime > currentTime) {
       print("[trippage.processTrackingMessage.ignore position by time]");
       return;
     }
@@ -1326,7 +1343,6 @@ class _TripPageState extends State<TripPage>
         try {
           busHeading = _lastPositionPayload?['heading'] ??
               _lastPositionPayload?['heading'];
-          // print("busHeading: $busHeading");
         } catch (e) {
           print("busHeading error $e");
         }
@@ -1371,7 +1387,7 @@ class _TripPageState extends State<TripPage>
 
   String formatUnixEpoch(int? unixEpoch) {
     if (unixEpoch == null) {
-      return ''; 
+      return '';
     }
     DateTime dateTimeUtc = DateTime.fromMillisecondsSinceEpoch(unixEpoch);
     DateTime dateTimeLocal = dateTimeUtc.toLocal();

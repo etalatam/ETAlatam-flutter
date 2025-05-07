@@ -10,6 +10,7 @@ import 'package:background_locator_2/settings/android_settings.dart';
 import 'package:background_locator_2/settings/ios_settings.dart';
 import 'package:background_locator_2/settings/locator_settings.dart';
 import 'package:flutter/foundation.dart';
+import 'package:google_maps_flutter_platform_interface/src/types/location.dart';
 import 'package:location/location.dart' hide LocationAccuracy;
 import 'package:workmanager/workmanager.dart';
 import 'location_callback_handler.dart';
@@ -29,11 +30,11 @@ class LocationService extends ChangeNotifier {
   ReceivePort port = ReceivePort();
 
   bool initialization = false;
-  
+
   int _userId = 0;
 
   Timer? _timer;
-    
+
   DateTime? _lastPositionDate = DateTime.now();
 
   double _totalDistance = 0.0;
@@ -52,36 +53,39 @@ class LocationService extends ChangeNotifier {
 
   double get totalDistance => _totalDistance;
 
+  bool _shouldCalculateDistance = false;
 
   init() async {
     print("[LocationService.init]");
     _userId = await storage.getItem('id_usu');
 
-    if(_timer == null){
+    if (_timer == null) {
       _startTimer();
     }
 
     askPermission().then((value) async {
       print("[LocationService.askPermission.callback] $value");
       if (value) {
-        if(!initialization){
+        if (!initialization) {
           print('[LocationService.initialization...]');
 
           try {
             try {
               // Clean up any existing port mapping and subscription
               if (IsolateNameServer.lookupPortByName(
-                      LocationServiceRepository.isolateName) != null) {
-                print('[LocationService.removePortNameMapping] ${LocationServiceRepository.isolateName}');
+                      LocationServiceRepository.isolateName) !=
+                  null) {
+                print(
+                    '[LocationService.removePortNameMapping] ${LocationServiceRepository.isolateName}');
                 IsolateNameServer.removePortNameMapping(
                     LocationServiceRepository.isolateName);
               }
             } catch (e) {
               //
             }
-            
+
             try {
-                // Cancel any existing subscription
+              // Cancel any existing subscription
               await _portSubscription?.cancel();
               _portSubscription = null;
             } catch (e) {
@@ -90,7 +94,7 @@ class LocationService extends ChangeNotifier {
 
             try {
               IsolateNameServer.registerPortWithName(
-                port.sendPort, LocationServiceRepository.isolateName);
+                  port.sendPort, LocationServiceRepository.isolateName);
             } catch (e) {
               //
             }
@@ -107,11 +111,12 @@ class LocationService extends ChangeNotifier {
                   await trackingDynamic(_locationData);
                   notifyListeners();
                 } catch (e) {
-                  print('[LocationService.notifyListeners.error] ${e.toString()}');
+                  print(
+                      '[LocationService.notifyListeners.error] ${e.toString()}');
                 }
               }
             });
-            
+
             BackgroundLocator.initialize();
             initialization = true;
             Workmanager().initialize(
@@ -126,7 +131,7 @@ class LocationService extends ChangeNotifier {
             );
 
             requestDozeModeExclusion();
-            print("[LocationService._startTimer]");          
+            print("[LocationService._startTimer]");
           } catch (e) {
             print('[LocationService.init.error] $e');
           }
@@ -136,22 +141,21 @@ class LocationService extends ChangeNotifier {
       }
     });
   }
-  
+
   void callbackDispatcher() {
     Workmanager().executeTask((task, inputData) {
-        final now = DateTime.now();
-        final difference = now.difference(_lastPositionDate!);
-        print("[LocationService.timer.difference] ${difference.inSeconds}s.");
-        if (difference.inSeconds >= 60) {
-          print("[LocationService.timer] restaring... ");
-          _lastPositionDate = DateTime.now();
-          stopLocationService();
-          startLocationService();
-        }
+      final now = DateTime.now();
+      final difference = now.difference(_lastPositionDate!);
+      print("[LocationService.timer.difference] ${difference.inSeconds}s.");
+      if (difference.inSeconds >= 60) {
+        print("[LocationService.timer] restaring... ");
+        _lastPositionDate = DateTime.now();
+        stopLocationService();
+        startLocationService(calculateDistance: _shouldCalculateDistance);
+      }
       return Future.value(true);
     });
   }
-
 
   void requestDozeModeExclusion() {
     final AndroidIntent intent = AndroidIntent(
@@ -161,13 +165,14 @@ class LocationService extends ChangeNotifier {
     intent.launch();
   }
 
-
   // saveLastPosition(data) async {
   //     await storage.setItem('lastPosition', data);
   // }
 
-  Future<void> startLocationService() async {
+  Future<void> startLocationService({bool calculateDistance = false}) async {
     print('[LocationService.startLocationService]');
+    _shouldCalculateDistance =
+        calculateDistance; // Establecer si se debe calcular la distancia
     var data = <String, dynamic>{'countInit': 1};
     final relationNameLocal = await storage.getItem('relation_name');
 
@@ -184,7 +189,7 @@ class LocationService extends ChangeNotifier {
             distanceFilter: 100,
             stopWithTerminate: true),
         autoStop: false,
-        androidSettings:  AndroidSettings(
+        androidSettings: AndroidSettings(
             accuracy: LocationAccuracy.NAVIGATION,
             // interval: relationNameLocal.contains('eta.drivers') ? 5 : 10,
             distanceFilter: 0,
@@ -235,22 +240,24 @@ class LocationService extends ChangeNotifier {
 
       // Verificar si la posición es diferente y si el tiempo es mayor a 5 segundos
       if ((_locationData?['latitude'] != locationInfo['latitude'] ||
-          _locationData?['longitude'] != locationInfo['longitude']) &&
+              _locationData?['longitude'] != locationInfo['longitude']) &&
           difference.inSeconds > 5) {
-
         _lastPositionDate = now;
-        
-        try {
-          if(int.parse(_locationData?['speed']) > 5){
-            _totalDistance = _calculateDistance(
-              _lastLatitude, 
-              _lastLongitude, 
-              _locationData?['latitude'], 
-              _locationData?['longitude']
-            );
+
+        if (_shouldCalculateDistance) {
+          // Solo calcular distancia si está habilitado
+          try {
+            if (int.parse(_locationData?['speed'] ?? '0') > 1) {
+              _totalDistance += _calculateDistance(
+                  _lastLatitude,
+                  _lastLongitude,
+                  locationInfo['latitude'],
+                  locationInfo['longitude']);
+            }
+          } catch (e) {
+            print(
+                '[LocationService.distanceCalculation.error] ${e.toString()}');
           }
-        } catch (e) {
-          //
         }
 
         final jsonData = {
@@ -265,14 +272,13 @@ class LocationService extends ChangeNotifier {
         };
 
         await httpService.sendTracking(position: jsonData, userId: _userId);
-      }else{
+      } else {
         print('[LocationService.trackingDynamic.some location]');
       }
     } catch (e) {
       print('[LocationService.trackingDynamic.error] ${e.toString()}');
     }
   }
-
 
   trackingLocationDto(LocationDto locationInfo) async {
     print('[LocationService.trackingLocationDto] ${locationInfo.toString()}');
@@ -282,21 +288,19 @@ class LocationService extends ChangeNotifier {
 
     // Verificar si la posición es diferente y si el tiempo es mayor a 5 segundos
     if ((_locationData?['latitude'] != locationInfo.latitude ||
-        _locationData?['longitude'] != locationInfo.longitude) &&
+            _locationData?['longitude'] != locationInfo.longitude) &&
         difference.inSeconds > 5) {
-
       _lastPositionDate = now;
-      try {
-        if(int.parse(_locationData?['speed']) > 5){
-          _totalDistance = _calculateDistance(
-            _lastLatitude, 
-            _lastLongitude, 
-            _locationData?['latitude'], 
-            _locationData?['longitude']
-          );
+      if (_shouldCalculateDistance) {
+        // Solo calcular distancia si está habilitado
+        try {
+          if (locationInfo.speed > 1) {
+            _totalDistance += _calculateDistance(_lastLatitude, _lastLongitude,
+                locationInfo.latitude, locationInfo.longitude);
+          }
+        } catch (e) {
+          print('[LocationService.distanceCalculation.error] ${e.toString()}');
         }
-      } catch (e) {
-        //
       }
 
       final jsonData = {
@@ -319,41 +323,40 @@ class LocationService extends ChangeNotifier {
   }
 
   void _startTimer() async {
-
     final relationNameLocal = await storage.getItem('relation_name');
 
-    if(_timer != null){
+    if (_timer != null) {
       _timer?.cancel();
-
     }
     _timer = Timer.periodic(Duration(seconds: 5), (timer) {
-        final now = DateTime.now();
-        final difference = now.difference(_lastPositionDate!);
-        print("[LocationService.timer.difference] ${difference.inSeconds}s.");
-        final max = relationNameLocal.contains('eta.drivers') ? 20 : 30;
-        if (difference.inSeconds >= max) {
-          print("[LocationService.timer] restaring... ");
-          _lastPositionDate = DateTime.now();
-          stopLocationService();
-          startLocationService();
-        }
+      final now = DateTime.now();
+      final difference = now.difference(_lastPositionDate!);
+      print("[LocationService.timer.difference] ${difference.inSeconds}s.");
+      final max = relationNameLocal.contains('eta.drivers') ? 20 : 30;
+      if (difference.inSeconds >= max) {
+        print("[LocationService.timer] restaring... ");
+        _lastPositionDate = DateTime.now();
+        stopLocationService();
+        startLocationService();
+      }
     });
   }
 
   void stopLocationService() {
     print('[LocationService.stopLocationService]');
-    try {      
+    try {
       IsolateNameServer.removePortNameMapping(
           LocationServiceRepository.isolateName);
-          
+
       // Cancel the port subscription
       _portSubscription?.cancel();
       _portSubscription = null;
-      
+
       BackgroundLocator.unRegisterLocationUpdate();
 
       if (IsolateNameServer.lookupPortByName(
-              LocationServiceRepository.isolateName) != null) {
+              LocationServiceRepository.isolateName) !=
+          null) {
         IsolateNameServer.removePortNameMapping(
             LocationServiceRepository.isolateName);
       }
@@ -366,26 +369,29 @@ class LocationService extends ChangeNotifier {
       print('[LocationService.stopLocationService.error] ${e.toString()}');
     }
   }
-  
-  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+
+  double _calculateDistance(
+      double lat1, double lon1, double lat2, double lon2) {
     const double earthRadius = 6371000; // Radio de la Tierra en metros
 
     double dLat = _toRadians(lat2 - lat1);
     double dLon = _toRadians(lon2 - lon1);
 
     double a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(_toRadians(lat1)) * cos(_toRadians(lat2)) *
-        sin(dLon / 2) * sin(dLon / 2);
+        cos(_toRadians(lat1)) *
+            cos(_toRadians(lat2)) *
+            sin(dLon / 2) *
+            sin(dLon / 2);
 
     double c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
-    _lastLatitude=lat2;
-    _lastLongitude=lon2;
+    _lastLatitude = lat2;
+    _lastLongitude = lon2;
 
     return earthRadius * c;
   }
 
   double _toRadians(double degrees) {
     return degrees * pi / 180;
-  }  
+  }
 }
