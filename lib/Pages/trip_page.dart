@@ -60,8 +60,8 @@ class TripPage extends StatefulWidget {
 class _TripPageState extends State<TripPage>
     with ETAWidgets, MediansTheme
     implements OnPointAnnotationClickListener {
-      bool existsTripGeoJson = false;
-    
+  bool existsTripGeoJson = false;
+
   @override
   void onPointAnnotationClick(PointAnnotation annotation) {
     print("Annotation clicked: ${annotation.id}");
@@ -163,7 +163,7 @@ class _TripPageState extends State<TripPage>
                 duration: Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
               );
-            } else  {
+            } else {
               // Expandir en portrait si estaba expandido
               draggableScrollableController.animateTo(
                 0.4,
@@ -208,13 +208,13 @@ class _TripPageState extends State<TripPage>
                                   annotationManager
                                       ?.addOnPointAnnotationClickListener(this);
 
-                                  showPickupLocations(_mapboxMapController!);
                                   showTripGeoJson(_mapboxMapController!);
+                                  showPickupLocations(_mapboxMapController!);
                                 }
                               });
                             } else {
-                              showPickupLocations(_mapboxMapController!);
                               showTripGeoJson(_mapboxMapController!);
+                              showPickupLocations(_mapboxMapController!);
                             }
                           }
                         });
@@ -235,9 +235,12 @@ class _TripPageState extends State<TripPage>
                     //   ),
                     // El mapa ocupa todo el espacio disponible menos el tamaño mínimo del panel
                     Positioned.fill(
-                      bottom: isMapExpand 
-                        ? 0
-                        : MediaQuery.of(context).size.height * (isLandscape ? 0.15 : 0.15), // Ocupar toda la pantalla cuando el panel está oculto
+                      bottom: isMapExpand
+                          ? 0
+                          : MediaQuery.of(context).size.height *
+                              (isLandscape
+                                  ? 0.15
+                                  : 0.15), // Ocupar toda la pantalla cuando el panel está oculto
                       child: MapWiew(
                           navigationMode: widget.navigationMode,
                           onMapReady: (MapboxMap mapboxMap) async {
@@ -383,7 +386,7 @@ class _TripPageState extends State<TripPage>
                       child: GestureDetector(
                         onTap: () {
                           setState(() {
-                            isMapExpand = !isMapExpand;                            
+                            isMapExpand = !isMapExpand;
                           });
                         },
                         child: Icon(
@@ -402,207 +405,213 @@ class _TripPageState extends State<TripPage>
                         ),
                       ),
                     ),
-                    if(!isMapExpand)
-                    DraggableScrollableSheet(
-                      controller: draggableScrollableController,
-                      snapAnimationDuration: const Duration(seconds: 1),
-                      initialChildSize: isLandscape
-                          ? 0.05 
-                          : isMapExpand ? (trip.trip_status == 'Running' ? 0.05 : 0.15)  :
-                          (trip.trip_status == 'Running' ? 0.4 : 0.25),
-                      minChildSize: isLandscape ? 0.05 : (isMapExpand ? 0.05: 0.25),
-                      maxChildSize: 0.95,
-                      builder: (BuildContext context,
-                          ScrollController scrollController) {
-                        return Stack(children: [
-                          Container(
-                            margin: const EdgeInsets.only(top: 0),
-                            height: double.infinity,
-                            decoration: BoxDecoration(
-                              color: activeTheme.main_bg,
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(20.0),
-                                topRight: Radius.circular(20.0),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
-                                  offset: const Offset(0.0, -3.0),
-                                  blurRadius: 5.0,
+                    if (!isMapExpand)
+                      DraggableScrollableSheet(
+                        controller: draggableScrollableController,
+                        snapAnimationDuration: const Duration(seconds: 1),
+                        initialChildSize: isLandscape
+                            ? 0.05
+                            : isMapExpand
+                                ? (trip.trip_status == 'Running' ? 0.05 : 0.15)
+                                : (trip.trip_status == 'Running' ? 0.4 : 0.25),
+                        minChildSize:
+                            isLandscape ? 0.05 : (isMapExpand ? 0.05 : 0.25),
+                        maxChildSize: 0.95,
+                        builder: (BuildContext context,
+                            ScrollController scrollController) {
+                          return Stack(children: [
+                            Container(
+                              margin: const EdgeInsets.only(top: 0),
+                              height: double.infinity,
+                              decoration: BoxDecoration(
+                                color: activeTheme.main_bg,
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(20.0),
+                                  topRight: Radius.circular(20.0),
                                 ),
-                              ],
-                            ),
-                          ),
-                          SingleChildScrollView(
-                            controller: scrollController,
-                            child: Stack(children: [
-                              Container(
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 20),
-                                height: 1,
-                                color: activeTheme.main_color.withOpacity(.2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    offset: const Offset(0.0, -3.0),
+                                    blurRadius: 5.0,
+                                  ),
+                                ],
                               ),
-                              Container(
-                                margin: const EdgeInsets.only(top: 10),
-                                padding: const EdgeInsets.all(20),
-                                width: double.infinity,
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        SizedBox(
-                                          width: 200,
-                                          child: Text(
-                                            "${lang.translate('Trip')} #${trip.trip_id} ${trip.route?.route_name}",
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: activeTheme.h6,
-                                          ),
-                                        ),
-                                        Row(children: [
-                                          SvgPicture.asset(
-                                            "assets/svg/bus.svg",
-                                            width: 15,
-                                          ),
-                                          SizedBox(width: 5),
-                                          Text(
-                                            trip.vehicle?.plate_number ?? '',
-                                          )
-                                        ]),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 10),
-                                    if (trip.trip_status == "Running")
+                            ),
+                            SingleChildScrollView(
+                              controller: scrollController,
+                              child: Stack(children: [
+                                Container(
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 20),
+                                  height: 1,
+                                  color: activeTheme.main_color.withOpacity(.2),
+                                ),
+                                Container(
+                                  margin: const EdgeInsets.only(top: 10),
+                                  padding: const EdgeInsets.all(20),
+                                  width: double.infinity,
+                                  child: Column(
+                                    children: [
                                       Row(
-                                        // textDirection: TextDirection.LTR,
                                         mainAxisSize: MainAxisSize.max,
                                         mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
+                                            MainAxisAlignment.spaceBetween,
                                         crossAxisAlignment:
                                             CrossAxisAlignment.center,
                                         children: [
-                                          const SizedBox(height: 10),
-                                          Icon(Icons.access_time, size: 20),
-                                          Text(tripDuration),
-                                          const SizedBox(width: 10),
-                                          Icon(Icons.route, size: 20),
-                                          Text(tripDistance > 1000
-                                              ? '${numberFormat.format(tripDistance)} KM'
-                                              : '${numberFormat.format(tripDistance)} m'),
-                                          const SizedBox(width: 10),
-                                          (trip.pickup_locations != null)
-                                              ? Icon(Icons.pin_drop_outlined,
-                                                  size: 20)
-                                              : const Center(),
-                                          (trip.pickup_locations != null)
-                                              ? Text(
-                                                  '${trip.visitedLocation()}/${trip.pickup_locations!.length.toString()} ',
-                                                )
-                                              : const Center(),
-                                          if (trip.trip_status == 'Completed' &&
-                                              relationName
-                                                  .contains('eta.drivers'))
-                                            GestureDetector(
-                                                onTap: (() {
-                                                  openNewPage(
-                                                      context,
-                                                      AttendancePage(
-                                                          trip: trip));
-                                                }),
-                                                child: Center(
-                                                    child: ButtonTextIcon(
-                                                        '',
-                                                        Icon(
-                                                          Icons.list,
-                                                          color: activeTheme
-                                                              .buttonBG,
-                                                        ),
-                                                        activeTheme
-                                                            .buttonColor))),
+                                          SizedBox(
+                                            width: 200,
+                                            child: Text(
+                                              "${lang.translate('Trip')} #${trip.trip_id} ${trip.route?.route_name}",
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: activeTheme.h6,
+                                            ),
+                                          ),
+                                          Row(children: [
+                                            SvgPicture.asset(
+                                              "assets/svg/bus.svg",
+                                              width: 15,
+                                            ),
+                                            SizedBox(width: 5),
+                                            Text(
+                                              trip.vehicle?.plate_number ?? '',
+                                            )
+                                          ]),
                                         ],
                                       ),
-                                    const SizedBox(
-                                      height: 20,
-                                    ),
-                                    Container(
-                                      height: 1,
-                                      color: activeTheme.main_color
-                                          .withOpacity(.3),
-                                    ),
-                                    const SizedBox(
-                                      height: 20,
-                                    ),
-                                    trip.trip_status == 'Completed'
-                                        ? ETAWidgets.tripInfoRow(trip)
-                                        : const Center(),
-                                    Row(children: [
-                                      if (trip.trip_status == 'Running' &&
-                                          relationName.contains('eta.drivers'))
-                                        GestureDetector(
-                                            onTap: showLoader
-                                                ? null
-                                                : (() {
-                                                    endTrip();
+                                      const SizedBox(height: 10),
+                                      if (trip.trip_status == "Running")
+                                        Row(
+                                          // textDirection: TextDirection.LTR,
+                                          mainAxisSize: MainAxisSize.max,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            const SizedBox(height: 10),
+                                            Icon(Icons.access_time, size: 20),
+                                            Text(tripDuration),
+                                            const SizedBox(width: 10),
+                                            Icon(Icons.route, size: 20),
+                                            Text(tripDistance > 1000
+                                                ? '${numberFormat.format(tripDistance)} KM'
+                                                : '${numberFormat.format(tripDistance)} m'),
+                                            const SizedBox(width: 10),
+                                            (trip.pickup_locations != null)
+                                                ? Icon(Icons.pin_drop_outlined,
+                                                    size: 20)
+                                                : const Center(),
+                                            (trip.pickup_locations != null)
+                                                ? Text(
+                                                    '${trip.visitedLocation()}/${trip.pickup_locations!.length.toString()} ',
+                                                  )
+                                                : const Center(),
+                                            if (trip.trip_status ==
+                                                    'Completed' &&
+                                                relationName
+                                                    .contains('eta.drivers'))
+                                              GestureDetector(
+                                                  onTap: (() {
+                                                    openNewPage(
+                                                        context,
+                                                        AttendancePage(
+                                                            trip: trip));
                                                   }),
-                                            child: Center(
-                                                child: ButtonTextIcon(
-                                                    lang.translate('End trip'),
-                                                    Icon(
-                                                      Icons.route,
-                                                      color: activeTheme
-                                                          .buttonColor,
-                                                    ),
-                                                    showLoader
-                                                        ? Colors.grey
-                                                        : Colors.red))),
-                                      if (trip.trip_status == 'Running')
-                                        const SizedBox(
-                                          width: 20,
+                                                  child: Center(
+                                                      child: ButtonTextIcon(
+                                                          '',
+                                                          Icon(
+                                                            Icons.list,
+                                                            color: activeTheme
+                                                                .buttonBG,
+                                                          ),
+                                                          activeTheme
+                                                              .buttonColor))),
+                                          ],
                                         ),
-                                      if (trip.trip_status == 'Running' &&
-                                          relationName.contains('eta.drivers'))
-                                        GestureDetector(
-                                            onTap: (() {
-                                              openNewPage(context,
-                                                  AttendancePage(trip: trip));
-                                            }),
-                                            child: Center(
-                                                child: ButtonTextIcon(
-                                                    lang.translate(
-                                                        'Attendance'),
-                                                    Icon(
-                                                      Icons.list,
-                                                      color: activeTheme
-                                                          .buttonColor,
-                                                    ),
-                                                    Color.fromARGB(
-                                                        255, 226, 187, 32)))),
-                                    ]),
-                                    SizedBox(
-                                      height: 20,
-                                    ),
-                                    for (var i = 0;
-                                        i < trip.pickup_locations!.length;
-                                        i++)
-                                      activeTab == 'pickup'
-                                          ? Row(children: [
-                                              tripUser(
-                                                  trip.pickup_locations![i]),
-                                            ])
+                                      const SizedBox(
+                                        height: 20,
+                                      ),
+                                      Container(
+                                        height: 1,
+                                        color: activeTheme.main_color
+                                            .withOpacity(.3),
+                                      ),
+                                      const SizedBox(
+                                        height: 20,
+                                      ),
+                                      trip.trip_status == 'Completed'
+                                          ? ETAWidgets.tripInfoRow(trip)
                                           : const Center(),
-                                  ],
-                                ),
-                              )
-                            ]),
-                          )
-                        ]);
-                      },
-                    ),
+                                      Row(children: [
+                                        if (trip.trip_status == 'Running' &&
+                                            relationName
+                                                .contains('eta.drivers'))
+                                          GestureDetector(
+                                              onTap: showLoader
+                                                  ? null
+                                                  : (() {
+                                                      endTrip();
+                                                    }),
+                                              child: Center(
+                                                  child: ButtonTextIcon(
+                                                      lang.translate(
+                                                          'End trip'),
+                                                      Icon(
+                                                        Icons.route,
+                                                        color: activeTheme
+                                                            .buttonColor,
+                                                      ),
+                                                      showLoader
+                                                          ? Colors.grey
+                                                          : Colors.red))),
+                                        if (trip.trip_status == 'Running')
+                                          const SizedBox(
+                                            width: 20,
+                                          ),
+                                        if (trip.trip_status == 'Running' &&
+                                            relationName
+                                                .contains('eta.drivers'))
+                                          GestureDetector(
+                                              onTap: (() {
+                                                openNewPage(context,
+                                                    AttendancePage(trip: trip));
+                                              }),
+                                              child: Center(
+                                                  child: ButtonTextIcon(
+                                                      lang.translate(
+                                                          'Attendance'),
+                                                      Icon(
+                                                        Icons.list,
+                                                        color: activeTheme
+                                                            .buttonColor,
+                                                      ),
+                                                      Color.fromARGB(
+                                                          255, 226, 187, 32)))),
+                                      ]),
+                                      SizedBox(
+                                        height: 20,
+                                      ),
+                                      for (var i = 0;
+                                          i < trip.pickup_locations!.length;
+                                          i++)
+                                        activeTab == 'pickup'
+                                            ? Row(children: [
+                                                tripUser(
+                                                    trip.pickup_locations![i]),
+                                              ])
+                                            : const Center(),
+                                    ],
+                                  ),
+                                )
+                              ]),
+                            )
+                          ]);
+                        },
+                      ),
                     showTripReportModal
                         ? TripReport(trip: trip)
                         : const Center(),
@@ -880,7 +889,7 @@ class _TripPageState extends State<TripPage>
   void showTripGeoJson(MapboxMap mapboxMap) async {
     print("[TripPage.showTripGeoJson]");
 
-    if(existsTripGeoJson) return;
+    if (existsTripGeoJson) return;
 
     Map<String, dynamic> data = trip.geoJson!;
     int lineColorValue = Colors.blue.withOpacity(0.4).value;
@@ -892,7 +901,6 @@ class _TripPageState extends State<TripPage>
 
     await mapboxMap.style
         .addSource(GeoJsonSource(id: "trip_source", data: jsonEncode(data)));
-        
 
     await mapboxMap.style.addLayer(LineLayer(
         id: "line_layer",
@@ -901,10 +909,10 @@ class _TripPageState extends State<TripPage>
         lineCap: LineCap.ROUND,
         //lineColor: lineColorValue,
         lineColor: lineColorValue,
-        lineBlur: 1.0,
+        lineBlur: 0.5,
         lineDasharray: [1.0, 2.2],
-        lineWidth: 6.0,
-        lineSortKey: 1000));
+        lineWidth: 5.0,
+        lineSortKey: 0));
 
     existsTripGeoJson = true;
   }
@@ -969,16 +977,15 @@ class _TripPageState extends State<TripPage>
     return Colors.blue.value;
   }
 
-  Future<Uint8List> createCircleMarkerImage({
-    required Color circleColor,
-    IconData? icon,
-    ui.Image? image,
-    double size = 160,
-    Color iconColor = Colors.white,
-    double iconSize = 80,
-    double imageSize = 80,
-    Color borderColor = Colors.black12
-  }) async {
+  Future<Uint8List> createCircleMarkerImage(
+      {required Color circleColor,
+      IconData? icon,
+      ui.Image? image,
+      double size = 160,
+      Color iconColor = Colors.white,
+      double iconSize = 80,
+      double imageSize = 80,
+      Color borderColor = Colors.black12}) async {
     assert(icon != null || image != null,
         'Debe proporcionar un icono o una imagen');
 
@@ -993,7 +1000,6 @@ class _TripPageState extends State<TripPage>
 
     // Dibujar el círculo de fondo
     canvas.drawCircle(center, size / 2, paint);
-
 
     if (image != null) {
       // Si se proporciona una imagen, dibujarla en el centro
@@ -1087,12 +1093,11 @@ class _TripPageState extends State<TripPage>
           pickupPoint.location!.latitude as double);
 
       final Uint8List customMarker = await createCircleMarkerImage(
-        circleColor: Colors.green,
-        icon: _getIconByType(pickupPoint.location?.point_type ?? ''),
-        size: 104,
-        iconColor: Colors.white,
-        iconSize: 56
-      );
+          circleColor: Colors.green,
+          icon: _getIconByType(pickupPoint.location?.point_type ?? ''),
+          size: 104,
+          iconColor: Colors.white,
+          iconSize: 56);
 
       final point = PointAnnotationOptions(
         textField: "${pickupPoint.location?.location_name}",
@@ -1101,7 +1106,7 @@ class _TripPageState extends State<TripPage>
         textSize: 11,
         iconSize: 0.8,
         textOffset: [0.0, -2.0],
-        symbolSortKey: 1,
+        symbolSortKey: 2,
         geometry: Point(coordinates: position),
         image: customMarker,
         textHaloColor: Colors.white.value,
@@ -1209,15 +1214,14 @@ class _TripPageState extends State<TripPage>
         //     _busMarkerCache[currentBusColor] != null) {
         //   imageData = _busMarkerCache[currentBusColor]!;
         // // } else {
-          final ui.Image busImage =
-              await loadImageFromAsset('assets/bus_color.png');
-          imageData = await createCircleMarkerImage(
+        final ui.Image busImage =
+            await loadImageFromAsset('assets/bus_color.png');
+        imageData = await createCircleMarkerImage(
             circleColor: Color(currentBusColor),
             image: busImage,
             size: 96,
-            imageSize: 72
-          );
-          _busMarkerCache[currentBusColor] = imageData;
+            imageSize: 72);
+        _busMarkerCache[currentBusColor] = imageData;
         // }
 
         busPointAnnotation =
@@ -1234,7 +1238,7 @@ class _TripPageState extends State<TripPage>
           textHaloColor: Colors.white.value,
           textHaloWidth: 2,
           iconSize: 1.0, // Reducido de 1.2 a 1.0 para tamaño más adecuado
-          symbolSortKey: 0,
+          symbolSortKey: 1,
         ));
 
         // Solo ajustar el zoom la primera vez
