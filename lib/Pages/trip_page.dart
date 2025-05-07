@@ -1238,7 +1238,7 @@ class _TripPageState extends State<TripPage>
           textHaloColor: Colors.white.value,
           textHaloWidth: 2,
           iconSize: 1.0, // Reducido de 1.2 a 1.0 para tamaño más adecuado
-          symbolSortKey: 1,
+          symbolSortKey: 3,
         ));
 
         // Solo ajustar el zoom la primera vez
