@@ -1250,6 +1250,7 @@ class _TripPageState extends State<TripPage>
         print("[TripPage._updateIcon] updating existing point annotation");
         busPointAnnotation?.geometry = Point(coordinates: position);
         busPointAnnotation?.textField = label;
+        busPointAnnotation?.symbolSortKey = 3;
         await annotationManager?.update(busPointAnnotation!);
 
         // Solo actualizar posición, no el zoom
