@@ -164,7 +164,7 @@ class _TripPageState extends State<TripPage>
             } else  {
               // Expandir en portrait si estaba expandido
               draggableScrollableController.animateTo(
-                0.5,
+                0.4,
                 duration: Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
               );
@@ -233,8 +233,9 @@ class _TripPageState extends State<TripPage>
                     //   ),
                     // El mapa ocupa todo el espacio disponible menos el tamaño mínimo del panel
                     Positioned.fill(
-                      bottom: MediaQuery.of(context).size.height *
-                          (isLandscape ? 0.05 : 0.15),
+                      bottom: isMapExpand 
+                        ? 0
+                        : MediaQuery.of(context).size.height * (isLandscape ? 0.15 : 0.15), // Ocupar toda la pantalla cuando el panel está oculto
                       child: MapWiew(
                           navigationMode: widget.navigationMode,
                           onMapReady: (MapboxMap mapboxMap) async {
@@ -374,40 +375,41 @@ class _TripPageState extends State<TripPage>
                     )
                     // */
 
-                    // Positioned(
-                    //   top: 60,
-                    //   right: 5,
-                    //   child: GestureDetector(
-                    //     onTap: () {
-                    //       setState(() {
-                    //         isMapExpand = !isMapExpand;                            
-                    //       });
-                    //     },
-                    //     child: Icon(
-                    //       isMapExpand
-                    //           ? Icons.fullscreen_exit
-                    //           : Icons.fullscreen,
-                    //       color: activeTheme.main_color,
-                    //       size: 30,
-                    //       shadows: [
-                    //         Shadow(
-                    //           blurRadius: 5.0,
-                    //           color: Colors.black.withOpacity(0.3),
-                    //           offset: Offset(0, 1),
-                    //         ),
-                    //       ],
-                    //     ),
-                    //   ),
-                    // ),
+                    Positioned(
+                      top: 60,
+                      right: 5,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            isMapExpand = !isMapExpand;                            
+                          });
+                        },
+                        child: Icon(
+                          isMapExpand
+                              ? Icons.fullscreen_exit
+                              : Icons.fullscreen,
+                          color: activeTheme.main_color,
+                          size: 30,
+                          shadows: [
+                            Shadow(
+                              blurRadius: 5.0,
+                              color: Colors.black.withOpacity(0.3),
+                              offset: Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                     if(!isMapExpand)
                     DraggableScrollableSheet(
                       controller: draggableScrollableController,
                       snapAnimationDuration: const Duration(seconds: 1),
                       initialChildSize: isLandscape
                           ? 0.05 
-                          : (trip.trip_status == 'Running' ? 0.5 : 0.15),
-                      minChildSize: isLandscape ? 0.05 : 0.15,
-                      maxChildSize: 1,
+                          : isMapExpand ? (trip.trip_status == 'Running' ? 0.05 : 0.15)  :
+                          (trip.trip_status == 'Running' ? 0.4 : 0.25),
+                      minChildSize: isLandscape ? 0.05 : (isMapExpand ? 0.05: 0.25),
+                      maxChildSize: 0.95,
                       builder: (BuildContext context,
                           ScrollController scrollController) {
                         return Stack(children: [
@@ -877,7 +879,7 @@ class _TripPageState extends State<TripPage>
     print("[TripPage.showTripGeoJson]");
 
     Map<String, dynamic> data = trip.geoJson!;
-    int lineColorValue = Colors.blue.withOpacity(0.5).value;
+    int lineColorValue = Colors.blue.withOpacity(0.4).value;
 
     if (trip.route_attributes != null &&
         trip.route_attributes!["lineColor"] != null) {
