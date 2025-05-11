@@ -33,7 +33,6 @@ import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
-import 'dart:ui' as ui;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'map/map_wiew.dart';
 
@@ -220,7 +219,7 @@ class _TripPageState extends State<TripPage>
                         });
                       }
                     } else {
-                      cleanResources(fullCleanup: false);
+                      cleanResources();
                     }
                   },
                   child: Stack(children: <Widget>[
@@ -735,7 +734,7 @@ class _TripPageState extends State<TripPage>
 
     try {
       locationServiceProvider.stopLocationService();
-      cleanResources(fullCleanup: true);
+      cleanResources();
     } catch (e) {
       print(e);
     }
@@ -797,7 +796,7 @@ class _TripPageState extends State<TripPage>
     }
   }
 
-  void cleanResources({bool fullCleanup = false}) {
+  void cleanResources() {
     try {
       _emitterServiceProvider?.removeListener(onEmitterMessage);
       _notificationService.removeListener(onPushMessage);
@@ -805,12 +804,10 @@ class _TripPageState extends State<TripPage>
       Wakelock.disable();
 
       // Limpiar el mapa solo si es una limpieza completa (cuando se destruye la página)
-      if (fullCleanup) {
-        print("Realizando limpieza completa de recursos");
-        annotationManager?.deleteAll();
-        annotationManager = null;
-        busPointAnnotation = null;
-      }
+      print("Realizando limpieza completa de recursos");
+      annotationManager?.deleteAll();
+      annotationManager = null;
+      busPointAnnotation = null;
 
       // Desuscribirse de eventos
       if (trip.trip_status == "Running") {
@@ -825,7 +822,7 @@ class _TripPageState extends State<TripPage>
   @override
   void dispose() {
     super.dispose();
-    cleanResources(fullCleanup: true);
+    cleanResources();
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -1246,7 +1243,7 @@ class _TripPageState extends State<TripPage>
             center: Point(coordinates: position), zoom: 18, pitch: 70));
       }
       // Si ya existe, solo actualizamos la posición y el texto
-      else if (annotationManager != null) {
+      else  {
         print("[TripPage._updateIcon] updating existing point annotation");
         busPointAnnotation?.geometry = Point(coordinates: position);
         busPointAnnotation?.textField = label;
@@ -1262,8 +1259,8 @@ class _TripPageState extends State<TripPage>
     } catch (e) {
       print("[TripPage._updateIcon] error: ${e.toString()}");
       // If update fails, recreate the annotation
-      busPointAnnotation = null;
-      _updateIcon(position, relationName, relationId, label);
+      // busPointAnnotation = null;
+      // _updateIcon(position, relationName, relationId, label);
     }
   }
   //  void _animateIcon(LatLng start, LatLng end) {
@@ -1363,7 +1360,7 @@ class _TripPageState extends State<TripPage>
       if (event.type == "end-trip" && relationName != 'eta.drivers') {
         try {
           // Limpiar recursos y navegar al home
-          cleanResources(fullCleanup: true);
+          // cleanResources(fullCleanup: true);
 
           if (mounted) {
             Navigator.of(context).popUntil((route) => route.isFirst);

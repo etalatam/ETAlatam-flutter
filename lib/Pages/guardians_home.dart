@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:eta_school_app/Models/attendance_model.dart';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Pages/providers/notification_provider.dart';
@@ -358,11 +359,12 @@ class _GuardiansHomeState extends State<GuardiansHome>
 
     _emitterServiceProvider =
         Provider.of<EmitterService>(context, listen: false);
+    _emitterServiceProvider?.addListener(_onEmitterMessage);
 
     if(!_emitterServiceProvider!.isConnected()){
       _emitterServiceProvider?.connect();
     }
-
+    
     loadParent();
   }
 
@@ -370,9 +372,43 @@ class _GuardiansHomeState extends State<GuardiansHome>
   void dispose() {
     // Break references to this State object here
     super.dispose();
+    _emitterServiceProvider?.removeListener(_onEmitterMessage);
+
   }
 
   onPushMessage() {
     loadParent();
   }
+
+  void _onEmitterMessage() {
+    if (!mounted) return;
+    
+    final message = _emitterServiceProvider?.lastMessage();
+    try {
+      final jsonMsg = jsonDecode(message!);
+      
+      // Actualizar viaje activo cuando llegue nueva posición
+      if (jsonMsg['relation_name'] == 'eta.drivers' && 
+          jsonMsg['payload'] != null) {
+        
+        setState(() {
+          // Buscar y actualizar el viaje correspondiente
+          for (var i = 0; i < activeTrips.length; i++) {
+            if (activeTrips[i].driver_id == jsonMsg['relation_id']) {
+              activeTrips[i].lastPositionPayload = jsonMsg['payload'];
+              break;
+            }
+          }
+        });
+      }
+      
+      // Si el viaje terminó, recargar datos
+      if (jsonMsg['event_type'] == 'end-trip') {
+        // loadParent();
+      }
+    } catch (e) {
+      // No es un mensaje JSON válido o no es relevante
+    }
+  }
+
 }

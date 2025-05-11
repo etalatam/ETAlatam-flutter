@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Models/student_model.dart';
@@ -47,6 +48,8 @@ class _StudentsHomeState extends State<StudentsHome>
   // List<EventModel> eventsList = [];
   List<RouteModel> routesList = [];
   List<TripModel> oldTripsList = [];
+  
+  EmitterService? _emitterServiceProvider;
   
   @override
   Widget build(BuildContext context) {
@@ -338,10 +341,41 @@ class _StudentsHomeState extends State<StudentsHome>
     Provider.of<NotificationService>(context, listen: false)
         .addListener(onPushMessage);
 
+    _emitterServiceProvider = Provider.of<EmitterService>(context, listen: false);
+    _emitterServiceProvider?.addListener(_onEmitterMessage);
+    
+
     loadResources();    
   }
 
   onPushMessage() {
     loadResources();
   }
+
+  void _onEmitterMessage() {
+    if (!mounted || !hasActiveTrip || activeTrip == null) return;
+    
+    final message = _emitterServiceProvider?.lastMessage();
+    try {
+      final jsonMsg = jsonDecode(message!);
+      
+      // Actualizar viaje activo del estudiante
+      if (jsonMsg['relation_name'] == 'eta.drivers' && 
+          jsonMsg['payload'] != null &&
+          activeTrip?.driver_id == jsonMsg['relation_id']) {
+        
+        setState(() {
+          activeTrip?.lastPositionPayload = jsonMsg['payload'];
+        });
+      }
+      
+      // Si el viaje terminó, recargar datos
+      if (jsonMsg['event_type'] == 'end-trip') {
+        // loadResources();
+      }
+    } catch (e) {
+      // No es un mensaje JSON válido o no es relevante
+    }
+  }
+
 }
