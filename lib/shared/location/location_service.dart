@@ -236,18 +236,19 @@ class LocationService extends ChangeNotifier {
 
     try {
       final now = DateTime.now();
-      final difference = now.difference(_lastPositionDate!);
+      // final difference = now.difference(_lastPositionDate!);
 
       // Verificar si la posición es diferente y si el tiempo es mayor a 5 segundos
       if ((_locationData?['latitude'] != locationInfo['latitude'] ||
-              _locationData?['longitude'] != locationInfo['longitude']) &&
-          difference.inSeconds > 5) {
+              _locationData?['longitude'] != locationInfo['longitude'])
+              //  && difference.inSeconds > 5
+          ) {
         _lastPositionDate = now;
 
         if (_shouldCalculateDistance) {
           // Solo calcular distancia si está habilitado
           try {
-            if (int.parse(_locationData?['speed'] ?? '0') > 1) {
+            if (double.parse(_locationData?['speed'] ?? '0') > 0.5) {
               _totalDistance += _calculateDistance(
                   _lastLatitude,
                   _lastLongitude,
@@ -259,6 +260,9 @@ class LocationService extends ChangeNotifier {
                 '[LocationService.distanceCalculation.error] ${e.toString()}');
           }
         }
+
+        _lastLatitude = locationInfo['latitude'];
+        _lastLongitude = locationInfo['longitude'];
 
         final jsonData = {
           'latitude': locationInfo['latitude'],
@@ -284,12 +288,13 @@ class LocationService extends ChangeNotifier {
     print('[LocationService.trackingLocationDto] ${locationInfo.toString()}');
 
     final now = DateTime.now();
-    final difference = now.difference(_lastPositionDate!);
+    // final difference = now.difference(_lastPositionDate!);
 
     // Verificar si la posición es diferente y si el tiempo es mayor a 5 segundos
     if ((_locationData?['latitude'] != locationInfo.latitude ||
-            _locationData?['longitude'] != locationInfo.longitude) &&
-        difference.inSeconds > 5) {
+            _locationData?['longitude'] != locationInfo.longitude) 
+            // && difference.inSeconds > 5
+        ) {
       _lastPositionDate = now;
       if (_shouldCalculateDistance) {
         // Solo calcular distancia si está habilitado
@@ -320,6 +325,10 @@ class LocationService extends ChangeNotifier {
       notifyListeners();
       await httpService.sendTracking(position: jsonData, userId: _userId);
     }
+    
+    _lastLatitude = locationInfo.latitude;
+    _lastLongitude = locationInfo.longitude;
+
   }
 
   void _startTimer() async {

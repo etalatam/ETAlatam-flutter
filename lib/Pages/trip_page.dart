@@ -1336,7 +1336,7 @@ class _TripPageState extends State<TripPage>
         try {
           tripDistance = double.parse("${tracking['payload']['distance']}");
         } catch (e) {
-          //
+          print("Error procesando la distancia: $e");
         }
 
         _updateIcon(position, relationName, relationId, label);
