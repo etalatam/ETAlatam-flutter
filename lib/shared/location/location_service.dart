@@ -10,7 +10,6 @@ import 'package:background_locator_2/settings/android_settings.dart';
 import 'package:background_locator_2/settings/ios_settings.dart';
 import 'package:background_locator_2/settings/locator_settings.dart';
 import 'package:flutter/foundation.dart';
-import 'package:google_maps_flutter_platform_interface/src/types/location.dart';
 import 'package:location/location.dart' hide LocationAccuracy;
 import 'package:workmanager/workmanager.dart';
 import 'location_callback_handler.dart';
@@ -55,8 +54,12 @@ class LocationService extends ChangeNotifier {
 
   bool _shouldCalculateDistance = false;
 
+  static LocationService get instance => _instance;
+
   init() async {
-    print("[LocationService.init]");
+    print(
+        "[LocationService.init] _shouldCalculateDistance: $_shouldCalculateDistance");
+
     _userId = await storage.getItem('id_usu');
 
     if (_timer == null) {
@@ -148,7 +151,8 @@ class LocationService extends ChangeNotifier {
       final difference = now.difference(_lastPositionDate!);
       print("[LocationService.timer.difference] ${difference.inSeconds}s.");
       if (difference.inSeconds >= 60) {
-        print("[LocationService.timer] restaring... ");
+        print(
+            "[LocationService.timer] restaring... [_shouldCalculateDistance: $_shouldCalculateDistance]");
         _lastPositionDate = DateTime.now();
         stopLocationService();
         startLocationService(calculateDistance: _shouldCalculateDistance);
@@ -170,13 +174,24 @@ class LocationService extends ChangeNotifier {
   // }
 
   Future<void> startLocationService({bool calculateDistance = false}) async {
-    print('[LocationService.startLocationService]');
-    _shouldCalculateDistance =
-        calculateDistance; // Establecer si se debe calcular la distancia
-    var data = <String, dynamic>{'countInit': 1};
+    print(
+        '[LocationService.startLocationService] calculateDistance: $calculateDistance');
+
+    _shouldCalculateDistance = calculateDistance;
+    print(
+        '[LocationService.startLocationService] _shouldCalculateDistance: $calculateDistance');
+
     final relationNameLocal = await storage.getItem('relation_name');
 
-    init();
+    // Mover la inicialización después de establecer el valor
+    if (!initialization) {
+      await init();
+    }
+
+    var data = <String, dynamic>{
+      'countInit': 1,
+      'calculateDistance': calculateDistance
+    };
 
     return await BackgroundLocator.registerLocationUpdate(
         LocationCallbackHandler.callback,
@@ -241,10 +256,12 @@ class LocationService extends ChangeNotifier {
       // Verificar si la posición es diferente y si el tiempo es mayor a 5 segundos
       if ((_locationData?['latitude'] != locationInfo['latitude'] ||
               _locationData?['longitude'] != locationInfo['longitude'])
-              //  && difference.inSeconds > 5
+          //  && difference.inSeconds > 5
           ) {
         _lastPositionDate = now;
 
+        print(
+            "[LocationService.trackingDynamic] _shouldCalculateDistance: $_shouldCalculateDistance");
         if (_shouldCalculateDistance) {
           // Solo calcular distancia si está habilitado
           try {
@@ -254,6 +271,8 @@ class LocationService extends ChangeNotifier {
                   _lastLongitude,
                   locationInfo['latitude'],
                   locationInfo['longitude']);
+
+              print("totaldistance: $_totalDistance");
             }
           } catch (e) {
             print(
@@ -284,29 +303,32 @@ class LocationService extends ChangeNotifier {
     }
   }
 
-  trackingLocationDto(LocationDto locationInfo) async {
+  trackingLocationDto(LocationDto locationInfo,
+      {bool calculateDistance = false}) async {
     print('[LocationService.trackingLocationDto] ${locationInfo.toString()}');
 
     final now = DateTime.now();
     // final difference = now.difference(_lastPositionDate!);
 
-    // Verificar si la posición es diferente y si el tiempo es mayor a 5 segundos
     if ((_locationData?['latitude'] != locationInfo.latitude ||
-            _locationData?['longitude'] != locationInfo.longitude) 
-            // && difference.inSeconds > 5
+            _locationData?['longitude'] != locationInfo.longitude)
+        // && difference.inSeconds > 5
         ) {
       _lastPositionDate = now;
-      if (_shouldCalculateDistance) {
-        // Solo calcular distancia si está habilitado
-        try {
-          if (locationInfo.speed > 1) {
-            _totalDistance += _calculateDistance(_lastLatitude, _lastLongitude,
-                locationInfo.latitude, locationInfo.longitude);
-          }
-        } catch (e) {
-          print('[LocationService.distanceCalculation.error] ${e.toString()}');
+      print(
+          "[LocationService.trackingLocationDto] [_shouldCalculateDistance: $_shouldCalculateDistance] [calculateDistance : $calculateDistance]");
+      // if (_shouldCalculateDistance || calculateDistance) {
+      // Solo calcular distancia si está habilitado
+      try {
+        if (locationInfo.speed > 1) {
+          _totalDistance += _calculateDistance(_lastLatitude, _lastLongitude,
+              locationInfo.latitude, locationInfo.longitude);
+          print("totaldistance: $_totalDistance");
         }
+      } catch (e) {
+        print('[LocationService.distanceCalculation.error] ${e.toString()}');
       }
+      // }
 
       final jsonData = {
         'latitude': locationInfo.latitude,
@@ -324,11 +346,9 @@ class LocationService extends ChangeNotifier {
       _locationData = jsonData;
       notifyListeners();
       await httpService.sendTracking(position: jsonData, userId: _userId);
+    } else {
+      print('[LocationService.trackingLocationDto.some location]');
     }
-    
-    _lastLatitude = locationInfo.latitude;
-    _lastLongitude = locationInfo.longitude;
-
   }
 
   void _startTimer() async {

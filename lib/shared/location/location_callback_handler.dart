@@ -25,14 +25,15 @@ class LocationCallbackHandler {
     try {
       var myLocationCallbackRepository = LocationServiceRepository();
       await myLocationCallbackRepository.callback(locationDto);
+
+      print(
+          "[myLocationCallbackRepository.shouldCalculateDistance: $myLocationCallbackRepository.shouldCalculateDistance]");
+
+      locationServiceProvider.trackingLocationDto(locationDto,
+          calculateDistance:
+              myLocationCallbackRepository.shouldCalculateDistance);
     } catch (e) {
       print("LocationCallbackHandler.callback.error ${e.toString()}");
-    }
-    
-    try {
-     locationServiceProvider.trackingLocationDto(locationDto); 
-    } catch (e) {
-      print("LocationCallbackHandler.trackingLocationDto.error ${e.toString()}");
     }
   }
 
