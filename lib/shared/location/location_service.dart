@@ -262,23 +262,19 @@ class LocationService extends ChangeNotifier {
 
         print(
             "[LocationService.trackingDynamic] _shouldCalculateDistance: $_shouldCalculateDistance");
-        if (_shouldCalculateDistance) {
-          // Solo calcular distancia si está habilitado
-          try {
-            if (double.parse(_locationData?['speed'] ?? '0') > 0.5) {
-              _totalDistance += _calculateDistance(
-                  _lastLatitude,
-                  _lastLongitude,
-                  locationInfo['latitude'],
-                  locationInfo['longitude']);
+        // if (_shouldCalculateDistance) {
+        // Solo calcular distancia si está habilitado
+        try {
+          if (double.parse(_locationData?['speed'] ?? '0') > 0.5) {
+            _totalDistance += _calculateDistance(_lastLatitude, _lastLongitude,
+                locationInfo['latitude'], locationInfo['longitude']);
 
-              print("totaldistance: $_totalDistance");
-            }
-          } catch (e) {
-            print(
-                '[LocationService.distanceCalculation.error] ${e.toString()}');
+            print("totaldistance: $_totalDistance");
           }
+        } catch (e) {
+          print('[LocationService.distanceCalculation.error] ${e.toString()}');
         }
+        // }
 
         _lastLatitude = locationInfo['latitude'];
         _lastLongitude = locationInfo['longitude'];
