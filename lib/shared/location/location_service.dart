@@ -52,7 +52,7 @@ class LocationService extends ChangeNotifier {
 
   double get totalDistance => _totalDistance;
 
-  bool _shouldCalculateDistance = false;
+  bool _shouldCalculateDistance = true;
 
   static LocationService get instance => _instance;
 
