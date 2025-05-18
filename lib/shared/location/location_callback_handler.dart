@@ -29,9 +29,7 @@ class LocationCallbackHandler {
       print(
           "[myLocationCallbackRepository.shouldCalculateDistance: $myLocationCallbackRepository.shouldCalculateDistance]");
 
-      locationServiceProvider.trackingLocationDto(locationDto,
-          calculateDistance:
-              myLocationCallbackRepository.shouldCalculateDistance);
+      locationServiceProvider.trackingLocationDto(locationDto);
     } catch (e) {
       print("LocationCallbackHandler.callback.error ${e.toString()}");
     }
