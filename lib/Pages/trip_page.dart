@@ -909,7 +909,9 @@ class _TripPageState extends State<TripPage>
         lineBlur: 0.5,
         lineDasharray: [1.0, 2.2],
         lineWidth: 5.0,
-        lineSortKey: 0));
+        lineSortKey: 0,
+        lineOpacity: 0.4
+    ));
 
     existsTripGeoJson = true;
   }
