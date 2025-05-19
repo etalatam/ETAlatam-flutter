@@ -6,7 +6,6 @@ import 'package:eta_school_app/Models/student_model.dart';
 import 'package:eta_school_app/Pages/history_absences.dart';
 import 'package:eta_school_app/Pages/map/map_wiew.dart';
 import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
-import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/Pages/register_absences.dart';
 import 'package:eta_school_app/Pages/upload_picture_page.dart';
 import 'package:eta_school_app/components/button_text_icon.dart';
@@ -503,7 +502,7 @@ class _StudentPageState extends State<StudentPage> {
   }
 
   void onEmitterMessage() async {
-    String message = emitterServiceProvider.lastMessage();
+    String message = EmitterService.instance.lastMessage();
 
     try {
       // si es un evento del viaje

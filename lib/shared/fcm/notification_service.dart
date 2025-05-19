@@ -21,6 +21,9 @@ class NotificationService with ChangeNotifier {
     return _instance;
   }
 
+  static NotificationService get instance => _instance;
+
+
   subscribeToTopic(String topic) {
     print("notificationService.subscribeToTopic: $topic");
     try {

@@ -12,6 +12,9 @@ class EmitterService extends ChangeNotifier {
   bool _updatelastTime = false;
 
   factory EmitterService() => _instance;
+  
+  static EmitterService get instance => _instance;
+
 
   EmitterService._internal() {
     connect();

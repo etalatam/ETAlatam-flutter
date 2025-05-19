@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Pages/login_page.dart';
-import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
-import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/components/active_trip.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
+import 'package:eta_school_app/shared/location/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:eta_school_app/methods.dart';
@@ -213,8 +212,8 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
     try {
       trip = await httpService.startTrip(route);
       if (trip.trip_id != 0) {
-        await locationServiceProvider.init();
-        await locationServiceProvider.startLocationService(
+        await LocationService.instance.init();
+        await LocationService.instance.startLocationService(
             calculateDistance: true);
         await Navigator.push(
           context,
@@ -293,7 +292,7 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
       final todateRoutes = await httpService.todayRoutes();
       for (var route in todateRoutes) {
         var routeDriverTopic = "route-${route.route_id}-driver";
-        notificationServiceProvider.subscribeToTopic(routeDriverTopic);
+        NotificationService.instance.subscribeToTopic(routeDriverTopic);
       }
       if (mounted) {
         setState(() {
@@ -334,7 +333,7 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
       print("[DriverHome.loadrResources.getActiveTrip.error] $e");
     } finally {
       if (hasActiveTrip) {
-        await locationServiceProvider.startLocationService(
+        await LocationService.instance.startLocationService(
             calculateDistance: true);
       }
     }

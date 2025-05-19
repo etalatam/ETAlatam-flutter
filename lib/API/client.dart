@@ -6,15 +6,16 @@ import 'package:eta_school_app/Models/login_information_model.dart';
 import 'package:eta_school_app/Models/trips_students_model.dart';
 import 'package:eta_school_app/Models/user_model.dart';
 import 'package:eta_school_app/Pages/providers/driver_provider.dart';
-import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
-import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
-import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/domain/entities/user/driver.dart';
 import 'package:eta_school_app/domain/entities/user/login_information.dart';
 import 'package:eta_school_app/infrastructure/datasources/login_information_datasource.dart';
 import 'package:eta_school_app/infrastructure/mappers/driver_mapper.dart';
 import 'package:eta_school_app/infrastructure/mappers/login_information_mapper.dart';
 import 'package:eta_school_app/infrastructure/repositories/login_information_repository_impl.dart';
+import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
+import 'package:eta_school_app/shared/fcm/notification_service.dart';
+import 'package:eta_school_app/shared/location/location_service.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
@@ -640,8 +641,8 @@ class HttpService {
         } on Exception catch (e) {
           debugPrint('Error saving login info: $e');
         }
-        if(!emitterServiceProvider.isConnected()){
-          emitterServiceProvider.connect();
+        if(!EmitterService.instance.isConnected()){
+          EmitterService.instance.connect();
         }
 
         return '1';
@@ -754,11 +755,27 @@ class HttpService {
 
   // Logout and clear localStorage
   logout() async {
-    locationServiceProvider.stopLocationService();
-    emitterServiceProvider.disconnect();
-    await notificationServiceProvider.close();
-    await storage.clear(); 
-   
+    try {
+      LocationService.instance.stopLocationService();
+    } catch (e) {
+      //
+    }
+    try {
+      EmitterService.instance.disconnect();
+    } catch (e) {
+      //
+    }
+    try {
+      await NotificationService.instance.close();
+    } catch (e) {
+      //
+    }
+    
+    try {
+      await storage.clear(); 
+    } catch (e) {
+      //
+    }
   }
 
   Future<dynamic> sendTracking({required position, required userId}) async {

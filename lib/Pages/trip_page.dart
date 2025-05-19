@@ -5,12 +5,10 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:eta_school_app/Pages/map/mapbox_utils.dart';
-import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
-import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/components/pulsating_circle.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
+import 'package:eta_school_app/shared/location/location_service.dart';
 import 'package:eta_school_app/shared/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -19,7 +17,6 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
 import 'package:eta_school_app/Pages/attendance_page.dart';
-import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:get/get.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/components/tripReportPage.dart';
@@ -211,10 +208,11 @@ class _TripPageState extends State<TripPage>
                                   showPickupLocations(_mapboxMapController!);
                                 }
                               });
-                            } else {
-                              showTripGeoJson(_mapboxMapController!);
-                              showPickupLocations(_mapboxMapController!);
-                            }
+                            } 
+                            // else {
+                            //   showTripGeoJson(_mapboxMapController!);
+                            //   showPickupLocations(_mapboxMapController!);
+                            // }
                           }
                         });
                       }
@@ -733,7 +731,7 @@ class _TripPageState extends State<TripPage>
     }
 
     try {
-      locationServiceProvider.stopLocationService();
+      LocationService.instance.stopLocationService();
       cleanResources();
     } catch (e) {
       print(e);
@@ -889,7 +887,7 @@ class _TripPageState extends State<TripPage>
     if (existsTripGeoJson) return;
 
     Map<String, dynamic> data = trip.geoJson!;
-    int lineColorValue = Colors.blue.withOpacity(0.4).value;
+    final lineColorValue = Color.fromRGBO(33, 150, 243, 0.4).value; 
 
     if (trip.route_attributes != null &&
         trip.route_attributes!["lineColor"] != null) {
@@ -904,7 +902,6 @@ class _TripPageState extends State<TripPage>
         sourceId: "trip_source",
         lineJoin: LineJoin.ROUND,
         lineCap: LineCap.ROUND,
-        //lineColor: lineColorValue,
         lineColor: lineColorValue,
         lineBlur: 0.5,
         lineDasharray: [1.0, 2.2],
@@ -1350,7 +1347,7 @@ class _TripPageState extends State<TripPage>
         } catch (e) {
           print("busHeading error $e");
         }
-        emitterServiceProvider.updateLastEmitterDate(DateTime.now());
+        EmitterService.instance.updateLastEmitterDate(DateTime.now());
       }
     }
   }
@@ -1400,7 +1397,7 @@ class _TripPageState extends State<TripPage>
 
   void onPushMessage() {
     print("[TripPage.onPushMessage]");
-    final LastMessage? lastMessage = notificationServiceProvider.lastMessage;
+    final LastMessage? lastMessage = NotificationService.instance.lastMessage;
     final title = lastMessage?.message!.notification!.title ?? "Nuevo mensaje";
 
     if (lastMessage != null && mounted) {

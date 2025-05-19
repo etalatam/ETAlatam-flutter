@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:eta_school_app/Models/attendance_model.dart';
 import 'package:eta_school_app/Models/route_model.dart';
-import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/Pages/student_page.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/components/active_trip.dart';
@@ -308,14 +307,14 @@ class _GuardiansHomeState extends State<GuardiansHome>
         var routeTopic = "route-${route.route_id}";
         var routeTopicGuardian = "$routeTopic-guardian";
 
-        notificationServiceProvider.subscribeToTopic(routeTopicGuardian);
+        NotificationService.instance.subscribeToTopic(routeTopicGuardian);
 
         for (var student in parentModel!.students) {
           var topic = "$routeTopic-student-${student.student_id}";          
-          notificationServiceProvider.subscribeToTopic(topic);
+          NotificationService.instance.subscribeToTopic(topic);
           for (var pickupPoint in student.pickup_points) {
             var topic = "$routeTopic-pickup_point-${pickupPoint.pickup_id}";
-            notificationServiceProvider.subscribeToTopic(topic);
+            NotificationService.instance.subscribeToTopic(topic);
           }
         }
       }      

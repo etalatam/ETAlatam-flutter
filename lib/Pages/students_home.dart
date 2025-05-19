@@ -1,15 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:android_intent_plus/android_intent.dart';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Models/student_model.dart';
 import 'package:eta_school_app/Pages/login_page.dart';
-import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
-import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/components/active_trip.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
+import 'package:eta_school_app/shared/location/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
@@ -240,7 +238,7 @@ class _StudentsHomeState extends State<StudentsHome>
     }
 
     try {
-      await locationServiceProvider.startLocationService();
+      await LocationService.instance.startLocationService();
     } catch (e) {
       print("[StudentPage.loadResources.startLocationService.error] $e");
     }
@@ -298,12 +296,12 @@ class _StudentsHomeState extends State<StudentsHome>
       for (var route in routes) {
         String routeTopic = "route-${route.route_id}-student";
 
-        notificationServiceProvider.subscribeToTopic(routeTopic);
+        NotificationService.instance.subscribeToTopic(routeTopic);
 
         for (var pickupPoint in student.pickup_points) {
           var pickupPointTopic =
               "route-${route.route_id}-pickup_point-${pickupPoint.pickup_id}";
-          notificationServiceProvider.subscribeToTopic(pickupPointTopic);
+          NotificationService.instance.subscribeToTopic(pickupPointTopic);
         }
       }
 

@@ -1,7 +1,4 @@
 import 'package:eta_school_app/Pages/login_page.dart';
-import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
-import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
-import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/Pages/splash_screen_page.dart';
 import 'package:eta_school_app/Pages/home_screen.dart';
 import 'package:eta_school_app/controllers/preferences.dart';
@@ -14,9 +11,16 @@ import 'package:localstorage/localstorage.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
+import 'shared/emitterio/emitter_service.dart';
+import 'shared/fcm/notification_service.dart';
+import 'shared/location/location_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  final locationService = LocationService.instance;
+  print('Main location service instance: ${locationService.instanceId}');
+
   await Firebase.initializeApp();
   final localeController = Get.put(LocaleController());
 
@@ -25,14 +29,14 @@ void main() async {
 
   MapboxOptions.setAccessToken(
       "sk.eyJ1IjoiZWxpZ2FiYXkiLCJhIjoiY20xMm1nYTA4MHV1cjJscXlocXA0MW5zciJ9.N3pZgESYISIcM3dlWrdgTQ");
-
+ 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => emitterServiceProvider),
-        ChangeNotifierProvider(create: (context) => locationServiceProvider),
+        ChangeNotifierProvider(create: (context) => locationService),
+        ChangeNotifierProvider(create: (context) => EmitterService.instance),
         ChangeNotifierProvider(
-            create: (context) => notificationServiceProvider),
+            create: (context) => NotificationService.instance),
       ],
       child: MyApp(),
     ),
