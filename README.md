@@ -8,7 +8,7 @@ ETAlatam es una aplicación Flutter multiplataforma (Android/iOS) que forma part
 
 - **Seguimiento en Tiempo Real**: Localización GPS en vivo de los autobuses escolares
 - **Notificaciones Push**: Sistema robusto de notificaciones basado en Firebase Cloud Messaging (FCM)
-- **Comunicación Bidireccional**: Chat y mensajes entre conductores, estudiantes y padres
+- **Módulo de Comunicación**: Sistema de mensajería y alertas entre usuarios
 - **Gestión de Rutas**: Visualización y gestión de rutas escolares con puntos de recogida
 - **Control de Asistencia**: Registro de abordaje y descenso de estudiantes
 - **Alertas de Emergencia**: Sistema de mensajes de ayuda y emergencias
@@ -212,27 +212,6 @@ flutter run
 
 ## Desarrollo
 
-### Estructura de Código
-
-```dart
-// Ejemplo de pantalla típica
-class StudentHomePage extends StatefulWidget {
-  @override
-  _StudentHomePageState createState() => _StudentHomePageState();
-}
-
-class _StudentHomePageState extends State<StudentHomePage> {
-  @override
-  void initState() {
-    super.initState();
-    _loadResources();
-    _subscribeToNotifications();
-  }
-  
-  // Implementación...
-}
-```
-
 ### Comandos Útiles
 
 ```bash
@@ -302,9 +281,6 @@ flutter test integration_test
 ## Documentación Adicional
 
 - [📱 Sistema de Notificaciones FCM](docs/fcm-notifications.md)
-- [🗺️ Integración con Mapbox](docs/mapbox-integration.md) *(próximamente)*
-- [🔐 Seguridad y Autenticación](docs/security.md) *(próximamente)*
-- [📊 Gestión de Estado](docs/state-management.md) *(próximamente)*
 
 ## Ocultar Archivos Generados
 
@@ -339,15 +315,6 @@ flutter test integration_test
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abrir un Pull Request
 
-## Licencia
-
-Este proyecto es propiedad de ETAlatam. Todos los derechos reservados.
-
 ## Contacto
 
 Para soporte técnico o consultas sobre el proyecto, contactar al equipo de desarrollo de ETAlatam.
-
----
-
-**Última actualización**: Enero 2025  
-**Versión de la aplicación**: Ver `pubspec.yaml`
