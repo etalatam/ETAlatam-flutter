@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:eta_school_app/shared/location/location_service.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:sensors_plus/sensors_plus.dart';
@@ -29,8 +28,6 @@ class MapWiew extends StatefulWidget {
 
 class MapWiewState extends State<MapWiew> {
   MapboxMap? mapboxMap;
-
-  LocationService? locationService;
 
   bool _firstLocationUpdate = true;
   
@@ -65,7 +62,7 @@ class MapWiewState extends State<MapWiew> {
           //           modelUri: "https://raw.githubusercontent.com/CesiumGS/cesium/refs/heads/master/Apps/SampleData/models/BoxInstanced/BoxInstanced.gltf",
           //           modelScale: [puckScale, puckScale, puckScale]))
         ));
-      await locationService?.init();
+      await LocationService.instance.init();
       // listenToCompass();
     }
 
@@ -89,50 +86,61 @@ class MapWiewState extends State<MapWiew> {
   @override
   Widget build(BuildContext context) {
     print('[MapView.build]');
-    return Scaffold(body:
-        Consumer<LocationService>(builder: (context, locationService, child) {
-      final locationData = locationService.locationData;
+    return Scaffold(
+      body: Consumer<LocationService>(
+        builder: (context, locationService, child) {
+          print('[MapView.builder] Current service instance: ${locationService.instanceId}');
+          print('[MapView.Consumer] locationData: ${locationService.locationData}');
+          
+          if (locationService.locationData != null && 
+                mapboxMap != null && 
+                widget.navigationMode) {
+              if (_firstLocationUpdate) {
+                print('[MapView.build._firstLocationUpdate] $_firstLocationUpdate');
+                mapboxMap?.setCamera(CameraOptions(
+                  zoom: 18,
+                  pitch: widget.navigationMode ? 80 : 0,
+                  center: Point(
+                    coordinates: Position(
+                      locationService.locationData!['longitude'], 
+                      locationService.locationData!['latitude']
+                    ),
+                  ),
+                ));
+                _firstLocationUpdate = false;
+              } else {
+                print('[MapView.build.setcamera]');
+                mapboxMap?.setCamera(CameraOptions(
+                  center: Point(
+                    coordinates: Position(
+                      locationService.locationData!['longitude'], 
+                      locationService.locationData!['latitude']
+                    ),
+                  ),
+                ));
+              }
+            }
 
-      // print('[MapView.Consumer.LocationService.locationData] $locationData');
-      print(
-          'MapView.Consumer.LocationService.widget.navigationMode ${widget.navigationMode}');
-      if (locationData != null && mapboxMap != null && widget.navigationMode) {
-        if (_firstLocationUpdate) {
-          print('[MapView.build._firstLocationUpdate] $_firstLocationUpdate');
-          mapboxMap?.setCamera(CameraOptions(
-            zoom: 18,
-            pitch: widget.navigationMode ? 80 : 0,
-            center: Point(
-                coordinates: Position(
-                    locationData['longitude'], locationData['latitude'])),
-          ));
-          _firstLocationUpdate = false;
-        } else {
-          mapboxMap?.setCamera(CameraOptions(
-            // bearing: widget.navigationMode? _bearing : 0,
-            center: Point(
-                coordinates: Position(
-                    locationData['longitude'], locationData['latitude'])),
-          ));
-        }
-      }
-
-      return MapWidget(
-          styleUri: MapboxStyles.MAPBOX_STREETS,
-          onMapCreated: _onMapCreated,
-          onStyleLoadedListener: _onStyleLoadedListener,
-          cameraOptions: CameraOptions(
+          return MapWidget(
+            styleUri: MapboxStyles.MAPBOX_STREETS,
+            onMapCreated: _onMapCreated,
+            onStyleLoadedListener: _onStyleLoadedListener,
+            cameraOptions: CameraOptions(
               center: Point(
-                  coordinates: Position(-79.50451720694494, 9.055044879215595)),
-              zoom: 5.0));
-    }));
+                coordinates: Position(-79.50451720694494, 9.055044879215595)
+              ),
+              zoom: 5.0
+            ),
+          );
+        },
+      ),
+    );
   }
 
   @override
   void initState() {
     print('[MapView.initState]');
     super.initState();
-    locationService = Provider.of<LocationService>(context, listen: false);
   }
 
   double calculateBearing(double lat1, double lon1, double lat2, double lon2) {

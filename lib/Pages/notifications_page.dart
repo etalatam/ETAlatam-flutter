@@ -2,7 +2,6 @@ import 'package:eta_school_app/Pages/driver_page.dart';
 import 'package:eta_school_app/Pages/help_messages_page.dart';
 import 'package:eta_school_app/Models/parent_model.dart';
 import 'package:eta_school_app/Models/NotificationModel.dart';
-import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/components/slide_action.dart';
@@ -433,7 +432,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     });
 
     final notificationslistResponse = await httpService
-        .getNotifications(notificationServiceProvider.topicsList.toString());
+        .getNotifications(NotificationService.instance.topicsList.toString());
 
     setState(() {
       showLoader = false;
@@ -495,7 +494,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   void onPushMessage() {
     print("[NotificaionPage.onPushMessage]");
-    final LastMessage? lastMessage = notificationServiceProvider.lastMessage;
+    final LastMessage? lastMessage = NotificationService.instance.lastMessage;
     final title = lastMessage?.message.notification!.title ?? "Nuevo mensaje";
 
     if (lastMessage != null && mounted) {

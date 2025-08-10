@@ -1,14 +1,21 @@
 import 'dart:async';
-
 import 'package:background_locator_2/location_dto.dart';
-import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
-
+import 'package:eta_school_app/shared/location/location_service.dart';
 import 'location_service_repository.dart';
 
 @pragma('vm:entry-point')
 class LocationCallbackHandler {
+
+  static bool _shouldCalculateDistance = false;
+
   @pragma('vm:entry-point')
   static Future<void> initCallback(Map<dynamic, dynamic> params) async {
+
+        // Obtener el parámetro de cálculo de distancia
+    if (params.containsKey('calculateDistance')) {
+      _shouldCalculateDistance = params['calculateDistance'];
+    }
+
     var myLocationCallbackRepository = LocationServiceRepository();
     await myLocationCallbackRepository.init(params);
   }
@@ -25,14 +32,13 @@ class LocationCallbackHandler {
     try {
       var myLocationCallbackRepository = LocationServiceRepository();
       await myLocationCallbackRepository.callback(locationDto);
+
+      print(
+          "[myLocationCallbackRepository.shouldCalculateDistance: $myLocationCallbackRepository.shouldCalculateDistance]");
+
+      await LocationService.instance.trackingLocationDto(locationDto);
     } catch (e) {
       print("LocationCallbackHandler.callback.error ${e.toString()}");
-    }
-    
-    try {
-     locationServiceProvider.trackingLocationDto(locationDto); 
-    } catch (e) {
-      print("LocationCallbackHandler.trackingLocationDto.error ${e.toString()}");
     }
   }
 

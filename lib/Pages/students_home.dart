@@ -1,14 +1,13 @@
 import 'dart:async';
-import 'package:android_intent_plus/android_intent.dart';
+import 'dart:convert';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Models/student_model.dart';
 import 'package:eta_school_app/Pages/login_page.dart';
-import 'package:eta_school_app/Pages/providers/notification_provider.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
-import 'package:eta_school_app/Pages/providers/location_service_provider.dart';
 import 'package:eta_school_app/components/active_trip.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
+import 'package:eta_school_app/shared/location/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
@@ -47,6 +46,8 @@ class _StudentsHomeState extends State<StudentsHome>
   // List<EventModel> eventsList = [];
   List<RouteModel> routesList = [];
   List<TripModel> oldTripsList = [];
+  
+  EmitterService? _emitterServiceProvider;
   
   @override
   Widget build(BuildContext context) {
@@ -237,7 +238,7 @@ class _StudentsHomeState extends State<StudentsHome>
     }
 
     try {
-      await locationServiceProvider.startLocationService();
+      await LocationService.instance.startLocationService();
     } catch (e) {
       print("[StudentPage.loadResources.startLocationService.error] $e");
     }
@@ -295,12 +296,12 @@ class _StudentsHomeState extends State<StudentsHome>
       for (var route in routes) {
         String routeTopic = "route-${route.route_id}-student";
 
-        notificationServiceProvider.subscribeToTopic(routeTopic);
+        NotificationService.instance.subscribeToTopic(routeTopic);
 
         for (var pickupPoint in student.pickup_points) {
           var pickupPointTopic =
               "route-${route.route_id}-pickup_point-${pickupPoint.pickup_id}";
-          notificationServiceProvider.subscribeToTopic(pickupPointTopic);
+          NotificationService.instance.subscribeToTopic(pickupPointTopic);
         }
       }
 
@@ -338,10 +339,41 @@ class _StudentsHomeState extends State<StudentsHome>
     Provider.of<NotificationService>(context, listen: false)
         .addListener(onPushMessage);
 
+    _emitterServiceProvider = Provider.of<EmitterService>(context, listen: false);
+    _emitterServiceProvider?.addListener(_onEmitterMessage);
+    
+
     loadResources();    
   }
 
   onPushMessage() {
     loadResources();
   }
+
+  void _onEmitterMessage() {
+    if (!mounted || !hasActiveTrip || activeTrip == null) return;
+    
+    final message = _emitterServiceProvider?.lastMessage();
+    try {
+      final jsonMsg = jsonDecode(message!);
+      
+      // Actualizar viaje activo del estudiante
+      if (jsonMsg['relation_name'] == 'eta.drivers' && 
+          jsonMsg['payload'] != null &&
+          activeTrip?.driver_id == jsonMsg['relation_id']) {
+        
+        setState(() {
+          activeTrip?.lastPositionPayload = jsonMsg['payload'];
+        });
+      }
+      
+      // Si el viaje terminó, recargar datos
+      if (jsonMsg['event_type'] == 'end-trip') {
+        // loadResources();
+      }
+    } catch (e) {
+      // No es un mensaje JSON válido o no es relevante
+    }
+  }
+
 }

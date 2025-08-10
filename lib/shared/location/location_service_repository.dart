@@ -18,8 +18,18 @@ class LocationServiceRepository {
 
   int _count = -1;
 
+  bool _shouldCalculateDistance = false;
+
+
+
   Future<void> init(Map<dynamic, dynamic> params) async {
     print('***********Init callback handler');
+
+    if (params.containsKey('calculateDistance')) {
+      _shouldCalculateDistance = params['calculateDistance'];
+    }
+
+
     if (params.containsKey('countInit')) {
       dynamic tmpCount = params['countInit'];
       if (tmpCount is double) {
@@ -52,7 +62,13 @@ class LocationServiceRepository {
     print('$_count location in dart: ${locationDto.toString()}');
     // await setLogPosition(_count, locationDto);
     final send = IsolateNameServer.lookupPortByName(isolateName);
-    send?.send(locationDto.toJson());
+
+    if (send != null) {
+      final data = locationDto.toJson();
+      // Agregar flag de cálculo de distancia a los datos enviados
+      data['shouldCalculateDistance'] = _shouldCalculateDistance;
+      send.send(data);
+    }
     _count++;
   }
 

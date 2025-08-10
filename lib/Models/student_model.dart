@@ -1,7 +1,6 @@
 import 'dart:core';
 import 'package:eta_school_app/Models/PickupLocationModel.dart';
 import 'package:eta_school_app/Models/emitter_keygen.dart';
-import 'package:eta_school_app/Pages/providers/emitter_service_provider.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -128,7 +127,7 @@ class StudentModel {
     if (isEmitterSubcribedToTracking) return;
 
     try {
-      emitterServiceProvider.unsubscribe(EmitterTopic(
+      EmitterService.instance.unsubscribe(EmitterTopic(
           "school/$schoolId/tracking/eta.students/",
           emitterKeyGenModelTracking!.key!));
     } catch (e) {
@@ -144,8 +143,8 @@ class StudentModel {
       emitterKeyGenModelTracking =
           await httpService.emitterKeyGen(encodedValue);
       if (emitterKeyGenModelTracking != null &&
-          emitterServiceProvider.isConnected()) {
-        emitterServiceProvider
+          EmitterService.instance.isConnected()) {
+        EmitterService.instance
             .subscribe(EmitterTopic(channel, emitterKeyGenModelTracking!.key!));
         isEmitterSubcribedToTracking = true;
       }
