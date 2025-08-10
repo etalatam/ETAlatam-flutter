@@ -19,8 +19,11 @@ class _LoginState extends State<Login> {
   final HttpService httpService = HttpService();
 
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   String email = '';
   String password = '';
+  bool _obscurePassword = true;
+  List<String> _emailHistory = [];
 
   String? token;
   String? loginResponse;
@@ -96,23 +99,50 @@ class _LoginState extends State<Login> {
                                           ),
                                         ),
                                         const SizedBox(height: 8),
-                                        TextField(
-                                          controller: _emailController,
-                                          decoration: InputDecoration(
-                                              border: OutlineInputBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10.0),
-                                              ),
-                                              filled: true,
-                                              hintStyle: TextStyle(
-                                                  color: Colors.grey[800]),
-                                              hintText: "",
-                                              fillColor: const Color.fromRGBO(
-                                                  233, 235, 235, 1)),
-                                          onChanged: (val) {
+                                        Autocomplete<String>(
+                                          optionsBuilder: (TextEditingValue textEditingValue) {
+                                            if (textEditingValue.text.isEmpty) {
+                                              return _emailHistory;
+                                            }
+                                            return _emailHistory.where((String option) {
+                                              return option.toLowerCase().contains(
+                                                  textEditingValue.text.toLowerCase());
+                                            });
+                                          },
+                                          fieldViewBuilder: (BuildContext context,
+                                              TextEditingController fieldTextEditingController,
+                                              FocusNode fieldFocusNode,
+                                              VoidCallback onFieldSubmitted) {
+                                            _emailController.text = fieldTextEditingController.text;
+                                            return TextField(
+                                              controller: fieldTextEditingController,
+                                              focusNode: fieldFocusNode,
+                                              keyboardType: TextInputType.emailAddress,
+                                              autocorrect: false,
+                                              enableSuggestions: true,
+                                              autofillHints: const [AutofillHints.email],
+                                              decoration: InputDecoration(
+                                                  border: OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(10.0),
+                                                  ),
+                                                  filled: true,
+                                                  hintStyle: TextStyle(
+                                                      color: Colors.grey[800]),
+                                                  hintText: "email@example.com",
+                                                  fillColor: const Color.fromRGBO(
+                                                      233, 235, 235, 1)),
+                                              onChanged: (val) {
+                                                setState(() {
+                                                  email = val;
+                                                });
+                                              },
+                                            );
+                                          },
+                                          onSelected: (String selection) {
                                             setState(() {
-                                              email = val;
-                                              // _emailController.text = email;
+                                              email = selection;
+                                              _emailController.text = selection;
                                             });
                                           },
                                         ),
@@ -138,9 +168,11 @@ class _LoginState extends State<Login> {
                                         ),
                                         const SizedBox(height: 8),
                                         TextFormField(
-                                          obscureText: true,
+                                          controller: _passwordController,
+                                          obscureText: _obscurePassword,
                                           enableSuggestions: false,
                                           autocorrect: false,
+                                          autofillHints: const [AutofillHints.password],
                                           validator: (String? value) {
                                             if (value!.trim().isEmpty) {
                                               return 'Password is required';
@@ -155,12 +187,24 @@ class _LoginState extends State<Login> {
                                               filled: true,
                                               hintStyle: TextStyle(
                                                   color: Colors.grey[800]),
-                                              hintText: "",
+                                              hintText: "••••••••",
                                               fillColor: const Color.fromRGBO(
-                                                  233, 235, 235, 1)),
+                                                  233, 235, 235, 1),
+                                              suffixIcon: IconButton(
+                                                icon: Icon(
+                                                  _obscurePassword
+                                                      ? Icons.visibility_off
+                                                      : Icons.visibility,
+                                                  color: Colors.grey[600],
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    _obscurePassword = !_obscurePassword;
+                                                  });
+                                                },
+                                              )),
                                           onChanged: (val) => setState(() {
                                             password = val;
-                                            // goHome();
                                           }),
                                         ),
                                       ],
@@ -189,6 +233,7 @@ class _LoginState extends State<Login> {
                                         setState(() {
                                           showLoader = false;
                                           if (loginResponse == '1') {
+                                            _saveEmailToHistory(email);
                                             goHome();
                                           } else {
                                             showSuccessDialog(
@@ -273,6 +318,41 @@ class _LoginState extends State<Login> {
   @override
   void initState() {
     super.initState();
+    _loadEmailHistory();
     goHome();
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadEmailHistory() async {
+    try {
+      final savedEmails = await storage.getItem('email_history');
+      if (savedEmails != null && savedEmails is List) {
+        setState(() {
+          _emailHistory = List<String>.from(savedEmails);
+        });
+      }
+    } catch (e) {
+      print('Error loading email history: $e');
+    }
+  }
+
+  Future<void> _saveEmailToHistory(String email) async {
+    try {
+      if (email.isNotEmpty && !_emailHistory.contains(email)) {
+        _emailHistory.insert(0, email);
+        if (_emailHistory.length > 5) {
+          _emailHistory = _emailHistory.take(5).toList();
+        }
+        await storage.setItem('email_history', _emailHistory);
+      }
+    } catch (e) {
+      print('Error saving email history: $e');
+    }
   }
 }

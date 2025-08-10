@@ -705,8 +705,12 @@ class HttpService {
       "email": email,
     };
 
-    var requestAccessRes = await requestAccess();
-    if (requestAccessRes == '1') {
+    // Check if we already have a valid token (authenticated user from profile)
+    final existingToken = storage.getItem('token');
+    
+    if (existingToken != null && existingToken.toString().isNotEmpty) {
+      // User is authenticated (calling from profile), use existing token
+      print("[$endpoint] Using existing token for authenticated user");
       http.Response res = await postQuery(endpoint, data);
 
       print("[$endpoint] res.statusCode: ${res.statusCode}");
@@ -717,9 +721,24 @@ class HttpService {
       } else {
         return "${parseResponseMessage(res)}/${res.statusCode}";
       }
-    }
+    } else {
+      // User is not authenticated (calling from login), need to request access first
+      print("[$endpoint] Requesting access token for unauthenticated user");
+      var requestAccessRes = await requestAccess();
+      if (requestAccessRes == '1') {
+        http.Response res = await postQuery(endpoint, data);
 
-    return requestAccessRes;
+        print("[$endpoint] res.statusCode: ${res.statusCode}");
+        print("[$endpoint] res.body: ${res.body}");
+
+        if (res.statusCode == 200) {
+          return '1';
+        } else {
+          return "${parseResponseMessage(res)}/${res.statusCode}";
+        }
+      }
+      return requestAccessRes;
+    }
   }
 
   // get message error from request response
