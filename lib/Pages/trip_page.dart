@@ -360,11 +360,10 @@ class _TripPageState extends State<TripPage>
                               _showEmitterTooltip(context, emitterService);
                             },
                             child: Container(
-                              padding: EdgeInsets.all(8),
+                              width: 42,
+                              height: 42,
                               decoration: BoxDecoration(
-                                color: emitterService.isConnected()
-                                    ? Colors.green.withOpacity(0.85)
-                                    : Colors.red.withOpacity(0.85),
+                                color: Colors.white.withOpacity(0.9),
                                 borderRadius: BorderRadius.circular(8),
                                 boxShadow: [
                                   BoxShadow(
@@ -374,12 +373,23 @@ class _TripPageState extends State<TripPage>
                                   ),
                                 ],
                               ),
-                              child: Icon(
-                                emitterService.isConnected() 
-                                    ? Icons.wifi 
-                                    : Icons.wifi_off,
-                                color: Colors.white,
-                                size: 20,
+                              child: Center(
+                                child: Container(
+                                  width: 14,
+                                  height: 14,
+                                  decoration: BoxDecoration(
+                                    color: emitterService.isConnected()
+                                        ? Colors.green
+                                        : Colors.red,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: emitterService.isConnected()
+                                          ? Colors.green.shade700
+                                          : Colors.red.shade700,
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           );
@@ -445,11 +455,12 @@ class _TripPageState extends State<TripPage>
                           });
                         },
                         child: Container(
-                          padding: EdgeInsets.all(8),
+                          width: 42,
+                          height: 42,
                           decoration: BoxDecoration(
                             color: isMapExpand 
                                 ? Colors.blue.withOpacity(0.85)
-                                : Colors.white.withOpacity(0.8),
+                                : Colors.white.withOpacity(0.9),
                             borderRadius: BorderRadius.circular(8),
                             boxShadow: [
                               BoxShadow(
@@ -463,8 +474,8 @@ class _TripPageState extends State<TripPage>
                             isMapExpand
                                 ? Icons.fullscreen_exit
                                 : Icons.fullscreen,
-                            color: isMapExpand ? Colors.white : Colors.black,
-                            size: 26,
+                            color: isMapExpand ? Colors.white : Colors.black87,
+                            size: 24,
                           ),
                         ),
                       ),
@@ -1584,6 +1595,9 @@ class _LiveConnectionDialog extends StatefulWidget {
 
 class _LiveConnectionDialogState extends State<_LiveConnectionDialog> {
   Timer? _updateTimer;
+  bool _wasDisconnected = false;
+  DateTime? _disconnectionTime;
+  Timer? _messageTimer;
 
   @override
   void initState() {
@@ -1602,6 +1616,7 @@ class _LiveConnectionDialogState extends State<_LiveConnectionDialog> {
   @override
   void dispose() {
     _updateTimer?.cancel();
+    _messageTimer?.cancel();
     super.dispose();
   }
 
@@ -1658,9 +1673,27 @@ class _LiveConnectionDialogState extends State<_LiveConnectionDialog> {
         return AlertDialog(
           title: Row(
             children: [
-              Icon(
-                emitterService.isConnected() ? Icons.wifi : Icons.wifi_off,
-                color: emitterService.isConnected() ? Colors.green : Colors.red,
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  border: Border.all(
+                    color: emitterService.isConnected() ? Colors.green : Colors.red,
+                    width: 2,
+                  ),
+                ),
+                child: Center(
+                  child: Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: emitterService.isConnected() ? Colors.green : Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
               ),
               SizedBox(width: 8),
               Text('Conexión en Vivo'),
@@ -1678,7 +1711,7 @@ class _LiveConnectionDialogState extends State<_LiveConnectionDialog> {
                     size: 20,
                   ),
                   SizedBox(width: 8),
-                  Text('Estado: ${emitterService.isConnected() ? "Conectado" : "Desconectado"}',
+                  Text('${emitterService.isConnected() ? "Conectado" : "Desconectado"}',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: emitterService.isConnected() ? Colors.green : Colors.red,
@@ -1699,7 +1732,7 @@ class _LiveConnectionDialogState extends State<_LiveConnectionDialog> {
                       SizedBox(height: 6),
                       Row(
                         children: [
-                          Text('Último envío: ${LocationService.instance.lastPositionSentTime!.hour.toString().padLeft(2, '0')}:${LocationService.instance.lastPositionSentTime!.minute.toString().padLeft(2, '0')}:${LocationService.instance.lastPositionSentTime!.second.toString().padLeft(2, '0')}',
+                          Text('${LocationService.instance.lastPositionSentTime!.hour.toString().padLeft(2, '0')}:${LocationService.instance.lastPositionSentTime!.minute.toString().padLeft(2, '0')}:${LocationService.instance.lastPositionSentTime!.second.toString().padLeft(2, '0')}',
                             style: TextStyle(fontSize: 13, color: Colors.grey[600])),
                           Text(' (hace ${DateTime.now().difference(LocationService.instance.lastPositionSentTime!).inSeconds}s)',
                             style: TextStyle(fontSize: 12, color: Colors.grey[500])),
@@ -1720,7 +1753,7 @@ class _LiveConnectionDialogState extends State<_LiveConnectionDialog> {
                     SizedBox(height: 6),
                     Row(
                       children: [
-                        Text('Último evento: ${widget.parentState._lastReceivedTime!.hour.toString().padLeft(2, '0')}:${widget.parentState._lastReceivedTime!.minute.toString().padLeft(2, '0')}:${widget.parentState._lastReceivedTime!.second.toString().padLeft(2, '0')}',
+                        Text('${widget.parentState._lastReceivedTime!.hour.toString().padLeft(2, '0')}:${widget.parentState._lastReceivedTime!.minute.toString().padLeft(2, '0')}:${widget.parentState._lastReceivedTime!.second.toString().padLeft(2, '0')}',
                           style: TextStyle(fontSize: 13, color: Colors.grey[600])),
                         Text(' (hace ${DateTime.now().difference(widget.parentState._lastReceivedTime!).inSeconds}s)',
                           style: TextStyle(fontSize: 12, color: Colors.grey[500])),
@@ -1745,18 +1778,54 @@ class _LiveConnectionDialogState extends State<_LiveConnectionDialog> {
               SizedBox(height: 8),
               Text('Tiempo activo: ${_formatDuration(realSessionDuration)}',
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400)),
-              if (!emitterService.isConnected())
-                Padding(
-                  padding: EdgeInsets.only(top: 12),
-                  child: Text(
-                    'Conexión interrumpida. Verifique su conexión a internet',
-                    style: TextStyle(
-                      color: Colors.orange,
-                      fontSize: 12,
-                      fontStyle: FontStyle.italic,
+              
+              // Mensaje de desconexión con altura fija para evitar cambios de tamaño
+              Container(
+                height: 40, // Altura fija para evitar cambios de tamaño
+                padding: EdgeInsets.only(top: 12),
+                child: Builder(builder: (context) {
+                  // Detectar cambio de estado de conexión
+                  if (!emitterService.isConnected() && !_wasDisconnected) {
+                    _wasDisconnected = true;
+                    _disconnectionTime = DateTime.now();
+                    // Mantener el mensaje visible por 5 segundos mínimo
+                    _messageTimer?.cancel();
+                    _messageTimer = Timer(Duration(seconds: 5), () {
+                      if (mounted && emitterService.isConnected()) {
+                        setState(() {
+                          _wasDisconnected = false;
+                        });
+                      }
+                    });
+                  } else if (emitterService.isConnected() && _wasDisconnected) {
+                    // Si se reconecta pero no ha pasado el tiempo mínimo, esperar
+                    if (_disconnectionTime != null && 
+                        DateTime.now().difference(_disconnectionTime!).inSeconds < 5) {
+                      // Mantener mensaje visible
+                    } else {
+                      _wasDisconnected = false;
+                    }
+                  }
+                  
+                  return AnimatedOpacity(
+                    opacity: (!emitterService.isConnected() || _wasDisconnected) ? 1.0 : 0.0,
+                    duration: Duration(milliseconds: 300),
+                    child: Wrap(
+                      children: [
+                        Text(
+                          'Conexión interrumpida. Verifique su conexión a internet',
+                          style: TextStyle(
+                            color: Colors.orange,
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                     ),
-                  ),
-                ),
+                  );
+                }),
+              ),
             ],
           ),
           actions: [
