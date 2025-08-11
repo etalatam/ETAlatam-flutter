@@ -19,6 +19,9 @@ class MapWiew extends StatefulWidget {
   // true = centra en ubicación propia, false = centra en marcadores del mapa
   bool centerOnSelf;
   
+  // Indica si debe mostrar el botón de ajuste automático (solo viajes activos)
+  bool showAutoFollowButton;
+  
   // Callback opcional para centrar en elementos externos (como el bus)
   void Function()? onCenterRequest;
 
@@ -30,10 +33,11 @@ class MapWiew extends StatefulWidget {
       {required this.navigationMode,
       this.showLocationPuck = false,
       this.centerOnSelf = true,
+      this.showAutoFollowButton = false, // Por defecto no mostrar (para viajes históricos)
       this.onCenterRequest,
       required this.onMapReady,
       required this.onStyleLoadedListener}) {
-    print('[MapWiew.navigationMode] $navigationMode, showLocationPuck: $showLocationPuck, centerOnSelf: $centerOnSelf');
+    print('[MapWiew] navigationMode: $navigationMode, showLocationPuck: $showLocationPuck, centerOnSelf: $centerOnSelf, showAutoFollowButton: $showAutoFollowButton');
   }
 
   @override
@@ -268,9 +272,12 @@ class MapWiewState extends State<MapWiew> {
                 ),
               ),
               // Botón de control de seguimiento automático
-              // Se muestra siempre cuando hay navegación o cuando hay callback de centrado
-              if (widget.navigationMode || widget.onCenterRequest != null)
-                Positioned(
+              // Solo se muestra si showAutoFollowButton es true (viajes activos)
+              Builder(builder: (context) {
+                final shouldShow = widget.showAutoFollowButton && (widget.navigationMode || widget.onCenterRequest != null);
+                print('[MapView.AutoFollowButton] showAutoFollowButton: ${widget.showAutoFollowButton}, navigationMode: ${widget.navigationMode}, onCenterRequest: ${widget.onCenterRequest != null}, shouldShow: $shouldShow');
+                if (shouldShow)
+                  return Positioned(
                   top: 160,  // Posición donde debe estar (tercer botón)
                   right: 10,
                   child: GestureDetector(
@@ -311,7 +318,10 @@ class MapWiewState extends State<MapWiew> {
                       ),
                     ),
                   ),
-                ),
+                  );
+                else
+                  return SizedBox.shrink();
+              }),
             ],
           );
         },

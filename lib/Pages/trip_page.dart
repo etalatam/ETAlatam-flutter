@@ -137,6 +137,8 @@ class _TripPageState extends State<TripPage>
 
     trip = widget.trip!;
     _lastPositionPayload = trip.lastPositionPayload;
+    
+    print('[TripPage.initState] trip_id: ${trip.trip_id}, trip_status: "${trip.trip_status}", is Running: ${trip.trip_status == 'Running'}');
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final currentOrientation = MediaQuery.of(context).orientation;
@@ -204,6 +206,8 @@ class _TripPageState extends State<TripPage>
     busColor = trip.bus_color != null
         ? _convertColor(trip.bus_color!)
         : Colors.blue.value;
+    
+    print('[TripPage.build] trip_status: "${trip.trip_status}", navigationMode: ${widget.navigationMode}, showAutoFollowButton will be: ${trip.trip_status == 'Running'}');
 
     return Material(
         child: showLoader
@@ -269,8 +273,10 @@ class _TripPageState extends State<TripPage>
                           navigationMode: widget.navigationMode,
                           showLocationPuck: widget.navigationMode, // Si navigationMode es true, es conductor con viaje activo
                           centerOnSelf: widget.navigationMode, // Conductores centran en sí mismos
+                          showAutoFollowButton: trip.trip_status == 'Running', // Solo mostrar botón en viajes activos
                           onCenterRequest: widget.navigationMode ? null : _centerOnBus, // Padres/estudiantes centran en el bus
                           onMapReady: (MapboxMap mapboxMap) async {
+                            print('[TripPage.MapWiew] trip_status: "${trip.trip_status}", showAutoFollowButton: ${trip.trip_status == 'Running'}');
                             _mapboxMapController = mapboxMap;
 
                             // Asegurar que el annotationManager esté creado

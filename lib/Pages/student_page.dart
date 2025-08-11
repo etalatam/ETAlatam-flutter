@@ -99,6 +99,7 @@ class _StudentPageState extends State<StudentPage> {
                     navigationMode: relationName.isNotEmpty ? _shouldEnableTracking() : false, // Solo después de cargar rol
                     showLocationPuck: relationName.isNotEmpty ? _shouldShowLocationPuck() : false, // Solo después de cargar rol
                     centerOnSelf: relationName.isNotEmpty ? _shouldCenterOnSelf() : false, // Determina si centra en sí mismo o en el estudiante
+                    showAutoFollowButton: true, // Siempre mostrar en vista de estudiante (siempre es "activa")
                     onCenterRequest: (relationName.isEmpty || !_shouldCenterOnSelf()) ? _centerOnStudent : null, // Callback para centrar en estudiante si es padre o rol no cargado
                     onMapReady: (MapboxMap mapboxMap) async {
                       _mapboxMapController = mapboxMap;
