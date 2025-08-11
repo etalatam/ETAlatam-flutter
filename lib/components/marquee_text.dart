@@ -27,7 +27,6 @@ class MarqueeText extends StatefulWidget {
 
 class _MarqueeTextState extends State<MarqueeText> {
   bool _shouldScroll = false;
-  bool _isPaused = false;
   String _displayText = '';
   final GlobalKey _marqueeKey = GlobalKey();
 
@@ -56,13 +55,6 @@ class _MarqueeTextState extends State<MarqueeText> {
     });
   }
 
-  void _onTap() {
-    if (_shouldScroll) {
-      setState(() {
-        _isPaused = !_isPaused;
-      });
-    }
-  }
 
   @override
   void dispose() {
@@ -71,36 +63,33 @@ class _MarqueeTextState extends State<MarqueeText> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _onTap,
-      child: SizedBox(
-        width: widget.width,
-        height: widget.style?.fontSize != null 
-            ? (widget.style!.fontSize! * 1.5) 
-            : 24,
-        child: _shouldScroll && !_isPaused
-            ? Marquee(
-                key: _marqueeKey,
-                text: _displayText,
-                style: widget.style,
-                scrollAxis: Axis.horizontal,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                blankSpace: widget.blankSpace,
-                velocity: widget.velocity,
-                pauseAfterRound: widget.pauseAfterRound,
-                startPadding: 0,
-                accelerationDuration: Duration.zero,
-                accelerationCurve: Curves.linear,
-                decelerationDuration: Duration.zero,
-                decelerationCurve: Curves.linear,
-              )
-            : Text(
-                widget.text,
-                style: widget.style,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-      ),
+    return SizedBox(
+      width: widget.width,
+      height: widget.style?.fontSize != null 
+          ? (widget.style!.fontSize! * 1.5) 
+          : 24,
+      child: _shouldScroll
+          ? Marquee(
+              key: _marqueeKey,
+              text: _displayText,
+              style: widget.style,
+              scrollAxis: Axis.horizontal,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              blankSpace: widget.blankSpace,
+              velocity: widget.velocity,
+              pauseAfterRound: widget.pauseAfterRound,
+              startPadding: 0,
+              accelerationDuration: Duration.zero,
+              accelerationCurve: Curves.linear,
+              decelerationDuration: Duration.zero,
+              decelerationCurve: Curves.linear,
+            )
+          : Text(
+              widget.text,
+              style: widget.style,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
     );
   }
 }

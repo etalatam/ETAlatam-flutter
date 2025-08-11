@@ -48,7 +48,7 @@ class _ActiveTripState extends State<ActiveTrip> {
           onTap: () => {widget.openTripCallback!(widget.trip)},
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             margin: const EdgeInsets.fromLTRB(25, 0, 25, 20),
             clipBehavior: Clip.antiAlias,
             decoration: ShapeDecoration(
