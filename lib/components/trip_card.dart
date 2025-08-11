@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:eta_school_app/Models/trips_students_model.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:intl/intl.dart';
+import 'marquee_text.dart';
 
 class TripCard extends StatelessWidget {
   final TripStudentModel trip;
@@ -62,12 +63,13 @@ class TripCard extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
-          child: Text(
-            trip.routeName ?? 'Sin nombre',
+          child: MarqueeText(
+            text: trip.routeName ?? 'Sin nombre',
             style: isSelected 
                 ? activeTheme.h6.copyWith(color: DefaultTheme.default_color)
                 : activeTheme.h6,
-            overflow: TextOverflow.ellipsis,
+            width: 200,
+            autoStart: true,
           ),
         ),
         _buildTimeContainer(),

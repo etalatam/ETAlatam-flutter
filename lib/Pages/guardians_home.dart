@@ -341,7 +341,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
   openTrip(trip) {
     Get.to(TripPage(
       trip: trip,
-      navigationMode: false,
+      navigationMode: trip.trip_status == 'Running',
       showBus: true,
       showStudents: true,
     ));

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui' as ui;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
 import 'package:eta_school_app/Models/student_model.dart';
@@ -15,9 +16,11 @@ import 'package:eta_school_app/components/image_default.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
+import 'package:eta_school_app/shared/location/location_service.dart';
 import 'package:eta_school_app/shared/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -53,6 +56,14 @@ class _StudentPageState extends State<StudentPage> {
   
   bool _isVisible = true;
   late bool hasActiveTrip;
+  bool isMapExpand = false;
+
+  // Variables for Emitter connection statistics (same as trip_page)
+  int _messageCount = 0; // Total de mensajes (para compatibilidad)
+  int _receivedCount = 0; // Eventos recibidos del estudiante
+  DateTime? _sessionStartTime;
+  DateTime? _lastMessageTime;
+  DateTime? _lastReceivedTime;
 
   @override
   Widget build(BuildContext context) {
@@ -72,8 +83,9 @@ class _StudentPageState extends State<StudentPage> {
                     }
                   },
                   child: Stack(children: <Widget>[
-                SizedBox(
-                  height: MediaQuery.of(context).size.height / 1.40,
+                // El mapa ahora responde al estado de pantalla completa
+                Positioned.fill(
+                  bottom: isMapExpand ? 0 : MediaQuery.of(context).size.height * 0.45,
                   child: MapWiew(
                     navigationMode: false,
                     onMapReady: (MapboxMap mapboxMap) async {
@@ -134,25 +146,81 @@ class _StudentPageState extends State<StudentPage> {
                           ],
                         )),
                   ),
+                // Botón de estado de conexión con diálogo completo
                 Positioned(
                   top: 40,
                   right: 10,
                   child: Consumer<EmitterService>(
                       builder: (context, emitterService, child) {
-                    return Container(
-                      width: 15,
-                      height: 15,
-                      decoration: BoxDecoration(
-                        color: emitterService.isConnected()
-                            ? Colors.green
-                            : Colors.red,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
+                    return GestureDetector(
+                      onTap: () => _showConnectionDialog(),
+                      child: Tooltip(
+                        message: emitterService.isConnected() 
+                          ? 'Conectado - Toca para ver detalles' 
+                          : 'Desconectado - Toca para ver detalles',
+                        child: Container(
+                          padding: EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: emitterService.isConnected()
+                                ? Colors.green.withOpacity(0.9)
+                                : Colors.red.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 4,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            emitterService.isConnected() ? Icons.wifi : Icons.wifi_off,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
                       ),
                     );
                   }),
                 ),
-                DraggableScrollableSheet(
+                
+                // Botón de pantalla completa
+                Positioned(
+                  top: 90,  // Segundo botón - Fullscreen
+                  right: 10,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isMapExpand = !isMapExpand;
+                      });
+                    },
+                    child: Container(
+                      padding: EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isMapExpand
+                            ? Colors.blue.withOpacity(0.85)
+                            : Colors.white.withOpacity(0.8),
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        isMapExpand
+                            ? Icons.fullscreen_exit
+                            : Icons.fullscreen,
+                        color: isMapExpand ? Colors.white : Colors.black,
+                        size: 26,
+                      ),
+                    ),
+                  ),
+                ),
+                if (!isMapExpand)
+                  DraggableScrollableSheet(
                   snapAnimationDuration: const Duration(seconds: 1),
                   initialChildSize: .55,
                   minChildSize: 0.35,
@@ -197,7 +265,7 @@ class _StudentPageState extends State<StudentPage> {
                         child: Stack(children: [
                           Row(
                             textDirection:
-                                isRTL() ? TextDirection.rtl : TextDirection.ltr,
+                                isRTL() ? ui.TextDirection.rtl : ui.TextDirection.ltr,
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.max,
@@ -255,8 +323,8 @@ class _StudentPageState extends State<StudentPage> {
                                      ))),
                               Column(
                                 textDirection: isRTL()
-                                    ? TextDirection.rtl
-                                    : TextDirection.ltr,
+                                    ? ui.TextDirection.rtl
+                                    : ui.TextDirection.ltr,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
@@ -424,6 +492,13 @@ class _StudentPageState extends State<StudentPage> {
 
     _emitterServiceProvider?.addListener(onEmitterMessage);
     _emitterServiceProvider?.startTimer(true);
+
+    // Initialize Emitter session tracking
+    _sessionStartTime = DateTime.now();
+    _messageCount = 0;
+    _receivedCount = 0;
+    _lastMessageTime = null;
+    _lastReceivedTime = null;
   }
 
   @override
@@ -504,6 +579,14 @@ class _StudentPageState extends State<StudentPage> {
   void onEmitterMessage() async {
     String message = EmitterService.instance.lastMessage();
 
+    // Update connection statistics
+    _messageCount++;
+    _lastMessageTime = DateTime.now();
+    
+    // Los mensajes recibidos en student_page son eventos del estudiante
+    _receivedCount++;
+    _lastReceivedTime = DateTime.now();
+
     try {
       // si es un evento del viaje
       final event = EventModel.fromJson(jsonDecode(message));
@@ -545,6 +628,18 @@ class _StudentPageState extends State<StudentPage> {
     DateTime dateTimeLocal = dateTimeUtc.toLocal();
     return Utils.formatearFechaCorta(dateTimeLocal);
   }
+
+  // Método para mostrar el diálogo de conexión en vivo
+  void _showConnectionDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return _LiveConnectionDialog(
+          parentState: this,
+        );
+      },
+    );
+  }
   
   void cleanResources() {
     _emitterServiceProvider?.removeListener(onEmitterMessage);
@@ -552,5 +647,186 @@ class _StudentPageState extends State<StudentPage> {
     _connectivitySubscription.cancel();
     Wakelock.disable();
     super.dispose();
+  }
+}
+
+// Widget del diálogo de conexión en vivo que se actualiza automáticamente (para student_page)
+class _LiveConnectionDialog extends StatefulWidget {
+  final _StudentPageState parentState;
+
+  const _LiveConnectionDialog({
+    Key? key,
+    required this.parentState,
+  }) : super(key: key);
+
+  @override
+  State<_LiveConnectionDialog> createState() => _LiveConnectionDialogState();
+}
+
+class _LiveConnectionDialogState extends State<_LiveConnectionDialog> {
+  Timer? _updateTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Actualizar el diálogo cada segundo
+    _updateTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {}); // Fuerza actualización de la UI
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _updateTimer?.cancel();
+    super.dispose();
+  }
+
+  String _formatDuration(int seconds) {
+    final hours = seconds ~/ 3600;
+    final minutes = (seconds % 3600) ~/ 60;
+    final secs = seconds % 60;
+    
+    if (hours > 0) {
+      return '${hours}h ${minutes}m ${secs}s';
+    } else if (minutes > 0) {
+      return '${minutes}m ${secs}s';
+    } else {
+      return '${secs}s';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<EmitterService>(
+      builder: (context, emitterService, child) {
+        final currentMessageCount = widget.parentState._messageCount;
+        
+        // Calcular tiempo real desde el inicio de la sesión del emitter
+        final realSessionDuration = widget.parentState._sessionStartTime != null
+            ? DateTime.now().difference(widget.parentState._sessionStartTime!).inSeconds
+            : 0;
+            
+        final eventsPerSecond = realSessionDuration > 0 
+            ? (currentMessageCount / realSessionDuration).toStringAsFixed(2)
+            : '0.00';
+        
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(
+                emitterService.isConnected() ? Icons.wifi : Icons.wifi_off,
+                color: emitterService.isConnected() ? Colors.green : Colors.red,
+              ),
+              SizedBox(width: 8),
+              Text('Conexión en Vivo'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    emitterService.isConnected() ? Icons.check_circle : Icons.cancel,
+                    color: emitterService.isConnected() ? Colors.green : Colors.red,
+                    size: 20,
+                  ),
+                  SizedBox(width: 8),
+                  Text('Estado: ${emitterService.isConnected() ? "Conectado" : "Desconectado"}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: emitterService.isConnected() ? Colors.green : Colors.red,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+              
+              // Sección de Posiciones Enviadas (para padres/tutores también se muestra)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('📤 Posiciones enviadas: ${LocationService.instance.positionsSent}',
+                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                  if (LocationService.instance.lastPositionSentTime != null) ...[
+                    SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Text('Último envío: ${LocationService.instance.lastPositionSentTime!.hour.toString().padLeft(2, '0')}:${LocationService.instance.lastPositionSentTime!.minute.toString().padLeft(2, '0')}:${LocationService.instance.lastPositionSentTime!.second.toString().padLeft(2, '0')}',
+                          style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+                        Text(' (hace ${DateTime.now().difference(LocationService.instance.lastPositionSentTime!).inSeconds}s)',
+                          style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                      ],
+                    ),
+                  ] else ...[
+                    SizedBox(height: 6),
+                    Text('Sin posiciones enviadas', 
+                      style: TextStyle(fontSize: 13, color: Colors.grey[500])),
+                  ],
+                  SizedBox(height: 16),
+                ],
+              ),
+              
+              // Sección de Eventos Recibidos del estudiante
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('📥 Eventos recibidos: ${widget.parentState._receivedCount}',
+                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                  if (widget.parentState._lastReceivedTime != null) ...[
+                    SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Text('Último evento: ${widget.parentState._lastReceivedTime!.hour.toString().padLeft(2, '0')}:${widget.parentState._lastReceivedTime!.minute.toString().padLeft(2, '0')}:${widget.parentState._lastReceivedTime!.second.toString().padLeft(2, '0')}',
+                          style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+                        Text(' (hace ${DateTime.now().difference(widget.parentState._lastReceivedTime!).inSeconds}s)',
+                          style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                      ],
+                    ),
+                  ] else ...[
+                    SizedBox(height: 6),
+                    Text('Sin eventos recibidos', 
+                      style: TextStyle(fontSize: 13, color: Colors.grey[500])),
+                  ],
+                  SizedBox(height: 16),
+                ],
+              ),
+              
+              // Separador visual
+              Divider(color: Colors.grey[300], height: 1),
+              SizedBox(height: 12),
+              
+              // Estadísticas generales
+              Text('Frecuencia total: $eventsPerSecond mensajes/seg',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400)),
+              SizedBox(height: 8),
+              Text('Tiempo activo: ${_formatDuration(realSessionDuration)}',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400)),
+              if (!emitterService.isConnected())
+                Padding(
+                  padding: EdgeInsets.only(top: 12),
+                  child: Text(
+                    'Conexión interrumpida. Verifique su conexión a internet',
+                    style: TextStyle(
+                      color: Colors.orange,
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cerrar'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

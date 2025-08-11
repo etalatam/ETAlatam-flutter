@@ -2,8 +2,10 @@ import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'dart:async';
+import 'marquee_text.dart';
 
-class ActiveTrip extends StatelessWidget {
+class ActiveTrip extends StatefulWidget {
   const ActiveTrip(this.openTripCallback, this.trip, {super.key});
 
   final TripModel? trip;
@@ -11,11 +13,39 @@ class ActiveTrip extends StatelessWidget {
   final Function? openTripCallback;
 
   @override
+  State<ActiveTrip> createState() => _ActiveTripState();
+}
+
+class _ActiveTripState extends State<ActiveTrip> {
+  Timer? _updateTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Actualizar cada segundo para viajes activos (para mostrar segundos)
+    if (widget.trip?.trip_status == 'Running') {
+      _updateTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+        if (mounted) {
+          setState(() {
+            // Trigger rebuild to update duration and other dynamic data
+          });
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _updateTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
 
     // return Consumer<EmitterService>(builder:(context, emitterService, child) {
       return GestureDetector(
-          onTap: () => {openTripCallback!(trip)},
+          onTap: () => {widget.openTripCallback!(widget.trip)},
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -23,7 +53,7 @@ class ActiveTrip extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             decoration: ShapeDecoration(
               // color: activeTheme.main_color,
-              color: trip?.trip_id == 0
+              color: widget.trip?.trip_id == 0
                   ? Color.fromARGB(255, 123, 161, 180)
                   : Color.fromARGB(255, 59, 140, 135),
               shape: RoundedRectangleBorder(
@@ -70,14 +100,20 @@ class ActiveTrip extends StatelessWidget {
                                       MainAxisAlignment.spaceBetween,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    SizedBox(
-                                      width: 200,
-                                      child: Text(
-                                        "${lang.translate('Trip')} #${trip?.trip_id} ${trip?.route?.route_name}",
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            color: activeTheme.buttonColor),
+                                    Expanded(
+                                      child: LayoutBuilder(
+                                        builder: (context, constraints) {
+                                          return MarqueeText(
+                                            text: "${lang.translate('Trip')} #${widget.trip?.trip_id} ${widget.trip?.route?.route_name ?? ''}",
+                                            width: constraints.maxWidth - 80, // Ajustar según el espacio disponible menos el icono y placa
+                                            style: TextStyle(
+                                                color: activeTheme.buttonColor),
+                                            autoStart: true,
+                                            velocity: 60.0, // Velocidad de desplazamiento
+                                            pauseAfterRound: Duration(seconds: 2), // Pausa después de cada ciclo
+                                            blankSpace: 80.0, // Espacio entre repeticiones del texto
+                                          );
+                                        },
                                       ),
                                     ),
                                     Row(children: [
@@ -86,7 +122,7 @@ class ActiveTrip extends StatelessWidget {
                                           color: activeTheme.buttonColor),
                                       SizedBox(width: 5),
                                       Text(
-                                        trip?.vehicle?.plate_number ?? '',
+                                        widget.trip?.vehicle?.plate_number ?? '',
                                         style: TextStyle(
                                           color: activeTheme.buttonColor,
                                         ),
@@ -104,31 +140,13 @@ class ActiveTrip extends StatelessWidget {
                                         MainAxisAlignment.spaceEvenly,
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
-                                      if (trip?.trip_id != 0)
-                                        Container(
-                                          decoration: ShapeDecoration(
-                                              //color: activeTheme.main_color,
-                                              // color: Colors.amber,
-                                              shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                          )),
-                                          width: 80,
-                                          alignment: Alignment.center,
-                                          child: Image(
-                                              width: 70,
-                                              height: 60,
-                                              image: AssetImage(
-                                                  "assets/moving_car.gif")),
-                                        ),
-                                      const SizedBox(width: 10),
                                       Icon(Icons.access_time,
                                           color: activeTheme.buttonColor,
                                           size: 20),
                                       Text(
-                                        trip?.trip_id == 0
+                                        widget.trip?.trip_id == 0
                                             ? ""
-                                            : "${trip?.runningTripDuration()}",
+                                            : "${widget.trip?.runningTripDuration()}",
                                         style: TextStyle(
                                             color: activeTheme.buttonColor),
                                       ),
@@ -136,20 +154,20 @@ class ActiveTrip extends StatelessWidget {
                                       Icon(Icons.route,
                                           color: activeTheme.buttonColor,
                                           size: 20),
-                                      Text('${trip?.distance} KM',
+                                      Text('${widget.trip?.distance} KM',
                                           style: TextStyle(
                                               color: activeTheme.buttonColor)),
                                       const SizedBox(width: 10),
-                                      (trip != null &&
-                                              trip!.pickup_locations != null)
+                                      (widget.trip != null &&
+                                              widget.trip!.pickup_locations != null)
                                           ? Icon(Icons.pin_drop_outlined,
                                               color: activeTheme.buttonColor,
                                               size: 20)
                                           : const Center(),
-                                      (trip != null &&
-                                              trip!.pickup_locations != null)
+                                      (widget.trip != null &&
+                                              widget.trip!.pickup_locations != null)
                                           ? Text(
-                                              '${trip!.visitedLocation()}/${trip!.pickup_locations!.length.toString()} ',
+                                              '${widget.trip!.visitedLocation()}/${widget.trip!.pickup_locations!.length.toString()} ',
                                               style: TextStyle(
                                                   color: activeTheme.buttonColor),
                                             )

@@ -373,13 +373,19 @@ class HttpService {
         await getQuery("$endpoint?limit=10&order=schedule_start_time.desc");
     print("[$endpoint] res.statusCode: ${res.statusCode}");
     print("[$endpoint] res.body: ${res.body}");
+    
+    // Log adicional para debugging
+    if (res.body == '[]') {
+      print("[$endpoint] No routes found for today. This might be a date/timezone issue.");
+      print("[$endpoint] Server might be filtering by a different date than expected.");
+    }
 
     if (res.statusCode == 200) {
       try {
         List<dynamic> body = jsonDecode(res.body);
         return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
       } catch (e) {
-        print("getRoutes error: ${e.toString()}");
+        print("todayRoutes error: ${e.toString()}");
         return [];
       }
     }

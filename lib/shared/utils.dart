@@ -53,14 +53,10 @@ class Utils {
     
     Duration difference = now.difference(date).abs();
 
-    if (difference.inSeconds < 60) {
-      return '${difference.inSeconds}s';
-    } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}min';
-    } else {
-      String hours = difference.inHours.toString().padLeft(2, '0');
-      String minutes = (difference.inMinutes % 60).toString().padLeft(2, '0');
-      return '$hours:$minutes';
-    }
+    // Siempre mostrar formato HH:MM:SS
+    String hours = difference.inHours.toString().padLeft(2, '0');
+    String minutes = (difference.inMinutes % 60).toString().padLeft(2, '0');
+    String seconds = (difference.inSeconds % 60).toString().padLeft(2, '0');
+    return '$hours:$minutes:$seconds';
   }
 }
