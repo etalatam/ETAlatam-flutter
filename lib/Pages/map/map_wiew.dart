@@ -70,7 +70,18 @@ class MapWiewState extends State<MapWiew> {
       print('[MapView._onMapCreated.navigationMode] ${widget.navigationMode}');
       
       // Configurar LocationService siempre que navigationMode esté activo
-      await LocationService.instance.init();
+      try {
+        print('[MapView._onMapCreated] Initializing LocationService...');
+        await LocationService.instance.init();
+        
+        // Si debe mostrar el puck (conductor con viaje activo), también iniciar el servicio
+        if(widget.showLocationPuck) {
+          print('[MapView._onMapCreated] Starting LocationService for driver...');
+          await LocationService.instance.startLocationService(calculateDistance: true);
+        }
+      } catch (e) {
+        print('[MapView._onMapCreated] Error initializing LocationService: $e');
+      }
       
       // Solo mostrar el dock/puck de posición para conductores
       if(widget.showLocationPuck) {
@@ -109,23 +120,73 @@ class MapWiewState extends State<MapWiew> {
   }
 
   void _onStyleLoadedListener(StyleLoadedEventData styleLoadedEventData) async {
+    print('[MapView._onStyleLoadedListener] Style loaded');
+    
+    // Configurar el componente de ubicación después de que el estilo se haya cargado
+    if(widget.navigationMode && widget.showLocationPuck && mapboxMap != null) {
+      print('[MapView._onStyleLoadedListener] Configuring location component after style load');
+      try {
+        await mapboxMap!.location.updateSettings(LocationComponentSettings(
+            enabled: true,
+            pulsingEnabled: true,
+            showAccuracyRing: true,
+            puckBearingEnabled: true
+        ));
+        print('[MapView._onStyleLoadedListener] Location component configured successfully');
+      } catch (e) {
+        print('[MapView._onStyleLoadedListener] Error configuring location component: $e');
+      }
+    }
+    
     await widget.onStyleLoadedListener(mapboxMap!);
   }
 
   @override
   Widget build(BuildContext context) {
-    print('[MapView.build]');
+    print('[MapView.build] navigationMode: ${widget.navigationMode}, showLocationPuck: ${widget.showLocationPuck}, centerOnSelf: ${widget.centerOnSelf}');
+    
+    // Obtener LocationService directamente del singleton en lugar del Provider
+    final locationService = LocationService.instance;
+    print('[MapView.build] Using singleton instance: ${locationService.instanceId}');
+    print('[MapView.build] locationData: ${locationService.locationData}');
+    
     return Scaffold(
       body: Consumer<LocationService>(
-        builder: (context, locationService, child) {
-          print('[MapView.builder] Current service instance: ${locationService.instanceId}');
-          print('[MapView.Consumer] locationData: ${locationService.locationData}');
+        builder: (context, providerLocationService, child) {
+          // Usar el singleton directamente, pero mantener el Consumer para las actualizaciones
+          print('[MapView.Consumer] Provider instance: ${providerLocationService.instanceId}');
+          print('[MapView.Consumer] Provider locationData: ${providerLocationService.locationData}');
+          print('[MapView.Consumer] Singleton locationData: ${locationService.locationData}');
+          print('[MapView.Consumer] Has mapboxMap: ${mapboxMap != null}');
+          
+          // Usar el singleton directamente en lugar del provider
+          final singletonLocationData = LocationService.instance.locationData;
           
           // Solo actualizar la cámara con la posición propia si centerOnSelf es true
-          if (locationService.locationData != null && 
+          if (singletonLocationData != null && 
                 mapboxMap != null && 
                 widget.navigationMode && 
                 widget.centerOnSelf) {
+              
+              // Actualizar la posición del componente de ubicación
+              if (widget.showLocationPuck) {
+                try {
+                  final lat = singletonLocationData['latitude'];
+                  final lng = singletonLocationData['longitude'];
+                  print('[MapView] Updating location puck position: lat=$lat, lng=$lng');
+                  
+                  // Forzar actualización del componente de ubicación
+                  mapboxMap?.location.updateSettings(LocationComponentSettings(
+                    enabled: true,
+                    pulsingEnabled: true,
+                    showAccuracyRing: true,
+                    puckBearingEnabled: true
+                  ));
+                } catch (e) {
+                  print('[MapView] Error updating location puck: $e');
+                }
+              }
+              
               if (_firstLocationUpdate) {
                 print('[MapView.build._firstLocationUpdate] $_firstLocationUpdate');
                 mapboxMap?.setCamera(CameraOptions(
@@ -133,8 +194,8 @@ class MapWiewState extends State<MapWiew> {
                   pitch: widget.navigationMode ? 80 : 0,
                   center: Point(
                     coordinates: Position(
-                      locationService.locationData!['longitude'], 
-                      locationService.locationData!['latitude']
+                      singletonLocationData['longitude'], 
+                      singletonLocationData['latitude']
                     ),
                   ),
                 ));
@@ -145,8 +206,8 @@ class MapWiewState extends State<MapWiew> {
                   CameraOptions(
                     center: Point(
                       coordinates: Position(
-                        locationService.locationData!['longitude'], 
-                        locationService.locationData!['latitude']
+                        singletonLocationData['longitude'], 
+                        singletonLocationData['latitude']
                       ),
                     ),
                   ),

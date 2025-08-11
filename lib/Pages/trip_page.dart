@@ -267,9 +267,9 @@ class _TripPageState extends State<TripPage>
                                   : 0.15), // Ocupar toda la pantalla cuando el panel está oculto
                       child: MapWiew(
                           navigationMode: widget.navigationMode,
-                          showLocationPuck: widget.navigationMode && relationName.contains('eta.drivers'), // Solo conductores ven dock
-                          centerOnSelf: widget.navigationMode && relationName.contains('eta.drivers'), // Solo conductores centran en sí mismos
-                          onCenterRequest: _centerOnBus, // Callback para centrar en el bus
+                          showLocationPuck: widget.navigationMode, // Si navigationMode es true, es conductor con viaje activo
+                          centerOnSelf: widget.navigationMode, // Conductores centran en sí mismos
+                          onCenterRequest: widget.navigationMode ? null : _centerOnBus, // Padres/estudiantes centran en el bus
                           onMapReady: (MapboxMap mapboxMap) async {
                             _mapboxMapController = mapboxMap;
 

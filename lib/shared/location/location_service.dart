@@ -49,17 +49,19 @@ class LocationService extends ChangeNotifier {
   static final LocationService _instance = LocationService._internal();
 
   factory LocationService() {
-    print('[LocationService] Getting instance with ID: ${_instance.instanceId}');
+    print('[LocationService] Getting instance with ID: ${_instance._instanceId}');
     return _instance;
   }
-  // Agregar un campo para el ID único
-  static final String _instanceId = 'loc-${DateTime.now().millisecondsSinceEpoch}';
+  
+  // Campo de instancia para el ID único (no estático)
+  late final String _instanceId;
   
   // Obtener el ID de instancia (solo lectura)
   String get instanceId => _instanceId;
 
   // Modificar el constructor para generar el ID
   LocationService._internal() {
+    _instanceId = 'loc-${DateTime.now().millisecondsSinceEpoch}';
     print('[LocationService] Singleton instance created: $_instanceId');
   }
 
@@ -81,10 +83,24 @@ class LocationService extends ChangeNotifier {
   static LocationService get instance => _instance;
 
   init() async {
-    if (initialization) return;
+    if (initialization) {
+      print('[LocationService.$_instanceId.init] Already initialized, skipping...');
+      return;
+    }
 
     try {
       _userId = await storage.getItem('id_usu');
+      
+      // Cancelar suscripción existente si existe
+      if (_portSubscription != null) {
+        print('[LocationService.$_instanceId.init] Canceling existing port subscription...');
+        await _portSubscription!.cancel();
+        _portSubscription = null;
+      }
+      
+      // Cerrar y recrear el puerto para asegurar un estado limpio
+      port.close();
+      port = ReceivePort();
       
       // Configurar el puerto de comunicación
       IsolateNameServer.removePortNameMapping(LocationServiceRepository.isolateName);
@@ -93,7 +109,7 @@ class LocationService extends ChangeNotifier {
         LocationServiceRepository.isolateName
       );
 
-      _portSubscription?.cancel();
+      // Crear nueva suscripción
       _portSubscription = port.listen((data) {
         print('[LocationService.$_instanceId.listen] Received data: $data');
 
@@ -112,6 +128,8 @@ class LocationService extends ChangeNotifier {
       initialization = true;
       _startTimer();
       requestDozeModeExclusion();
+      
+      print('[LocationService.$_instanceId.init] Initialization complete');
       
     } catch (e) {
       print('Initialization error: $e');
