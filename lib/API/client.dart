@@ -15,6 +15,7 @@ import 'package:eta_school_app/infrastructure/repositories/login_information_rep
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:eta_school_app/shared/location/location_service.dart';
+import 'package:wakelock/wakelock.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
@@ -780,27 +781,49 @@ class HttpService {
 
   // Logout and clear localStorage
   logout() async {
+    print("[httpService.logout] Starting logout process...");
+    
+    // Stop location services
     try {
+      print("[httpService.logout] Stopping LocationService...");
       LocationService.instance.stopLocationService();
     } catch (e) {
-      //
-    }
-    try {
-      EmitterService.instance.disconnect();
-    } catch (e) {
-      //
-    }
-    try {
-      await NotificationService.instance.close();
-    } catch (e) {
-      //
+      print("[httpService.logout] Error stopping LocationService: $e");
     }
     
+    // Disconnect EmitterService
     try {
+      print("[httpService.logout] Disconnecting EmitterService...");
+      EmitterService.instance.disconnect();
+    } catch (e) {
+      print("[httpService.logout] Error disconnecting EmitterService: $e");
+    }
+    
+    // Close NotificationService
+    try {
+      print("[httpService.logout] Closing NotificationService...");
+      await NotificationService.instance.close();
+    } catch (e) {
+      print("[httpService.logout] Error closing NotificationService: $e");
+    }
+    
+    // Disable Wakelock
+    try {
+      print("[httpService.logout] Disabling Wakelock...");
+      await Wakelock.disable();
+    } catch (e) {
+      print("[httpService.logout] Error disabling Wakelock: $e");
+    }
+    
+    // Clear all storage
+    try {
+      print("[httpService.logout] Clearing storage...");
       await storage.clear(); 
     } catch (e) {
-      //
+      print("[httpService.logout] Error clearing storage: $e");
     }
+    
+    print("[httpService.logout] Logout process completed");
   }
 
   Future<dynamic> sendTracking({required position, required userId}) async {

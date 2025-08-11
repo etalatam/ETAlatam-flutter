@@ -11,6 +11,16 @@ class MapWiew extends StatefulWidget {
   // Indica si el mapa debe mostrar la ubicación
   // y actualizar el mapa
   bool navigationMode;
+  
+  // Indica si debe mostrar el puck/dock de posición (solo para conductores)
+  bool showLocationPuck;
+  
+  // Indica si el botón centrar debe centrar en la posición propia o en otros marcadores
+  // true = centra en ubicación propia, false = centra en marcadores del mapa
+  bool centerOnSelf;
+  
+  // Callback opcional para centrar en elementos externos (como el bus)
+  void Function()? onCenterRequest;
 
   // callback para iniclizar elementos sobre el mapa
   Future<void> Function(MapboxMap) onMapReady;
@@ -18,9 +28,12 @@ class MapWiew extends StatefulWidget {
 
   MapWiew(
       {required this.navigationMode,
+      this.showLocationPuck = false,
+      this.centerOnSelf = true,
+      this.onCenterRequest,
       required this.onMapReady,
       required this.onStyleLoadedListener}) {
-    print('[MapWiew.navigationMode] $navigationMode');
+    print('[MapWiew.navigationMode] $navigationMode, showLocationPuck: $showLocationPuck, centerOnSelf: $centerOnSelf');
   }
 
   @override
@@ -55,19 +68,28 @@ class MapWiewState extends State<MapWiew> {
 
     if(widget.navigationMode){
       print('[MapView._onMapCreated.navigationMode] ${widget.navigationMode}');
-      // const double puckScale = 10.0;
-
-      this.mapboxMap?.location.updateSettings(LocationComponentSettings(
-          enabled: true,
-          pulsingEnabled: true,
-          showAccuracyRing: true,
-          puckBearingEnabled: true,
-          // locationPuck: LocationPuck(
-          //       locationPuck3D: LocationPuck3D(
-          //           modelUri: "https://raw.githubusercontent.com/CesiumGS/cesium/refs/heads/master/Apps/SampleData/models/BoxInstanced/BoxInstanced.gltf",
-          //           modelScale: [puckScale, puckScale, puckScale]))
-        ));
+      
+      // Configurar LocationService siempre que navigationMode esté activo
       await LocationService.instance.init();
+      
+      // Solo mostrar el dock/puck de posición para conductores
+      if(widget.showLocationPuck) {
+        print('[MapView._onMapCreated.showLocationPuck] SHOWING location puck - showLocationPuck: ${widget.showLocationPuck}');
+        // const double puckScale = 10.0;
+
+        this.mapboxMap?.location.updateSettings(LocationComponentSettings(
+            enabled: true,
+            pulsingEnabled: true,
+            showAccuracyRing: true,
+            puckBearingEnabled: true,
+            // locationPuck: LocationPuck(
+            //       locationPuck3D: LocationPuck3D(
+            //           modelUri: "https://raw.githubusercontent.com/CesiumGS/cesium/refs/heads/master/Apps/SampleData/models/BoxInstanced/BoxInstanced.gltf",
+            //           modelScale: [puckScale, puckScale, puckScale]))
+          ));
+      } else {
+        print('[MapView._onMapCreated.showLocationPuck] NOT showing location puck - showLocationPuck: ${widget.showLocationPuck}');
+      }
       // listenToCompass();
     }
 
@@ -99,9 +121,11 @@ class MapWiewState extends State<MapWiew> {
           print('[MapView.builder] Current service instance: ${locationService.instanceId}');
           print('[MapView.Consumer] locationData: ${locationService.locationData}');
           
+          // Solo actualizar la cámara con la posición propia si centerOnSelf es true
           if (locationService.locationData != null && 
                 mapboxMap != null && 
-                widget.navigationMode) {
+                widget.navigationMode && 
+                widget.centerOnSelf) {
               if (_firstLocationUpdate) {
                 print('[MapView.build._firstLocationUpdate] $_firstLocationUpdate');
                 mapboxMap?.setCamera(CameraOptions(
@@ -130,13 +154,21 @@ class MapWiewState extends State<MapWiew> {
                 );
               }
             }
+          
+          // Si no centra en sí mismo y auto-follow está activo, usar callback
+          if (!widget.centerOnSelf && _autoFollow && widget.onCenterRequest != null) {
+            // El callback debería manejar el centrado en elementos externos
+            // Esto se ejecuta continuamente mientras auto-follow esté activo
+            // El padre (student_page o trip_page) debería manejar si necesita actualizar o no
+          }
 
           return Stack(
             children: [
               Listener(
                 onPointerDown: (event) {
                   // Usuario tocó la pantalla - desactivar auto-follow inmediatamente
-                  if (_autoFollow && widget.navigationMode) {
+                  // Debe funcionar tanto para navegación propia como para centrado en elementos externos
+                  if (_autoFollow) {
                     setState(() {
                       _autoFollow = false;
                       _lastUserInteraction = DateTime.now();
@@ -153,6 +185,11 @@ class MapWiewState extends State<MapWiew> {
                           _autoFollow = true;
                         });
                         print("[MapView] Auto-follow re-enabled after 30 seconds");
+                        
+                        // Si se reactiva automáticamente y no centra en sí mismo, centrar en elemento externo
+                        if (!widget.centerOnSelf && widget.onCenterRequest != null) {
+                          widget.onCenterRequest!();
+                        }
                       }
                     });
                   }
@@ -170,7 +207,8 @@ class MapWiewState extends State<MapWiew> {
                 ),
               ),
               // Botón de control de seguimiento automático
-              if (widget.navigationMode)
+              // Se muestra siempre cuando hay navegación o cuando hay callback de centrado
+              if (widget.navigationMode || widget.onCenterRequest != null)
                 Positioned(
                   top: 160,  // Posición donde debe estar (tercer botón)
                   right: 10,
@@ -181,9 +219,14 @@ class MapWiewState extends State<MapWiew> {
                         if (_autoFollow) {
                           _lastUserInteraction = null;
                           _autoFollowTimer?.cancel();
+                          
+                          // Si no centra en sí mismo, usar callback para centrar en elementos externos
+                          if (!widget.centerOnSelf && widget.onCenterRequest != null) {
+                            widget.onCenterRequest!();
+                          }
                         }
                       });
-                      print('[MapView] Auto-follow toggled: $_autoFollow');
+                      print('[MapView] Auto-follow toggled: $_autoFollow, centerOnSelf: ${widget.centerOnSelf}');
                     },
                     child: Container(
                       padding: EdgeInsets.all(8),

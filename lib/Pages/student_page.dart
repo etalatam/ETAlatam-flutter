@@ -57,6 +57,7 @@ class _StudentPageState extends State<StudentPage> {
   bool _isVisible = true;
   late bool hasActiveTrip;
   bool isMapExpand = false;
+  String relationName = '';
 
   // Variables for Emitter connection statistics (same as trip_page)
   int _messageCount = 0; // Total de mensajes (para compatibilidad)
@@ -67,6 +68,14 @@ class _StudentPageState extends State<StudentPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Si el rol no se ha cargado aún, mostrar loader
+    if (relationName.isEmpty && !showLoader) {
+      return Material(
+        type: MaterialType.transparency,
+        child: Loader(),
+      );
+    }
+    
     return Material(
       type: MaterialType.transparency,
       child: showLoader
@@ -87,7 +96,10 @@ class _StudentPageState extends State<StudentPage> {
                 Positioned.fill(
                   bottom: isMapExpand ? 0 : MediaQuery.of(context).size.height * 0.45,
                   child: MapWiew(
-                    navigationMode: false,
+                    navigationMode: relationName.isNotEmpty ? _shouldEnableTracking() : false, // Solo después de cargar rol
+                    showLocationPuck: relationName.isNotEmpty ? _shouldShowLocationPuck() : false, // Solo después de cargar rol
+                    centerOnSelf: relationName.isNotEmpty ? _shouldCenterOnSelf() : false, // Determina si centra en sí mismo o en el estudiante
+                    onCenterRequest: (relationName.isEmpty || !_shouldCenterOnSelf()) ? _centerOnStudent : null, // Callback para centrar en estudiante si es padre o rol no cargado
                     onMapReady: (MapboxMap mapboxMap) async {
                       _mapboxMapController = mapboxMap;
                       annotationManager = await mapboxMap.annotations
@@ -475,6 +487,9 @@ class _StudentPageState extends State<StudentPage> {
     super.initState();
     showLoader = false;
     hasActiveTrip = widget.hasActiveTrip;
+    
+    // Cargar rol del usuario antes de inicializar servicios
+    _initializeUserRoleAndServices();
 
     Wakelock.enable();
 
@@ -499,6 +514,8 @@ class _StudentPageState extends State<StudentPage> {
     _receivedCount = 0;
     _lastMessageTime = null;
     _lastReceivedTime = null;
+
+    // Ya no llamamos _initLocationServiceByRole() aquí porque se hace después de cargar el rol
   }
 
   @override
@@ -629,12 +646,184 @@ class _StudentPageState extends State<StudentPage> {
     return Utils.formatearFechaCorta(dateTimeLocal);
   }
 
+  // Initialize user role and then location services
+  Future<void> _initializeUserRoleAndServices() async {
+    await _loadUserRole();
+    await _initLocationServiceByRole();
+    // Forzar rebuild para actualizar UI con el rol correcto
+    if (mounted) {
+      setState(() {
+        print("[StudentPage._initializeUserRoleAndServices] UI rebuilt with relationName: '$relationName'");
+      });
+    }
+  }
+
+  // Load user role from storage
+  Future<void> _loadUserRole() async {
+    try {
+      relationName = await storage.getItem('relation_name') ?? '';
+      print("[StudentPage._loadUserRole] User role: $relationName");
+    } catch (e) {
+      print("[StudentPage._loadUserRole.error] $e");
+    }
+  }
+
+  // Determine if tracking should be enabled based on user role
+  bool _shouldEnableTracking() {
+    print("[StudentPage._shouldEnableTracking] relationName: '$relationName', hasActiveTrip: ${widget.hasActiveTrip}");
+    
+    // SOLO estudiantes pueden hacer tracking en esta vista
+    // Los conductores usan trip_page, no student_page
+    bool isStudent = relationName.contains('eta.students');
+    
+    if (isStudent) {
+      print("[StudentPage._shouldEnableTracking] Student role detected - enabling tracking");
+      return true;
+    }
+    
+    // Cualquier otro rol NO hace tracking
+    print("[StudentPage._shouldEnableTracking] Non-student role ('$relationName') - disabling tracking");
+    return false;
+  }
+
+  // Determine if location puck/dock should be shown
+  bool _shouldShowLocationPuck() {
+    print("[StudentPage._shouldShowLocationPuck] relationName: '$relationName', hasActiveTrip: ${widget.hasActiveTrip}");
+    
+    // En student_page NO mostramos el puck para ningún rol
+    // Los padres ven la posición del estudiante, no la propia
+    // Los estudiantes no necesitan ver su propio puck en esta vista
+    print("[StudentPage._shouldShowLocationPuck] Always false in student_page - viewing student position, not self");
+    return false;
+  }
+  
+  // Determine if center button should center on self or on student
+  bool _shouldCenterOnSelf() {
+    // Si el rol no se ha cargado, por defecto NO centra en sí mismo (centra en estudiante)
+    if (relationName.isEmpty) {
+      print("[StudentPage._shouldCenterOnSelf] relationName empty - defaulting to centerOnStudent");
+      return false;
+    }
+    
+    // Solo los estudiantes centran en sí mismos
+    // Los padres/tutores/representantes centran en el estudiante que están viendo
+    bool isStudent = relationName.contains('eta.students');
+    bool isParentOrGuardian = relationName.contains('eta.guardians') || 
+                              relationName.contains('eta.parents') || 
+                              relationName.contains('representante') ||
+                              relationName.contains('tutor') ||
+                              relationName.contains('guardian');
+    
+    print("[StudentPage._shouldCenterOnSelf] relationName: '$relationName', isStudent: $isStudent, isParent: $isParentOrGuardian, centerOnSelf: $isStudent");
+    
+    // Explícitamente retornar false para padres/tutores
+    if (isParentOrGuardian) {
+      return false;
+    }
+    
+    return isStudent;
+  }
+  
+  // Método para centrar el mapa en la posición del estudiante
+  void _centerOnStudent() {
+    print("[StudentPage._centerOnStudent] Called - Looking for student position to center on");
+    
+    if (studentPointAnnotation != null && _mapboxMapController != null) {
+      final studentPosition = studentPointAnnotation!.geometry;
+      print("[StudentPage._centerOnStudent] Centering on student annotation position: $studentPosition");
+      _mapboxMapController!.flyTo(
+        CameraOptions(
+          center: studentPosition,
+          zoom: 16.5,
+          pitch: 70,
+        ),
+        MapAnimationOptions(duration: 1200, startDelay: 0)
+      );
+    } else if (widget.student?.lastPositionPayload != null && _mapboxMapController != null) {
+      // Si no hay anotación pero tenemos la última posición conocida del estudiante
+      final Position? position = widget.student?.lastPosition();
+      if (position != null) {
+        print("[StudentPage._centerOnStudent] Centering on last known student position: $position");
+        _mapboxMapController!.flyTo(
+          CameraOptions(
+            center: Point(coordinates: position),
+            zoom: 16.5,
+            pitch: 70,
+          ),
+          MapAnimationOptions(duration: 1200, startDelay: 0)
+        );
+      } else {
+        print("[StudentPage._centerOnStudent] lastPosition() returned null");
+      }
+    } else {
+      print("[StudentPage._centerOnStudent] WARNING: No student position available to center on");
+      print("[StudentPage._centerOnStudent] studentPointAnnotation: $studentPointAnnotation");
+      print("[StudentPage._centerOnStudent] _mapboxMapController: $_mapboxMapController");
+      print("[StudentPage._centerOnStudent] widget.student?.lastPositionPayload: ${widget.student?.lastPositionPayload}");
+    }
+  }
+
+  // Determine if positions sent section should be shown in dialog
+  bool _shouldShowPositionsSection() {
+    print("[StudentPage._shouldShowPositionsSection] ===== INICIO =====");
+    print("[StudentPage._shouldShowPositionsSection] relationName: '$relationName' (length: ${relationName.length})");
+    print("[StudentPage._shouldShowPositionsSection] hasActiveTrip: ${widget.hasActiveTrip}");
+    
+    // Verificar que relationName se haya cargado
+    if (relationName.isEmpty) {
+      print("[StudentPage._shouldShowPositionsSection] relationName is EMPTY - hiding section");
+      return false;
+    }
+    
+    // SOLO estudiantes (y ÚNICAMENTE estudiantes) pueden enviar posiciones
+    bool isStudent = relationName == 'eta.students' || 
+                     relationName.toLowerCase() == 'estudiante' ||
+                     relationName.toLowerCase() == 'student';
+    
+    if (isStudent) {
+      print("[StudentPage._shouldShowPositionsSection] CONFIRMED Student role - SHOWING positions section");
+      return true;
+    }
+    
+    // Explícitamente loggear los roles de padres/tutores
+    if (relationName.contains('guardian') || 
+        relationName.contains('parent') ||
+        relationName.contains('representante') ||
+        relationName.contains('tutor')) {
+      print("[StudentPage._shouldShowPositionsSection] PARENT/GUARDIAN role detected ('$relationName') - HIDING positions section");
+      return false;
+    }
+    
+    // Cualquier otro rol también NO ve la sección
+    print("[StudentPage._shouldShowPositionsSection] Other role ('$relationName') - HIDING positions section");
+    return false;
+  }
+
+  // Initialize LocationService based on user role
+  Future<void> _initLocationServiceByRole() async {
+    if (!_shouldEnableTracking()) {
+      print("[StudentPage._initLocationServiceByRole] Tracking disabled for role: $relationName");
+      return;
+    }
+
+    try {
+      await LocationService.instance.init();
+      await LocationService.instance.startLocationService();
+      print("[StudentPage._initLocationServiceByRole] LocationService started for role: $relationName");
+    } catch (e) {
+      print("[StudentPage._initLocationServiceByRole.error] $e");
+    }
+  }
+
+
   // Método para mostrar el diálogo de conexión en vivo
   void _showConnectionDialog() {
+    print("[StudentPage._showConnectionDialog] Opening dialog with relationName: '$relationName'");
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return _LiveConnectionDialog(
+          key: ValueKey('connection_dialog_${DateTime.now().millisecondsSinceEpoch}'), // Forzar recreación
           parentState: this,
         );
       },
@@ -646,6 +835,17 @@ class _StudentPageState extends State<StudentPage> {
     _emitterServiceProvider?.stopTimer();
     _connectivitySubscription.cancel();
     Wakelock.disable();
+    
+    // Stop LocationService if we started it
+    if (_shouldEnableTracking()) {
+      try {
+        LocationService.instance.stopLocationService();
+        print("[StudentPage.cleanResources] LocationService stopped for role: $relationName");
+      } catch (e) {
+        print("[StudentPage.cleanResources.stopLocationService.error] $e");
+      }
+    }
+    
     super.dispose();
   }
 }
@@ -703,6 +903,10 @@ class _LiveConnectionDialogState extends State<_LiveConnectionDialog> {
       builder: (context, emitterService, child) {
         final currentMessageCount = widget.parentState._messageCount;
         
+        // Re-evaluar la condición en cada rebuild
+        final shouldShowPositions = widget.parentState._shouldShowPositionsSection();
+        print("[LiveConnectionDialog.build] shouldShowPositions: $shouldShowPositions, relationName: '${widget.parentState.relationName}'");
+        
         // Calcular tiempo real desde el inicio de la sesión del emitter
         final realSessionDuration = widget.parentState._sessionStartTime != null
             ? DateTime.now().difference(widget.parentState._sessionStartTime!).inSeconds
@@ -745,11 +949,17 @@ class _LiveConnectionDialogState extends State<_LiveConnectionDialog> {
               ),
               SizedBox(height: 16),
               
-              // Sección de Posiciones Enviadas (para padres/tutores también se muestra)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('📤 Posiciones enviadas: ${LocationService.instance.positionsSent}',
+              // Sección de Posiciones Enviadas (solo si el usuario actual puede enviar posiciones)
+              if (shouldShowPositions) ...[
+                // Debug print justo antes de mostrar la sección
+                Builder(builder: (context) {
+                  print("[LiveConnectionDialog] SHOWING positions section for role: '${widget.parentState.relationName}'");
+                  return SizedBox.shrink();
+                }),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('📤 Posiciones enviadas: ${LocationService.instance.positionsSent}',
                     style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
                   if (LocationService.instance.lastPositionSentTime != null) ...[
                     SizedBox(height: 6),
@@ -769,6 +979,7 @@ class _LiveConnectionDialogState extends State<_LiveConnectionDialog> {
                   SizedBox(height: 16),
                 ],
               ),
+              ],
               
               // Sección de Eventos Recibidos del estudiante
               Column(

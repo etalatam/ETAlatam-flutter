@@ -267,6 +267,9 @@ class _TripPageState extends State<TripPage>
                                   : 0.15), // Ocupar toda la pantalla cuando el panel está oculto
                       child: MapWiew(
                           navigationMode: widget.navigationMode,
+                          showLocationPuck: widget.navigationMode && relationName.contains('eta.drivers'), // Solo conductores ven dock
+                          centerOnSelf: widget.navigationMode && relationName.contains('eta.drivers'), // Solo conductores centran en sí mismos
+                          onCenterRequest: _centerOnBus, // Callback para centrar en el bus
                           onMapReady: (MapboxMap mapboxMap) async {
                             _mapboxMapController = mapboxMap;
 
@@ -835,8 +838,12 @@ class _TripPageState extends State<TripPage>
     try {
       if (relationName.isEmpty) {
         final LocalStorage storage = LocalStorage('tokens.json');
-        relationName = await storage.getItem('relation_name');
-        print("[TipPage.loadTrip.relationName] $relationName");
+        relationName = await storage.getItem('relation_name') ?? '';
+        print("[TripPage.loadTrip.relationName] $relationName");
+        // Forzar actualización de UI para reflejar el rol cargado
+        if (mounted) {
+          setState(() {});
+        }
       }
     } catch (e) {
       print("[TripPage.loadTrip.relationName.error] $e");
@@ -856,6 +863,48 @@ class _TripPageState extends State<TripPage>
       }
     } catch (e) {
       print("[TripPage.loadTrip.error] $e");
+    }
+  }
+
+  // Helper method para determinar si el usuario es padre/representante
+  bool _isParentRole() {
+    return relationName.contains('eta.guardians') || 
+           relationName.contains('eta.parents') || 
+           relationName.contains('representante') ||
+           relationName.contains('tutor') ||
+           relationName.contains('guardian');
+  }
+  
+  // Método para centrar el mapa en la posición del bus
+  void _centerOnBus() {
+    if (busPointAnnotation != null && _mapboxMapController != null) {
+      final busPosition = busPointAnnotation!.geometry;
+      print("[TripPage._centerOnBus] Centering on bus position: $busPosition");
+      _mapboxMapController!.flyTo(
+        CameraOptions(
+          center: busPosition,
+          zoom: 16,
+          pitch: 60,
+        ),
+        MapAnimationOptions(duration: 1000, startDelay: 0)
+      );
+    } else if (_lastPositionPayload != null && _mapboxMapController != null) {
+      // Si no hay anotación pero tenemos la última posición conocida
+      final Position position = Position(
+        double.parse("${_lastPositionPayload?['longitude']}"),
+        double.parse("${_lastPositionPayload?['latitude']}")
+      );
+      print("[TripPage._centerOnBus] Centering on last known bus position: $position");
+      _mapboxMapController!.flyTo(
+        CameraOptions(
+          center: Point(coordinates: position),
+          zoom: 16,
+          pitch: 60,
+        ),
+        MapAnimationOptions(duration: 1000, startDelay: 0)
+      );
+    } else {
+      print("[TripPage._centerOnBus] No bus position available to center on");
     }
   }
 
@@ -1568,7 +1617,19 @@ class _LiveConnectionDialogState extends State<_LiveConnectionDialog> {
   Widget build(BuildContext context) {
     return Consumer<EmitterService>(
       builder: (context, emitterService, child) {
-        final isDriver = widget.parentState.widget.navigationMode;
+        // Usar el rol real del usuario en lugar de solo navigationMode
+        final relationName = widget.parentState.relationName;
+        final isDriver = widget.parentState.widget.navigationMode && relationName.contains('eta.drivers');
+        final isParent = relationName.contains('eta.guardians') || 
+                        relationName.contains('eta.parents') || 
+                        relationName.contains('representante') ||
+                        relationName.contains('tutor');
+        
+        // Solo mostrar posiciones si es conductor Y NO es padre/representante
+        final shouldShowPositions = isDriver && !isParent;
+        
+        print("[LiveConnectionDialog] relationName: '$relationName', isDriver: $isDriver, isParent: $isParent, shouldShowPositions: $shouldShowPositions");
+        
         final currentMessageCount = widget.parentState._messageCount;
         
         // Calcular tiempo real desde el inicio de la sesión del emitter
@@ -1621,8 +1682,8 @@ class _LiveConnectionDialogState extends State<_LiveConnectionDialog> {
               ),
               SizedBox(height: 16),
               
-              // Sección de Posiciones Enviadas (para todos los usuarios que pueden enviar posición)
-              if (isDriver || true) // Por ahora mostrar para todos
+              // Sección de Posiciones Enviadas (solo para conductores, NO para padres/representantes)
+              if (shouldShowPositions)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
