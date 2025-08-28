@@ -106,6 +106,15 @@ class MapWiewState extends State<MapWiew> {
         print('[MapView._onMapCreated.showLocationPuck] NOT showing location puck - showLocationPuck: ${widget.showLocationPuck}');
       }
       // listenToCompass();
+    } else {
+      // Deshabilitar explícitamente el puck de ubicación para perfiles de padre y estudiante
+      print('[MapView._onMapCreated] Disabling location puck for parent/student profile');
+      this.mapboxMap?.location.updateSettings(LocationComponentSettings(
+          enabled: false,
+          pulsingEnabled: false,
+          showAccuracyRing: false,
+          puckBearingEnabled: false
+        ));
     }
 
     this.mapboxMap?.scaleBar.updateSettings(ScaleBarSettings(
