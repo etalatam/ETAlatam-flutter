@@ -304,7 +304,7 @@ class LocationService extends ChangeNotifier {
             _calculateDistance(
                 locationInfo['latitude'], locationInfo['longitude']);
 
-            print("Total distance: $_totalDistance meters");
+            print("Total distance: ${_totalDistance.toStringAsFixed(2)} meters");
           }
         } catch (e) {
           print('[LocationService-$_instanceId.trackingDynamic.distanceCalculation.error] ${e.toString()}');
@@ -327,7 +327,9 @@ class LocationService extends ChangeNotifier {
       };
       _locationData = jsonData;
       notifyListeners();
+      
       await httpService.sendTracking(position: jsonData, userId: _userId);
+      print('[LocationService] Position sent with distance: ${_totalDistance.toStringAsFixed(2)} m');
       
       // Incrementar contador de posiciones enviadas
       _positionsSent++;
@@ -352,6 +354,7 @@ class LocationService extends ChangeNotifier {
           print('[LocationService-$_instanceId.trackingLocationDto._distanceLock.synchronized]');
           _calculateDistance(
               locationInfo.latitude, locationInfo.longitude);
+          print("Total distance: ${_totalDistance.toStringAsFixed(2)} meters");
         }
       } catch (e) {
         print('[LocationService-$_instanceId.trackingLocationDto.distanceCalculation.error] ${e.toString()}');
@@ -374,7 +377,9 @@ class LocationService extends ChangeNotifier {
     _locationData = jsonData;
     notifyListeners();
     print('[LocationService-$_instanceId.trackingLocationDto.notifyListeners()] [_locationData: $_locationData]');
+    
     await httpService.sendTracking(position: jsonData, userId: _userId);
+    print('[LocationService] Background position sent with distance: ${_totalDistance.toStringAsFixed(2)} m');
     
     // Incrementar contador de posiciones enviadas
     _positionsSent++;
@@ -393,16 +398,18 @@ class LocationService extends ChangeNotifier {
       print("[LocationService.timer.difference] ${difference.inSeconds}s.");
       final max = relationNameLocal.contains('eta.drivers') ? 20 : 30;
       if (difference.inSeconds >= max) {
-        print("[LocationService.timer] restaring... ");
+        print("[LocationService.timer] restaring...");
         _lastPositionDate = DateTime.now();
+        final currentCalculateDistance = _shouldCalculateDistance;
         stopLocationService();
-        startLocationService();
+        startLocationService(calculateDistance: currentCalculateDistance);
       }
     });
   }
 
   void stopLocationService() {
     print('[LocationService-$_instanceId.stopLocationService]');
+    print('[LocationService] Stopping service - Total distance: ${_totalDistance.toStringAsFixed(2)} m');
     try {
       IsolateNameServer.removePortNameMapping(
           LocationServiceRepository.isolateName);
@@ -423,7 +430,11 @@ class LocationService extends ChangeNotifier {
       initialization = false;
       _timer?.cancel();
       Workmanager().cancelAll();
+      
+      // Limpiar estado de distancia
       _totalDistance = 0;
+      _lastLatitude = 0;
+      _lastLongitude = 0;
       _shouldCalculateDistance = false;
       _saveDistance();
       _saveShouldCalculateDistance();
@@ -460,8 +471,9 @@ class LocationService extends ChangeNotifier {
   void _saveDistance() async {
     try {
       await storage.setItem('last_calculated_distance', _totalDistance.toString());
+      print('[LocationService] Saved distance: ${_totalDistance.toStringAsFixed(2)} m');
     } catch (e) {
-      //
+      print('[LocationService] Error saving distance: $e');
     }
   }
 
@@ -478,14 +490,16 @@ class LocationService extends ChangeNotifier {
     
     try {
       String? savedDistance = await storage.getItem('last_calculated_distance');
-      if (savedDistance != null) {
-      _totalDistance = double.parse(savedDistance);
-      } else if (_locationData?['distance'] != null) {
-        // Usar valor del servidor como respaldo
-        _totalDistance = double.parse(_locationData!['distance'].toString());
-      } 
+      if (savedDistance != null && _shouldCalculateDistance) {
+        _totalDistance = double.parse(savedDistance);
+        print('[LocationService] Loaded saved distance: ${_totalDistance.toStringAsFixed(2)} m');
+      } else {
+        _totalDistance = 0;
+        print('[LocationService] Starting with distance: 0 m');
+      }
     } catch (e) {
-      //
+      _totalDistance = 0;
+      print('[LocationService] Error loading distance: $e');
     }
 
     try {
@@ -501,6 +515,7 @@ class LocationService extends ChangeNotifier {
   _calculateDistance(double lat2, double lon2) {
     // Validar coordenadas
     if (!_isValidCoordinate(_lastLatitude, _lastLongitude) || !_isValidCoordinate(lat2, lon2)) {
+      print('[LocationService._calculateDistance] Invalid coordinates');
       return 0.0;
     }
     
@@ -508,40 +523,49 @@ class LocationService extends ChangeNotifier {
     if (_lastLatitude == 0 && _lastLongitude == 0) {
       _lastLatitude = lat2;
       _lastLongitude = lon2;
+      print('[LocationService._calculateDistance] First position initialized');
       return 0.0;
     }
     
+    // Fórmula de Haversine para calcular distancia entre dos puntos en la Tierra
     const double earthRadius = 6371000; // Radio de la Tierra en metros
 
-    double dLat = _toRadians(lat2 - _lastLatitude);
-    double dLon = _toRadians(lon2 - _lastLongitude);
+    double lat1Rad = _toRadians(_lastLatitude);
+    double lat2Rad = _toRadians(lat2);
+    double deltaLat = _toRadians(lat2 - _lastLatitude);
+    double deltaLon = _toRadians(lon2 - _lastLongitude);
 
-    double a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(_toRadians(_lastLatitude)) *
-            cos(_toRadians(lat2)) *
-            sin(dLon / 2) *
-            sin(dLon / 2);
+    double a = sin(deltaLat / 2) * sin(deltaLat / 2) +
+        cos(lat1Rad) * cos(lat2Rad) *
+        sin(deltaLon / 2) * sin(deltaLon / 2);
 
     double c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
-    double distance = earthRadius * c;
+    double distance = earthRadius * c; // Distancia en metros
 
-    // Solo agregar distancia si es razonable (menos de 500 metros entre actualizaciones)
-    // Esto filtra saltos de GPS erróneos
-    if (!distance.isNaN && distance >= 0 && distance < 500) {
+    // Filtros para mejorar la precisión:
+    // 1. Ignorar distancias muy pequeñas (menos de 2 metros - ruido GPS)
+    // 2. Ignorar distancias muy grandes (más de 200 metros entre actualizaciones - salto GPS)
+    // 3. Solo contar si el vehículo se está moviendo (distancia > 2m)
+    
+    if (!distance.isNaN && distance >= 2 && distance < 200) {
       _totalDistance += distance;
       _saveDistance(); // Guardar después de cada actualización
       
       print('[LocationService._calculateDistance] Distance added: ${distance.toStringAsFixed(2)}m, Total: ${_totalDistance.toStringAsFixed(2)}m');
-    } else if (distance >= 500) {
-      print('[LocationService._calculateDistance] Distance ignored (too large): ${distance.toStringAsFixed(2)}m');
+    } else if (distance < 2) {
+      print('[LocationService._calculateDistance] Distance ignored (too small/noise): ${distance.toStringAsFixed(2)}m');
+    } else if (distance >= 200) {
+      print('[LocationService._calculateDistance] Distance ignored (GPS jump): ${distance.toStringAsFixed(2)}m');
     }
 
-    _lastLatitude = lat2;
-    _lastLongitude = lon2;
+    // Actualizar última posición solo si la distancia fue válida o muy pequeña
+    if (distance < 200) {
+      _lastLatitude = lat2;
+      _lastLongitude = lon2;
+    }
 
     _checkAndResetDistance();
-    
   }
 
   double _toRadians(double degrees) {
