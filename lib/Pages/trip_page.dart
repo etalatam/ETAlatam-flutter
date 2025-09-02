@@ -117,6 +117,10 @@ class _TripPageState extends State<TripPage>
   DateTime? _sessionStartTime;
   DateTime? _lastMessageTime;
   DateTime? _lastReceivedTime;
+  
+  // Control de actualización de anotaciones
+  DateTime? _lastAnnotationUpdate;
+  static const int _minAnnotationUpdateInterval = 500; // milisegundos
 
   // Color del autobús para el marcador en el mapa
   late int busColor;
@@ -219,31 +223,13 @@ class _TripPageState extends State<TripPage>
                     _isVisible = info.visibleFraction > 0;
                     if (info.visibleFraction > 0) {
                       loadTrip();
-                      // Si el mapa está listo pero no hay marcadores, volvemos a mostrarlos
-                      if (_mapboxMapController != null &&
-                          (annotationManager == null ||
-                              trip.pickup_locations != null &&
-                                  trip.pickup_locations!.isNotEmpty)) {
+                      // Si el mapa está listo y necesitamos recrear los marcadores
+                      if (_mapboxMapController != null && annotationManager != null) {
                         Future.delayed(Duration(milliseconds: 300), () {
-                          if (_mapboxMapController != null) {
-                            if (annotationManager == null) {
-                              _mapboxMapController!.annotations
-                                  .createPointAnnotationManager()
-                                  .then((value) {
-                                if (mounted) {
-                                  annotationManager = value;
-                                  annotationManager
-                                      ?.addOnPointAnnotationClickListener(this);
-
-                                  showTripGeoJson(_mapboxMapController!);
-                                  showPickupLocations(_mapboxMapController!);
-                                }
-                              });
-                            } 
-                            // else {
-                            //   showTripGeoJson(_mapboxMapController!);
-                            //   showPickupLocations(_mapboxMapController!);
-                            // }
+                          if (_mapboxMapController != null && mounted) {
+                            // Solo mostrar los marcadores si el manager ya existe
+                            showTripGeoJson(_mapboxMapController!);
+                            showPickupLocations(_mapboxMapController!);
                           }
                         });
                       }
@@ -279,13 +265,21 @@ class _TripPageState extends State<TripPage>
                             print('[TripPage.MapWiew] trip_status: "${trip.trip_status}", showAutoFollowButton: ${trip.trip_status == 'Running'}');
                             _mapboxMapController = mapboxMap;
 
-                            // Asegurar que el annotationManager esté creado
+                            // Asegurar que el annotationManager esté creado (solo si no existe)
                             if (annotationManager == null) {
-                              final value = await mapboxMap.annotations
-                                  .createPointAnnotationManager();
-                              annotationManager = value;
-                              annotationManager
-                                  ?.addOnPointAnnotationClickListener(this);
+                              try {
+                                // Limpiar cualquier anotación previa antes de crear el manager
+                                busPointAnnotation = null;
+                                
+                                final value = await mapboxMap.annotations
+                                    .createPointAnnotationManager();
+                                annotationManager = value;
+                                annotationManager
+                                    ?.addOnPointAnnotationClickListener(this);
+                                print("[TripPage] AnnotationManager created successfully in onMapCreated");
+                              } catch (e) {
+                                print("[TripPage] Error creating annotation manager: $e");
+                              }
                             }
 
                             // Detectar cuando el usuario interactúa con el mapa
@@ -1338,6 +1332,16 @@ class _TripPageState extends State<TripPage>
           "[TripPage._updateIcon] is not the driver of this trip [${trip.driver_id}  $relationId]");
       return;
     }
+    
+    // Debounce: evitar actualizaciones muy frecuentes que puedan causar duplicados
+    if (_lastAnnotationUpdate != null) {
+      final timeSinceLastUpdate = DateTime.now().difference(_lastAnnotationUpdate!).inMilliseconds;
+      if (timeSinceLastUpdate < _minAnnotationUpdateInterval) {
+        print("[TripPage._updateIcon] Skipping update - too frequent (${timeSinceLastUpdate}ms since last update)");
+        return;
+      }
+    }
+    _lastAnnotationUpdate = DateTime.now();
 
     try {
       // If the annotation doesn't exist, create it
@@ -1385,13 +1389,53 @@ class _TripPageState extends State<TripPage>
         _mapboxMapController?.setCamera(CameraOptions(
             center: Point(coordinates: position), zoom: 18, pitch: 70));
       }
-      // Si ya existe, solo actualizamos la posición y el texto
+      // Si ya existe, eliminamos la anterior y creamos una nueva para evitar duplicados
       else  {
-        print("[TripPage._updateIcon] updating existing point annotation");
-        busPointAnnotation?.geometry = Point(coordinates: position);
-        busPointAnnotation?.textField = label;
-        busPointAnnotation?.symbolSortKey = 3;
-        await annotationManager?.update(busPointAnnotation!);
+        print("[TripPage._updateIcon] updating existing point annotation - recreating to avoid duplicates");
+        
+        // Eliminar la anotación anterior
+        if (busPointAnnotation != null) {
+          try {
+            await annotationManager?.delete(busPointAnnotation!);
+          } catch (e) {
+            print("[TripPage._updateIcon] Error deleting old annotation: $e");
+          }
+        }
+        
+        // Crear nueva anotación con la posición y etiqueta actualizadas
+        final int currentBusColor = Colors.white.value;
+        
+        Uint8List? imageData;
+        if (_busMarkerCache.containsKey(currentBusColor) &&
+            _busMarkerCache[currentBusColor] != null) {
+          imageData = _busMarkerCache[currentBusColor]!;
+        } else {
+          final ui.Image busImage =
+              await loadImageFromAsset('assets/bus_color.png');
+          imageData = await createCircleMarkerImage(
+              circleColor: Color(currentBusColor),
+              image: busImage,
+              size: 96,
+              imageSize: 72);
+          _busMarkerCache[currentBusColor] = imageData;
+        }
+        
+        busPointAnnotation =
+            await annotationManager?.create(PointAnnotationOptions(
+          geometry: Point(coordinates: position),
+          image: imageData,
+          textSize: 14,
+          textField: label,
+          textOffset: [
+            0.0,
+            -2.0
+          ],
+          textColor: Colors.black.value,
+          textHaloColor: Colors.white.value,
+          textHaloWidth: 2,
+          iconSize: 1.0,
+          symbolSortKey: 3,
+        ));
 
         // Solo centrar el mapa si el auto-seguimiento está activado
         if (_autoFollowBus) {
