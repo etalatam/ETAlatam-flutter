@@ -341,13 +341,13 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
     } catch (e) {
       print("[DriverHome.loadrResources.getActiveTrip.error] $e");
     } finally {
-      if (hasActiveTrip && activeTripWrapper != null) {
+      if (hasActiveTrip && activeTrip != null) {
         try {
-          print("[DriverHome.loadResources] Active trip detected (ID: ${activeTripWrapper.trip_id}), initializing LocationService");
+          print("[DriverHome.loadResources] Active trip detected (ID: ${activeTrip.trip_id}), initializing LocationService");
           await LocationService.instance.init();
           await LocationService.instance.startLocationService(
               calculateDistance: true);
-          print("[DriverHome.loadResources] LocationService started successfully for trip ${activeTripWrapper.trip_id}");
+          print("[DriverHome.loadResources] LocationService started successfully for trip ${activeTrip.trip_id}");
         } catch (e) {
           print("[DriverHome.loadResources] Error starting LocationService: $e");
         }
