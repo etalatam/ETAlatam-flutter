@@ -1,6 +1,8 @@
+import 'package:eta_school_app/providers/theme_provider.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:flutter/material.dart';
 import 'package:eta_school_app/API/client.dart';
+import 'package:provider/provider.dart';
 import '../components/header.dart';
 import '../components/loader.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
@@ -17,35 +19,31 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage>
     with ETAWidgets, MediansTheme {
   final HttpService httpService = HttpService();
-
   final LocalStorage storage = LocalStorage('tokens.json');
 
   bool allowNotifications = false;
-
   bool showLoader = true;
 
   List<String> langs = <String>['Español', 'English'];
   String? selectedLang = 'Español';
 
-  // PreferencesSetting preferences = Get.find<PreferencesSetting>();
   final preferences = PreferencesSetting();
 
   @override
   Widget build(BuildContext context) {
-    darkMode = storage.getItem('darkmode') == true ? true : false;
-    activeTheme = darkMode == true ? DarkTheme() : LightTheme();
-
+    final theme = Theme.of(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    
     return showLoader
         ? const Loader()
         : Material(
             child: Container(
                 width: double.infinity,
-                color: activeTheme.main_bg,
+                color: theme.scaffoldBackgroundColor,
                 child: Stack(children: [
                   SingleChildScrollView(
                       child: Stack(children: <Widget>[
                     Container(
-                        // color: darkMode ?  activeTheme.main_color : activeTheme.main_bg,
                         margin: const EdgeInsets.only(top: 150),
                         child: Column(
                           children: [
@@ -60,11 +58,11 @@ class _SettingsPageState extends State<SettingsPage>
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(lang.translate('Language'),
-                                          style: activeTheme.h5),
+                                          style: theme.textTheme.titleLarge),
                                       Text(
                                           lang.translate(
                                               'select your language'),
-                                          style: activeTheme.normalText)
+                                          style: theme.textTheme.bodyMedium)
                                     ],
                                   ),
                                 ),
@@ -73,10 +71,13 @@ class _SettingsPageState extends State<SettingsPage>
                                       horizontal: 10),
                                   child: DropdownButton<String>(
                                     value: selectedLang,
-                                    icon: const Icon(Icons.arrow_downward),
+                                    icon: Icon(Icons.arrow_downward,
+                                        color: theme.iconTheme.color),
                                     elevation: 16,
+                                    dropdownColor: theme.scaffoldBackgroundColor,
+                                    style: TextStyle(
+                                        color: theme.textTheme.bodyMedium?.color),
                                     onChanged: (String? value) {
-                                      // This is called when the user selects an item.
                                       setState(() {
                                         showLoader = true;
                                       });
@@ -88,8 +89,6 @@ class _SettingsPageState extends State<SettingsPage>
                                               value == 'Español'
                                                   ? 'es'
                                                   : 'en'));
-                                          // selectedLang = value;
-                                          // storage.setItem('lang', value);
                                           setLang(value);
                                           showLoader = false;
                                         });
@@ -102,7 +101,7 @@ class _SettingsPageState extends State<SettingsPage>
                                         child: Text(
                                           value,
                                           style: TextStyle(
-                                              color: Colors.grey[500]),
+                                              color: theme.textTheme.bodyMedium?.color),
                                         ),
                                       );
                                     }).toList(),
@@ -112,12 +111,11 @@ class _SettingsPageState extends State<SettingsPage>
                             ),
                             Divider(
                               height: 1,
-                              color: activeTheme.main_color.withOpacity(.3),
+                              color: theme.dividerColor,
                               indent: 15,
                               endIndent: 10,
                             ),
                             Row(
-                              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Expanded(
@@ -129,42 +127,26 @@ class _SettingsPageState extends State<SettingsPage>
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(lang.translate('Notifications'),
-                                            style: activeTheme.h5),
+                                            style: theme.textTheme.titleLarge),
                                         Text(
                                             lang.translate(
                                                 'Allow recieve notifications'),
-                                            style: activeTheme.normalText)
+                                            style: theme.textTheme.bodyMedium)
                                       ],
                                     ),
                                   ),
                                 ),
                                 Switch(
-                                    activeColor: activeTheme.main_color,
-                                    activeTrackColor:
-                                        activeTheme.main_color.withOpacity(.5),
-                                    inactiveThumbColor:
-                                        Colors.blueGrey.shade500,
-                                    inactiveTrackColor: Colors.grey.shade300,
-                                    splashRadius: 50.0,
                                     value: allowNotifications,
                                     onChanged: (value) {
                                       setState(
                                           () => allowNotifications = value);
-
-                                      /*if (!value) {
-                                        OneSignal.logout();
-                                        OneSignal.Notifications
-                                            .removePermissionObserver(
-                                                (permission) {});
-                                      } else {
-                                        setNotes();
-                                      }*/
                                     }),
                               ],
                             ),
                             Divider(
                               height: 1,
-                              color: activeTheme.main_color.withOpacity(.3),
+                              color: theme.dividerColor,
                               indent: 15,
                               endIndent: 10,
                             ),
@@ -182,40 +164,19 @@ class _SettingsPageState extends State<SettingsPage>
                                         children: [
                                           Text(
                                             lang.translate('Dark mode'),
-                                            style: activeTheme.h5,
+                                            style: theme.textTheme.titleLarge,
                                           ),
                                           Text(
                                               lang.translate(
                                                   'Show template in darkmode'),
-                                              style: activeTheme.normalText)
+                                              style: theme.textTheme.bodyMedium)
                                         ],
                                       ),
                                     )),
                                 Switch(
-                                    activeColor: activeTheme.main_color,
-                                    activeTrackColor:
-                                        activeTheme.main_color.withOpacity(.5),
-                                    inactiveThumbColor:
-                                        Colors.blueGrey.shade500,
-                                    inactiveTrackColor: Colors.grey.shade300,
-                                    splashRadius: 50.0,
-                                    value: darkMode,
+                                    value: themeProvider.isDarkMode,
                                     onChanged: (value) {
-                                      // This is called when the user selects an item.
-                                      setState(() {
-                                        showLoader = true;
-                                      });
-
-                                      // Future.delayed(const Duration(seconds: 1), () {
-                                      setState(() {
-                                        storage.setItem('darkmode', value);
-                                        preferences.setBool('darkmode', value);
-                                        darkMode = value;
-                                        showLoader = false;
-                                        activeTheme =
-                                            value ? DarkTheme() : LightTheme();
-                                      });
-                                      // });
+                                      themeProvider.setDarkMode(value);
                                     }),
                               ],
                             ),
@@ -223,11 +184,6 @@ class _SettingsPageState extends State<SettingsPage>
                         )),
                   ])),
                   Positioned(left: 0, right: 0, top: 0, child: Header()),
-                  // Positioned(
-                  //     bottom: 20,
-                  //     left: 20,
-                  //     right: 20,
-                  //     child: BottomMenu('settings', openNewPage))
                 ])));
   }
 
@@ -235,18 +191,12 @@ class _SettingsPageState extends State<SettingsPage>
   void initState() {
     super.initState();
     getLang().then((value) => selectedLang = value);
-    getDarkMode().then((value) => darkMode = value);
 
     Future.delayed(const Duration(seconds: 1)).then((value) => {
           setState(() {
             showLoader = false;
           })
         });
-  }
-
-  Future<bool> getDarkMode() async {
-    var darkMode = await storage.getItem('darkmode');
-    return darkMode ?? false;
   }
 
   Future<String> getLang() async {
