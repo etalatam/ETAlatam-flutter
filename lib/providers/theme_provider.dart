@@ -80,14 +80,14 @@ class ThemeProvider extends ChangeNotifier {
         ),
       ),
       switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
+        thumbColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
             return const Color.fromARGB(255, 59, 140, 135);
           }
           return Colors.grey;
         }),
-        trackColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
+        trackColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
             return const Color.fromARGB(255, 59, 140, 135).withOpacity(0.5);
           }
           return Colors.grey.shade300;
@@ -182,14 +182,14 @@ class ThemeProvider extends ChangeNotifier {
         ),
       ),
       switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
+        thumbColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
             return const Color.fromARGB(255, 59, 140, 135);
           }
           return Colors.blueGrey.shade500;
         }),
-        trackColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
+        trackColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
             return const Color.fromARGB(255, 59, 140, 135).withOpacity(0.5);
           }
           return Colors.grey.shade600;
