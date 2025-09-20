@@ -169,16 +169,16 @@ class EmitterService extends ChangeNotifier {
 
     _timer = Timer.periodic(Duration(seconds: 5), (timer) {
       if (connectivityNone) {
-        print("[TripaPage.ermittertimer] offline... ");
+        // print("[TripaPage.ermittertimer] offline... ");
         return;
       }
 
       final now = DateTime.now();
       final difference = now.difference(_lastEmitterDate!);
-      print("[TripPage.emittertimer.difference] ${difference.inSeconds}s.");
+      // print("[TripPage.emittertimer.difference] ${difference.inSeconds}s.");
 
       if (difference.inSeconds >= 40) {
-        print("[TripaPage.ermittertimer] restaring... ");
+        // print("[TripaPage.ermittertimer] restaring... ");
         _client.reconect();
         _lastEmitterDate = DateTime.now();
         for (var topic in _subscribedTopics) {

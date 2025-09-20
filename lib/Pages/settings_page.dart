@@ -144,42 +144,43 @@ class _SettingsPageState extends State<SettingsPage>
                                     }),
                               ],
                             ),
-                            Divider(
-                              height: 1,
-                              color: theme.dividerColor,
-                              indent: 15,
-                              endIndent: 10,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Expanded(
-                                    flex: 1,
-                                    child: Container(
-                                      margin: const EdgeInsets.all(20),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            lang.translate('Dark mode'),
-                                            style: theme.textTheme.titleLarge,
-                                          ),
-                                          Text(
-                                              lang.translate(
-                                                  'Show template in darkmode'),
-                                              style: theme.textTheme.bodyMedium)
-                                        ],
-                                      ),
-                                    )),
-                                Switch(
-                                    value: themeProvider.isDarkMode,
-                                    onChanged: (value) {
-                                      themeProvider.setDarkMode(value);
-                                    }),
-                              ],
-                            ),
+                            // Comentado temporalmente - Opción de tema oscuro
+                            // Divider(
+                            //   height: 1,
+                            //   color: theme.dividerColor,
+                            //   indent: 15,
+                            //   endIndent: 10,
+                            // ),
+                            // Row(
+                            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            //   mainAxisSize: MainAxisSize.max,
+                            //   children: [
+                            //     Expanded(
+                            //         flex: 1,
+                            //         child: Container(
+                            //           margin: const EdgeInsets.all(20),
+                            //           child: Column(
+                            //             crossAxisAlignment:
+                            //                 CrossAxisAlignment.start,
+                            //             children: [
+                            //               Text(
+                            //                 lang.translate('Dark mode'),
+                            //                 style: theme.textTheme.titleLarge,
+                            //               ),
+                            //               Text(
+                            //                   lang.translate(
+                            //                       'Show template in darkmode'),
+                            //                   style: theme.textTheme.bodyMedium)
+                            //             ],
+                            //           ),
+                            //         )),
+                            //     Switch(
+                            //         value: themeProvider.isDarkMode,
+                            //         onChanged: (value) {
+                            //           themeProvider.setDarkMode(value);
+                            //         }),
+                            //   ],
+                            // ),
                           ],
                         )),
                   ])),

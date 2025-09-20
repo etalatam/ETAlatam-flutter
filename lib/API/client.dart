@@ -28,6 +28,7 @@ import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/Models/NotificationModel.dart';
 import 'package:flutter/foundation.dart';
+import 'package:eta_school_app/Pages/login_page.dart';
 
 import '../Models/absence_model.dart';
 
@@ -65,15 +66,29 @@ class HttpService {
     return "https://admin.etalatam.com/assets/img$path";
   }
 
+  /// Check for expired session
+  Future<void> _checkSessionExpired(http.Response response) async {
+    if (response.statusCode == 401 || response.statusCode == 403) {
+      print("[HttpService] Session expired or unauthorized - status: ${response.statusCode}");
+      // Limpiar datos y redirigir al login
+      await logout();
+      Get.offAll(() => Login());
+    }
+  }
+
   /// Run API GET query
   getQuery(String path, {useToken = true}) async {
     final token = storage.getItem('token');
     final url = Uri.parse(apiURL + path);
     print("$url");
-    return await http.get(url, headers: {
+    final response = await http.get(url, headers: {
       'Content-Type': 'application/json',
       'Authorization': useToken ? 'Bearer $token' : '',
     }).onError((error, stackTrace) => handleHttpError(error));
+    
+    // Verificar si la sesi\u00f3n expir\u00f3
+    await _checkSessionExpired(response);
+    return response;
   }
 
   /// Run API POST query
@@ -83,10 +98,14 @@ class HttpService {
     final token = storage.getItem('token');
     final url = Uri.parse(apiURL + path);
     print("[Api.url] $url");
-    return await http.post(url, body: body, headers: {
+    final response = await http.post(url, body: body, headers: {
       'Content-Type': contentType,
       'Authorization': useToken ? 'Bearer $token' : '',
-    });
+    }).onError((error, stackTrace) => handleHttpError(error));
+    
+    // Verificar si la sesi\u00f3n expir\u00f3
+    await _checkSessionExpired(response);
+    return response;
   }
 
   /// Load Trips
@@ -930,8 +949,10 @@ class HttpService {
     return null;
   }
   
-  handleHttpError(e) {
-    print("userInfo error: ${e.toString()}");
+  handleHttpError(e) async {
+    print("HTTP error: ${e.toString()}");
+    // Si hay un error de conexión, devolver un response vacío
+    return http.Response('', 500);
   }
 
 

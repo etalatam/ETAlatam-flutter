@@ -156,7 +156,7 @@ class LocationService extends ChangeNotifier {
     Workmanager().executeTask((task, inputData) {
       final now = DateTime.now();
       final difference = now.difference(_lastPositionDate!);
-      print("[LocationService.timer.difference] ${difference.inSeconds}s.");
+      // print("[LocationService.timer.difference] ${difference.inSeconds}s.");
       if (difference.inSeconds >= 60) {
         print(
             "[LocationService.timer] restaring... [_shouldCalculateDistance: $_shouldCalculateDistance]");
@@ -395,10 +395,10 @@ class LocationService extends ChangeNotifier {
     _timer = Timer.periodic(Duration(seconds: 5), (timer) {
       final now = DateTime.now();
       final difference = now.difference(_lastPositionDate!);
-      print("[LocationService.timer.difference] ${difference.inSeconds}s.");
+      // print("[LocationService.timer.difference] ${difference.inSeconds}s.");
       final max = relationNameLocal.contains('eta.drivers') ? 20 : 30;
       if (difference.inSeconds >= max) {
-        print("[LocationService.timer] restaring...");
+        // print("[LocationService.timer] restaring...");
         _lastPositionDate = DateTime.now();
         final currentCalculateDistance = _shouldCalculateDistance;
         stopLocationService();
