@@ -215,7 +215,7 @@ class LocationService extends ChangeNotifier {
     // Configuración mejorada del servicio
     final androidSettings = AndroidSettings(
       accuracy: LocationAccuracy.NAVIGATION,
-      distanceFilter: 0,
+      distanceFilter: 10, // Cambiar de 0 a 10 metros para reducir peticiones al API
       client: LocationClient.google,
       androidNotificationSettings: AndroidNotificationSettings(
         notificationChannelName: 'Location tracking',

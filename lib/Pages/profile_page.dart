@@ -314,8 +314,9 @@ class _ProfilePageState extends State<ProfilePage> {
       _timer?.cancel();
     }
 
-    _timer = Timer.periodic(Duration(seconds: 60), (timer) {
-      loadUser();
-    });
+    // Comentado temporalmente - No es necesario actualizar el perfil tan seguido
+    // _timer = Timer.periodic(Duration(seconds: 60), (timer) {
+    //   loadUser();
+    // });
   }
 }
