@@ -1097,21 +1097,35 @@ class HttpService {
 
   /// Get My User Topic
   /// Obtiene el topic personal del usuario para notificaciones FCM
-  Future<UserTopicModel?> getMyUserTopic() async {
+  /// useSessionCheck: false para evitar bucle infinito durante login
+  Future<UserTopicModel?> getMyUserTopic({bool useSessionCheck = false}) async {
     const endpoint = '/rpc/get_my_user_topic';
     try {
-      http.Response res = await postQuery(
-        endpoint,
-        null,
-        contentType: 'application/json',
-      );
+      final token = storage.getItem('token');
+      final url = Uri.parse(apiURL + endpoint);
 
-      print("[$endpoint] res.statusCode: ${res.statusCode}");
-      print("[$endpoint] res.body: ${res.body}");
+      final response = await http.post(
+        url,
+        body: null,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).onError((error, stackTrace) => handleHttpError(error));
 
-      if (res.statusCode == 200) {
-        final json = jsonDecode(res.body);
+      print("[$endpoint] res.statusCode: ${response.statusCode}");
+      print("[$endpoint] res.body: ${response.body}");
+
+      // Solo verificar sesión expirada si está habilitado
+      if (useSessionCheck) {
+        await _checkSessionExpired(response);
+      }
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
         return UserTopicModel.fromJson(json);
+      } else {
+        print("[$endpoint] Non-200 status: ${response.statusCode}");
       }
     } catch (e) {
       print("[$endpoint] error: ${e.toString()}");
@@ -1121,21 +1135,35 @@ class HttpService {
 
   /// Get My Recipient Groups
   /// Obtiene los grupos de destinatarios a los que pertenece el usuario
-  Future<List<RecipientGroupModel>> getMyRecipientGroups() async {
+  /// useSessionCheck: false para evitar bucle infinito durante login
+  Future<List<RecipientGroupModel>> getMyRecipientGroups({bool useSessionCheck = false}) async {
     const endpoint = '/rpc/get_my_recipient_groups';
     try {
-      http.Response res = await postQuery(
-        endpoint,
-        null,
-        contentType: 'application/json',
-      );
+      final token = storage.getItem('token');
+      final url = Uri.parse(apiURL + endpoint);
 
-      print("[$endpoint] res.statusCode: ${res.statusCode}");
-      print("[$endpoint] res.body: ${res.body}");
+      final response = await http.post(
+        url,
+        body: null,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).onError((error, stackTrace) => handleHttpError(error));
 
-      if (res.statusCode == 200) {
-        final List<dynamic> jsonList = jsonDecode(res.body);
+      print("[$endpoint] res.statusCode: ${response.statusCode}");
+      print("[$endpoint] res.body: ${response.body}");
+
+      // Solo verificar sesión expirada si está habilitado
+      if (useSessionCheck) {
+        await _checkSessionExpired(response);
+      }
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = jsonDecode(response.body);
         return jsonList.map((json) => RecipientGroupModel.fromJson(json)).toList();
+      } else {
+        print("[$endpoint] Non-200 status: ${response.statusCode}");
       }
     } catch (e) {
       print("[$endpoint] error: ${e.toString()}");
