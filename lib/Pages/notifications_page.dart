@@ -22,6 +22,21 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
+  /// Obtener color según prioridad del anuncio
+  Color _getPriorityColor(String? priority) {
+    switch (priority?.toLowerCase()) {
+      case 'urgente':
+        return const Color(0xFFE74C3C); // Rojo para urgente
+      case 'normal':
+        return const Color(0xFF61C677); // Verde para normal
+      case 'baja':
+        return const Color(0xFF95A5A6); // Gris para baja prioridad
+      default:
+        return const Color(0xFF61C677); // Verde por defecto
+    }
+  }
+
+  /// Obtener icono según nombre
   IconData _getIconByName(String iconName) {
     if (iconName.isEmpty) return Icons.notifications;
 
@@ -226,8 +241,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                                                   .antiAlias,
                                                               decoration:
                                                                   BoxDecoration(
-                                                                color: const Color(
-                                                                    0xFF61C677),
+                                                                // Color según prioridad
+                                                                color: _getPriorityColor(notificationsList[i].priority),
                                                                 borderRadius:
                                                                     BorderRadius
                                                                         .circular(
@@ -424,24 +439,38 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   ///
-  /// Load devices through API
+  /// Load notifications through API
+  /// Carga notificaciones basadas en los topics suscritos
   ///
   loadNotifications() async {
     setState(() {
       showLoader = true;
     });
 
-    final notificationslistResponse = await httpService
-        .getNotifications(NotificationService.instance.topicsList.toString());
+    try {
+      // Obtener topics suscritos
+      final topicsList = NotificationService.instance.topicsList;
+      print("[NotificationsPage] Loading notifications for topics: $topicsList");
 
-    setState(() {
-      showLoader = false;
-      if (notificationslistResponse.isNotEmpty) {
-        notificationsList = notificationslistResponse;
-      }
-    });
+      // Cargar notificaciones del backend
+      final notificationslistResponse = await httpService
+          .getNotifications(topicsList.toString());
 
-    //  showTooltip(null); // to test uncomment
+      setState(() {
+        showLoader = false;
+        if (notificationslistResponse.isNotEmpty) {
+          notificationsList = notificationslistResponse;
+          print("[NotificationsPage] Loaded ${notificationsList.length} notifications");
+        } else {
+          print("[NotificationsPage] No notifications found");
+        }
+      });
+    } catch (e) {
+      print("[NotificationsPage] Error loading notifications: $e");
+      setState(() {
+        showLoader = false;
+      });
+    }
   }
 
   bool showLoader = true;

@@ -1,3 +1,6 @@
+import 'package:eta_school_app/API/client.dart';
+import 'package:eta_school_app/Models/recipient_group_model.dart';
+import 'package:eta_school_app/Models/user_topic_model.dart';
 import 'package:eta_school_app/components/animated_snackbar_content.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +12,11 @@ class NotificationService with ChangeNotifier {
   // Declaración del singleton
   static final NotificationService _instance = NotificationService._internal();
 
+  final HttpService _httpService = HttpService();
+
   List<String> topicsList = [];
+  String? userTopic;
+  List<RecipientGroupModel> recipientGroups = [];
 
   // Constructor privado
   NotificationService._internal() {
@@ -23,18 +30,111 @@ class NotificationService with ChangeNotifier {
 
   static NotificationService get instance => _instance;
 
-
-  subscribeToTopic(String topic) {
-    print("notificationService.subscribeToTopic: $topic");
+  /// Suscribirse a un topic específico
+  Future<void> subscribeToTopic(String topic) async {
+    print("[NotificationService.subscribeToTopic] $topic");
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
 
       if (!topicsList.contains(topic)) {
+        await messaging.subscribeToTopic(topic);
         topicsList.add(topic);
-        messaging.subscribeToTopic(topic);
+        print("[NotificationService] Suscrito exitosamente a: $topic");
+      } else {
+        print("[NotificationService] Ya estaba suscrito a: $topic");
       }
     } catch (e) {
-      print("notificationService.notificationSubcribe.error: ${e.toString()}");
+      print("[NotificationService.subscribeToTopic] error: ${e.toString()}");
+    }
+  }
+
+  /// Desuscribirse de un topic específico
+  Future<void> unsubscribeFromTopic(String topic) async {
+    print("[NotificationService.unsubscribeFromTopic] $topic");
+    try {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+      if (topicsList.contains(topic)) {
+        await messaging.unsubscribeFromTopic(topic);
+        topicsList.remove(topic);
+        print("[NotificationService] Desuscrito exitosamente de: $topic");
+      }
+    } catch (e) {
+      print("[NotificationService.unsubscribeFromTopic] error: ${e.toString()}");
+    }
+  }
+
+  /// Setup inicial de notificaciones al hacer login
+  Future<void> setupNotifications() async {
+    print("[NotificationService.setupNotifications] Iniciando setup");
+
+    try {
+      // 1. Obtener y suscribirse al topic personal
+      final UserTopicModel? userTopicModel = await _httpService.getMyUserTopic();
+      if (userTopicModel != null) {
+        userTopic = userTopicModel.userTopic;
+        await subscribeToTopic(userTopic!);
+        await storage.setItem('user_topic', userTopic!);
+        print("[NotificationService] Topic personal guardado: $userTopic");
+      }
+
+      // 2. Obtener y suscribirse a los topics de grupos
+      final List<RecipientGroupModel> groups = await _httpService.getMyRecipientGroups();
+      recipientGroups = groups;
+
+      for (var group in groups) {
+        await subscribeToTopic(group.topic);
+      }
+
+      // Guardar grupos en storage para sincronización posterior
+      await storage.setItem('recipient_groups', groups.map((g) => g.toJson()).toList());
+
+      print("[NotificationService] Setup completado. Topics: ${topicsList.length}");
+    } catch (e) {
+      print("[NotificationService.setupNotifications] error: ${e.toString()}");
+    }
+  }
+
+  /// Sincronizar grupos cuando cambian las membresías
+  Future<void> syncGroups() async {
+    print("[NotificationService.syncGroups] Sincronizando grupos");
+
+    try {
+      // Obtener nuevos grupos del backend
+      final List<RecipientGroupModel> newGroups = await _httpService.getMyRecipientGroups();
+
+      // Obtener grupos anteriores del storage
+      final dynamic storedGroups = await storage.getItem('recipient_groups');
+      List<RecipientGroupModel> oldGroups = [];
+
+      if (storedGroups != null && storedGroups is List) {
+        oldGroups = (storedGroups as List).map((g) => RecipientGroupModel.fromJson(g)).toList();
+      }
+
+      final List<String> oldTopics = oldGroups.map((g) => g.topic).toList();
+      final List<String> newTopics = newGroups.map((g) => g.topic).toList();
+
+      // Desuscribirse de topics removidos
+      final List<String> toUnsubscribe = oldTopics.where((t) => !newTopics.contains(t)).toList();
+      for (var topic in toUnsubscribe) {
+        await unsubscribeFromTopic(topic);
+      }
+
+      // Suscribirse a nuevos topics
+      final List<String> toSubscribe = newTopics.where((t) => !oldTopics.contains(t)).toList();
+      for (var topic in toSubscribe) {
+        await subscribeToTopic(topic);
+      }
+
+      // Actualizar grupos almacenados
+      recipientGroups = newGroups;
+      await storage.setItem('recipient_groups', newGroups.map((g) => g.toJson()).toList());
+
+      print("[NotificationService.syncGroups] Sincronización completada");
+      print("[NotificationService] Topics desuscritos: ${toUnsubscribe.length}");
+      print("[NotificationService] Topics suscritos: ${toSubscribe.length}");
+    } catch (e) {
+      print("[NotificationService.syncGroups] error: ${e.toString()}");
     }
   }
 
@@ -49,7 +149,7 @@ class NotificationService with ChangeNotifier {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
 
       // Solicitar permisos en iOS
-      messaging.requestPermission();
+      await messaging.requestPermission();
 
       // Obtener el token de FCM
       messaging.getToken().then((token) {
@@ -64,15 +164,39 @@ class NotificationService with ChangeNotifier {
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         print('[FCM] Got a message whilst in the foreground!');
         print('[FCM] Message data: ${message.data}');
-        if (message.notification != null) {
-          print(
-              '[FCM] Message also contained a notification: ${message.notification}');
-          _handleIncomingMessage(LastMessage(message, 'foreground'));
+
+        // Obtener el status del mensaje
+        final String? status = message.data['status']?.toString();
+        print('[FCM] Message status: $status');
+
+        if (status == '1') {
+          // Usuario agregado a grupo → Sincronizar
+          print('[FCM] Usuario agregado a grupo, sincronizando...');
+          syncGroups();
+        } else if (status == '2') {
+          // Usuario removido de grupo → Sincronizar
+          print('[FCM] Usuario removido de grupo, sincronizando...');
+          syncGroups();
+        } else {
+          // Anuncio normal → Mostrar notificación
+          if (message.notification != null) {
+            print('[FCM] Message also contained a notification: ${message.notification}');
+            _handleIncomingMessage(LastMessage(message, 'foreground'));
+          }
         }
       });
 
-      final userId = await storage.getItem('id_usu');
-      messaging.subscribeToTopic("user-$userId");
+      // Manejar cuando el usuario toca una notificación
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+        print('[FCM] Message opened from notification!');
+        print('[FCM] Message data: ${message.data}');
+
+        final String? status = message.data['status']?.toString();
+        if (status == '1' || status == '2') {
+          // Sincronizar grupos al abrir la app desde notificación
+          syncGroups();
+        }
+      });
     } catch (e) {
       print("[FCM] ${e.toString()}");
     }
@@ -82,21 +206,46 @@ class NotificationService with ChangeNotifier {
       RemoteMessage message) async {
     try {
       print('[FCM] Handling a background message: ${message.messageId}');
+      print('[FCM] Message data: ${message.data}');
 
-      _handleIncomingMessage(LastMessage(message, 'background'));
+      final String? status = message.data['status']?.toString();
+      print('[FCM] Background message status: $status');
+
+      if (status == '1' || status == '2') {
+        // Usuario agregado/removido de grupo → Se sincronizará al abrir la app
+        print('[FCM] Cambio en membresía de grupo detectado en background');
+      } else {
+        // Anuncio normal
+        _handleIncomingMessage(LastMessage(message, 'background'));
+      }
     } catch (e) {
       print("[FCM] ${e.toString()}");
     }
   }
 
+  /// Cerrar servicio y desuscribirse de todos los topics
   Future<void> close() async {
+    print("[NotificationService.close] Desuscribiendo de todos los topics");
     try {
-      for (var topic in topicsList) {
-        print("unsubscribeFromTopic: $topic");
-        FirebaseMessaging.instance.unsubscribeFromTopic(topic);
+      final List<String> topicsToUnsubscribe = List.from(topicsList);
+
+      for (var topic in topicsToUnsubscribe) {
+        print("[NotificationService] Desuscribiendo de: $topic");
+        await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
       }
+
+      // Limpiar la lista y variables
+      topicsList.clear();
+      userTopic = null;
+      recipientGroups.clear();
+
+      // Limpiar storage
+      await storage.deleteItem('user_topic');
+      await storage.deleteItem('recipient_groups');
+
+      print("[NotificationService.close] Todos los topics desuscritos");
     } catch (e) {
-      print(e);
+      print("[NotificationService.close] error: ${e.toString()}");
     }
   }
 

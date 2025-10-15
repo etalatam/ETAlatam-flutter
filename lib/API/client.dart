@@ -31,6 +31,8 @@ import 'package:flutter/foundation.dart';
 import 'package:eta_school_app/Pages/login_page.dart';
 
 import '../Models/absence_model.dart';
+import '../Models/recipient_group_model.dart';
+import '../Models/user_topic_model.dart';
 
 class HttpService {
   final LocalStorage storage = LocalStorage('tokens.json');
@@ -671,6 +673,13 @@ class HttpService {
           EmitterService.instance.connect();
         }
 
+        // Setup de notificaciones FCM al hacer login exitoso
+        try {
+          await NotificationService.instance.setupNotifications();
+        } catch (e) {
+          print('[login] Error en setupNotifications: $e');
+        }
+
         return '1';
       } else {
         return "${parseResponseMessage(res)}/${res.statusCode}";
@@ -1038,28 +1047,28 @@ class HttpService {
   /// Cancel Student Absence
   Future<Map<String, dynamic>> cancelStudentAbsence(AbsenceModel absence) async {
     const endpoint = "/rpc/cancel_absence";
-    
+
     // Crear un mapa con solo los parámetros requeridos por la función de PostgreSQL
     final Map<String, dynamic> requestData = {
       '_student_id': absence.idStudent,
       '_absence_date': absence.absenceDate.toIso8601String(),
       '_id_schedule': absence.idSchedule,
     };
-    
+
     try {
       http.Response res = await postQuery(
         endpoint,
         jsonEncode(requestData),
         contentType: 'application/json',
       );
-      
+
       print("[$endpoint] res.statusCode: ${res.statusCode}");
       print("[$endpoint] res.body: ${res.body}");
-      
+
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final jsonResponse = jsonDecode(res.body);
         final status = jsonResponse['status'];
-        
+
         if (status == 'success') {
           return {
             'success': true,
@@ -1084,6 +1093,54 @@ class HttpService {
         'message': e.toString(),
       };
     }
+  }
+
+  /// Get My User Topic
+  /// Obtiene el topic personal del usuario para notificaciones FCM
+  Future<UserTopicModel?> getMyUserTopic() async {
+    const endpoint = '/rpc/get_my_user_topic';
+    try {
+      http.Response res = await postQuery(
+        endpoint,
+        null,
+        contentType: 'application/json',
+      );
+
+      print("[$endpoint] res.statusCode: ${res.statusCode}");
+      print("[$endpoint] res.body: ${res.body}");
+
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        return UserTopicModel.fromJson(json);
+      }
+    } catch (e) {
+      print("[$endpoint] error: ${e.toString()}");
+    }
+    return null;
+  }
+
+  /// Get My Recipient Groups
+  /// Obtiene los grupos de destinatarios a los que pertenece el usuario
+  Future<List<RecipientGroupModel>> getMyRecipientGroups() async {
+    const endpoint = '/rpc/get_my_recipient_groups';
+    try {
+      http.Response res = await postQuery(
+        endpoint,
+        null,
+        contentType: 'application/json',
+      );
+
+      print("[$endpoint] res.statusCode: ${res.statusCode}");
+      print("[$endpoint] res.body: ${res.body}");
+
+      if (res.statusCode == 200) {
+        final List<dynamic> jsonList = jsonDecode(res.body);
+        return jsonList.map((json) => RecipientGroupModel.fromJson(json)).toList();
+      }
+    } catch (e) {
+      print("[$endpoint] error: ${e.toString()}");
+    }
+    return [];
   }
 
 }
