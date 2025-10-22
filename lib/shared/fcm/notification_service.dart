@@ -70,7 +70,8 @@ class NotificationService with ChangeNotifier {
 
     try {
       // 1. Obtener y suscribirse al topic personal
-      final UserTopicModel? userTopicModel = await _httpService.getMyUserTopic();
+      // useSessionCheck: false para evitar bucle infinito durante el login
+      final UserTopicModel? userTopicModel = await _httpService.getMyUserTopic(useSessionCheck: false);
       if (userTopicModel != null) {
         userTopic = userTopicModel.userTopic;
         await subscribeToTopic(userTopic!);
@@ -79,7 +80,8 @@ class NotificationService with ChangeNotifier {
       }
 
       // 2. Obtener y suscribirse a los topics de grupos
-      final List<RecipientGroupModel> groups = await _httpService.getMyRecipientGroups();
+      // useSessionCheck: false para evitar bucle infinito durante el login
+      final List<RecipientGroupModel> groups = await _httpService.getMyRecipientGroups(useSessionCheck: false);
       recipientGroups = groups;
 
       for (var group in groups) {
