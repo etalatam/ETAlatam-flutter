@@ -9,7 +9,7 @@ ETAlatam is a Flutter cross-platform application (Android/iOS/Web) for real-time
 - **Students**: Real-time bus location tracking and trip history
 - **Guardians/Parents**: Monitor multiple students and receive real-time notifications
 
-**Version**: 1.12.32
+**Version**: 1.12.33
 **Flutter**: 3.19.0 (strictly required)
 **Dart SDK**: >=3.2.0 <4.0.0
 
