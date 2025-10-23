@@ -673,12 +673,11 @@ class HttpService {
           EmitterService.instance.connect();
         }
 
-        // Setup de notificaciones FCM al hacer login exitoso
-        try {
-          await NotificationService.instance.setupNotifications();
-        } catch (e) {
+        // Setup de notificaciones FCM al hacer login exitoso (en background)
+        // No esperamos el resultado para no bloquear la navegación
+        NotificationService.instance.setupNotifications().catchError((e) {
           print('[login] Error en setupNotifications: $e');
-        }
+        });
 
         return '1';
       } else {

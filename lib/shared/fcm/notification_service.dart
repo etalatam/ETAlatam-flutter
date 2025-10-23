@@ -84,8 +84,11 @@ class NotificationService with ChangeNotifier {
       final List<RecipientGroupModel> groups = await _httpService.getMyRecipientGroups(useSessionCheck: false);
       recipientGroups = groups;
 
-      for (var group in groups) {
-        await subscribeToTopic(group.topic);
+      // Suscribirse a todos los topics en paralelo para mejor rendimiento
+      if (groups.isNotEmpty) {
+        await Future.wait(
+          groups.map((group) => subscribeToTopic(group.topic)),
+        );
       }
 
       // Guardar grupos en storage para sincronización posterior
@@ -116,16 +119,20 @@ class NotificationService with ChangeNotifier {
       final List<String> oldTopics = oldGroups.map((g) => g.topic).toList();
       final List<String> newTopics = newGroups.map((g) => g.topic).toList();
 
-      // Desuscribirse de topics removidos
+      // Desuscribirse de topics removidos (en paralelo)
       final List<String> toUnsubscribe = oldTopics.where((t) => !newTopics.contains(t)).toList();
-      for (var topic in toUnsubscribe) {
-        await unsubscribeFromTopic(topic);
+      if (toUnsubscribe.isNotEmpty) {
+        await Future.wait(
+          toUnsubscribe.map((topic) => unsubscribeFromTopic(topic)),
+        );
       }
 
-      // Suscribirse a nuevos topics
+      // Suscribirse a nuevos topics (en paralelo)
       final List<String> toSubscribe = newTopics.where((t) => !oldTopics.contains(t)).toList();
-      for (var topic in toSubscribe) {
-        await subscribeToTopic(topic);
+      if (toSubscribe.isNotEmpty) {
+        await Future.wait(
+          toSubscribe.map((topic) => subscribeToTopic(topic)),
+        );
       }
 
       // Actualizar grupos almacenados
