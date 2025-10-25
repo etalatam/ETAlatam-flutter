@@ -143,3 +143,6 @@ app.*.symbols
 # Credentials
 .gitcredentials
 .githubtoken
+
+# FVM Version Cache
+.fvm/

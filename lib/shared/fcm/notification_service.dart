@@ -69,9 +69,11 @@ class NotificationService with ChangeNotifier {
     print("[NotificationService.setupNotifications] Iniciando setup");
 
     try {
-      // 1. Obtener y suscribirse al topic personal
+      // 1. Obtener y suscribirse al topic personal con timeout
       // useSessionCheck: false para evitar bucle infinito durante el login
-      final UserTopicModel? userTopicModel = await _httpService.getMyUserTopic(useSessionCheck: false);
+      final UserTopicModel? userTopicModel = await _httpService.getMyUserTopic(useSessionCheck: false)
+        .timeout(Duration(seconds: 3), onTimeout: () => null);
+
       if (userTopicModel != null) {
         userTopic = userTopicModel.userTopic;
         await subscribeToTopic(userTopic!);
@@ -79,16 +81,17 @@ class NotificationService with ChangeNotifier {
         print("[NotificationService] Topic personal guardado: $userTopic");
       }
 
-      // 2. Obtener y suscribirse a los topics de grupos
+      // 2. Obtener y suscribirse a los topics de grupos con timeout
       // useSessionCheck: false para evitar bucle infinito durante el login
-      final List<RecipientGroupModel> groups = await _httpService.getMyRecipientGroups(useSessionCheck: false);
+      final List<RecipientGroupModel> groups = await _httpService.getMyRecipientGroups(useSessionCheck: false)
+        .timeout(Duration(seconds: 3), onTimeout: () => <RecipientGroupModel>[]);
       recipientGroups = groups;
 
       // Suscribirse a todos los topics en paralelo para mejor rendimiento
       if (groups.isNotEmpty) {
         await Future.wait(
           groups.map((group) => subscribeToTopic(group.topic)),
-        );
+        ).timeout(Duration(seconds: 3), onTimeout: () => []);
       }
 
       // Guardar grupos en storage para sincronización posterior
@@ -97,6 +100,7 @@ class NotificationService with ChangeNotifier {
       print("[NotificationService] Setup completado. Topics: ${topicsList.length}");
     } catch (e) {
       print("[NotificationService.setupNotifications] error: ${e.toString()}");
+      // No lanzamos el error para evitar bloquear el login
     }
   }
 

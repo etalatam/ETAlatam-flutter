@@ -4,6 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
+<<<<<<< Updated upstream
 ETAlatam is a Flutter cross-platform application (Android/iOS/Web) for real-time school transport tracking, supporting three user roles:
 - **Drivers**: GPS tracking, route management, and student attendance
 - **Students**: Real-time bus location tracking and trip history
@@ -41,10 +42,63 @@ flutter pub get                          # Install dependencies
 flutter pub upgrade                      # Upgrade dependencies
 flutter clean                           # Clean build artifacts
 flutter pub run build_runner build       # Generate Isar schemas (*.g.dart files)
+=======
+ETAlatam is a Flutter multiplatform school transport tracking application. It connects three user types (drivers, students, and guardians/parents) with real-time GPS tracking, Firebase Cloud Messaging notifications, and route management.
+
+## Common Development Commands
+
+### Essential Commands
+```bash
+# Install dependencies
+flutter pub get
+
+# Run in development
+flutter run
+
+# Code analysis and linting
+flutter analyze
+
+# Run tests
+flutter test
+
+# Clean project
+flutter clean
+
+# Fix common Dart issues
+dart fix
+```
+
+### Build Commands
+```bash
+# Development builds
+flutter run
+
+# Production builds
+flutter build apk --release
+flutter build appbundle --release
+flutter build ios --release
+flutter build web --release
+
+# Use build script for guided builds
+./build_app.sh
+```
+
+### Testing Commands
+```bash
+# Unit tests
+flutter test
+
+# Integration tests
+flutter test integration_test
+
+# Theme testing script
+./test_theme.sh
+>>>>>>> Stashed changes
 ```
 
 ## Architecture
 
+<<<<<<< Updated upstream
 ### Clean Architecture Pattern
 The codebase follows clean architecture with clear separation of concerns:
 
@@ -287,3 +341,146 @@ lib/
 
 **Build**:
 - [build_app.sh](build_app.sh) - Interactive build script
+=======
+### Clean Architecture Structure
+The project follows Clean Architecture principles with these layers:
+
+- **Domain Layer** (`lib/domain/`): Business logic, entities, and repository interfaces
+- **Infrastructure Layer** (`lib/infrastructure/`): Repository implementations and data mappers
+- **Presentation Layer** (`lib/Pages/`, `lib/components/`): UI components and pages
+
+### Key Directories
+```
+lib/
+├── API/                    # HTTP client and API services
+├── Models/                 # Data models
+├── Pages/                  # Application screens
+│   ├── providers/         # Page-specific providers
+│   └── map/               # Map-related components
+├── components/             # Reusable UI widgets
+├── controllers/            # Business logic helpers
+├── domain/                 # Clean Architecture domain layer
+│   ├── entities/          # Business entities
+│   ├── repositories/      # Repository interfaces
+│   └── datasources/       # Data source interfaces
+├── infrastructure/         # Repository implementations
+├── providers/             # Global providers (theme, etc.)
+└── shared/                # Shared services
+    ├── fcm/              # Firebase Cloud Messaging
+    ├── location/         # GPS location services
+    └── emitterio/        # Real-time messaging
+```
+
+### State Management
+- **Provider Pattern**: Primary state management solution
+- **GetX**: Used for localization and some controllers
+- **Riverpod**: Available but not actively used (commented out)
+
+### Key Services Architecture
+- **LocationService**: Singleton for GPS tracking with background capabilities
+- **EmitterService**: Real-time messaging via emitter.io
+- **NotificationService**: Firebase Cloud Messaging integration
+- **ThemeProvider**: Global theme management (dark/light mode)
+
+## Current Theme System
+
+The app uses a Provider-based theme system:
+- **ThemeProvider** (`lib/providers/theme_provider.dart`): Manages dark/light themes
+- **Persistence**: Automatic saving to SharedPreferences
+- **Migration**: Some components still use old theme system and need updating
+
+### Theme Usage
+```dart
+// Modern approach (preferred)
+Theme.of(context).scaffoldBackgroundColor
+Theme.of(context).textTheme.titleLarge
+
+// Legacy approach (to be migrated)
+activeTheme.main_bg
+activeTheme.h5
+```
+
+## Firebase Configuration
+
+### Required Files
+- Android: `android/app/google-services.json`
+- iOS: `ios/Runner/GoogleService-Info.plist`
+
+### FCM Topic Structure
+- Drivers: `route-{route_id}-driver`
+- Students: `route-{route_id}-student`, `route-{route_id}-pickup_point-{pickup_id}`
+- Guardians: `route-{route_id}-guardian`, `route-{route_id}-student-{student_id}`
+
+## Flutter Version Requirements
+
+**CRITICAL**: This project requires specific versions:
+- **Flutter**: 3.19.0 (exact)
+- **Dart SDK**: 3.2.0 (exact)
+
+Use `flutter downgrade 3.19.0` if needed.
+
+## Common Issues and Solutions
+
+### Dependency Conflicts
+Some dependencies are outdated and cause build issues:
+- Run `flutter clean && flutter pub get` for dependency problems
+- Update outdated packages carefully to maintain compatibility
+
+### Location Service
+- Background location tracking uses `background_locator_2`
+- Requires proper permissions setup for Android/iOS
+- LocationService is a singleton - use `LocationService.instance`
+
+### Maps Integration
+- Uses Mapbox Maps Flutter SDK
+- Token configured in `main.dart` (should be moved to environment variables)
+- Handle camera controls carefully to avoid user interaction issues
+
+## Testing Strategy
+
+### Current Test Coverage
+- Basic unit tests available in `test/` directory
+- Integration tests in `tests/` directory
+- Theme testing script available (`test_theme.sh`)
+
+### Known Issues (from TODO.MD)
+High priority issues to be aware of:
+1. Student position reporting accuracy
+2. Distance calculation algorithm
+3. Driver map centering and user interaction
+4. Password recovery functionality
+5. Dark mode visual issues
+6. Notification settings persistence
+
+## Development Workflow
+
+### Branch Strategy
+- Main branch: `main`
+- Current working branch: `tareas-pendientes`
+- Create feature branches from main
+
+### Commit Convention
+Use format: `fix: [#numero] descripción breve` for issue-related commits
+
+### Before Committing
+Always run before committing changes:
+```bash
+flutter analyze
+flutter test
+```
+
+## Environment Setup
+
+### Prerequisites
+- Flutter SDK 3.19.0
+- Android Studio or VS Code
+- Physical device or emulator
+- Firebase project with FCM configured
+- Mapbox access token
+
+### Local Storage
+The app uses multiple storage solutions:
+- SharedPreferences for user preferences
+- Isar database for local data persistence
+- LocalStorage for some cached data
+>>>>>>> Stashed changes

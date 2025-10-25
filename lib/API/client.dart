@@ -675,8 +675,13 @@ class HttpService {
 
         // Setup de notificaciones FCM al hacer login exitoso (en background)
         // No esperamos el resultado para no bloquear la navegación
-        NotificationService.instance.setupNotifications().catchError((e) {
-          print('[login] Error en setupNotifications: $e');
+        // Agregamos timeout para evitar bloqueos
+        Future.delayed(Duration(milliseconds: 100), () {
+          NotificationService.instance.setupNotifications()
+            .timeout(Duration(seconds: 5))
+            .catchError((e) {
+              print('[login] Error en setupNotifications: $e');
+            });
         });
 
         return '1';

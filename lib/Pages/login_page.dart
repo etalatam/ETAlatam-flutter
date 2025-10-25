@@ -226,23 +226,38 @@ class _LoginState extends State<Login> {
                                           showLoader = true;
                                         });
 
-                                        loginResponse = await httpService.login(
-                                            email, password);
-                                        var msg = loginResponse?.split('/');
+                                        try {
+                                          loginResponse = await httpService.login(
+                                              email, password)
+                                              .timeout(Duration(seconds: 10));
+                                          var msg = loginResponse?.split('/');
 
-                                        setState(() {
-                                          showLoader = false;
-                                          if (loginResponse == '1') {
-                                            _saveEmailToHistory(email);
-                                            goHome();
-                                          } else {
-                                            showSuccessDialog(
-                                                context,
-                                                "${lang.translate('Error')} (${msg![1]})",
-                                                lang.translate(msg[0]),
-                                                null);
-                                          }
-                                        });
+                                          setState(() {
+                                            showLoader = false;
+                                            if (loginResponse == '1') {
+                                              _saveEmailToHistory(email);
+                                              // Pequeño delay para asegurar que el estado se guardó
+                                              Future.delayed(Duration(milliseconds: 100), () {
+                                                goHome();
+                                              });
+                                            } else {
+                                              showSuccessDialog(
+                                                  context,
+                                                  "${lang.translate('Error')} (${msg![1]})",
+                                                  lang.translate(msg[0]),
+                                                  null);
+                                            }
+                                          });
+                                        } catch (e) {
+                                          setState(() {
+                                            showLoader = false;
+                                          });
+                                          showSuccessDialog(
+                                              context,
+                                              lang.translate('Error'),
+                                              lang.translate('Connection error. Please try again.'),
+                                              null);
+                                        }
                                       },
                                       child: Text(
                                         lang.translate('sign in'),
