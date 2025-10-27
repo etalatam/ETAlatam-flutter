@@ -29,6 +29,25 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(':app')
+
+    // Configurar JVM target para todos los módulos Kotlin
+    afterEvaluate {
+        if (project.hasProperty("android")) {
+            android {
+                compileOptions {
+                    sourceCompatibility JavaVersion.VERSION_1_8
+                    targetCompatibility JavaVersion.VERSION_1_8
+                }
+            }
+        }
+
+        // Configurar kotlinOptions para todos los subproyectos
+        tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+            kotlinOptions {
+                jvmTarget = "1.8"
+            }
+        }
+    }
 }
 
 tasks.register("clean", Delete) {
