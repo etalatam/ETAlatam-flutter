@@ -4,8 +4,12 @@ import 'package:eta_school_app/Pages/home_screen.dart';
 import 'package:eta_school_app/components/loader.dart';
 // import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/methods.dart';
+import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
+import 'package:eta_school_app/shared/fcm/notification_service.dart';
+import 'package:eta_school_app/shared/location/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:wakelock/wakelock.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 
 class Login extends StatefulWidget {
@@ -334,7 +338,57 @@ class _LoginState extends State<Login> {
   void initState() {
     super.initState();
     _loadEmailHistory();
+    _cleanupResourcesIfNoSession();
     goHome();
+  }
+
+  /// Limpiar todos los recursos si no hay sesión activa
+  Future<void> _cleanupResourcesIfNoSession() async {
+    try {
+      final token = await storage.getItem('token');
+      final userId = await storage.getItem('id_usu');
+
+      // Si no hay token o userId, limpiar todos los recursos
+      if (token == null || userId == null) {
+        print('[Login] No active session found, cleaning up resources...');
+
+        // Detener servicios de ubicación
+        try {
+          LocationService.instance.stopLocationService();
+          print('[Login] LocationService stopped');
+        } catch (e) {
+          print('[Login] Error stopping LocationService: $e');
+        }
+
+        // Desconectar EmitterService
+        try {
+          EmitterService.instance.disconnect();
+          print('[Login] EmitterService disconnected');
+        } catch (e) {
+          print('[Login] Error disconnecting EmitterService: $e');
+        }
+
+        // Limpiar NotificationService
+        try {
+          await NotificationService.instance.close();
+          print('[Login] NotificationService closed');
+        } catch (e) {
+          print('[Login] Error closing NotificationService: $e');
+        }
+
+        // Deshabilitar Wakelock
+        try {
+          await Wakelock.disable();
+          print('[Login] Wakelock disabled');
+        } catch (e) {
+          print('[Login] Error disabling Wakelock: $e');
+        }
+
+        print('[Login] Resource cleanup completed');
+      }
+    } catch (e) {
+      print('[Login] Error during resource cleanup: $e');
+    }
   }
 
   @override

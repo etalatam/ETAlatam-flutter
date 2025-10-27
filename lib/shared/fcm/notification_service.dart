@@ -6,6 +6,25 @@ import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
+// Handler de mensajes en background - debe estar fuera de la clase
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  try {
+    print('[FCM] Handling a background message: ${message.messageId}');
+    print('[FCM] Message data: ${message.data}');
+
+    final String? status = message.data['status']?.toString();
+    print('[FCM] Background message status: $status');
+
+    if (status == '1' || status == '2') {
+      // Usuario agregado/removido de grupo → Se sincronizará al abrir la app
+      print('[FCM] Group membership changed in background');
+    }
+  } catch (e) {
+    print('[FCM] Error handling background message: $e');
+  }
+}
+
 class NotificationService with ChangeNotifier {
   LastMessage? lastMessage;
 
@@ -210,27 +229,6 @@ class NotificationService with ChangeNotifier {
           syncGroups();
         }
       });
-    } catch (e) {
-      print("[FCM] ${e.toString()}");
-    }
-  }
-
-  Future<void> _firebaseMessagingBackgroundHandler(
-      RemoteMessage message) async {
-    try {
-      print('[FCM] Handling a background message: ${message.messageId}');
-      print('[FCM] Message data: ${message.data}');
-
-      final String? status = message.data['status']?.toString();
-      print('[FCM] Background message status: $status');
-
-      if (status == '1' || status == '2') {
-        // Usuario agregado/removido de grupo → Se sincronizará al abrir la app
-        print('[FCM] Cambio en membresía de grupo detectado en background');
-      } else {
-        // Anuncio normal
-        _handleIncomingMessage(LastMessage(message, 'background'));
-      }
     } catch (e) {
       print("[FCM] ${e.toString()}");
     }

@@ -3,6 +3,7 @@ import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/Pages/attendance_page.dart';
 import 'package:eta_school_app/Pages/driver_home.dart';
 import 'package:eta_school_app/Pages/guardians_home.dart';
+import 'package:eta_school_app/Pages/login_page.dart';
 import 'package:eta_school_app/Pages/monitor_home.dart';
 import 'package:eta_school_app/Pages/no_active_trip_page.dart';
 import 'package:eta_school_app/Pages/notifications_page.dart';
@@ -124,7 +125,17 @@ class _HomeScreenState extends State<HomeScreen> {
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return Center(child: Text('No data available'));
         } else {
-          String userRelationName = snapshot.data!['relation_name']!;
+          // Validar que relation_name existe antes de usar el operador !
+          final relationName = snapshot.data!['relation_name'];
+          if (relationName == null) {
+            print('[HomeScreen] Error: relation_name is null, redirecting to login');
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Get.offAll(() => Login());
+            });
+            return Center(child: CircularProgressIndicator());
+          }
+
+          String userRelationName = relationName;
           final isMonitor = snapshot.data!['monitor'] ?? false;
           if(isMonitor && userRelationName=='eta.employees'){
             userRelationName = 'eta.monitor';

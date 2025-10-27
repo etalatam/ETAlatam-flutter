@@ -39,6 +39,9 @@ class HttpService {
 
   String token = '';
 
+  // Flag para evitar múltiples logouts simultáneos
+  static bool _isLoggingOut = false;
+
   // String response_text = "";
 
   Map? headers;
@@ -71,6 +74,12 @@ class HttpService {
   /// Check for expired session
   Future<void> _checkSessionExpired(http.Response response) async {
     if (response.statusCode == 401 || response.statusCode == 403) {
+      // Evitar múltiples logouts simultáneos
+      if (_isLoggingOut) {
+        print("[HttpService] Logout already in progress, skipping...");
+        return;
+      }
+
       print("[HttpService] Session expired or unauthorized - status: ${response.statusCode}");
       // Limpiar datos y redirigir al login
       await logout();
@@ -813,8 +822,15 @@ class HttpService {
 
   // Logout and clear localStorage
   logout() async {
+    // Prevenir múltiples logouts simultáneos
+    if (_isLoggingOut) {
+      print("[httpService.logout] Logout already in progress, skipping...");
+      return;
+    }
+
+    _isLoggingOut = true;
     print("[httpService.logout] Starting logout process...");
-    
+
     // Stop location services
     try {
       print("[httpService.logout] Stopping LocationService...");
@@ -850,12 +866,15 @@ class HttpService {
     // Clear all storage
     try {
       print("[httpService.logout] Clearing storage...");
-      await storage.clear(); 
+      await storage.clear();
     } catch (e) {
       print("[httpService.logout] Error clearing storage: $e");
     }
-    
+
     print("[httpService.logout] Logout process completed");
+
+    // Reset el flag al final
+    _isLoggingOut = false;
   }
 
   Future<dynamic> sendTracking({required position, required userId}) async {
