@@ -239,9 +239,13 @@ class _LoginState extends State<Login> {
                                           setState(() {
                                             showLoader = false;
                                             if (loginResponse == '1') {
+                                              print('[Login] Login exitoso, navegando a home...');
                                               _saveEmailToHistory(email);
+                                              // Reinitialize LocationService for students after successful login
+                                              LocationService.instance.reinitializeAfterLogin();
                                               // Pequeño delay para asegurar que el estado se guardó
                                               Future.delayed(Duration(milliseconds: 100), () {
+                                                print('[Login] Llamando goHome()...');
                                                 goHome();
                                               });
                                             } else {
@@ -327,10 +331,15 @@ class _LoginState extends State<Login> {
   ///
   /// Redirect to home page
   goHome() async {
+    print('[Login.goHome] Verificando sesión...');
     final hasSession = await checkSession();
+    print('[Login.goHome] hasSession: $hasSession');
 
     if (hasSession) {
-      Get.offAll(HomeScreen());
+      print('[Login.goHome] Navegando a HomeScreen...');
+      Get.offAll(() => HomeScreen());
+    } else {
+      print('[Login.goHome] No hay sesión válida!');
     }
   }
 

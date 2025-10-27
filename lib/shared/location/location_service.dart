@@ -118,8 +118,56 @@ class LocationService extends ChangeNotifier {
         }
       });
 
-      // Inicializar el localizador
-      await BackgroundLocator.initialize();
+      // Inicializar el localizador solo para roles que lo necesitan
+      // Primero verificar si hay un usuario autenticado
+      String? token;
+      String? relationName;
+      try {
+        token = await storage.getItem('token');
+        relationName = await storage.getItem('relation_name');
+      } catch (e) {
+        print('[LocationService] Could not get user data from storage: $e');
+      }
+
+      // Si no hay token, el usuario no está autenticado, no inicializar nada
+      if (token == null || token.isEmpty) {
+        print('[LocationService] No authenticated user - skipping BackgroundLocator init');
+        print('[LocationService] Will initialize after login if needed for the user role');
+        // NO inicializar BackgroundLocator hasta que el usuario haga login
+      } else {
+        // Solo inicializar para conductores con viaje activo o estudiantes
+        // Los guardianes (eta.guardians) no necesitan tracking GPS
+        bool shouldInitializeLocator = false;
+
+        if (relationName != null && relationName.isNotEmpty) {
+          if (relationName == 'eta.students') {
+            // Los estudiantes necesitan tracking
+            shouldInitializeLocator = true;
+            print('[LocationService] Student role detected - will initialize locator');
+          } else if (relationName == 'eta.drivers') {
+            // Los conductores solo lo necesitan con viaje activo
+            // Esto se inicializará cuando comience un viaje
+            shouldInitializeLocator = false;
+            print('[LocationService] Driver role detected - locator will init on trip start');
+          } else if (relationName == 'eta.guardians') {
+            // Los guardianes/representantes NO necesitan tracking
+            shouldInitializeLocator = false;
+            print('[LocationService] Guardian role detected - locator not needed');
+          }
+        } else {
+          print('[LocationService] User authenticated but no role found - defaulting to no tracking');
+        }
+
+        if (shouldInitializeLocator) {
+          try {
+            await BackgroundLocator.initialize();
+            print('[LocationService] BackgroundLocator initialized successfully');
+          } catch (e) {
+            print('[LocationService] Error initializing BackgroundLocator: $e');
+            // Continuar sin el servicio si falla (ej: Android 15)
+          }
+        }
+      }
       
       // Configurar Workmanager
       Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
@@ -176,6 +224,41 @@ class LocationService extends ChangeNotifier {
     intent.launch();
   }
 
+  /// Reinitialize location service after login if needed for the user role
+  Future<void> reinitializeAfterLogin() async {
+    print('[LocationService] Reinitializing after login...');
+
+    // Get user role from storage
+    String? relationName;
+    try {
+      relationName = await storage.getItem('relation_name');
+    } catch (e) {
+      print('[LocationService] Could not get relation_name after login: $e');
+      return;
+    }
+
+    // Only initialize for students (drivers will init on trip start)
+    if (relationName == 'eta.students') {
+      print('[LocationService] Student logged in - initializing BackgroundLocator');
+      try {
+        // Check if already running
+        bool isRunning = await BackgroundLocator.isServiceRunning();
+        if (!isRunning) {
+          await BackgroundLocator.initialize();
+          print('[LocationService] BackgroundLocator initialized for student after login');
+        } else {
+          print('[LocationService] BackgroundLocator already running');
+        }
+      } catch (e) {
+        print('[LocationService] Error initializing BackgroundLocator after login: $e');
+      }
+    } else if (relationName == 'eta.drivers') {
+      print('[LocationService] Driver logged in - will init locator on trip start');
+    } else if (relationName == 'eta.guardians') {
+      print('[LocationService] Guardian logged in - no location tracking needed');
+    }
+  }
+
 
   Future<void> startLocationService({bool calculateDistance = false}) async {
     print('[LocationService-$_instanceId.startLocationService] calculateDistance: $calculateDistance');
@@ -226,6 +309,24 @@ class LocationService extends ChangeNotifier {
         notificationIconColor: Colors.grey,
       ),
     );
+
+    // Para conductores, inicializar BackgroundLocator si aún no está inicializado
+    String? relationName;
+    try {
+      relationName = await storage.getItem('relation_name');
+    } catch (e) {
+      print('[LocationService] Could not get relation_name in startTracking: $e');
+    }
+
+    if (relationName == 'eta.drivers' && !await BackgroundLocator.isServiceRunning()) {
+      try {
+        print('[LocationService] Initializing BackgroundLocator for driver on trip start');
+        await BackgroundLocator.initialize();
+      } catch (e) {
+        print('[LocationService] Error initializing BackgroundLocator for driver: $e');
+        // Continuar sin el servicio si falla
+      }
+    }
 
     try {
       await BackgroundLocator.registerLocationUpdate(
