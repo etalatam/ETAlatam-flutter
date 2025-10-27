@@ -89,14 +89,21 @@ class HttpService {
 
   /// Run API GET query
   getQuery(String path, {useToken = true}) async {
-    final token = storage.getItem('token');
+    String? token = await storage.getItem('token');
+
+    // Si no hay token de usuario, intentar usar el token temporal
+    if (token == null || token.isEmpty) {
+      token = await storage.getItem('temp_access_token');
+    }
+
     final url = Uri.parse(apiURL + path);
     print("$url");
+
     final response = await http.get(url, headers: {
       'Content-Type': 'application/json',
       'Authorization': useToken ? 'Bearer $token' : '',
     }).onError((error, stackTrace) => handleHttpError(error));
-    
+
     // Verificar si la sesi\u00f3n expir\u00f3
     await _checkSessionExpired(response);
     return response;
@@ -106,14 +113,21 @@ class HttpService {
   postQuery(String path, body,
       {useToken = true,
       contentType = 'application/x-www-form-urlencoded'}) async {
-    final token = storage.getItem('token');
+    String? token = await storage.getItem('token');
+
+    // Si no hay token de usuario, intentar usar el token temporal
+    if (token == null || token.isEmpty) {
+      token = await storage.getItem('temp_access_token');
+    }
+
     final url = Uri.parse(apiURL + path);
     print("[Api.url] $url");
+
     final response = await http.post(url, body: body, headers: {
       'Content-Type': contentType,
       'Authorization': useToken ? 'Bearer $token' : '',
     }).onError((error, stackTrace) => handleHttpError(error));
-    
+
     // Verificar si la sesi\u00f3n expir\u00f3
     await _checkSessionExpired(response);
     return response;
@@ -631,8 +645,11 @@ class HttpService {
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
       debugPrint(body.toString());
-      await storage.setItem(
-          'token', body['token'].isEmpty ? '' : body['token']);
+      // Guardar temporalmente el token de request_access
+      // NOTA: Este token será sobreescrito por el token del usuario después del login
+      if (body['token'] != null && body['token'].toString().isNotEmpty) {
+        await storage.setItem('temp_access_token', body['token']);
+      }
       return '1';
     }
 
@@ -650,6 +667,7 @@ class HttpService {
 
     var requestAccessRes = await requestAccess();
     if (requestAccessRes == '1') {
+      // El postQuery ahora usará el token temporal automáticamente
       http.Response res = await postQuery(endpoint, data);
 
       print("[$endpoint] statuscode: ${res.statusCode}");
@@ -657,8 +675,12 @@ class HttpService {
 
       if (res.statusCode == 200) {
         dynamic body = jsonDecode(res.body);
-        await storage.setItem(
-            'token', body['token'].isEmpty ? '' : body['token']);
+        // Validar que el token no sea nulo ni vacío antes de guardarlo
+        if (body['token'] != null && body['token'].toString().isNotEmpty) {
+          await storage.setItem('token', body['token']);
+        } else {
+          print('[login] Warning: Token is empty or null!');
+        }
         await storage.setItem('id_usu', body['id_usu'] ?? body['id_usu']);
         await storage.setItem(
             'relation_name', body['relation_name'] ?? body['relation_name']);
