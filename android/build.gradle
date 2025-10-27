@@ -31,22 +31,18 @@ subprojects {
 
 // Configurar JVM target consistente para todos los módulos
 subprojects {
+    // Configurar compatibilidad de Java y Kotlin para todos los módulos
+    project.extensions.findByType(com.android.build.gradle.BaseExtension)?.apply {
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
+        }
+    }
+
     // Configurar kotlinOptions para todos los subproyectos
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
         kotlinOptions {
             jvmTarget = "1.8"
-        }
-    }
-
-    // Configurar compatibilidad de Java
-    afterEvaluate { project ->
-        if (project.hasProperty("android")) {
-            android {
-                compileOptions {
-                    sourceCompatibility JavaVersion.VERSION_1_8
-                    targetCompatibility JavaVersion.VERSION_1_8
-                }
-            }
         }
     }
 }
