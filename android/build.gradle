@@ -30,8 +30,14 @@ subprojects {
 subprojects {
     project.evaluationDependsOn(':app')
 
-    // Forzar JVM target 1.8 para todos los módulos Kotlin
-    project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    // Forzar compatibilidad Java 1.8 para todas las tareas de compilación Java
+    tasks.withType(JavaCompile) {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+
+    // Forzar JVM target 1.8 para todas las tareas Kotlin
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
         kotlinOptions {
             jvmTarget = "1.8"
         }
