@@ -21,6 +21,20 @@ allprojects {
         google()
         mavenCentral()
     }
+
+    // Forzar Java 8 para todos los proyectos
+    tasks.withType(JavaCompile).configureEach {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+        options.bootstrapClasspath = files([])
+    }
+
+    // Forzar Kotlin JVM target 1.8
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions {
+            jvmTarget = "1.8"
+        }
+    }
 }
 
 rootProject.buildDir = '../build'
@@ -29,46 +43,6 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(':app')
-
-    // Aplicar configuración directamente sin afterEvaluate
-    project.plugins.withId('com.android.application') {
-        android {
-            compileOptions {
-                sourceCompatibility JavaVersion.VERSION_1_8
-                targetCompatibility JavaVersion.VERSION_1_8
-            }
-            kotlinOptions {
-                jvmTarget = '1.8'
-            }
-        }
-    }
-
-    project.plugins.withId('com.android.library') {
-        android {
-            compileOptions {
-                sourceCompatibility JavaVersion.VERSION_1_8
-                targetCompatibility JavaVersion.VERSION_1_8
-            }
-            kotlinOptions {
-                jvmTarget = '1.8'
-            }
-        }
-    }
-
-    // Forzar Java 1.8 para todas las tareas de compilación
-    tasks.whenTaskAdded { task ->
-        if (task.name.contains("JavaWithJavac")) {
-            task.sourceCompatibility = '1.8'
-            task.targetCompatibility = '1.8'
-        }
-    }
-
-    // Forzar JVM target 1.8 para todas las tareas Kotlin
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-        kotlinOptions {
-            jvmTarget = "1.8"
-        }
-    }
 }
 
 tasks.register("clean", Delete) {
