@@ -236,30 +236,57 @@ class _LoginState extends State<Login> {
                                               .timeout(Duration(seconds: 10));
                                           var msg = loginResponse?.split('/');
 
-                                          setState(() {
-                                            showLoader = false;
-                                            if (loginResponse == '1') {
-                                              print('[Login] Login exitoso, navegando a home...');
-                                              _saveEmailToHistory(email);
-                                              // Reinitialize LocationService for students after successful login
-                                              LocationService.instance.reinitializeAfterLogin();
-                                              // Pequeño delay para asegurar que el estado se guardó
-                                              Future.delayed(Duration(milliseconds: 100), () {
-                                                print('[Login] Llamando goHome()...');
-                                                goHome();
-                                              });
+                                          if (loginResponse == '1') {
+                                            print('[Login] Login exitoso');
+                                            _saveEmailToHistory(email);
+
+                                            // Reinitialize LocationService for students after successful login
+                                            LocationService.instance.reinitializeAfterLogin();
+
+                                            // Esperar un poco más para asegurar que el storage esté sincronizado
+                                            // El LocalStorage puede ser asíncrono y necesita tiempo para persistir
+                                            await Future.delayed(Duration(milliseconds: 300));
+
+                                            // Verificar que los datos se guardaron correctamente antes de navegar
+                                            final token_ = await storage.getItem('token');
+                                            final userId = await storage.getItem('id_usu');
+                                            final relationName = await storage.getItem('relation_name');
+
+                                            print('[Login] Verificando datos guardados:');
+                                            print('  - token: ${token_ != null ? "✓" : "✗"}');
+                                            print('  - id_usu: ${userId ?? "✗"}');
+                                            print('  - relation_name: ${relationName ?? "✗"}');
+
+                                            setState(() {
+                                              showLoader = false;
+                                            });
+
+                                            if (token_ != null && userId != null && relationName != null) {
+                                              print('[Login] ✓ Todos los datos presentes, navegando a home...');
+                                              goHome();
                                             } else {
+                                              print('[Login] ✗ ERROR: Datos incompletos después del login!');
                                               showSuccessDialog(
                                                   context,
-                                                  "${lang.translate('Error')} (${msg![1]})",
-                                                  lang.translate(msg[0]),
+                                                  lang.translate('Error'),
+                                                  'Error al guardar la sesión. Por favor intente nuevamente.',
                                                   null);
                                             }
-                                          });
+                                          } else {
+                                            setState(() {
+                                              showLoader = false;
+                                            });
+                                            showSuccessDialog(
+                                                context,
+                                                "${lang.translate('Error')} (${msg![1]})",
+                                                lang.translate(msg[0]),
+                                                null);
+                                          }
                                         } catch (e) {
                                           setState(() {
                                             showLoader = false;
                                           });
+                                          print('[Login] Error en login: $e');
                                           showSuccessDialog(
                                               context,
                                               lang.translate('Error'),
@@ -318,11 +345,22 @@ class _LoginState extends State<Login> {
 
     final token_ = await storage.getItem('token');
     final userId = await storage.getItem('id_usu');
+    final relationName = await storage.getItem('relation_name');
 
-    print("LoginPage.userId: $userId");
+    print("[LoginPage.checkSession] Verificando datos de sesión:");
+    print("  - token: ${token_ != null ? 'PRESENTE' : 'NULL'}");
+    print("  - userId: $userId");
+    print("  - relationName: $relationName");
 
-    if (token_ != null && userId != null) {
+    // IMPORTANTE: Verificar que todos los datos necesarios estén presentes
+    // HomeScreen requiere relation_name para funcionar correctamente
+    if (token_ != null && userId != null && relationName != null) {
+      print("[LoginPage.checkSession] ✓ Sesión válida completa");
       return true;
+    }
+
+    if (token_ != null && userId != null && relationName == null) {
+      print("[LoginPage.checkSession] ⚠️  WARNING: Sesión incompleta - falta relation_name");
     }
 
     return false;
