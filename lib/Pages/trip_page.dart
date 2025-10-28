@@ -618,9 +618,24 @@ class _TripPageState extends State<TripPage>
                                           ? ETAWidgets.tripInfoRow(trip)
                                           : const Center(),
                                       Row(children: [
-                                        if (trip.trip_status == 'Running' &&
-                                            relationName
-                                                .contains('eta.drivers'))
+                                        // Debug: Log button visibility conditions
+                                        Builder(
+                                          builder: (context) {
+                                            print("[TripPage] Button visibility check:");
+                                            print("  - trip_status: '${trip.trip_status}'");
+                                            print("  - relationName: '$relationName'");
+                                            print("  - Is Running?: ${trip.trip_status == 'Running'}");
+                                            print("  - Contains eta.drivers?: ${relationName.contains('eta.drivers')}");
+                                            print("  - Show button?: ${trip.trip_status == 'Running' && relationName.contains('eta.drivers')}");
+                                            return SizedBox.shrink();
+                                          }
+                                        ),
+                                        // Hacer la verificación más flexible para el botón de finalizar viaje
+                                        if ((trip.trip_status?.toLowerCase() == 'running' ||
+                                             trip.trip_status == 'Running') &&
+                                            (relationName.contains('eta.drivers') ||
+                                             relationName.contains('driver') ||
+                                             relationName == 'eta.drivers'))
                                           GestureDetector(
                                               onTap: showLoader
                                                   ? null
@@ -643,9 +658,12 @@ class _TripPageState extends State<TripPage>
                                           const SizedBox(
                                             width: 20,
                                           ),
-                                        if (trip.trip_status == 'Running' &&
-                                            relationName
-                                                .contains('eta.drivers'))
+                                        // Aplicar la misma lógica flexible para el botón de asistencia
+                                        if ((trip.trip_status?.toLowerCase() == 'running' ||
+                                             trip.trip_status == 'Running') &&
+                                            (relationName.contains('eta.drivers') ||
+                                             relationName.contains('driver') ||
+                                             relationName == 'eta.drivers'))
                                           GestureDetector(
                                               onTap: (() {
                                                 openNewPage(context,
