@@ -117,8 +117,8 @@ class _GetStartedAppState extends State<GetStartedApp> {
     String? token = await storage.getItem('token');
 
     Timer(const Duration(seconds: 1), () async {
-      sessionLang = storage.getItem('lang');
-      token = storage.getItem('token');
+      sessionLang = await storage.getItem('lang');
+      token = await storage.getItem('token');
 
       if (token != null) {
         // Get.offAll(() => MapView());

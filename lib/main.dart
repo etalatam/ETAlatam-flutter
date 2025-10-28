@@ -3,6 +3,7 @@ import 'package:eta_school_app/Pages/splash_screen_page.dart';
 import 'package:eta_school_app/Pages/home_screen.dart';
 import 'package:eta_school_app/controllers/preferences.dart';
 import 'package:eta_school_app/providers/theme_provider.dart';
+import 'package:eta_school_app/services/storage_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,7 +19,11 @@ import 'shared/location/location_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
+  // Inicializar StorageService antes que cualquier otro servicio
+  await StorageService.instance.init();
+  print('[main] StorageService inicializado');
+
   final locationService = LocationService.instance;
   print('Main location service instance: ${locationService.instanceId}');
 

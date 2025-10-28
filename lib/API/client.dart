@@ -18,7 +18,6 @@ import 'package:eta_school_app/shared/location/location_service.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:localstorage/localstorage.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/Models/parent_model.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
@@ -35,7 +34,8 @@ import '../Models/recipient_group_model.dart';
 import '../Models/user_topic_model.dart';
 
 class HttpService {
-  final LocalStorage storage = LocalStorage('tokens.json');
+  // Usar el storage global importado desde helpers.dart
+  // que a su vez lo importa desde legacy_storage_adapter.dart
 
   String token = '';
 
@@ -80,10 +80,30 @@ class HttpService {
         return;
       }
 
-      print("[HttpService] Session expired or unauthorized - status: ${response.statusCode}");
-      // Limpiar datos y redirigir al login
-      await logout();
-      Get.offAll(() => Login());
+      // Analizar el tipo de error 401
+      bool isJWTError = false;
+      try {
+        final body = jsonDecode(response.body);
+        // Solo considerar como sesión expirada si es específicamente un error JWT
+        if (body['code'] == 'PGRST301' ||
+            body['message']?.toString().contains('JWSError') == true ||
+            body['message']?.toString().contains('JWT') == true ||
+            body['message']?.toString().contains('token') == true) {
+          isJWTError = true;
+        }
+      } catch (e) {
+        // Si no podemos parsear el body, asumimos que es un error de autenticación
+        isJWTError = true;
+      }
+
+      if (isJWTError) {
+        print("[HttpService] JWT authentication error - clearing session");
+        // Limpiar datos y redirigir al login
+        await logout();
+        Get.offAll(() => Login());
+      } else {
+        print("[HttpService] API returned ${response.statusCode} but not a JWT error - keeping session");
+      }
     }
   }
 
@@ -675,21 +695,46 @@ class HttpService {
 
       if (res.statusCode == 200) {
         dynamic body = jsonDecode(res.body);
+
+        // Log detallado de la respuesta del login
+        print('[login] Response data:');
+        print('[login]   token: ${body['token'] != null ? "exists (${body['token'].toString().length} chars)" : "null"}');
+        print('[login]   id_usu: ${body['id_usu']}');
+        print('[login]   relation_name: ${body['relation_name']}');
+        print('[login]   relation_id: ${body['relation_id']}');
+        print('[login]   nom_usu: ${body['nom_usu']}');
+        print('[login]   monitor: ${body['monitor']}');
+
+        // Asegurar que el storage está listo antes de guardar
+        await storage.ready;
+
         // Validar que el token no sea nulo ni vacío antes de guardarlo
         if (body['token'] != null && body['token'].toString().isNotEmpty) {
           await storage.setItem('token', body['token']);
+          print('[login] Token saved successfully');
         } else {
           print('[login] Warning: Token is empty or null!');
         }
-        await storage.setItem('id_usu', body['id_usu'] ?? body['id_usu']);
-        await storage.setItem(
-            'relation_name', body['relation_name'] ?? body['relation_name']);
-        await storage.setItem(
-            'relation_id', body['relation_id'] ?? body['relation_id']);
-        await storage.setItem(
-            'nom_usu', body['nom_usu'] ?? body['nom_usu']);
-        await storage.setItem(
-            'monitor', body['monitor'] ?? body['monitor']);    
+        // Guardar todos los valores del login, asegurando que no sean null
+        if (body['id_usu'] != null) {
+          await storage.setItem('id_usu', body['id_usu']);
+          print('[login] id_usu saved: ${body['id_usu']}');
+        }
+        if (body['relation_name'] != null) {
+          await storage.setItem('relation_name', body['relation_name']);
+          print('[login] relation_name saved: ${body['relation_name']}');
+        }
+        if (body['relation_id'] != null) {
+          await storage.setItem('relation_id', body['relation_id']);
+          print('[login] relation_id saved: ${body['relation_id']}');
+        }
+        if (body['nom_usu'] != null) {
+          await storage.setItem('nom_usu', body['nom_usu']);
+          print('[login] nom_usu saved: ${body['nom_usu']}');
+        }
+        // monitor puede ser false, así que guardamos aunque sea false
+        await storage.setItem('monitor', body['monitor'] ?? false);
+        print('[login] monitor saved: ${body['monitor'] ?? false}');    
 
         try {
           final LoginInformation login =
@@ -776,8 +821,8 @@ class HttpService {
     };
 
     // Check if we already have a valid token (authenticated user from profile)
-    final existingToken = storage.getItem('token');
-    
+    final existingToken = await storage.getItem('token');
+
     if (existingToken != null && existingToken.toString().isNotEmpty) {
       // User is authenticated (calling from profile), use existing token
       print("[$endpoint] Using existing token for authenticated user");
@@ -1146,7 +1191,7 @@ class HttpService {
   Future<UserTopicModel?> getMyUserTopic({bool useSessionCheck = false}) async {
     const endpoint = '/rpc/get_my_user_topic';
     try {
-      final token = storage.getItem('token');
+      final token = await storage.getItem('token');
       final url = Uri.parse(apiURL + endpoint);
 
       final response = await http.post(
@@ -1184,7 +1229,7 @@ class HttpService {
   Future<List<RecipientGroupModel>> getMyRecipientGroups({bool useSessionCheck = false}) async {
     const endpoint = '/rpc/get_my_recipient_groups';
     try {
-      final token = storage.getItem('token');
+      final token = await storage.getItem('token');
       final url = Uri.parse(apiURL + endpoint);
 
       final response = await http.post(

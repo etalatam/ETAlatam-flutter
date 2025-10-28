@@ -236,26 +236,30 @@ class _LoginState extends State<Login> {
                                               .timeout(Duration(seconds: 10));
                                           var msg = loginResponse?.split('/');
 
-                                          setState(() {
-                                            showLoader = false;
-                                            if (loginResponse == '1') {
-                                              print('[Login] Login exitoso, navegando a home...');
-                                              _saveEmailToHistory(email);
-                                              // Reinitialize LocationService for students after successful login
-                                              LocationService.instance.reinitializeAfterLogin();
-                                              // Pequeño delay para asegurar que el estado se guardó
-                                              Future.delayed(Duration(milliseconds: 100), () {
-                                                print('[Login] Llamando goHome()...');
-                                                goHome();
-                                              });
-                                            } else {
+                                          if (loginResponse == '1') {
+                                            print('[Login] Login exitoso, navegando a home...');
+                                            _saveEmailToHistory(email);
+                                            // Reinitialize LocationService for students after successful login
+                                            LocationService.instance.reinitializeAfterLogin();
+
+                                            // Navegar directamente sin cambiar el estado del loader
+                                            // Esto evita el parpadeo
+                                            if (mounted) {
+                                              print('[Login] Navegando inmediatamente a HomeScreen...');
+                                              Navigator.of(context).pushReplacement(
+                                                MaterialPageRoute(builder: (context) => HomeScreen()),
+                                              );
+                                            }
+                                          } else {
+                                            setState(() {
+                                              showLoader = false;
                                               showSuccessDialog(
                                                   context,
                                                   "${lang.translate('Error')} (${msg![1]})",
                                                   lang.translate(msg[0]),
                                                   null);
-                                            }
-                                          });
+                                            });
+                                          }
                                         } catch (e) {
                                           setState(() {
                                             showLoader = false;
@@ -312,17 +316,24 @@ class _LoginState extends State<Login> {
   }
 
   Future<bool> checkSession() async {
-    setState(() {
-      showLoader = false;
-    });
+    // Asegurar que el storage está listo antes de leer
+    await storage.ready;
 
     final token_ = await storage.getItem('token');
     final userId = await storage.getItem('id_usu');
 
     print("LoginPage.userId: $userId");
+    print("LoginPage.token: ${token_ != null ? 'exists' : 'null'}");
 
-    if (token_ != null && userId != null) {
+    if (token_ != null && userId != null && token_.toString().isNotEmpty && userId.toString().isNotEmpty) {
       return true;
+    }
+
+    // Solo cambiar el estado si está montado y si realmente necesitamos mostrar el formulario
+    if (mounted) {
+      setState(() {
+        showLoader = false;
+      });
     }
 
     return false;
@@ -331,13 +342,19 @@ class _LoginState extends State<Login> {
   ///
   /// Redirect to home page
   goHome() async {
+    // Evitar llamadas múltiples
+    if (!mounted) return;
+
     print('[Login.goHome] Verificando sesión...');
     final hasSession = await checkSession();
     print('[Login.goHome] hasSession: $hasSession');
 
-    if (hasSession) {
+    if (hasSession && mounted) {
       print('[Login.goHome] Navegando a HomeScreen...');
-      Get.offAll(() => HomeScreen());
+      // Usar pushReplacement en lugar de offAll para evitar limpiar el stack completamente
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
     } else {
       print('[Login.goHome] No hay sesión válida!');
     }
@@ -347,8 +364,11 @@ class _LoginState extends State<Login> {
   void initState() {
     super.initState();
     _loadEmailHistory();
-    _cleanupResourcesIfNoSession();
-    goHome();
+    // Solo verificar sesión después de inicializar
+    Future.delayed(Duration(milliseconds: 500), () async {
+      await _cleanupResourcesIfNoSession();
+      goHome();
+    });
   }
 
   /// Limpiar todos los recursos si no hay sesión activa

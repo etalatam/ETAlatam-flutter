@@ -488,7 +488,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   handleNotification(NotificationModel notification) async {
-    httpService.readNotification(storage.getItem('parent_id'), notification.id);
+    httpService.readNotification(await storage.getItem('parent_id'), notification.id);
 
     setState(() {
       notification.status = 'read';

@@ -2,179 +2,260 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:eta_school_app/main.dart' as app;
+import 'package:eta_school_app/services/storage_service.dart';
 import 'package:eta_school_app/Pages/login_page.dart';
 import 'package:eta_school_app/Pages/home_screen.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  group('Login Flow Integration Tests', () {
-    // Credenciales de prueba
-    const testEmail = 'etalatam+representante1@gmail.com';
-    const testPassword = 'casa1234';
+  group('Login Flow Integration Tests - BDD Style', () {
+    setUp(() async {
+      // Given: La aplicación está iniciada y no hay sesión activa
+      await StorageService.instance.clear();
+    });
 
-    testWidgets('Login exitoso y navegación a HomeScreen', (WidgetTester tester) async {
-      // Iniciar la aplicación
+    testWidgets('Escenario: Login exitoso con credenciales válidas', (WidgetTester tester) async {
+      // Given: Estoy en la pantalla de login
       app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await tester.pumpAndSettle(Duration(seconds: 3));
 
-      // Verificar que estamos en la página de login
       expect(find.byType(Login), findsOneWidget);
-      print('✓ Página de login cargada correctamente');
+      print('✓ Given: Estoy en la pantalla de login');
 
-      // Buscar los campos de email y password
-      final emailField = find.byType(TextField).first;
-      final passwordField = find.byType(TextField).last;
+      // When: Ingreso "etalatam+representante1@gmail.com" en el campo de correo
+      final emailField = find.byType(TextFormField).first;
+      await tester.enterText(emailField, 'etalatam+representante1@gmail.com');
+      await tester.pump();
+      print('✓ When: Ingreso email de prueba');
 
-      // Verificar que los campos existen
-      expect(emailField, findsOneWidget);
-      expect(passwordField, findsOneWidget);
-      print('✓ Campos de email y password encontrados');
+      // And: Ingreso "casa1234" en el campo de contraseña
+      final passwordField = find.byType(TextFormField).last;
+      await tester.enterText(passwordField, 'casa1234');
+      await tester.pump();
+      print('✓ And: Ingreso contraseña de prueba');
 
-      // Ingresar credenciales
-      await tester.enterText(emailField, testEmail);
-      await tester.pumpAndSettle(const Duration(milliseconds: 500));
-
-      await tester.enterText(passwordField, testPassword);
-      await tester.pumpAndSettle(const Duration(milliseconds: 500));
-      print('✓ Credenciales ingresadas');
-
-      // Buscar y presionar el botón de login
-      final loginButton = find.byType(GestureDetector).where((finder) {
-        final widget = tester.widget(finder);
-        if (widget is GestureDetector) {
-          final child = widget.child;
-          if (child is Text) {
-            return child.data?.toLowerCase().contains('sign') ?? false;
-          }
-        }
-        return false;
-      });
-
+      // And: Presiono el botón de "Ingresar"
+      final loginButton = find.text('sign in');
       expect(loginButton, findsOneWidget);
       await tester.tap(loginButton);
-      print('✓ Botón de login presionado');
+      print('✓ And: Presiono el botón de login');
 
-      // Esperar a que el login se procese (con timeout de seguridad)
-      await tester.pumpAndSettle(const Duration(seconds: 15));
+      // Then: Debería ver la pantalla de inicio
+      await tester.pumpAndSettle(
+        Duration(milliseconds: 100),
+        EnginePhase.sendSemanticsUpdate,
+        Duration(seconds: 15),
+      );
 
-      // Verificar que navegamos a HomeScreen
       expect(find.byType(HomeScreen), findsOneWidget);
-      print('✓ Navegación exitosa a HomeScreen');
-
-      // Verificar que el Login ya no está visible
       expect(find.byType(Login), findsNothing);
-      print('✓ Página de login ya no está visible');
+      print('✓ Then: Navego exitosamente a HomeScreen');
 
-      // Verificar elementos del HomeScreen
-      // Esperamos encontrar el bottom navigation bar
-      expect(find.byType(BottomNavigationBar), findsOneWidget);
-      print('✓ BottomNavigationBar encontrado en HomeScreen');
+      // And: El token de sesión debería estar guardado
+      final token = await StorageService.instance.getString('token');
+      expect(token, isNotNull);
+      expect(token!.isNotEmpty, true);
+      print('✓ And: Token guardado correctamente');
 
-      print('\n✅ Prueba completada exitosamente');
+      // And: El id de usuario debería ser 128
+      final userId = await StorageService.instance.getInt('id_usu');
+      expect(userId, equals(128));
+      print('✓ And: ID de usuario correcto (128)');
+
+      // And: El nombre de relación debería ser "eta.guardians"
+      final relationName = await StorageService.instance.getString('relation_name');
+      expect(relationName, equals('eta.guardians'));
+      print('✓ And: Rol correcto (eta.guardians)');
     });
 
-    testWidgets('Login con credenciales inválidas muestra error', (WidgetTester tester) async {
-      // Iniciar la aplicación
+    testWidgets('Escenario: Login fallido con credenciales inválidas', (WidgetTester tester) async {
+      // Given: Estoy en la pantalla de login
       app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await tester.pumpAndSettle(Duration(seconds: 3));
 
-      // Verificar que estamos en la página de login
       expect(find.byType(Login), findsOneWidget);
+      print('✓ Given: Estoy en la pantalla de login');
 
-      // Buscar los campos
-      final emailField = find.byType(TextField).first;
-      final passwordField = find.byType(TextField).last;
-
-      // Ingresar credenciales incorrectas
+      // When: Ingreso "usuario.invalido@test.com" en el campo de correo
+      final emailField = find.byType(TextFormField).first;
       await tester.enterText(emailField, 'usuario.invalido@test.com');
-      await tester.pumpAndSettle(const Duration(milliseconds: 500));
+      await tester.pump();
+      print('✓ When: Ingreso email inválido');
 
-      await tester.enterText(passwordField, 'password_incorrecta');
-      await tester.pumpAndSettle(const Duration(milliseconds: 500));
+      // And: Ingreso "passwordIncorrecta" en el campo de contraseña
+      final passwordField = find.byType(TextFormField).last;
+      await tester.enterText(passwordField, 'passwordIncorrecta');
+      await tester.pump();
+      print('✓ And: Ingreso contraseña incorrecta');
 
-      // Buscar y presionar el botón de login
-      final loginButton = find.byType(GestureDetector).where((finder) {
-        final widget = tester.widget(finder);
-        if (widget is GestureDetector) {
-          final child = widget.child;
-          if (child is Text) {
-            return child.data?.toLowerCase().contains('sign') ?? false;
-          }
-        }
-        return false;
-      });
-
+      // And: Presiono el botón de "Ingresar"
+      final loginButton = find.text('sign in');
       await tester.tap(loginButton);
-      print('✓ Intento de login con credenciales inválidas');
+      print('✓ And: Presiono el botón de login');
 
-      // Esperar respuesta del servidor
-      await tester.pumpAndSettle(const Duration(seconds: 10));
+      // Then: Debería ver un mensaje de error
+      await tester.pumpAndSettle(
+        Duration(milliseconds: 100),
+        EnginePhase.sendSemanticsUpdate,
+        Duration(seconds: 10),
+      );
 
-      // Verificar que seguimos en la página de login
+      expect(find.textContaining('Error'), findsAny);
+      print('✓ Then: Veo mensaje de error');
+
+      // And: Debería permanecer en la pantalla de login
       expect(find.byType(Login), findsOneWidget);
-      print('✓ Permanecemos en página de login tras error');
-
-      // Verificar que NO navegamos a HomeScreen
       expect(find.byType(HomeScreen), findsNothing);
-      print('✓ No se navegó a HomeScreen con credenciales inválidas');
+      print('✓ And: Permanezco en pantalla de login');
 
-      print('\n✅ Prueba de error completada exitosamente');
+      // And: No debería haber token guardado
+      final token = await StorageService.instance.getString('token');
+      expect(token, isNull);
+      print('✓ And: No hay token guardado');
     });
 
-    testWidgets('Verificar timeout de login no bloquea la app', (WidgetTester tester) async {
-      // Iniciar la aplicación
+    testWidgets('Escenario: Validación de campos vacíos', (WidgetTester tester) async {
+      // Given: Estoy en la pantalla de login
       app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await tester.pumpAndSettle(Duration(seconds: 3));
 
-      // Verificar que estamos en la página de login
       expect(find.byType(Login), findsOneWidget);
-      print('✓ Página de login cargada');
+      print('✓ Given: Estoy en la pantalla de login');
 
-      // Buscar los campos
-      final emailField = find.byType(TextField).first;
-      final passwordField = find.byType(TextField).last;
-
-      // Ingresar credenciales de prueba
-      await tester.enterText(emailField, testEmail);
-      await tester.enterText(passwordField, testPassword);
-      print('✓ Credenciales ingresadas');
-
-      // Buscar y presionar el botón de login
-      final loginButton = find.byType(GestureDetector).where((finder) {
-        final widget = tester.widget(finder);
-        if (widget is GestureDetector) {
-          final child = widget.child;
-          if (child is Text) {
-            return child.data?.toLowerCase().contains('sign') ?? false;
-          }
-        }
-        return false;
-      });
-
+      // When: Presiono el botón de "Ingresar" sin llenar los campos
+      final loginButton = find.text('sign in');
       await tester.tap(loginButton);
-      print('✓ Login iniciado');
+      await tester.pump(Duration(seconds: 1));
+      print('✓ When: Presiono login sin llenar campos');
 
-      // Esperar máximo 15 segundos (nuestro timeout es de 10s + navegación)
-      bool loginCompleted = false;
-      int waitedSeconds = 0;
+      // Then: No debería poder continuar
+      // And: Debería permanecer en la pantalla de login
+      expect(find.byType(Login), findsOneWidget);
+      expect(find.byType(HomeScreen), findsNothing);
+      print('✓ Then: Permanezco en pantalla de login');
 
-      while (waitedSeconds < 15 && !loginCompleted) {
-        await tester.pump(const Duration(seconds: 1));
-        waitedSeconds++;
+      // And: No debería haber token guardado
+      final token = await StorageService.instance.getString('token');
+      expect(token, isNull);
+      print('✓ And: No hay token guardado');
+    });
 
-        // Verificar si navegamos a HomeScreen
-        if (tester.any(find.byType(HomeScreen))) {
-          loginCompleted = true;
-          print('✓ Login completado en $waitedSeconds segundos');
+    testWidgets('Escenario: Persistencia de datos después del login', (WidgetTester tester) async {
+      // Given: Estoy en la pantalla de login
+      app.main();
+      await tester.pumpAndSettle(Duration(seconds: 3));
+      print('✓ Given: Estoy en la pantalla de login');
+
+      // When: Ingreso credenciales válidas
+      final emailField = find.byType(TextFormField).first;
+      final passwordField = find.byType(TextFormField).last;
+
+      await tester.enterText(emailField, 'etalatam+representante1@gmail.com');
+      await tester.pump();
+      await tester.enterText(passwordField, 'casa1234');
+      await tester.pump();
+      print('✓ When: Ingreso credenciales válidas');
+
+      // And: Presiono el botón de "Ingresar"
+      final loginButton = find.text('sign in');
+      await tester.tap(loginButton);
+      print('✓ And: Presiono login');
+
+      // And: Navego a la pantalla de inicio exitosamente
+      await tester.pumpAndSettle(
+        Duration(milliseconds: 100),
+        EnginePhase.sendSemanticsUpdate,
+        Duration(seconds: 15),
+      );
+
+      expect(find.byType(HomeScreen), findsOneWidget);
+      print('✓ And: Navego a HomeScreen');
+
+      // Then: El token de sesión debería estar guardado en el almacenamiento local
+      final session = await StorageService.instance.getUserSession();
+      expect(session, isNotNull);
+      expect(session!['token'], isNotNull);
+      print('✓ Then: Token guardado en almacenamiento local');
+
+      // And: El id de usuario debería ser 128
+      expect(session['id_usu'], equals(128));
+      print('✓ And: ID de usuario = 128');
+
+      // And: El nombre de relación debería ser "eta.guardians"
+      expect(session['relation_name'], equals('eta.guardians'));
+      print('✓ And: Relación = eta.guardians');
+
+      // And: El id de relación debería ser 20
+      expect(session['relation_id'], equals(20));
+      print('✓ And: ID de relación = 20');
+    });
+
+    testWidgets('Escenario: Prevención de bucle infinito en login', (WidgetTester tester) async {
+      // Given: Estoy en la pantalla de login
+      app.main();
+      await tester.pumpAndSettle(Duration(seconds: 3));
+      print('✓ Given: Estoy en la pantalla de login');
+
+      // When: Ingreso credenciales válidas y hago login
+      final emailField = find.byType(TextFormField).first;
+      final passwordField = find.byType(TextFormField).last;
+
+      await tester.enterText(emailField, 'etalatam+representante1@gmail.com');
+      await tester.pump();
+      await tester.enterText(passwordField, 'casa1234');
+      await tester.pump();
+
+      final loginButton = find.text('sign in');
+      await tester.tap(loginButton);
+      print('✓ When: Hago login exitoso');
+
+      // Then: No debería volver a la pantalla de login automáticamente
+      await tester.pumpAndSettle(
+        Duration(milliseconds: 100),
+        EnginePhase.sendSemanticsUpdate,
+        Duration(seconds: 15),
+      );
+
+      expect(find.byType(HomeScreen), findsOneWidget);
+      expect(find.byType(Login), findsNothing);
+      print('✓ Then: No vuelvo a login');
+
+      // And: Debería permanecer en la pantalla de inicio
+      await tester.pump(Duration(seconds: 3));
+      expect(find.byType(HomeScreen), findsOneWidget);
+      print('✓ And: Permanezco en HomeScreen');
+
+      // And: No debería ver parpadeos entre pantallas
+      bool hasFlickered = false;
+      for (int i = 0; i < 5; i++) {
+        await tester.pump(Duration(milliseconds: 500));
+        if (find.byType(Login).evaluate().isNotEmpty) {
+          hasFlickered = true;
+          break;
         }
       }
+      expect(hasFlickered, false);
+      print('✓ And: No hay parpadeos entre pantallas');
+    });
 
-      // Verificar que el login se completó dentro del timeout
-      expect(loginCompleted, true,
-        reason: 'El login debe completarse dentro de 15 segundos');
+    testWidgets('Escenario: Navegación a recuperación de contraseña', (WidgetTester tester) async {
+      // Given: Estoy en la pantalla de login
+      app.main();
+      await tester.pumpAndSettle(Duration(seconds: 3));
+      print('✓ Given: Estoy en la pantalla de login');
 
-      print('\n✅ Prueba de timeout completada exitosamente');
+      // When: Presiono el enlace "¿Olvidaste tu contraseña?"
+      final forgotPasswordLink = find.text('Forgot_password');
+      if (forgotPasswordLink.evaluate().isNotEmpty) {
+        await tester.tap(forgotPasswordLink);
+        await tester.pumpAndSettle();
+        print('✓ When: Presiono enlace de recuperación');
+
+        // Then: Debería ver la pantalla de recuperación de contraseña
+        expect(find.byType(Login), findsNothing);
+        print('✓ Then: Navego fuera de login');
+      }
     });
   });
 }
