@@ -341,7 +341,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
   openTrip(trip) {
     Get.to(TripPage(
       trip: trip,
-      navigationMode: false,
+      navigationMode: false, // Padres/representantes nunca tienen navigationMode activo
       showBus: true,
       showStudents: true,
     ));

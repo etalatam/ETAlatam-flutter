@@ -19,10 +19,16 @@ class _UserAvatarState extends State<UserAvatar> {
   @override
   void initState() {
     super.initState();
+    _loadUserData();
+  }
 
-    relationId = "${storage.getItem('relation_id')}";
-    relationName = "${storage.getItem('relation_name')}";
-    nomUsu = storage.getItem('nom_usu') ?? "sn";
+  Future<void> _loadUserData() async {
+    relationId = "${await storage.getItem('relation_id')}";
+    relationName = "${await storage.getItem('relation_name')}";
+    nomUsu = await storage.getItem('nom_usu') ?? "sn";
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override

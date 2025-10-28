@@ -15,9 +15,9 @@ import 'package:eta_school_app/infrastructure/repositories/login_information_rep
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:eta_school_app/shared/location/location_service.dart';
+import 'package:wakelock/wakelock.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:localstorage/localstorage.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/Models/parent_model.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
@@ -27,13 +27,20 @@ import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/Models/NotificationModel.dart';
 import 'package:flutter/foundation.dart';
+import 'package:eta_school_app/Pages/login_page.dart';
 
 import '../Models/absence_model.dart';
+import '../Models/recipient_group_model.dart';
+import '../Models/user_topic_model.dart';
 
 class HttpService {
-  final LocalStorage storage = LocalStorage('tokens.json');
+  // Usar el storage global importado desde helpers.dart
+  // que a su vez lo importa desde legacy_storage_adapter.dart
 
   String token = '';
+
+  // Flag para evitar múltiples logouts simultáneos
+  static bool _isLoggingOut = false;
 
   // String response_text = "";
 
@@ -64,28 +71,86 @@ class HttpService {
     return "https://admin.etalatam.com/assets/img$path";
   }
 
+  /// Check for expired session
+  Future<void> _checkSessionExpired(http.Response response) async {
+    if (response.statusCode == 401 || response.statusCode == 403) {
+      // Evitar múltiples logouts simultáneos
+      if (_isLoggingOut) {
+        print("[HttpService] Logout already in progress, skipping...");
+        return;
+      }
+
+      // Analizar el tipo de error 401
+      bool isJWTError = false;
+      try {
+        final body = jsonDecode(response.body);
+        // Solo considerar como sesión expirada si es específicamente un error JWT
+        if (body['code'] == 'PGRST301' ||
+            body['message']?.toString().contains('JWSError') == true ||
+            body['message']?.toString().contains('JWT') == true ||
+            body['message']?.toString().contains('token') == true) {
+          isJWTError = true;
+        }
+      } catch (e) {
+        // Si no podemos parsear el body, asumimos que es un error de autenticación
+        isJWTError = true;
+      }
+
+      if (isJWTError) {
+        print("[HttpService] JWT authentication error - clearing session");
+        // Limpiar datos y redirigir al login
+        await logout();
+        Get.offAll(() => Login());
+      } else {
+        print("[HttpService] API returned ${response.statusCode} but not a JWT error - keeping session");
+      }
+    }
+  }
+
   /// Run API GET query
   getQuery(String path, {useToken = true}) async {
-    final token = storage.getItem('token');
+    String? token = await storage.getItem('token');
+
+    // Si no hay token de usuario, intentar usar el token temporal
+    if (token == null || token.isEmpty) {
+      token = await storage.getItem('temp_access_token');
+    }
+
     final url = Uri.parse(apiURL + path);
     print("$url");
-    return await http.get(url, headers: {
+
+    final response = await http.get(url, headers: {
       'Content-Type': 'application/json',
       'Authorization': useToken ? 'Bearer $token' : '',
     }).onError((error, stackTrace) => handleHttpError(error));
+
+    // Verificar si la sesi\u00f3n expir\u00f3
+    await _checkSessionExpired(response);
+    return response;
   }
 
   /// Run API POST query
   postQuery(String path, body,
       {useToken = true,
       contentType = 'application/x-www-form-urlencoded'}) async {
-    final token = storage.getItem('token');
+    String? token = await storage.getItem('token');
+
+    // Si no hay token de usuario, intentar usar el token temporal
+    if (token == null || token.isEmpty) {
+      token = await storage.getItem('temp_access_token');
+    }
+
     final url = Uri.parse(apiURL + path);
     print("[Api.url] $url");
-    return await http.post(url, body: body, headers: {
+
+    final response = await http.post(url, body: body, headers: {
       'Content-Type': contentType,
       'Authorization': useToken ? 'Bearer $token' : '',
-    });
+    }).onError((error, stackTrace) => handleHttpError(error));
+
+    // Verificar si la sesi\u00f3n expir\u00f3
+    await _checkSessionExpired(response);
+    return response;
   }
 
   /// Load Trips
@@ -373,13 +438,19 @@ class HttpService {
         await getQuery("$endpoint?limit=10&order=schedule_start_time.desc");
     print("[$endpoint] res.statusCode: ${res.statusCode}");
     print("[$endpoint] res.body: ${res.body}");
+    
+    // Log adicional para debugging
+    if (res.body == '[]') {
+      print("[$endpoint] No routes found for today. This might be a date/timezone issue.");
+      print("[$endpoint] Server might be filtering by a different date than expected.");
+    }
 
     if (res.statusCode == 200) {
       try {
         List<dynamic> body = jsonDecode(res.body);
         return body.map((dynamic item) => RouteModel.fromJson(item)).toList();
       } catch (e) {
-        print("getRoutes error: ${e.toString()}");
+        print("todayRoutes error: ${e.toString()}");
         return [];
       }
     }
@@ -594,8 +665,11 @@ class HttpService {
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
       debugPrint(body.toString());
-      await storage.setItem(
-          'token', body['token'].isEmpty ? '' : body['token']);
+      // Guardar temporalmente el token de request_access
+      // NOTA: Este token será sobreescrito por el token del usuario después del login
+      if (body['token'] != null && body['token'].toString().isNotEmpty) {
+        await storage.setItem('temp_access_token', body['token']);
+      }
       return '1';
     }
 
@@ -613,6 +687,7 @@ class HttpService {
 
     var requestAccessRes = await requestAccess();
     if (requestAccessRes == '1') {
+      // El postQuery ahora usará el token temporal automáticamente
       http.Response res = await postQuery(endpoint, data);
 
       print("[$endpoint] statuscode: ${res.statusCode}");
@@ -620,17 +695,46 @@ class HttpService {
 
       if (res.statusCode == 200) {
         dynamic body = jsonDecode(res.body);
-        await storage.setItem(
-            'token', body['token'].isEmpty ? '' : body['token']);
-        await storage.setItem('id_usu', body['id_usu'] ?? body['id_usu']);
-        await storage.setItem(
-            'relation_name', body['relation_name'] ?? body['relation_name']);
-        await storage.setItem(
-            'relation_id', body['relation_id'] ?? body['relation_id']);
-        await storage.setItem(
-            'nom_usu', body['nom_usu'] ?? body['nom_usu']);
-        await storage.setItem(
-            'monitor', body['monitor'] ?? body['monitor']);    
+
+        // Log detallado de la respuesta del login
+        print('[login] Response data:');
+        print('[login]   token: ${body['token'] != null ? "exists (${body['token'].toString().length} chars)" : "null"}');
+        print('[login]   id_usu: ${body['id_usu']}');
+        print('[login]   relation_name: ${body['relation_name']}');
+        print('[login]   relation_id: ${body['relation_id']}');
+        print('[login]   nom_usu: ${body['nom_usu']}');
+        print('[login]   monitor: ${body['monitor']}');
+
+        // Asegurar que el storage está listo antes de guardar
+        await storage.ready;
+
+        // Validar que el token no sea nulo ni vacío antes de guardarlo
+        if (body['token'] != null && body['token'].toString().isNotEmpty) {
+          await storage.setItem('token', body['token']);
+          print('[login] Token saved successfully');
+        } else {
+          print('[login] Warning: Token is empty or null!');
+        }
+        // Guardar todos los valores del login, asegurando que no sean null
+        if (body['id_usu'] != null) {
+          await storage.setItem('id_usu', body['id_usu']);
+          print('[login] id_usu saved: ${body['id_usu']}');
+        }
+        if (body['relation_name'] != null) {
+          await storage.setItem('relation_name', body['relation_name']);
+          print('[login] relation_name saved: ${body['relation_name']}');
+        }
+        if (body['relation_id'] != null) {
+          await storage.setItem('relation_id', body['relation_id']);
+          print('[login] relation_id saved: ${body['relation_id']}');
+        }
+        if (body['nom_usu'] != null) {
+          await storage.setItem('nom_usu', body['nom_usu']);
+          print('[login] nom_usu saved: ${body['nom_usu']}');
+        }
+        // monitor puede ser false, así que guardamos aunque sea false
+        await storage.setItem('monitor', body['monitor'] ?? false);
+        print('[login] monitor saved: ${body['monitor'] ?? false}');    
 
         try {
           final LoginInformation login =
@@ -644,6 +748,17 @@ class HttpService {
         if(!EmitterService.instance.isConnected()){
           EmitterService.instance.connect();
         }
+
+        // Setup de notificaciones FCM al hacer login exitoso (en background)
+        // No esperamos el resultado para no bloquear la navegación
+        // Agregamos timeout para evitar bloqueos
+        Future.delayed(Duration(milliseconds: 100), () {
+          NotificationService.instance.setupNotifications()
+            .timeout(Duration(seconds: 5))
+            .catchError((e) {
+              print('[login] Error en setupNotifications: $e');
+            });
+        });
 
         return '1';
       } else {
@@ -705,8 +820,12 @@ class HttpService {
       "email": email,
     };
 
-    var requestAccessRes = await requestAccess();
-    if (requestAccessRes == '1') {
+    // Check if we already have a valid token (authenticated user from profile)
+    final existingToken = await storage.getItem('token');
+
+    if (existingToken != null && existingToken.toString().isNotEmpty) {
+      // User is authenticated (calling from profile), use existing token
+      print("[$endpoint] Using existing token for authenticated user");
       http.Response res = await postQuery(endpoint, data);
 
       print("[$endpoint] res.statusCode: ${res.statusCode}");
@@ -717,9 +836,24 @@ class HttpService {
       } else {
         return "${parseResponseMessage(res)}/${res.statusCode}";
       }
-    }
+    } else {
+      // User is not authenticated (calling from login), need to request access first
+      print("[$endpoint] Requesting access token for unauthenticated user");
+      var requestAccessRes = await requestAccess();
+      if (requestAccessRes == '1') {
+        http.Response res = await postQuery(endpoint, data);
 
-    return requestAccessRes;
+        print("[$endpoint] res.statusCode: ${res.statusCode}");
+        print("[$endpoint] res.body: ${res.body}");
+
+        if (res.statusCode == 200) {
+          return '1';
+        } else {
+          return "${parseResponseMessage(res)}/${res.statusCode}";
+        }
+      }
+      return requestAccessRes;
+    }
   }
 
   // get message error from request response
@@ -755,27 +889,59 @@ class HttpService {
 
   // Logout and clear localStorage
   logout() async {
+    // Prevenir múltiples logouts simultáneos
+    if (_isLoggingOut) {
+      print("[httpService.logout] Logout already in progress, skipping...");
+      return;
+    }
+
+    _isLoggingOut = true;
+    print("[httpService.logout] Starting logout process...");
+
+    // Stop location services
     try {
+      print("[httpService.logout] Stopping LocationService...");
       LocationService.instance.stopLocationService();
     } catch (e) {
-      //
-    }
-    try {
-      EmitterService.instance.disconnect();
-    } catch (e) {
-      //
-    }
-    try {
-      await NotificationService.instance.close();
-    } catch (e) {
-      //
+      print("[httpService.logout] Error stopping LocationService: $e");
     }
     
+    // Disconnect EmitterService
     try {
-      await storage.clear(); 
+      print("[httpService.logout] Disconnecting EmitterService...");
+      EmitterService.instance.disconnect();
     } catch (e) {
-      //
+      print("[httpService.logout] Error disconnecting EmitterService: $e");
     }
+    
+    // Close NotificationService
+    try {
+      print("[httpService.logout] Closing NotificationService...");
+      await NotificationService.instance.close();
+    } catch (e) {
+      print("[httpService.logout] Error closing NotificationService: $e");
+    }
+    
+    // Disable Wakelock
+    try {
+      print("[httpService.logout] Disabling Wakelock...");
+      await Wakelock.disable();
+    } catch (e) {
+      print("[httpService.logout] Error disabling Wakelock: $e");
+    }
+    
+    // Clear all storage
+    try {
+      print("[httpService.logout] Clearing storage...");
+      await storage.clear();
+    } catch (e) {
+      print("[httpService.logout] Error clearing storage: $e");
+    }
+
+    print("[httpService.logout] Logout process completed");
+
+    // Reset el flag al final
+    _isLoggingOut = false;
   }
 
   Future<dynamic> sendTracking({required position, required userId}) async {
@@ -882,8 +1048,10 @@ class HttpService {
     return null;
   }
   
-  handleHttpError(e) {
-    print("userInfo error: ${e.toString()}");
+  handleHttpError(e) async {
+    print("HTTP error: ${e.toString()}");
+    // Si hay un error de conexión, devolver un response vacío
+    return http.Response('', 500);
   }
 
 
@@ -969,28 +1137,28 @@ class HttpService {
   /// Cancel Student Absence
   Future<Map<String, dynamic>> cancelStudentAbsence(AbsenceModel absence) async {
     const endpoint = "/rpc/cancel_absence";
-    
+
     // Crear un mapa con solo los parámetros requeridos por la función de PostgreSQL
     final Map<String, dynamic> requestData = {
       '_student_id': absence.idStudent,
       '_absence_date': absence.absenceDate.toIso8601String(),
       '_id_schedule': absence.idSchedule,
     };
-    
+
     try {
       http.Response res = await postQuery(
         endpoint,
         jsonEncode(requestData),
         contentType: 'application/json',
       );
-      
+
       print("[$endpoint] res.statusCode: ${res.statusCode}");
       print("[$endpoint] res.body: ${res.body}");
-      
+
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final jsonResponse = jsonDecode(res.body);
         final status = jsonResponse['status'];
-        
+
         if (status == 'success') {
           return {
             'success': true,
@@ -1015,6 +1183,82 @@ class HttpService {
         'message': e.toString(),
       };
     }
+  }
+
+  /// Get My User Topic
+  /// Obtiene el topic personal del usuario para notificaciones FCM
+  /// useSessionCheck: false para evitar bucle infinito durante login
+  Future<UserTopicModel?> getMyUserTopic({bool useSessionCheck = false}) async {
+    const endpoint = '/rpc/get_my_user_topic';
+    try {
+      final token = await storage.getItem('token');
+      final url = Uri.parse(apiURL + endpoint);
+
+      final response = await http.post(
+        url,
+        body: null,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).onError((error, stackTrace) => handleHttpError(error));
+
+      print("[$endpoint] res.statusCode: ${response.statusCode}");
+      print("[$endpoint] res.body: ${response.body}");
+
+      // Solo verificar sesión expirada si está habilitado
+      if (useSessionCheck) {
+        await _checkSessionExpired(response);
+      }
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        return UserTopicModel.fromJson(json);
+      } else {
+        print("[$endpoint] Non-200 status: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("[$endpoint] error: ${e.toString()}");
+    }
+    return null;
+  }
+
+  /// Get My Recipient Groups
+  /// Obtiene los grupos de destinatarios a los que pertenece el usuario
+  /// useSessionCheck: false para evitar bucle infinito durante login
+  Future<List<RecipientGroupModel>> getMyRecipientGroups({bool useSessionCheck = false}) async {
+    const endpoint = '/rpc/get_my_recipient_groups';
+    try {
+      final token = await storage.getItem('token');
+      final url = Uri.parse(apiURL + endpoint);
+
+      final response = await http.post(
+        url,
+        body: null,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).onError((error, stackTrace) => handleHttpError(error));
+
+      print("[$endpoint] res.statusCode: ${response.statusCode}");
+      print("[$endpoint] res.body: ${response.body}");
+
+      // Solo verificar sesión expirada si está habilitado
+      if (useSessionCheck) {
+        await _checkSessionExpired(response);
+      }
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = jsonDecode(response.body);
+        return jsonList.map((json) => RecipientGroupModel.fromJson(json)).toList();
+      } else {
+        print("[$endpoint] Non-200 status: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("[$endpoint] error: ${e.toString()}");
+    }
+    return [];
   }
 
 }

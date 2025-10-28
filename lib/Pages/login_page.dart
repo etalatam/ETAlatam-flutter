@@ -4,8 +4,12 @@ import 'package:eta_school_app/Pages/home_screen.dart';
 import 'package:eta_school_app/components/loader.dart';
 // import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/methods.dart';
+import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
+import 'package:eta_school_app/shared/fcm/notification_service.dart';
+import 'package:eta_school_app/shared/location/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:wakelock/wakelock.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 
 class Login extends StatefulWidget {
@@ -19,8 +23,11 @@ class _LoginState extends State<Login> {
   final HttpService httpService = HttpService();
 
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   String email = '';
   String password = '';
+  bool _obscurePassword = true;
+  List<String> _emailHistory = [];
 
   String? token;
   String? loginResponse;
@@ -96,23 +103,50 @@ class _LoginState extends State<Login> {
                                           ),
                                         ),
                                         const SizedBox(height: 8),
-                                        TextField(
-                                          controller: _emailController,
-                                          decoration: InputDecoration(
-                                              border: OutlineInputBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10.0),
-                                              ),
-                                              filled: true,
-                                              hintStyle: TextStyle(
-                                                  color: Colors.grey[800]),
-                                              hintText: "",
-                                              fillColor: const Color.fromRGBO(
-                                                  233, 235, 235, 1)),
-                                          onChanged: (val) {
+                                        Autocomplete<String>(
+                                          optionsBuilder: (TextEditingValue textEditingValue) {
+                                            if (textEditingValue.text.isEmpty) {
+                                              return _emailHistory;
+                                            }
+                                            return _emailHistory.where((String option) {
+                                              return option.toLowerCase().contains(
+                                                  textEditingValue.text.toLowerCase());
+                                            });
+                                          },
+                                          fieldViewBuilder: (BuildContext context,
+                                              TextEditingController fieldTextEditingController,
+                                              FocusNode fieldFocusNode,
+                                              VoidCallback onFieldSubmitted) {
+                                            _emailController.text = fieldTextEditingController.text;
+                                            return TextField(
+                                              controller: fieldTextEditingController,
+                                              focusNode: fieldFocusNode,
+                                              keyboardType: TextInputType.emailAddress,
+                                              autocorrect: false,
+                                              enableSuggestions: true,
+                                              autofillHints: const [AutofillHints.email],
+                                              decoration: InputDecoration(
+                                                  border: OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(10.0),
+                                                  ),
+                                                  filled: true,
+                                                  hintStyle: TextStyle(
+                                                      color: Colors.grey[800]),
+                                                  hintText: "email@example.com",
+                                                  fillColor: const Color.fromRGBO(
+                                                      233, 235, 235, 1)),
+                                              onChanged: (val) {
+                                                setState(() {
+                                                  email = val;
+                                                });
+                                              },
+                                            );
+                                          },
+                                          onSelected: (String selection) {
                                             setState(() {
-                                              email = val;
-                                              // _emailController.text = email;
+                                              email = selection;
+                                              _emailController.text = selection;
                                             });
                                           },
                                         ),
@@ -138,9 +172,11 @@ class _LoginState extends State<Login> {
                                         ),
                                         const SizedBox(height: 8),
                                         TextFormField(
-                                          obscureText: true,
+                                          controller: _passwordController,
+                                          obscureText: _obscurePassword,
                                           enableSuggestions: false,
                                           autocorrect: false,
+                                          autofillHints: const [AutofillHints.password],
                                           validator: (String? value) {
                                             if (value!.trim().isEmpty) {
                                               return 'Password is required';
@@ -155,12 +191,24 @@ class _LoginState extends State<Login> {
                                               filled: true,
                                               hintStyle: TextStyle(
                                                   color: Colors.grey[800]),
-                                              hintText: "",
+                                              hintText: "••••••••",
                                               fillColor: const Color.fromRGBO(
-                                                  233, 235, 235, 1)),
+                                                  233, 235, 235, 1),
+                                              suffixIcon: IconButton(
+                                                icon: Icon(
+                                                  _obscurePassword
+                                                      ? Icons.visibility_off
+                                                      : Icons.visibility,
+                                                  color: Colors.grey[600],
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    _obscurePassword = !_obscurePassword;
+                                                  });
+                                                },
+                                              )),
                                           onChanged: (val) => setState(() {
                                             password = val;
-                                            // goHome();
                                           }),
                                         ),
                                       ],
@@ -182,22 +230,46 @@ class _LoginState extends State<Login> {
                                           showLoader = true;
                                         });
 
-                                        loginResponse = await httpService.login(
-                                            email, password);
-                                        var msg = loginResponse?.split('/');
+                                        try {
+                                          loginResponse = await httpService.login(
+                                              email, password)
+                                              .timeout(Duration(seconds: 10));
+                                          var msg = loginResponse?.split('/');
 
-                                        setState(() {
-                                          showLoader = false;
                                           if (loginResponse == '1') {
-                                            goHome();
+                                            print('[Login] Login exitoso, navegando a home...');
+                                            _saveEmailToHistory(email);
+                                            // Reinitialize LocationService for students after successful login
+                                            LocationService.instance.reinitializeAfterLogin();
+
+                                            // Navegar directamente sin cambiar el estado del loader
+                                            // Esto evita el parpadeo
+                                            if (mounted) {
+                                              print('[Login] Navegando inmediatamente a HomeScreen...');
+                                              Navigator.of(context).pushReplacement(
+                                                MaterialPageRoute(builder: (context) => HomeScreen()),
+                                              );
+                                            }
                                           } else {
-                                            showSuccessDialog(
-                                                context,
-                                                "${lang.translate('Error')} (${msg![1]})",
-                                                lang.translate(msg[0]),
-                                                null);
+                                            setState(() {
+                                              showLoader = false;
+                                              showSuccessDialog(
+                                                  context,
+                                                  "${lang.translate('Error')} (${msg![1]})",
+                                                  lang.translate(msg[0]),
+                                                  null);
+                                            });
                                           }
-                                        });
+                                        } catch (e) {
+                                          setState(() {
+                                            showLoader = false;
+                                          });
+                                          showSuccessDialog(
+                                              context,
+                                              lang.translate('Error'),
+                                              lang.translate('Connection error. Please try again.'),
+                                              null);
+                                        }
                                       },
                                       child: Text(
                                         lang.translate('sign in'),
@@ -244,17 +316,24 @@ class _LoginState extends State<Login> {
   }
 
   Future<bool> checkSession() async {
-    setState(() {
-      showLoader = false;
-    });
+    // Asegurar que el storage está listo antes de leer
+    await storage.ready;
 
     final token_ = await storage.getItem('token');
     final userId = await storage.getItem('id_usu');
 
     print("LoginPage.userId: $userId");
+    print("LoginPage.token: ${token_ != null ? 'exists' : 'null'}");
 
-    if (token_ != null && userId != null) {
+    if (token_ != null && userId != null && token_.toString().isNotEmpty && userId.toString().isNotEmpty) {
       return true;
+    }
+
+    // Solo cambiar el estado si está montado y si realmente necesitamos mostrar el formulario
+    if (mounted) {
+      setState(() {
+        showLoader = false;
+      });
     }
 
     return false;
@@ -263,16 +342,115 @@ class _LoginState extends State<Login> {
   ///
   /// Redirect to home page
   goHome() async {
-    final hasSession = await checkSession();
+    // Evitar llamadas múltiples
+    if (!mounted) return;
 
-    if (hasSession) {
-      Get.offAll(HomeScreen());
+    print('[Login.goHome] Verificando sesión...');
+    final hasSession = await checkSession();
+    print('[Login.goHome] hasSession: $hasSession');
+
+    if (hasSession && mounted) {
+      print('[Login.goHome] Navegando a HomeScreen...');
+      // Usar pushReplacement en lugar de offAll para evitar limpiar el stack completamente
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    } else {
+      print('[Login.goHome] No hay sesión válida!');
     }
   }
 
   @override
   void initState() {
     super.initState();
-    goHome();
+    _loadEmailHistory();
+    // Solo verificar sesión después de inicializar
+    Future.delayed(Duration(milliseconds: 500), () async {
+      await _cleanupResourcesIfNoSession();
+      goHome();
+    });
+  }
+
+  /// Limpiar todos los recursos si no hay sesión activa
+  Future<void> _cleanupResourcesIfNoSession() async {
+    try {
+      final token = await storage.getItem('token');
+      final userId = await storage.getItem('id_usu');
+
+      // Si no hay token o userId, limpiar todos los recursos
+      if (token == null || userId == null) {
+        print('[Login] No active session found, cleaning up resources...');
+
+        // Detener servicios de ubicación
+        try {
+          LocationService.instance.stopLocationService();
+          print('[Login] LocationService stopped');
+        } catch (e) {
+          print('[Login] Error stopping LocationService: $e');
+        }
+
+        // Desconectar EmitterService
+        try {
+          EmitterService.instance.disconnect();
+          print('[Login] EmitterService disconnected');
+        } catch (e) {
+          print('[Login] Error disconnecting EmitterService: $e');
+        }
+
+        // Limpiar NotificationService
+        try {
+          await NotificationService.instance.close();
+          print('[Login] NotificationService closed');
+        } catch (e) {
+          print('[Login] Error closing NotificationService: $e');
+        }
+
+        // Deshabilitar Wakelock
+        try {
+          await Wakelock.disable();
+          print('[Login] Wakelock disabled');
+        } catch (e) {
+          print('[Login] Error disabling Wakelock: $e');
+        }
+
+        print('[Login] Resource cleanup completed');
+      }
+    } catch (e) {
+      print('[Login] Error during resource cleanup: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadEmailHistory() async {
+    try {
+      final savedEmails = await storage.getItem('email_history');
+      if (savedEmails != null && savedEmails is List) {
+        setState(() {
+          _emailHistory = List<String>.from(savedEmails);
+        });
+      }
+    } catch (e) {
+      print('Error loading email history: $e');
+    }
+  }
+
+  Future<void> _saveEmailToHistory(String email) async {
+    try {
+      if (email.isNotEmpty && !_emailHistory.contains(email)) {
+        _emailHistory.insert(0, email);
+        if (_emailHistory.length > 5) {
+          _emailHistory = _emailHistory.take(5).toList();
+        }
+        await storage.setItem('email_history', _emailHistory);
+      }
+    } catch (e) {
+      print('Error saving email history: $e');
+    }
   }
 }

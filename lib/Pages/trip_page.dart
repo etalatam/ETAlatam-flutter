@@ -31,6 +31,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../components/marquee_text.dart';
 import 'map/map_wiew.dart';
 
 class TripPage extends StatefulWidget {
@@ -110,10 +111,29 @@ class _TripPageState extends State<TripPage>
 
   double busHeading = 270;
 
+  // Variables for Emitter connection statistics
+  int _messageCount = 0; // Total de mensajes (para compatibilidad)
+  int _receivedCount = 0; // Eventos recibidos del viaje
+  DateTime? _sessionStartTime;
+  DateTime? _lastMessageTime;
+  DateTime? _lastReceivedTime;
+  
+  // Control de actualización de anotaciones
+  DateTime? _lastAnnotationUpdate;
+  static const int _minAnnotationUpdateInterval = 500; // milisegundos
+
   // Color del autobús para el marcador en el mapa
   late int busColor;
 
   bool _isVisible = true;
+  
+  // Control de seguimiento automático del mapa
+  bool _autoFollowBus = true;
+  DateTime? _lastUserInteraction;
+  Timer? _autoFollowTimer;
+  
+  // Timer para actualizar el tiempo del viaje
+  Timer? _tripDurationTimer;
 
   @override
   void initState() {
@@ -121,6 +141,8 @@ class _TripPageState extends State<TripPage>
 
     trip = widget.trip!;
     _lastPositionPayload = trip.lastPositionPayload;
+    
+    print('[TripPage.initState] trip_id: ${trip.trip_id}, trip_status: "${trip.trip_status}", is Running: ${trip.trip_status == 'Running'}');
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final currentOrientation = MediaQuery.of(context).orientation;
@@ -138,6 +160,17 @@ class _TripPageState extends State<TripPage>
     });
 
     loadTrip();
+    
+    // Inicializar timer para actualizar duración del viaje cada segundo
+    if (trip.trip_status == 'Running') {
+      _tripDurationTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+        if (mounted && trip.dt != null) {
+          setState(() {
+            tripDuration = Utils.formatElapsedTime(trip.dt!);
+          });
+        }
+      });
+    }
   }
 
   @override
@@ -177,6 +210,8 @@ class _TripPageState extends State<TripPage>
     busColor = trip.bus_color != null
         ? _convertColor(trip.bus_color!)
         : Colors.blue.value;
+    
+    print('[TripPage.build] trip_status: "${trip.trip_status}", navigationMode: ${widget.navigationMode}, showAutoFollowButton will be: ${trip.trip_status == 'Running'}');
 
     return Material(
         child: showLoader
@@ -188,31 +223,13 @@ class _TripPageState extends State<TripPage>
                     _isVisible = info.visibleFraction > 0;
                     if (info.visibleFraction > 0) {
                       loadTrip();
-                      // Si el mapa está listo pero no hay marcadores, volvemos a mostrarlos
-                      if (_mapboxMapController != null &&
-                          (annotationManager == null ||
-                              trip.pickup_locations != null &&
-                                  trip.pickup_locations!.isNotEmpty)) {
+                      // Si el mapa está listo y necesitamos recrear los marcadores
+                      if (_mapboxMapController != null && annotationManager != null) {
                         Future.delayed(Duration(milliseconds: 300), () {
-                          if (_mapboxMapController != null) {
-                            if (annotationManager == null) {
-                              _mapboxMapController!.annotations
-                                  .createPointAnnotationManager()
-                                  .then((value) {
-                                if (mounted) {
-                                  annotationManager = value;
-                                  annotationManager
-                                      ?.addOnPointAnnotationClickListener(this);
-
-                                  showTripGeoJson(_mapboxMapController!);
-                                  showPickupLocations(_mapboxMapController!);
-                                }
-                              });
-                            } 
-                            // else {
-                            //   showTripGeoJson(_mapboxMapController!);
-                            //   showPickupLocations(_mapboxMapController!);
-                            // }
+                          if (_mapboxMapController != null && mounted) {
+                            // Solo mostrar los marcadores si el manager ya existe
+                            showTripGeoJson(_mapboxMapController!);
+                            showPickupLocations(_mapboxMapController!);
                           }
                         });
                       }
@@ -240,18 +257,32 @@ class _TripPageState extends State<TripPage>
                                   : 0.15), // Ocupar toda la pantalla cuando el panel está oculto
                       child: MapWiew(
                           navigationMode: widget.navigationMode,
+                          showLocationPuck: widget.navigationMode, // Si navigationMode es true, es conductor con viaje activo
+                          centerOnSelf: widget.navigationMode, // Conductores centran en sí mismos
+                          showAutoFollowButton: trip.trip_status == 'Running', // Solo mostrar botón en viajes activos
+                          onCenterRequest: widget.navigationMode ? null : _centerOnBus, // Padres/estudiantes centran en el bus
                           onMapReady: (MapboxMap mapboxMap) async {
+                            print('[TripPage.MapWiew] trip_status: "${trip.trip_status}", showAutoFollowButton: ${trip.trip_status == 'Running'}');
                             _mapboxMapController = mapboxMap;
 
-                            // Asegurar que el annotationManager esté creado
+                            // Asegurar que el annotationManager esté creado (solo si no existe)
                             if (annotationManager == null) {
-                              final value = await mapboxMap.annotations
-                                  .createPointAnnotationManager();
-                              annotationManager = value;
-                              annotationManager
-                                  ?.addOnPointAnnotationClickListener(this);
+                              try {
+                                // Limpiar cualquier anotación previa antes de crear el manager
+                                busPointAnnotation = null;
+                                
+                                final value = await mapboxMap.annotations
+                                    .createPointAnnotationManager();
+                                annotationManager = value;
+                                annotationManager
+                                    ?.addOnPointAnnotationClickListener(this);
+                                print("[TripPage] AnnotationManager created successfully in onMapCreated");
+                              } catch (e) {
+                                print("[TripPage] Error creating annotation manager: $e");
+                              }
                             }
 
+                            // Detectar cuando el usuario interactúa con el mapa
                             mapboxMap.setOnMapMoveListener((context) {
                               if (_lastPositionPayload != null) {
                                 final Position position = Position(
@@ -263,6 +294,9 @@ class _TripPageState extends State<TripPage>
                                     Point(coordinates: position));
                               }
                             });
+                            
+                            // Por ahora no detectamos gestos automáticamente
+                            // TODO: Implementar detección de gestos cuando la API de Mapbox lo soporte
                           },
                           onStyleLoadedListener: (MapboxMap mapboxMap) async {
                             showTripGeoJson(mapboxMap);
@@ -311,23 +345,51 @@ class _TripPageState extends State<TripPage>
                       ),
                     if (trip.trip_status == 'Running')
                       Positioned(
-                        top: 40,
+                        top: 50,  // Primer botón - Estado de conexión
                         right: 10,
                         child: Consumer<EmitterService>(
                             builder: (context, emitterService, child) {
-                          return Container(
-                            width: 15,
-                            height: 15,
-                            decoration: BoxDecoration(
-                              color: emitterService.isConnected()
-                                  ? Colors.green
-                                  : Colors.red,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
+                          return GestureDetector(
+                            onTap: () {
+                              _showEmitterTooltip(context, emitterService);
+                            },
+                            child: Container(
+                              width: 42,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.9),
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.3),
+                                    blurRadius: 4,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Container(
+                                  width: 14,
+                                  height: 14,
+                                  decoration: BoxDecoration(
+                                    color: emitterService.isConnected()
+                                        ? Colors.green
+                                        : Colors.red,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: emitterService.isConnected()
+                                          ? Colors.green.shade700
+                                          : Colors.red.shade700,
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                           );
                         }),
                       ),
+                      
 
                     // Positioned(
                     //   left: 0,
@@ -378,27 +440,37 @@ class _TripPageState extends State<TripPage>
                     // */
 
                     Positioned(
-                      top: trip.trip_status == 'Running' ? 65 : 40,
-                      right: 5,
+                      top: trip.trip_status == 'Running' ? 100 : 50,  // Segundo botón - Fullscreen
+                      right: 10,
                       child: GestureDetector(
                         onTap: () {
                           setState(() {
                             isMapExpand = !isMapExpand;
                           });
                         },
-                        child: Icon(
-                          isMapExpand
-                              ? Icons.fullscreen_exit
-                              : Icons.fullscreen,
-                          color: activeTheme.main_color,
-                          size: 30,
-                          shadows: [
-                            Shadow(
-                              blurRadius: 5.0,
-                              color: Colors.white,
-                              offset: Offset(0, 1),
-                            ),
-                          ],
+                        child: Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: isMapExpand 
+                                ? Colors.blue.withOpacity(0.85)
+                                : Colors.white.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 4,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            isMapExpand
+                                ? Icons.fullscreen_exit
+                                : Icons.fullscreen,
+                            color: isMapExpand ? Colors.white : Colors.black87,
+                            size: 24,
+                          ),
                         ),
                       ),
                     ),
@@ -457,13 +529,15 @@ class _TripPageState extends State<TripPage>
                                         crossAxisAlignment:
                                             CrossAxisAlignment.center,
                                         children: [
-                                          SizedBox(
-                                            width: 200,
-                                            child: Text(
-                                              "${lang.translate('Trip')} #${trip.trip_id} ${trip.route?.route_name}",
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: activeTheme.h6,
+                                          Expanded(
+                                            child: LayoutBuilder(
+                                              builder: (context, constraints) {
+                                                return _TappableMarqueeText(
+                                                  text: "${lang.translate('Trip')} #${trip.trip_id} ${trip.route?.route_name ?? ''}",
+                                                  width: constraints.maxWidth - 10,
+                                                  style: activeTheme.h6,
+                                                );
+                                              },
                                             ),
                                           ),
                                           Row(children: [
@@ -680,14 +754,11 @@ class _TripPageState extends State<TripPage>
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
+            MarqueeText(
+              text: '${pickupLocation.location?.location_name ?? ''}',
+              style: activeTheme.h5,
               width: 300,
-              child: Text(
-                '${pickupLocation.location?.location_name}',
-                style: activeTheme.h5,
-                softWrap: true,
-                maxLines: 2,
-              ),
+              autoStart: true,
             ),
             SizedBox(
                 width: 300,
@@ -753,6 +824,14 @@ class _TripPageState extends State<TripPage>
             Provider.of<EmitterService>(context, listen: false);
         _emitterServiceProvider?.addListener(onEmitterMessage);
         _emitterServiceProvider?.startTimer(false);
+        
+        // Initialize Emitter session tracking
+        _sessionStartTime = DateTime.now();
+        _messageCount = 0;
+        _receivedCount = 0;
+        _lastMessageTime = null;
+        _lastReceivedTime = null;
+        
         trip.subscribeToTripEvents(_emitterServiceProvider);
         trip.subscribeToTripTracking(_emitterServiceProvider);
 
@@ -770,8 +849,12 @@ class _TripPageState extends State<TripPage>
     try {
       if (relationName.isEmpty) {
         final LocalStorage storage = LocalStorage('tokens.json');
-        relationName = await storage.getItem('relation_name');
-        print("[TipPage.loadTrip.relationName] $relationName");
+        relationName = await storage.getItem('relation_name') ?? '';
+        print("[TripPage.loadTrip.relationName] $relationName");
+        // Forzar actualización de UI para reflejar el rol cargado
+        if (mounted) {
+          setState(() {});
+        }
       }
     } catch (e) {
       print("[TripPage.loadTrip.relationName.error] $e");
@@ -791,6 +874,48 @@ class _TripPageState extends State<TripPage>
       }
     } catch (e) {
       print("[TripPage.loadTrip.error] $e");
+    }
+  }
+
+  // Helper method para determinar si el usuario es padre/representante
+  bool _isParentRole() {
+    return relationName.contains('eta.guardians') || 
+           relationName.contains('eta.parents') || 
+           relationName.contains('representante') ||
+           relationName.contains('tutor') ||
+           relationName.contains('guardian');
+  }
+  
+  // Método para centrar el mapa en la posición del bus
+  void _centerOnBus() {
+    if (busPointAnnotation != null && _mapboxMapController != null) {
+      final busPosition = busPointAnnotation!.geometry;
+      print("[TripPage._centerOnBus] Centering on bus position: $busPosition");
+      _mapboxMapController!.flyTo(
+        CameraOptions(
+          center: busPosition,
+          zoom: 16,
+          pitch: 60,
+        ),
+        MapAnimationOptions(duration: 1000, startDelay: 0)
+      );
+    } else if (_lastPositionPayload != null && _mapboxMapController != null) {
+      // Si no hay anotación pero tenemos la última posición conocida
+      final Position position = Position(
+        double.parse("${_lastPositionPayload?['longitude']}"),
+        double.parse("${_lastPositionPayload?['latitude']}")
+      );
+      print("[TripPage._centerOnBus] Centering on last known bus position: $position");
+      _mapboxMapController!.flyTo(
+        CameraOptions(
+          center: Point(coordinates: position),
+          zoom: 16,
+          pitch: 60,
+        ),
+        MapAnimationOptions(duration: 1000, startDelay: 0)
+      );
+    } else {
+      print("[TripPage._centerOnBus] No bus position available to center on");
     }
   }
 
@@ -817,8 +942,21 @@ class _TripPageState extends State<TripPage>
     }
   }
 
+  void _showEmitterTooltip(BuildContext context, EmitterService emitterService) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return _LiveConnectionDialog(
+          parentState: this,
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
+    _autoFollowTimer?.cancel();
+    _tripDurationTimer?.cancel();
     super.dispose();
     cleanResources();
   }
@@ -1194,6 +1332,16 @@ class _TripPageState extends State<TripPage>
           "[TripPage._updateIcon] is not the driver of this trip [${trip.driver_id}  $relationId]");
       return;
     }
+    
+    // Debounce: evitar actualizaciones muy frecuentes que puedan causar duplicados
+    if (_lastAnnotationUpdate != null) {
+      final timeSinceLastUpdate = DateTime.now().difference(_lastAnnotationUpdate!).inMilliseconds;
+      if (timeSinceLastUpdate < _minAnnotationUpdateInterval) {
+        print("[TripPage._updateIcon] Skipping update - too frequent (${timeSinceLastUpdate}ms since last update)");
+        return;
+      }
+    }
+    _lastAnnotationUpdate = DateTime.now();
 
     try {
       // If the annotation doesn't exist, create it
@@ -1241,17 +1389,71 @@ class _TripPageState extends State<TripPage>
         _mapboxMapController?.setCamera(CameraOptions(
             center: Point(coordinates: position), zoom: 18, pitch: 70));
       }
-      // Si ya existe, solo actualizamos la posición y el texto
+      // Si ya existe, eliminamos la anterior y creamos una nueva para evitar duplicados
       else  {
-        print("[TripPage._updateIcon] updating existing point annotation");
-        busPointAnnotation?.geometry = Point(coordinates: position);
-        busPointAnnotation?.textField = label;
-        busPointAnnotation?.symbolSortKey = 3;
-        await annotationManager?.update(busPointAnnotation!);
+        print("[TripPage._updateIcon] updating existing point annotation - recreating to avoid duplicates");
+        
+        // Eliminar la anotación anterior
+        if (busPointAnnotation != null) {
+          try {
+            await annotationManager?.delete(busPointAnnotation!);
+          } catch (e) {
+            print("[TripPage._updateIcon] Error deleting old annotation: $e");
+          }
+        }
+        
+        // Crear nueva anotación con la posición y etiqueta actualizadas
+        final int currentBusColor = Colors.white.value;
+        
+        Uint8List? imageData;
+        if (_busMarkerCache.containsKey(currentBusColor) &&
+            _busMarkerCache[currentBusColor] != null) {
+          imageData = _busMarkerCache[currentBusColor]!;
+        } else {
+          final ui.Image busImage =
+              await loadImageFromAsset('assets/bus_color.png');
+          imageData = await createCircleMarkerImage(
+              circleColor: Color(currentBusColor),
+              image: busImage,
+              size: 96,
+              imageSize: 72);
+          _busMarkerCache[currentBusColor] = imageData;
+        }
+        
+        busPointAnnotation =
+            await annotationManager?.create(PointAnnotationOptions(
+          geometry: Point(coordinates: position),
+          image: imageData,
+          textSize: 14,
+          textField: label,
+          textOffset: [
+            0.0,
+            -2.0
+          ],
+          textColor: Colors.black.value,
+          textHaloColor: Colors.white.value,
+          textHaloWidth: 2,
+          iconSize: 1.0,
+          symbolSortKey: 3,
+        ));
 
-        // Solo actualizar posición, no el zoom
-        _mapboxMapController
-            ?.setCamera(CameraOptions(center: Point(coordinates: position)));
+        // Solo centrar el mapa si el auto-seguimiento está activado
+        if (_autoFollowBus) {
+          _mapboxMapController?.flyTo(
+            CameraOptions(center: Point(coordinates: position)),
+            MapAnimationOptions(duration: 1000, startDelay: 0)
+          );
+        }
+        
+        // Si el usuario no ha interactuado en los últimos 30 segundos, reactivar auto-seguimiento
+        if (_lastUserInteraction != null) {
+          final timeSinceInteraction = DateTime.now().difference(_lastUserInteraction!);
+          if (timeSinceInteraction.inSeconds > 30) {
+            setState(() {
+              _autoFollowBus = true;
+            });
+          }
+        }
       }
 
       _updateBusModelCoordinates(Point(coordinates: position));
@@ -1287,8 +1489,18 @@ class _TripPageState extends State<TripPage>
   //   });
   // }
 
+  // Note: Position counting is now handled by LocationService directly
+
   void onEmitterMessage() async {
     if (!_isVisible) return; // No procesar si no está visible
+
+    // Update Emitter statistics
+    _messageCount++;
+    _lastMessageTime = DateTime.now();
+    
+    // Los mensajes recibidos en trip_page son eventos del viaje
+    _receivedCount++;
+    _lastReceivedTime = DateTime.now();
 
     final String message = _emitterServiceProvider!.lastMessage();
 
@@ -1409,5 +1621,354 @@ class _TripPageState extends State<TripPage>
         ),
       );
     }
+  }
+}
+
+// Widget del diálogo de conexión en vivo que se actualiza automáticamente
+class _LiveConnectionDialog extends StatefulWidget {
+  final _TripPageState parentState;
+
+  const _LiveConnectionDialog({
+    Key? key,
+    required this.parentState,
+  }) : super(key: key);
+
+  @override
+  State<_LiveConnectionDialog> createState() => _LiveConnectionDialogState();
+}
+
+class _LiveConnectionDialogState extends State<_LiveConnectionDialog> {
+  Timer? _updateTimer;
+  bool _wasDisconnected = false;
+  DateTime? _disconnectionTime;
+  Timer? _messageTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Actualizar cada segundo para refrescar todos los valores en tiempo real
+    _updateTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {
+          // Solo trigger rebuild, los valores se calculan en build()
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _updateTimer?.cancel();
+    _messageTimer?.cancel();
+    super.dispose();
+  }
+
+  String _formatDuration(int seconds) {
+    final hours = seconds ~/ 3600;
+    final minutes = (seconds % 3600) ~/ 60;
+    final secs = seconds % 60;
+    
+    if (hours > 0) {
+      return '${hours}h ${minutes}m ${secs}s';
+    } else if (minutes > 0) {
+      return '${minutes}m ${secs}s';
+    } else {
+      return '${secs}s';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<EmitterService>(
+      builder: (context, emitterService, child) {
+        // Usar el rol real del usuario en lugar de solo navigationMode
+        final relationName = widget.parentState.relationName;
+        final isDriver = widget.parentState.widget.navigationMode && relationName.contains('eta.drivers');
+        final isParent = relationName.contains('eta.guardians') || 
+                        relationName.contains('eta.parents') || 
+                        relationName.contains('representante') ||
+                        relationName.contains('tutor');
+        
+        // Solo mostrar posiciones si es conductor Y NO es padre/representante
+        final shouldShowPositions = isDriver && !isParent;
+        
+        print("[LiveConnectionDialog] relationName: '$relationName', isDriver: $isDriver, isParent: $isParent, shouldShowPositions: $shouldShowPositions");
+        
+        final currentMessageCount = widget.parentState._messageCount;
+        
+        // Calcular tiempo real desde el inicio de la sesión del emitter
+        final realSessionDuration = widget.parentState._sessionStartTime != null
+            ? DateTime.now().difference(widget.parentState._sessionStartTime!).inSeconds
+            : 0;
+            
+        final eventsPerSecond = realSessionDuration > 0 
+            ? (currentMessageCount / realSessionDuration).toStringAsFixed(2)
+            : '0.00';
+        
+        final lastEventTime = widget.parentState._lastMessageTime != null
+            ? '${widget.parentState._lastMessageTime!.hour.toString().padLeft(2, '0')}:${widget.parentState._lastMessageTime!.minute.toString().padLeft(2, '0')}:${widget.parentState._lastMessageTime!.second.toString().padLeft(2, '0')}'
+            : isDriver ? 'Sin envíos' : 'Sin eventos';
+        
+        final timeSinceLastEvent = widget.parentState._lastMessageTime != null
+            ? DateTime.now().difference(widget.parentState._lastMessageTime!).inSeconds
+            : 0;
+        
+        return AlertDialog(
+          title: Row(
+            children: [
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  border: Border.all(
+                    color: emitterService.isConnected() ? Colors.green : Colors.red,
+                    width: 2,
+                  ),
+                ),
+                child: Center(
+                  child: Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: emitterService.isConnected() ? Colors.green : Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 8),
+              Text('Conexión en Vivo'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    emitterService.isConnected() ? Icons.check_circle : Icons.cancel,
+                    color: emitterService.isConnected() ? Colors.green : Colors.red,
+                    size: 20,
+                  ),
+                  SizedBox(width: 8),
+                  Text('${emitterService.isConnected() ? "Conectado" : "Desconectado"}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: emitterService.isConnected() ? Colors.green : Colors.red,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+              
+              // Sección de Posiciones Enviadas (solo para conductores, NO para padres/representantes)
+              if (shouldShowPositions)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('📤 Posiciones enviadas: ${LocationService.instance.positionsSent}',
+                      style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                    if (LocationService.instance.lastPositionSentTime != null) ...[
+                      SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Text('${LocationService.instance.lastPositionSentTime!.hour.toString().padLeft(2, '0')}:${LocationService.instance.lastPositionSentTime!.minute.toString().padLeft(2, '0')}:${LocationService.instance.lastPositionSentTime!.second.toString().padLeft(2, '0')}',
+                            style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+                          Text(' (hace ${DateTime.now().difference(LocationService.instance.lastPositionSentTime!).inSeconds}s)',
+                            style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                        ],
+                      ),
+                    ],
+                    SizedBox(height: 16),
+                  ],
+                ),
+              
+              // Sección de Eventos Recibidos
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('📥 Eventos recibidos: ${widget.parentState._receivedCount}',
+                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                  if (widget.parentState._lastReceivedTime != null) ...[
+                    SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Text('${widget.parentState._lastReceivedTime!.hour.toString().padLeft(2, '0')}:${widget.parentState._lastReceivedTime!.minute.toString().padLeft(2, '0')}:${widget.parentState._lastReceivedTime!.second.toString().padLeft(2, '0')}',
+                          style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+                        Text(' (hace ${DateTime.now().difference(widget.parentState._lastReceivedTime!).inSeconds}s)',
+                          style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                      ],
+                    ),
+                  ] else ...[
+                    SizedBox(height: 6),
+                    Text('Sin eventos recibidos', 
+                      style: TextStyle(fontSize: 13, color: Colors.grey[500])),
+                  ],
+                  SizedBox(height: 16),
+                ],
+              ),
+              
+              // Separador visual
+              Divider(color: Colors.grey[300], height: 1),
+              SizedBox(height: 12),
+              
+              // Estadísticas generales
+              Text('Frecuencia total: $eventsPerSecond mensajes/seg',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400)),
+              SizedBox(height: 8),
+              Text('Tiempo activo: ${_formatDuration(realSessionDuration)}',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400)),
+              
+              // Mensaje de desconexión con altura fija para evitar cambios de tamaño
+              Container(
+                height: 40, // Altura fija para evitar cambios de tamaño
+                padding: EdgeInsets.only(top: 12),
+                child: Builder(builder: (context) {
+                  // Detectar cambio de estado de conexión
+                  if (!emitterService.isConnected() && !_wasDisconnected) {
+                    _wasDisconnected = true;
+                    _disconnectionTime = DateTime.now();
+                    // Mantener el mensaje visible por 5 segundos mínimo
+                    _messageTimer?.cancel();
+                    _messageTimer = Timer(Duration(seconds: 5), () {
+                      if (mounted && emitterService.isConnected()) {
+                        setState(() {
+                          _wasDisconnected = false;
+                        });
+                      }
+                    });
+                  } else if (emitterService.isConnected() && _wasDisconnected) {
+                    // Si se reconecta pero no ha pasado el tiempo mínimo, esperar
+                    if (_disconnectionTime != null && 
+                        DateTime.now().difference(_disconnectionTime!).inSeconds < 5) {
+                      // Mantener mensaje visible
+                    } else {
+                      _wasDisconnected = false;
+                    }
+                  }
+                  
+                  return AnimatedOpacity(
+                    opacity: (!emitterService.isConnected() || _wasDisconnected) ? 1.0 : 0.0,
+                    duration: Duration(milliseconds: 300),
+                    child: Wrap(
+                      children: [
+                        Text(
+                          'Conexión interrumpida. Verifique su conexión a internet',
+                          style: TextStyle(
+                            color: Colors.orange,
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cerrar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// Widget de marquee que se puede tocar para activar
+class _TappableMarqueeText extends StatefulWidget {
+  final String text;
+  final double width;
+  final TextStyle? style;
+
+  const _TappableMarqueeText({
+    Key? key,
+    required this.text,
+    required this.width,
+    this.style,
+  }) : super(key: key);
+
+  @override
+  State<_TappableMarqueeText> createState() => _TappableMarqueeTextState();
+}
+
+class _TappableMarqueeTextState extends State<_TappableMarqueeText> {
+  bool _forceMarquee = false;
+  bool _needsScroll = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkIfScrollNeeded();
+    });
+  }
+
+  @override
+  void didUpdateWidget(_TappableMarqueeText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.text != widget.text || oldWidget.width != widget.width) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkIfScrollNeeded();
+      });
+    }
+  }
+
+  void _checkIfScrollNeeded() {
+    final textPainter = TextPainter(
+      text: TextSpan(text: widget.text, style: widget.style),
+      textDirection: ui.TextDirection.ltr,
+    );
+    textPainter.layout();
+    
+    setState(() {
+      _needsScroll = textPainter.width > widget.width;
+    });
+  }
+
+  void _onTap() {
+    setState(() {
+      _forceMarquee = !_forceMarquee;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final shouldShowMarquee = _needsScroll || _forceMarquee;
+    
+    return GestureDetector(
+      onTap: _onTap,
+      child: Container(
+        width: widget.width,
+        height: widget.style?.fontSize != null 
+            ? (widget.style!.fontSize! * 1.5) 
+            : 24,
+        child: shouldShowMarquee
+            ? MarqueeText(
+                text: widget.text,
+                width: widget.width,
+                style: widget.style,
+                velocity: 60.0,
+                pauseAfterRound: Duration(seconds: 2),
+                blankSpace: 80.0,
+                autoStart: _forceMarquee || _needsScroll,
+              )
+            : Text(
+                widget.text,
+                style: widget.style,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+      ),
+    );
   }
 }

@@ -32,7 +32,6 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    email = widget.defaultMail ?? '';
     return showLoader
         ? Loader()
         : Material(
@@ -160,31 +159,98 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                           ),
                           child: GestureDetector(
                             onTap: () {
-                              if(email.isEmpty){
-                                return;
+                              // Solo validar si el email NO viene predefinido (viene desde login)
+                              if(widget.defaultMail == null || widget.defaultMail!.isEmpty) {
+                                // Validar email vacío
+                                if(email.isEmpty){
+                                  showSuccessDialog(
+                                    context,
+                                    lang.translate('Attention'),
+                                    lang.translate('Please enter your email address'),
+                                    () {
+                                      Navigator.pop(context);
+                                    }
+                                  );
+                                  return;
+                                }
+                                
+                                // Validar formato de email
+                                final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                                if(!emailRegex.hasMatch(email)) {
+                                  showSuccessDialog(
+                                    context,
+                                    lang.translate('Invalid Email'),
+                                    lang.translate('Please enter a valid email address'),
+                                    () {
+                                      Navigator.pop(context);
+                                    }
+                                  );
+                                  return;
+                                }
                               }
+                              
                               setState(() {
                                 showLoader = true;
                               });
 
                               httpService.resetPassword(email).then((value)  {
                                 setState(() {
-                                    response=value;
-                                    var msg = value.split('/');
-                                    showSuccessDialog(
-                                        context,
-                                        "${lang.translate('Error')} (${msg[1]})",
-                                        response == '1' ? 
-                                        lang.translate('Recovery password mail sended') : 
-                                        lang.translate(msg[0]),
-                                        callback);
-                                    showLoader = false;
-                                    activeResetPassword = true;
+                                  showLoader = false;
+                                  response = value;
                                 });
-
-                                if(response == '1'){
-                                  Navigator.pop(context);
+                                
+                                if(value == '1') {
+                                  // Éxito: mostrar diálogo con instrucciones
+                                  showSuccessDialog(
+                                    context,
+                                    lang.translate('Success'),
+                                    '${lang.translate('Recovery password mail sended')}\n\n' +
+                                    lang.translate('Please check your email inbox and follow the instructions to reset your password.'),
+                                    () {
+                                      // Cerrar diálogo y volver a la pantalla anterior
+                                      Navigator.pop(context); // Cerrar diálogo
+                                      Navigator.pop(context); // Volver a login
+                                    }
+                                  );
+                                } else {
+                                  // Error: mostrar mensaje de error pero mantener en la vista
+                                  var msg = value.split('/');
+                                  String errorMessage = msg[0];
+                                  String statusCode = msg.length > 1 ? msg[1] : '';
+                                  
+                                  // Mensajes de error más específicos
+                                  if(statusCode == '404') {
+                                    errorMessage = lang.translate('Email not found. Please check and try again.');
+                                  } else if(statusCode == '400') {
+                                    errorMessage = lang.translate('Invalid email format. Please check and try again.');
+                                  } else {
+                                    errorMessage = lang.translate(errorMessage);
+                                  }
+                                  
+                                  showSuccessDialog(
+                                    context,
+                                    lang.translate('Error'),
+                                    errorMessage,
+                                    () {
+                                      Navigator.pop(context); // Solo cerrar el diálogo
+                                    }
+                                  );
                                 }
+                              }).catchError((error) {
+                                print('[ResetPasswordPage] Error: $error');
+                                setState(() {
+                                  showLoader = false;
+                                });
+                                
+                                // Error de conexión
+                                showSuccessDialog(
+                                  context,
+                                  lang.translate('Connection Error'),
+                                  lang.translate('Could not connect to server. Please check your internet connection and try again.'),
+                                  () {
+                                    Navigator.pop(context); // Solo cerrar el diálogo
+                                  }
+                                );
                               });
                             },
                             child: Text(
@@ -455,5 +521,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   @override
   void initState() {
     super.initState();
+    // Inicializar email con el valor predefinido si existe
+    if(widget.defaultMail != null && widget.defaultMail!.isNotEmpty) {
+      email = widget.defaultMail!;
+      _emailController.text = email;
+    }
   }
 }

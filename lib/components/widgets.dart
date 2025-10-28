@@ -223,7 +223,7 @@ mixin ETAWidgets {
       context, Function setLang, Function setMode, Function setNotifications) {
     List<String> list = <String>['Español', 'English'];
     String? subject;
-    bool allowNotifications = storage.getItem('allowNotifications');
+    bool allowNotifications = false; // Se cargará dinámicamente
 
     return Stack(children: <Widget>[
       Container(

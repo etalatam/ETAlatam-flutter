@@ -49,17 +49,19 @@ class LocationService extends ChangeNotifier {
   static final LocationService _instance = LocationService._internal();
 
   factory LocationService() {
-    print('[LocationService] Getting instance with ID: ${_instance.instanceId}');
+    print('[LocationService] Getting instance with ID: ${_instance._instanceId}');
     return _instance;
   }
-  // Agregar un campo para el ID único
-  static final String _instanceId = 'loc-${DateTime.now().millisecondsSinceEpoch}';
+  
+  // Campo de instancia para el ID único (no estático)
+  late final String _instanceId;
   
   // Obtener el ID de instancia (solo lectura)
   String get instanceId => _instanceId;
 
   // Modificar el constructor para generar el ID
   LocationService._internal() {
+    _instanceId = 'loc-${DateTime.now().millisecondsSinceEpoch}';
     print('[LocationService] Singleton instance created: $_instanceId');
   }
 
@@ -67,16 +69,38 @@ class LocationService extends ChangeNotifier {
 
   bool _shouldCalculateDistance = true;
 
+  // Contador de posiciones enviadas
+  int _positionsSent = 0;
+  DateTime? _lastPositionSentTime;
+  
+  // Getters para acceder al contador
+  int get positionsSent => _positionsSent;
+  DateTime? get lastPositionSentTime => _lastPositionSentTime;
+
   // Añadir un lock para prevenir concurrencia
   final _distanceLock = Lock(); // Usar package:async
 
   static LocationService get instance => _instance;
 
   init() async {
-    if (initialization) return;
+    if (initialization) {
+      print('[LocationService.$_instanceId.init] Already initialized, skipping...');
+      return;
+    }
 
     try {
       _userId = await storage.getItem('id_usu');
+      
+      // Cancelar suscripción existente si existe
+      if (_portSubscription != null) {
+        print('[LocationService.$_instanceId.init] Canceling existing port subscription...');
+        await _portSubscription!.cancel();
+        _portSubscription = null;
+      }
+      
+      // Cerrar y recrear el puerto para asegurar un estado limpio
+      port.close();
+      port = ReceivePort();
       
       // Configurar el puerto de comunicación
       IsolateNameServer.removePortNameMapping(LocationServiceRepository.isolateName);
@@ -85,7 +109,7 @@ class LocationService extends ChangeNotifier {
         LocationServiceRepository.isolateName
       );
 
-      _portSubscription?.cancel();
+      // Crear nueva suscripción
       _portSubscription = port.listen((data) {
         print('[LocationService.$_instanceId.listen] Received data: $data');
 
@@ -94,8 +118,56 @@ class LocationService extends ChangeNotifier {
         }
       });
 
-      // Inicializar el localizador
-      await BackgroundLocator.initialize();
+      // Inicializar el localizador solo para roles que lo necesitan
+      // Primero verificar si hay un usuario autenticado
+      String? token;
+      String? relationName;
+      try {
+        token = await storage.getItem('token');
+        relationName = await storage.getItem('relation_name');
+      } catch (e) {
+        print('[LocationService] Could not get user data from storage: $e');
+      }
+
+      // Si no hay token, el usuario no está autenticado, no inicializar nada
+      if (token == null || token.isEmpty) {
+        print('[LocationService] No authenticated user - skipping BackgroundLocator init');
+        print('[LocationService] Will initialize after login if needed for the user role');
+        // NO inicializar BackgroundLocator hasta que el usuario haga login
+      } else {
+        // Solo inicializar para conductores con viaje activo o estudiantes
+        // Los guardianes (eta.guardians) no necesitan tracking GPS
+        bool shouldInitializeLocator = false;
+
+        if (relationName != null && relationName.isNotEmpty) {
+          if (relationName == 'eta.students') {
+            // Los estudiantes necesitan tracking
+            shouldInitializeLocator = true;
+            print('[LocationService] Student role detected - will initialize locator');
+          } else if (relationName == 'eta.drivers') {
+            // Los conductores solo lo necesitan con viaje activo
+            // Esto se inicializará cuando comience un viaje
+            shouldInitializeLocator = false;
+            print('[LocationService] Driver role detected - locator will init on trip start');
+          } else if (relationName == 'eta.guardians') {
+            // Los guardianes/representantes NO necesitan tracking
+            shouldInitializeLocator = false;
+            print('[LocationService] Guardian role detected - locator not needed');
+          }
+        } else {
+          print('[LocationService] User authenticated but no role found - defaulting to no tracking');
+        }
+
+        if (shouldInitializeLocator) {
+          try {
+            await BackgroundLocator.initialize();
+            print('[LocationService] BackgroundLocator initialized successfully');
+          } catch (e) {
+            print('[LocationService] Error initializing BackgroundLocator: $e');
+            // Continuar sin el servicio si falla (ej: Android 15)
+          }
+        }
+      }
       
       // Configurar Workmanager
       Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
@@ -104,6 +176,8 @@ class LocationService extends ChangeNotifier {
       initialization = true;
       _startTimer();
       requestDozeModeExclusion();
+      
+      print('[LocationService.$_instanceId.init] Initialization complete');
       
     } catch (e) {
       print('Initialization error: $e');
@@ -130,7 +204,7 @@ class LocationService extends ChangeNotifier {
     Workmanager().executeTask((task, inputData) {
       final now = DateTime.now();
       final difference = now.difference(_lastPositionDate!);
-      print("[LocationService.timer.difference] ${difference.inSeconds}s.");
+      // print("[LocationService.timer.difference] ${difference.inSeconds}s.");
       if (difference.inSeconds >= 60) {
         print(
             "[LocationService.timer] restaring... [_shouldCalculateDistance: $_shouldCalculateDistance]");
@@ -148,6 +222,41 @@ class LocationService extends ChangeNotifier {
       data: 'package:com.etalatam.schoolapp',
     );
     intent.launch();
+  }
+
+  /// Reinitialize location service after login if needed for the user role
+  Future<void> reinitializeAfterLogin() async {
+    print('[LocationService] Reinitializing after login...');
+
+    // Get user role from storage
+    String? relationName;
+    try {
+      relationName = await storage.getItem('relation_name');
+    } catch (e) {
+      print('[LocationService] Could not get relation_name after login: $e');
+      return;
+    }
+
+    // Only initialize for students (drivers will init on trip start)
+    if (relationName == 'eta.students') {
+      print('[LocationService] Student logged in - initializing BackgroundLocator');
+      try {
+        // Check if already running
+        bool isRunning = await BackgroundLocator.isServiceRunning();
+        if (!isRunning) {
+          await BackgroundLocator.initialize();
+          print('[LocationService] BackgroundLocator initialized for student after login');
+        } else {
+          print('[LocationService] BackgroundLocator already running');
+        }
+      } catch (e) {
+        print('[LocationService] Error initializing BackgroundLocator after login: $e');
+      }
+    } else if (relationName == 'eta.drivers') {
+      print('[LocationService] Driver logged in - will init locator on trip start');
+    } else if (relationName == 'eta.guardians') {
+      print('[LocationService] Guardian logged in - no location tracking needed');
+    }
   }
 
 
@@ -189,7 +298,7 @@ class LocationService extends ChangeNotifier {
     // Configuración mejorada del servicio
     final androidSettings = AndroidSettings(
       accuracy: LocationAccuracy.NAVIGATION,
-      distanceFilter: 0,
+      distanceFilter: 10, // Cambiar de 0 a 10 metros para reducir peticiones al API
       client: LocationClient.google,
       androidNotificationSettings: AndroidNotificationSettings(
         notificationChannelName: 'Location tracking',
@@ -200,6 +309,24 @@ class LocationService extends ChangeNotifier {
         notificationIconColor: Colors.grey,
       ),
     );
+
+    // Para conductores, inicializar BackgroundLocator si aún no está inicializado
+    String? relationName;
+    try {
+      relationName = await storage.getItem('relation_name');
+    } catch (e) {
+      print('[LocationService] Could not get relation_name in startTracking: $e');
+    }
+
+    if (relationName == 'eta.drivers' && !await BackgroundLocator.isServiceRunning()) {
+      try {
+        print('[LocationService] Initializing BackgroundLocator for driver on trip start');
+        await BackgroundLocator.initialize();
+      } catch (e) {
+        print('[LocationService] Error initializing BackgroundLocator for driver: $e');
+        // Continuar sin el servicio si falla
+      }
+    }
 
     try {
       await BackgroundLocator.registerLocationUpdate(
@@ -260,26 +387,33 @@ class LocationService extends ChangeNotifier {
 
     try {
 
-      // _lastPositionDate = DateTime.now();
+      _lastPositionDate = DateTime.now();
 
       // Solo calcular distancia si está habilitado
-      // await _distanceLock.synchronized(() async {
-      //   if (!_shouldCalculateDistance) return;
-      //   try {
-      //     if (double.parse(_locationData?['speed'] ?? '0') > 0.5) {
-      //       print('[LocationService.trackingDynamic._distanceLock.synchronized]');
-      //       _calculateDistance(
-      //           locationInfo['latitude'], locationInfo['longitude']);
+      await _distanceLock.synchronized(() async {
+        if (!_shouldCalculateDistance) return;
+        try {
+          // Calcular velocidad si existe
+          double speed = 0;
+          if (locationInfo['speed'] != null) {
+            speed = double.tryParse(locationInfo['speed'].toString()) ?? 0;
+          }
+          
+          // Solo calcular distancia si hay movimiento significativo (velocidad > 0.5 m/s)
+          if (speed > 0.5) {
+            print('[LocationService.trackingDynamic._distanceLock.synchronized] Speed: $speed m/s');
+            _calculateDistance(
+                locationInfo['latitude'], locationInfo['longitude']);
 
-      //       print("totaldistance: $_totalDistance");
-      //     }
-      //   } catch (e) {
-      //     print('[LocationService-$_instanceId.trackingDynamic.distanceCalculation.error] ${e.toString()}');
-      //   }
-      // });
+            print("Total distance: ${_totalDistance.toStringAsFixed(2)} meters");
+          }
+        } catch (e) {
+          print('[LocationService-$_instanceId.trackingDynamic.distanceCalculation.error] ${e.toString()}');
+        }
+      });
 
-      // _lastLatitude = locationInfo['latitude'];
-      // _lastLongitude = locationInfo['longitude'];
+      _lastLatitude = locationInfo['latitude'] ?? 0;
+      _lastLongitude = locationInfo['longitude'] ?? 0;
 
       final jsonData = {
         'latitude': locationInfo['latitude'],
@@ -287,13 +421,20 @@ class LocationService extends ChangeNotifier {
         'altitude': locationInfo['altitude'],
         'accuracy': locationInfo['accuracy'],
         'heading': locationInfo['heading'],
+        'speed': locationInfo['speed'],
         'time': locationInfo['time'],
         'distance': _totalDistance,
         'background': false
       };
       _locationData = jsonData;
       notifyListeners();
-      // await httpService.sendTracking(position: jsonData, userId: _userId);
+      
+      await httpService.sendTracking(position: jsonData, userId: _userId);
+      print('[LocationService] Position sent with distance: ${_totalDistance.toStringAsFixed(2)} m');
+      
+      // Incrementar contador de posiciones enviadas
+      _positionsSent++;
+      _lastPositionSentTime = DateTime.now();
     } catch (e) {
       print('[LocationService.trackingDynamic.error] ${e.toString()}');
     }
@@ -314,6 +455,7 @@ class LocationService extends ChangeNotifier {
           print('[LocationService-$_instanceId.trackingLocationDto._distanceLock.synchronized]');
           _calculateDistance(
               locationInfo.latitude, locationInfo.longitude);
+          print("Total distance: ${_totalDistance.toStringAsFixed(2)} meters");
         }
       } catch (e) {
         print('[LocationService-$_instanceId.trackingLocationDto.distanceCalculation.error] ${e.toString()}');
@@ -334,9 +476,15 @@ class LocationService extends ChangeNotifier {
     };
 
     _locationData = jsonData;
-    // notifyListeners();
+    notifyListeners();
     print('[LocationService-$_instanceId.trackingLocationDto.notifyListeners()] [_locationData: $_locationData]');
+    
     await httpService.sendTracking(position: jsonData, userId: _userId);
+    print('[LocationService] Background position sent with distance: ${_totalDistance.toStringAsFixed(2)} m');
+    
+    // Incrementar contador de posiciones enviadas
+    _positionsSent++;
+    _lastPositionSentTime = DateTime.now();
   }
 
   void _startTimer() async {
@@ -348,19 +496,21 @@ class LocationService extends ChangeNotifier {
     _timer = Timer.periodic(Duration(seconds: 5), (timer) {
       final now = DateTime.now();
       final difference = now.difference(_lastPositionDate!);
-      print("[LocationService.timer.difference] ${difference.inSeconds}s.");
+      // print("[LocationService.timer.difference] ${difference.inSeconds}s.");
       final max = relationNameLocal.contains('eta.drivers') ? 20 : 30;
       if (difference.inSeconds >= max) {
-        print("[LocationService.timer] restaring... ");
+        // print("[LocationService.timer] restaring...");
         _lastPositionDate = DateTime.now();
+        final currentCalculateDistance = _shouldCalculateDistance;
         stopLocationService();
-        startLocationService();
+        startLocationService(calculateDistance: currentCalculateDistance);
       }
     });
   }
 
   void stopLocationService() {
     print('[LocationService-$_instanceId.stopLocationService]');
+    print('[LocationService] Stopping service - Total distance: ${_totalDistance.toStringAsFixed(2)} m');
     try {
       IsolateNameServer.removePortNameMapping(
           LocationServiceRepository.isolateName);
@@ -381,10 +531,18 @@ class LocationService extends ChangeNotifier {
       initialization = false;
       _timer?.cancel();
       Workmanager().cancelAll();
+      
+      // Limpiar estado de distancia
       _totalDistance = 0;
+      _lastLatitude = 0;
+      _lastLongitude = 0;
       _shouldCalculateDistance = false;
       _saveDistance();
       _saveShouldCalculateDistance();
+      
+      // Reset position counter
+      _positionsSent = 0;
+      _lastPositionSentTime = null;
     } catch (e) {
       print('[LocationService.stopLocationService.error] ${e.toString()}');
     }
@@ -414,8 +572,9 @@ class LocationService extends ChangeNotifier {
   void _saveDistance() async {
     try {
       await storage.setItem('last_calculated_distance', _totalDistance.toString());
+      print('[LocationService] Saved distance: ${_totalDistance.toStringAsFixed(2)} m');
     } catch (e) {
-      //
+      print('[LocationService] Error saving distance: $e');
     }
   }
 
@@ -432,14 +591,16 @@ class LocationService extends ChangeNotifier {
     
     try {
       String? savedDistance = await storage.getItem('last_calculated_distance');
-      if (savedDistance != null) {
-      _totalDistance = double.parse(savedDistance);
-      } else if (_locationData?['distance'] != null) {
-        // Usar valor del servidor como respaldo
-        _totalDistance = double.parse(_locationData!['distance'].toString());
-      } 
+      if (savedDistance != null && _shouldCalculateDistance) {
+        _totalDistance = double.parse(savedDistance);
+        print('[LocationService] Loaded saved distance: ${_totalDistance.toStringAsFixed(2)} m');
+      } else {
+        _totalDistance = 0;
+        print('[LocationService] Starting with distance: 0 m');
+      }
     } catch (e) {
-      //
+      _totalDistance = 0;
+      print('[LocationService] Error loading distance: $e');
     }
 
     try {
@@ -455,33 +616,57 @@ class LocationService extends ChangeNotifier {
   _calculateDistance(double lat2, double lon2) {
     // Validar coordenadas
     if (!_isValidCoordinate(_lastLatitude, _lastLongitude) || !_isValidCoordinate(lat2, lon2)) {
+      print('[LocationService._calculateDistance] Invalid coordinates');
       return 0.0;
     }
     
+    // Si es la primera vez, inicializar las coordenadas pero no calcular distancia
+    if (_lastLatitude == 0 && _lastLongitude == 0) {
+      _lastLatitude = lat2;
+      _lastLongitude = lon2;
+      print('[LocationService._calculateDistance] First position initialized');
+      return 0.0;
+    }
+    
+    // Fórmula de Haversine para calcular distancia entre dos puntos en la Tierra
     const double earthRadius = 6371000; // Radio de la Tierra en metros
 
-    double dLat = _toRadians(lat2 - _lastLatitude);
-    double dLon = _toRadians(lon2 - _lastLongitude);
+    double lat1Rad = _toRadians(_lastLatitude);
+    double lat2Rad = _toRadians(lat2);
+    double deltaLat = _toRadians(lat2 - _lastLatitude);
+    double deltaLon = _toRadians(lon2 - _lastLongitude);
 
-    double a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(_toRadians(_lastLatitude)) *
-            cos(_toRadians(lat2)) *
-            sin(dLon / 2) *
-            sin(dLon / 2);
+    double a = sin(deltaLat / 2) * sin(deltaLat / 2) +
+        cos(lat1Rad) * cos(lat2Rad) *
+        sin(deltaLon / 2) * sin(deltaLon / 2);
 
     double c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
-    _lastLatitude = lat2;
-    _lastLongitude = lon2;
+    double distance = earthRadius * c; // Distancia en metros
 
-    double distance = earthRadius * c;
-
-    if (!distance.isNaN && distance >= 0) {
+    // Filtros para mejorar la precisión:
+    // 1. Ignorar distancias muy pequeñas (menos de 2 metros - ruido GPS)
+    // 2. Ignorar distancias muy grandes (más de 200 metros entre actualizaciones - salto GPS)
+    // 3. Solo contar si el vehículo se está moviendo (distancia > 2m)
+    
+    if (!distance.isNaN && distance >= 2 && distance < 200) {
       _totalDistance += distance;
+      _saveDistance(); // Guardar después de cada actualización
+      
+      print('[LocationService._calculateDistance] Distance added: ${distance.toStringAsFixed(2)}m, Total: ${_totalDistance.toStringAsFixed(2)}m');
+    } else if (distance < 2) {
+      print('[LocationService._calculateDistance] Distance ignored (too small/noise): ${distance.toStringAsFixed(2)}m');
+    } else if (distance >= 200) {
+      print('[LocationService._calculateDistance] Distance ignored (GPS jump): ${distance.toStringAsFixed(2)}m');
+    }
+
+    // Actualizar última posición solo si la distancia fue válida o muy pequeña
+    if (distance < 200) {
+      _lastLatitude = lat2;
+      _lastLongitude = lon2;
     }
 
     _checkAndResetDistance();
-    
   }
 
   double _toRadians(double degrees) {

@@ -35,8 +35,9 @@ class _UploadPicturePageState extends State<UploadPicturePage> {
 
     final url = Uri.parse(
         "${apiURL}mobile_api"); // Replace with your server's upload endpoint
+    final token = await storage.getItem('token') ?? '';
     var request = http.MultipartRequest('POST', url)
-      ..fields['token'] = storage.getItem('token')
+      ..fields['token'] = token
       ..fields['student_id'] = widget.student_id.toString()
       ..fields['model'] = 'Student.upload_picture';
     request.files

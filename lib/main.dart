@@ -2,6 +2,8 @@ import 'package:eta_school_app/Pages/login_page.dart';
 import 'package:eta_school_app/Pages/splash_screen_page.dart';
 import 'package:eta_school_app/Pages/home_screen.dart';
 import 'package:eta_school_app/controllers/preferences.dart';
+import 'package:eta_school_app/providers/theme_provider.dart';
+import 'package:eta_school_app/services/storage_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,7 +19,11 @@ import 'shared/location/location_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
+  // Inicializar StorageService antes que cualquier otro servicio
+  await StorageService.instance.init();
+  print('[main] StorageService inicializado');
+
   final locationService = LocationService.instance;
   print('Main location service instance: ${locationService.instanceId}');
 
@@ -33,6 +39,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (context) => ThemeProvider()),
         ChangeNotifierProvider(create: (context) => locationService),
         ChangeNotifierProvider(create: (context) => EmitterService.instance),
         ChangeNotifierProvider(
@@ -54,41 +61,48 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      // transitionDuration: const Duration(seconds: 2), // agrega la duracion de la transición
-      title: 'ETA',
-      locale: localeController.selectedLocale.value,
-      debugShowCheckedModeBanner: false,
-      initialRoute: '/splash',
-      getPages: [
-        GetPage(
-          name: '/splash',
-          page: () {
-            return SplashScreen();
-          },
-          children: [
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return GetMaterialApp(
+          // transitionDuration: const Duration(seconds: 2), // agrega la duracion de la transición
+          title: 'ETA',
+          locale: localeController.selectedLocale.value,
+          debugShowCheckedModeBanner: false,
+          theme: ThemeProvider.lightTheme(),
+          darkTheme: ThemeProvider.darkTheme(),
+          themeMode: themeProvider.themeMode,
+          initialRoute: '/splash',
+          getPages: [
             GetPage(
-              name: '/home/:page',
+              name: '/splash',
               page: () {
-                return HomeScreen();
+                return SplashScreen();
               },
+              children: [
+                GetPage(
+                  name: '/home/:page',
+                  page: () {
+                    return HomeScreen();
+                  },
+                ),
+                GetPage(
+                  name: '/login',
+                  page: () {
+                    return Login();
+                  },
+                ),
+              ],
             ),
             GetPage(
-              name: '/login',
-              page: () {
-                return Login();
-              },
+              name: '/',
+              page: () => Container(), // No se renderizará esta página
+              middlewares: [
+                RedirectMiddleware(),
+              ],
             ),
           ],
-        ),
-        GetPage(
-          name: '/',
-          page: () => Container(), // No se renderizará esta página
-          middlewares: [
-            RedirectMiddleware(),
-          ],
-        ),
-      ],
+        );
+      },
     );
   }
 }

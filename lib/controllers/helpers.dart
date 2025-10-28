@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:localstorage/localstorage.dart';
+import 'package:eta_school_app/services/legacy_storage_adapter.dart';
+export 'package:eta_school_app/services/legacy_storage_adapter.dart' show storage;
 import 'package:eta_school_app/controllers/preferences.dart';
 import 'package:eta_school_app/API/client.dart';
 import 'package:eta_school_app/controllers/locale.dart';
@@ -46,8 +47,7 @@ DarkTheme darkTheme = DarkTheme();
 
 LightTheme lightTheme = LightTheme();
 
-/// Main locatl storage file
-LocalStorage storage = LocalStorage('tokens.json');
+/// Main local storage file - usando el adaptador desde legacy_storage_adapter.dart
 
 /// Locale controller for languages preferences
 LocaleController localeController = Get.find<LocaleController>();
@@ -62,8 +62,8 @@ HttpService httpService = HttpService();
 Lang lang = Lang(key: null, value: null, locale: null);
 
 mixin MediansTheme {
-  static DefaultTheme theme =
-      storage.getItem('darkmode') == true ? DarkTheme() : LightTheme();
+  // Se inicializará en tiempo de ejecución
+  static DefaultTheme theme = LightTheme(); // Valor por defecto
 }
 
 class LightTheme implements DefaultTheme {
@@ -295,9 +295,10 @@ abstract class DefaultTheme {
 Color shadowColor = Colors.black.withOpacity(.2);
 Color darkBlueColor = const Color(0xff1e3050);
 
-setColors() {
-  storage = LocalStorage('tokens.json');
-  darkMode = storage.getItem('darkmode') == true ? true : false;
+setColors() async {
+  // storage ya está importado desde legacy_storage_adapter.dart
+  await storage.ready;
+  darkMode = await storage.getItem('darkmode') == true ? true : false;
 
   /// Custom  color
 }

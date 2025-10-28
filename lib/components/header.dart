@@ -29,12 +29,13 @@ class _HeaderState extends State<Header>{
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Center(
         widthFactor: 1,
         child: Container(
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.9),
+            color: theme.scaffoldBackgroundColor.withOpacity(0.9),
           ),
           padding:
               const EdgeInsets.only(left: 20, right: 20, top: 40, bottom: 10),
@@ -79,7 +80,7 @@ class _HeaderState extends State<Header>{
                   child: (user != null) ?
                     Text(
                     "${user?.firstName} ${user?.lastName}",
-                    style: activeTheme.h6,
+                    style: theme.textTheme.titleMedium,
                   ) : Text(""),
                 )                
               ),

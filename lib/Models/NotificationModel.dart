@@ -5,7 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 
 class NotificationModel {
-  
+
   int? id;
   String? title;
   String? status;
@@ -18,6 +18,9 @@ class NotificationModel {
   double? model_id;
   String? icon;
   String? formatDate;
+  String? priority;  // Nueva: Urgente, Normal, Baja
+  String? topic;     // Nueva: topic FCM al que se envió
+  Map<String, dynamic>? attachments;  // Nueva: adjuntos del anuncio
 
   NotificationModel({
     required this.id,
@@ -30,7 +33,10 @@ class NotificationModel {
     this.notification_model,
     this.model_type,
     this.model_id,
-    this.icon
+    this.icon,
+    this.priority,
+    this.topic,
+    this.attachments,
   }){
     prettyDate();
   }
@@ -60,7 +66,10 @@ class NotificationModel {
       model_id: json['model_id'] as double?,
       date: json['ts'] as String?,
       notification_model: json['notification_model'] as String?,
-      icon: json['icon'] as String?
+      icon: json['icon'] as String?,
+      priority: json['priority'] as String?,
+      topic: json['topic'] as String?,
+      attachments: json['attachments'] as Map<String, dynamic>?,
     );
   }
 

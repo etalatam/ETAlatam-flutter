@@ -220,7 +220,7 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
           MaterialPageRoute(
               builder: (context) => TripPage(
                     trip: trip,
-                    navigationMode: true,
+                    navigationMode: trip?.trip_status == 'Running',
                     showBus: false,
                     showStudents: false,
                   )),
@@ -289,11 +289,20 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
     }
 
     try {
-      final todateRoutes = await httpService.todayRoutes();
+      // Primero intentar obtener las rutas de hoy
+      var todateRoutes = await httpService.todayRoutes();
+      
+      // Si no hay rutas para hoy, obtener todas las rutas disponibles
+      if (todateRoutes.isEmpty) {
+        print("[DriverHome] No routes for today, fetching all available routes");
+        todateRoutes = await httpService.getRoutes();
+      }
+      
       for (var route in todateRoutes) {
         var routeDriverTopic = "route-${route.route_id}-driver";
         NotificationService.instance.subscribeToTopic(routeDriverTopic);
       }
+      
       if (mounted) {
         setState(() {
           todateRoutesList = todateRoutes;
@@ -332,9 +341,16 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
     } catch (e) {
       print("[DriverHome.loadrResources.getActiveTrip.error] $e");
     } finally {
-      if (hasActiveTrip) {
-        await LocationService.instance.startLocationService(
-            calculateDistance: true);
+      if (hasActiveTrip && activeTrip != null) {
+        try {
+          print("[DriverHome.loadResources] Active trip detected (ID: ${activeTrip!.trip_id}), initializing LocationService");
+          await LocationService.instance.init();
+          await LocationService.instance.startLocationService(
+              calculateDistance: true);
+          print("[DriverHome.loadResources] LocationService started successfully for trip ${activeTrip!.trip_id}");
+        } catch (e) {
+          print("[DriverHome.loadResources] Error starting LocationService: $e");
+        }
       }
     }
   }
@@ -342,7 +358,7 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
   openTripCallback(TripModel wrapper) {
     Get.to(TripPage(
       trip: wrapper,
-      navigationMode: true,
+      navigationMode: wrapper.trip_status == 'Running',
       showBus: false,
       showStudents: false,
     ));

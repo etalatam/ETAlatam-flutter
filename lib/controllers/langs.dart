@@ -277,6 +277,18 @@ class Lang {
     "refresh": "Refresh",
     "remove": "Remove",
     "mark_read": "Mark read",
+    "please_check_your_email_inbox_and_follow_the_instructions_to_reset_your_password.": "Please check your email inbox and follow the instructions to reset your password.",
+    "email_not_found._please_check_and_try_again.": "Email not found. Please check and try again.",
+    "invalid_email_format._please_check_and_try_again.": "Invalid email format. Please check and try again.",
+    "connection_error": "Connection Error",
+    "could_not_connect_to_server._please_check_your_internet_connection_and_try_again.": "Could not connect to server. Please check your internet connection and try again.",
+    "attention": "Attention",
+    "please_enter_your_email_address": "Please enter your email address",
+    "invalid_email": "Invalid Email",
+    "please_enter_a_valid_email_address": "Please enter a valid email address",
+    "success": "Success",
+    "error": "Error",
+    "recovery_password_mail_sended": "Password recovery email sent successfully!",
   };
 
   Map<String, dynamic> esLangs = {
@@ -411,5 +423,16 @@ class Lang {
     "refresh": "Refrescar",
     "remove": "Eliminar",
     "mark_read": "Marcar como leído",
+    "please_check_your_email_inbox_and_follow_the_instructions_to_reset_your_password.": "Por favor revise su bandeja de entrada y siga las instrucciones para restablecer su contraseña.",
+    "email_not_found._please_check_and_try_again.": "Correo electrónico no encontrado. Por favor verifique e intente nuevamente.",
+    "invalid_email_format._please_check_and_try_again.": "Formato de correo electrónico inválido. Por favor verifique e intente nuevamente.",
+    "connection_error": "Error de Conexión",
+    "could_not_connect_to_server._please_check_your_internet_connection_and_try_again.": "No se pudo conectar con el servidor. Por favor verifique su conexión a internet e intente nuevamente.",
+    "attention": "Atención",
+    "please_enter_your_email_address": "Por favor ingrese su dirección de correo electrónico",
+    "invalid_email": "Correo Inválido",
+    "please_enter_a_valid_email_address": "Por favor ingrese una dirección de correo electrónico válida",
+    "success": "Éxito",
+    "error": "Error",
   };
 }
