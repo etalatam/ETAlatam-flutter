@@ -26,6 +26,7 @@ import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:localstorage/localstorage.dart';
+import 'package:eta_school_app/services/storage_service.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:wakelock/wakelock.dart';
@@ -141,8 +142,11 @@ class _TripPageState extends State<TripPage>
 
     trip = widget.trip!;
     _lastPositionPayload = trip.lastPositionPayload;
-    
+
     print('[TripPage.initState] trip_id: ${trip.trip_id}, trip_status: "${trip.trip_status}", is Running: ${trip.trip_status == 'Running'}');
+
+    // Cargar relationName de forma síncrona UNA SOLA VEZ
+    _loadRelationName();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final currentOrientation = MediaQuery.of(context).orientation;
@@ -582,8 +586,7 @@ class _TripPageState extends State<TripPage>
                                                 : const Center(),
                                             if (trip.trip_status ==
                                                     'Completed' &&
-                                                relationName
-                                                    .contains('eta.drivers'))
+                                                relationName == 'eta.drivers')
                                               GestureDetector(
                                                   onTap: (() {
                                                     openNewPage(
@@ -617,10 +620,18 @@ class _TripPageState extends State<TripPage>
                                       trip.trip_status == 'Completed'
                                           ? ETAWidgets.tripInfoRow(trip)
                                           : const Center(),
+                                      // DEBUG: Print relationName and button visibility
+                                      Builder(builder: (context) {
+                                        print('[TripPage.build] relationName: "$relationName"');
+                                        print('[TripPage.build] trip_status: "${trip.trip_status}"');
+                                        print('[TripPage.build] Es conductor (eta.drivers): ${relationName == 'eta.drivers'}');
+                                        print('[TripPage.build] Botones visibles: ${trip.trip_status == 'Running' && relationName == 'eta.drivers'}');
+                                        return const SizedBox.shrink();
+                                      }),
                                       Row(children: [
+                                        // Mostrar SOLO si es conductor Y el viaje está Running
                                         if (trip.trip_status == 'Running' &&
-                                            relationName
-                                                .contains('eta.drivers'))
+                                            relationName == 'eta.drivers')
                                           GestureDetector(
                                               onTap: showLoader
                                                   ? null
@@ -639,13 +650,13 @@ class _TripPageState extends State<TripPage>
                                                       showLoader
                                                           ? Colors.grey
                                                           : Colors.red))),
-                                        if (trip.trip_status == 'Running')
+                                        if (trip.trip_status == 'Running' &&
+                                            relationName == 'eta.drivers')
                                           const SizedBox(
                                             width: 20,
                                           ),
                                         if (trip.trip_status == 'Running' &&
-                                            relationName
-                                                .contains('eta.drivers'))
+                                            relationName == 'eta.drivers')
                                           GestureDetector(
                                               onTap: (() {
                                                 openNewPage(context,
@@ -809,6 +820,18 @@ class _TripPageState extends State<TripPage>
     }
   }
 
+  /// Carga relationName UNA SOLA VEZ desde StorageService
+  void _loadRelationName() async {
+    try {
+      relationName = await StorageService.instance.getString('relation_name') ?? '';
+      print('[TripPage] relationName cargado: "$relationName"');
+      if (mounted) setState(() {});
+    } catch (e) {
+      print('[TripPage] Error cargando relationName: $e');
+      relationName = '';
+    }
+  }
+
   loadTrip() async {
     print("[TripPage.loadTrip] ");
     try {
@@ -846,19 +869,7 @@ class _TripPageState extends State<TripPage>
       print("[TripPage.loadTrip] $e");
     }
 
-    try {
-      if (relationName.isEmpty) {
-        final LocalStorage storage = LocalStorage('tokens.json');
-        relationName = await storage.getItem('relation_name') ?? '';
-        print("[TripPage.loadTrip.relationName] $relationName");
-        // Forzar actualización de UI para reflejar el rol cargado
-        if (mounted) {
-          setState(() {});
-        }
-      }
-    } catch (e) {
-      print("[TripPage.loadTrip.relationName.error] $e");
-    }
+    // relationName ya fue cargado en initState() - no es necesario volver a leerlo
 
     try {
       TripModel? trip_ = await httpService.getTrip(widget.trip?.trip_id);
@@ -1323,13 +1334,18 @@ class _TripPageState extends State<TripPage>
       return;
     }
 
-    // is the trip driver?
-    if (relationName != "eta.drivers") {
+    // El ícono del bus SOLO se muestra para estudiantes/guardians, NO para conductores
+    // Si el usuario ES conductor (eta.drivers), NO mostrar el ícono
+    if (relationName == "eta.drivers") {
+      print("[TripPage._updateIcon] Usuario es conductor - NO mostrar ícono del bus");
       return;
     }
+
+    // Si llegamos aquí, el usuario NO es conductor (es estudiante/guardian)
+    // Verificar que los datos correspondan al driver del viaje
     if (trip.driver_id != relationId) {
       print(
-          "[TripPage._updateIcon] is not the driver of this trip [${trip.driver_id}  $relationId]");
+          "[TripPage._updateIcon] Datos no corresponden al driver de este viaje [${trip.driver_id} != $relationId]");
       return;
     }
     
@@ -1684,7 +1700,7 @@ class _LiveConnectionDialogState extends State<_LiveConnectionDialog> {
       builder: (context, emitterService, child) {
         // Usar el rol real del usuario en lugar de solo navigationMode
         final relationName = widget.parentState.relationName;
-        final isDriver = widget.parentState.widget.navigationMode && relationName.contains('eta.drivers');
+        final isDriver = widget.parentState.widget.navigationMode && relationName == 'eta.drivers';
         final isParent = relationName.contains('eta.guardians') || 
                         relationName.contains('eta.parents') || 
                         relationName.contains('representante') ||
