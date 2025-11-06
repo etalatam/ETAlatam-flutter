@@ -1276,8 +1276,10 @@ class _TripPageState extends State<TripPage>
       final Position position = trip.lastPosition()!;
       final label = formatUnixEpoch(trip.lastPositionPayload['time'].toInt());
 
+      // FIX: Pasar el driver_id directamente en lugar de usar relationName del driver
+      // El método _updateIcon verificará internamente si debe mostrar el ícono
       _updateIcon(
-          position, 'eta.drivers', trip.driver_id!, label); // aqui es la cosa
+          position, 'driver-position', trip.driver_id!, label);
       mapboxMap.setCamera(CameraOptions(zoom: 18, pitch: 70));
     } else {
       final coordinateBounds = getCoordinateBounds(points);
@@ -1324,28 +1326,28 @@ class _TripPageState extends State<TripPage>
     }
   }
 
-  Future<void> _updateIcon(Position position, String relationName,
-      int relationId, String label) async {
-    String key = "$relationName.$relationId";
+  Future<void> _updateIcon(Position position, String identificador,
+      int driverId, String label) async {
+    String key = "$identificador.$driverId";
     print(
-        "[TripPage._updateIcon] [relationName] $relationName [relationId] $relationId");
+        "[TripPage._updateIcon] [identificador] $identificador [driverId] $driverId [userRole] $relationName");
 
     if (key.isEmpty) {
       return;
     }
 
     // El ícono del bus SOLO se muestra para estudiantes/guardians, NO para conductores
-    // Si el usuario ES conductor (eta.drivers), NO mostrar el ícono
-    if (relationName == "eta.drivers") {
-      print("[TripPage._updateIcon] Usuario es conductor - NO mostrar ícono del bus");
+    // Si el usuario actual ES conductor (this.relationName), NO mostrar el ícono
+    if (this.relationName == "eta.drivers") {
+      print("[TripPage._updateIcon] Usuario actual es conductor - NO mostrar ícono del bus");
       return;
     }
 
     // Si llegamos aquí, el usuario NO es conductor (es estudiante/guardian)
     // Verificar que los datos correspondan al driver del viaje
-    if (trip.driver_id != relationId) {
+    if (trip.driver_id != driverId) {
       print(
-          "[TripPage._updateIcon] Datos no corresponden al driver de este viaje [${trip.driver_id} != $relationId]");
+          "[TripPage._updateIcon] Datos no corresponden al driver de este viaje [${trip.driver_id} != $driverId]");
       return;
     }
     
@@ -1551,8 +1553,7 @@ class _TripPageState extends State<TripPage>
 
     if (tracking['relation_name'] != null &&
         tracking['relation_name'] == "eta.drivers") {
-      final relationName = tracking['relation_name'];
-      final relationId = tracking['relation_id'];
+      final driverId = tracking['relation_id'];
 
       if (tracking['payload'] != null) {
         final Position position = Position(
@@ -1566,7 +1567,8 @@ class _TripPageState extends State<TripPage>
           print("Error procesando la distancia: $e");
         }
 
-        _updateIcon(position, relationName, relationId, label);
+        // FIX: Pasar identificador correcto para mostrar posición del conductor
+        _updateIcon(position, 'driver-position', driverId, label);
 
         _lastPositionPayload = tracking['payload'];
         try {

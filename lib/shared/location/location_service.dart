@@ -169,13 +169,20 @@ class LocationService extends ChangeNotifier {
         }
       }
       
-      // Configurar Workmanager
-      Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
-      Workmanager().cancelAll();
-      
+      // Configurar Workmanager (comentado temporalmente por incompatibilidad con Android 14+)
+      // Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
+      // Workmanager().cancelAll();
+
       initialization = true;
       _startTimer();
-      requestDozeModeExclusion();
+
+      // Solicitar exclusión del modo Doze (solo si hay una Activity disponible)
+      try {
+        requestDozeModeExclusion();
+      } catch (e) {
+        print('[LocationService] Could not request doze mode exclusion: $e');
+        // Continuar sin la exclusión - no es crítico
+      }
       
       print('[LocationService.$_instanceId.init] Initialization complete');
       
@@ -295,7 +302,7 @@ class LocationService extends ChangeNotifier {
       'calculateDistance': calculateDistance
     };
 
-    // Configuración mejorada del servicio
+    // Configuración mejorada del servicio con soporte para Android 14+
     final androidSettings = AndroidSettings(
       accuracy: LocationAccuracy.NAVIGATION,
       distanceFilter: 10, // Cambiar de 0 a 10 metros para reducir peticiones al API
@@ -308,6 +315,7 @@ class LocationService extends ChangeNotifier {
         notificationIcon: 'mipmap/ic_launcher',
         notificationIconColor: Colors.grey,
       ),
+      wakeLockTime: 60, // Tiempo para mantener despierto el dispositivo
     );
 
     // Para conductores, inicializar BackgroundLocator si aún no está inicializado
@@ -329,6 +337,9 @@ class LocationService extends ChangeNotifier {
     }
 
     try {
+      // Agregar un pequeño delay para asegurar que la Activity esté en primer plano
+      await Future.delayed(Duration(milliseconds: 500));
+
       await BackgroundLocator.registerLocationUpdate(
         LocationCallbackHandler.callback,
         initCallback: LocationCallbackHandler.initCallback,
@@ -343,16 +354,25 @@ class LocationService extends ChangeNotifier {
         androidSettings: androidSettings,
         autoStop: false,
       );
+      print('[LocationService] BackgroundLocator started successfully');
     } catch (e) {
-      print('Error starting location service: $e');
-      try {
-          // Intentar reiniciar el servicio
-        stopLocationService();
-        await Future.delayed(Duration(seconds: 1));
-        await startLocationService(calculateDistance: calculateDistance);
-      } catch (e) {
-        //
+      print('[LocationService] Error starting BackgroundLocator: $e');
+
+      // En Android 14+, si falla por restricciones de foreground service,
+      // usar Location package en cambio (solo foreground tracking)
+      if (e.toString().contains('ForegroundServiceStartNotAllowedException') ||
+          e.toString().contains('mAllowStartForeground false')) {
+        print('[LocationService] ⚠️ Android 14+ restriction detected');
+        print('[LocationService] ℹ️ Continuing with foreground-only tracking');
+        print('[LocationService] ℹ️ Location will be tracked via Mapbox location puck');
+        // No reintentar, ya que fallaría de nuevo
+        // La app funcionará con location puck de Mapbox en su lugar
+        // NO hacer nada más - dejar que la app continúe normalmente
+        return; // Salir del método sin reintentar
       }
+      // Para otros errores, NO reintentar automáticamente para evitar loops
+      print('[LocationService] ❌ Background location service could not start');
+      print('[LocationService] ℹ️ App will continue with limited location tracking');
     }
   }
 
