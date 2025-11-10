@@ -146,3 +146,31 @@ app.*.symbols
 
 # FVM Version Cache
 .fvm/
+
+# App Store Connect API Keys - CRITICAL: Never commit these!
+.env.appstore
+*.p8
+AuthKey_*.p8
+
+# iOS Fastlane
+**/ios/fastlane/report.xml
+**/ios/fastlane/Preview.html
+**/ios/fastlane/test_output
+**/ios/fastlane/README.md
+
+# Certificates and provisioning profiles
+*.cer
+*.p12
+*.mobileprovision
+*.certSigningRequest
+
+# Generated Dart files
+*.g.dart
+*.inject.summary
+*.inject.dart
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.development

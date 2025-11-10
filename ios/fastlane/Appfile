@@ -1,0 +1,19 @@
+# ETAlatam School Transport Tracking System
+# App Store Connect Configuration
+
+# Your Apple ID email for ETAlatam
+apple_id ENV["ETALATAM_APPLE_ID"] || ENV["APPLE_ID"] || "etalatamdev@gmail.com"
+
+# Your Team ID (found in Apple Developer portal)
+# ETAlatam Team ID: 494S8338AJ
+team_id ENV["ETALATAM_APPLE_TEAM_ID"] || ENV["TEAM_ID"] || "494S8338AJ"
+
+# Your iTunes Connect Team ID (if different from team_id)
+# Usually the same as team_id
+itc_team_id ENV["ETALATAM_ITC_TEAM_ID"] || ENV["ITC_TEAM_ID"] || ENV["ETALATAM_APPLE_TEAM_ID"] || "494S8338AJ"
+
+# ETAlatam App Bundle Identifier
+app_identifier "com.etalatam.schoolapp"
+
+# For more information about the Appfile, see:
+# https://docs.fastlane.tools/advanced/#appfile
