@@ -1,15 +1,26 @@
-name: ETAlatam iOS Build
+name: ETAlatam iOS Build (DISABLED)
 
+# iOS builds are currently disabled. Uncomment the 'on' section below to re-enable
+# on:
+#   push:
+#     branches:
+#       - main
+#       - master
+#       - 'release/**'
+#   pull_request:
+#     branches:
+#       - main
+#       - master
+#   workflow_dispatch:
+#     inputs:
+#       deploy_testflight:
+#         description: 'Deploy to TestFlight'
+#         required: false
+#         type: boolean
+#         default: false
+
+# Workflow disabled - only manual trigger available
 on:
-  push:
-    branches:
-      - main
-      - master
-      - 'release/**'
-  pull_request:
-    branches:
-      - main
-      - master
   workflow_dispatch:
     inputs:
       deploy_testflight:
