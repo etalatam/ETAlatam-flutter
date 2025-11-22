@@ -238,7 +238,8 @@ class _StudentsHomeState extends State<StudentsHome>
     }
 
     try {
-      await LocationService.instance.startLocationService();
+      // Los estudiantes no deben calcular distancia, solo reportar ubicación
+      await LocationService.instance.startLocationService(calculateDistance: false);
     } catch (e) {
       print("[StudentPage.loadResources.startLocationService.error] $e");
     }

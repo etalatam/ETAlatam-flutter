@@ -960,9 +960,9 @@ class HttpService {
       'altitude': position['altitude'],
       'speedAccuracy': position['speedAccuracy'],
       'time': position['time'],
+      'heading': position['heading'],  // Asegurar que heading esté incluido
       'background': position['background'],
-      'distance': position['distance']
-
+      'distance': position['distance'] ?? 0.0  // Asegurar valor por defecto
     };
     final jsonData = jsonEncode(data);
     try {

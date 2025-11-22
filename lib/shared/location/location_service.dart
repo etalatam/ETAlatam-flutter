@@ -67,7 +67,7 @@ class LocationService extends ChangeNotifier {
 
   double get totalDistance => _totalDistance;
 
-  bool _shouldCalculateDistance = true;
+  bool _shouldCalculateDistance = false;  // Por defecto false, solo true para conductores con viaje activo
 
   // Contador de posiciones enviadas
   int _positionsSent = 0;

@@ -3,7 +3,7 @@ import 'package:eta_school_app/Models/recipient_group_model.dart';
 import 'package:eta_school_app/Models/user_topic_model.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
-import 'package:eta_school_app/Pages/help_messages_page.dart';
+import 'package:eta_school_app/Pages/support_messages_unified_page.dart';
 import 'package:eta_school_app/Pages/notifications_page.dart';
 import 'package:eta_school_app/components/animated_snackbar_content.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
@@ -316,9 +316,8 @@ class NotificationService with ChangeNotifier {
       if (messageId != null) {
         print('[FCM] Navigating to support message: $messageId');
 
-        // Por ahora navegar a la página de mensajes de ayuda
-        // TODO: Implementar navegación a mensaje específico cuando esté disponible
-        Get.to(() => HelpMessagesPage());
+        // Navegar a la página unificada de mensajes de soporte
+        Get.to(() => SupportMessagesUnifiedPage());
       } else {
         print('[FCM] No message_id in notification data');
         await _navigateToNotifications();

@@ -822,7 +822,8 @@ class _StudentPageState extends State<StudentPage> {
 
     try {
       await LocationService.instance.init();
-      await LocationService.instance.startLocationService();
+      // Los estudiantes no deben calcular distancia, solo reportar ubicación
+      await LocationService.instance.startLocationService(calculateDistance: false);
       print("[StudentPage._initLocationServiceByRole] LocationService started for role: $relationName");
     } catch (e) {
       print("[StudentPage._initLocationServiceByRole.error] $e");
