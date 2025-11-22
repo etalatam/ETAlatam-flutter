@@ -154,6 +154,21 @@ lib/
 - **Login Integration**: MUST call `setupNotifications()` to avoid infinite loops
 - **Cleanup**: Call `close()` on logout to unsubscribe from all topics
 - **Location**: [notification_service.dart](lib/shared/fcm/notification_service.dart)
+- **Notification Navigation**: Automatic navigation based on notification type:
+  - **Trip notifications** (`type: 'trip'` or topic containing 'trip-'): Navigate to TripPage with trip_id
+  - **Support messages** (`type: 'support'/'message'`): Navigate to HelpMessagesPage
+  - **Announcements** (`type: 'announcement'`): Navigate to NotificationsPage
+  - **Default**: Navigate to NotificationsPage
+- **Payload Structure**:
+  ```json
+  {
+    "type": "trip|support|announcement",  // Notification type
+    "trip_id": "123",                      // For trip notifications
+    "message_id": "456",                   // For support messages
+    "topic": "trip-123",                   // Topic that triggered notification
+    "trip_status": "Running"                // Optional trip status
+  }
+  ```
 - **Known Issue**: Notification settings not persisting (TODO.MD #8)
 
 ### Emitter Service
