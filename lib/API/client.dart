@@ -734,7 +734,11 @@ class HttpService {
         }
         // monitor puede ser false, así que guardamos aunque sea false
         await storage.setItem('monitor', body['monitor'] ?? false);
-        print('[login] monitor saved: ${body['monitor'] ?? false}');    
+        print('[login] monitor saved: ${body['monitor'] ?? false}');
+
+        // Guardar el email del usuario para usarlo en las suscripciones FCM
+        await storage.setItem('user_email', email);
+        print('[login] user_email saved: $email');
 
         try {
           final LoginInformation login =

@@ -1,0 +1,1 @@
+transporte escolar,GPS,seguimiento,autobús,estudiantes,padres,tiempo real,ruta escolar,seguridad

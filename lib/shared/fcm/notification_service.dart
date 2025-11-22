@@ -100,7 +100,25 @@ class NotificationService with ChangeNotifier {
         print("[NotificationService] Topic personal guardado: $userTopic");
       }
 
-      // 2. Obtener y suscribirse a los topics de grupos con timeout
+      // 2. Suscribirse al topic basado en el ID del usuario
+      final dynamic userId = await storage.getItem('id_usu');
+      if (userId != null) {
+        String userIdTopic = 'user-${userId.toString()}';
+        await subscribeToTopic(userIdTopic);
+        print("[NotificationService] Suscrito a topic de user ID: $userIdTopic");
+      }
+
+      // 3. Suscribirse al topic basado en el email del usuario
+      final String? userEmail = await storage.getItem('user_email');
+      if (userEmail != null && userEmail.isNotEmpty) {
+        // Convertir email a formato válido para topic FCM
+        // Reemplazar @ con _at_ y . con _dot_ para crear un topic válido
+        String emailTopic = 'email-${userEmail.replaceAll('@', '_at_').replaceAll('.', '_dot_')}';
+        await subscribeToTopic(emailTopic);
+        print("[NotificationService] Suscrito a topic de email: $emailTopic");
+      }
+
+      // 4. Obtener y suscribirse a los topics de grupos con timeout
       // useSessionCheck: false para evitar bucle infinito durante el login
       final List<RecipientGroupModel> groups = await _httpService.getMyRecipientGroups(useSessionCheck: false)
         .timeout(Duration(seconds: 3), onTimeout: () => <RecipientGroupModel>[]);

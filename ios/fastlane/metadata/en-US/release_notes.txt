@@ -1,0 +1,25 @@
+Version 1.12.38
+
+🎉 What's New:
+
+✨ Performance Improvements
+• GPS tracking optimization for better accuracy
+• Reduced battery consumption in background
+• Improved map loading speed
+
+🔧 Bug Fixes
+• Fixed location service issue on Android 14+
+• Corrected icon visibility on maps
+• Resolved infinite login loop issue
+• Improved authentication system stability
+
+🔐 Security
+• Enhanced session token handling
+• Updated security protocols
+
+📱 User Experience
+• Smoother and more responsive interface
+• Better error handling with clearer messages
+• Push notification optimization
+
+Thank you for using ETAlatam. If you have feedback or suggestions, contact us at support@etalatam.com

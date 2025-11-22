@@ -124,7 +124,9 @@ lib/
 **Notifications (FCM)**:
 - Topic-based architecture for segmented notifications
 - Topics hierarchy:
-  - User: `user-{userId}` (all users)
+  - User ID: `user-{userId}` (direct user targeting by ID)
+  - User Email: `email-{email_sanitized}` (email with @ replaced by _at_ and . by _dot_)
+  - User Topic: Backend-provided personal topic from `/rpc/get_my_user_topic`
   - Drivers: `route-{route_id}-driver`
   - Students: `route-{route_id}-student`, `route-{route_id}-pickup_point-{pickup_id}`
   - Guardians: `route-{route_id}-guardian`, `route-{route_id}-student-{student_id}`
@@ -395,7 +397,9 @@ flutter test
 
 ### Topic Format Structure
 ```
-user-{userId}                                    # All users
+user-{userId}                                    # Direct user targeting by ID
+email-{email_sanitized}                          # User targeting by email (@ → _at_, . → _dot_)
+user-{backend_topic}                             # Backend-provided personal topic
 route-{route_id}-driver                          # Drivers on specific route
 route-{route_id}-student                         # Students on specific route
 route-{route_id}-pickup_point-{pickup_id}        # Specific pickup point
@@ -405,7 +409,10 @@ trip-{trip_id}                                   # Active trip updates
 ```
 
 ### Subscription Lifecycle
-1. **Login**: Subscribe to `user-{userId}`
+1. **Login**: Subscribe to personal topics:
+   - `user-{userId}` - User ID topic
+   - `email-{email_sanitized}` - Email-based topic
+   - Backend-provided personal topic from API
 2. **Load Data**: Subscribe to role-specific topics
 3. **Start Trip**: Subscribe to `trip-{trip_id}`
 4. **End Trip**: Keep role topics, unsubscribe from trip
