@@ -292,6 +292,7 @@ class NotificationService with ChangeNotifier {
             trip: trip,
             navigationMode: navigationMode,
             showBus: showBus,
+            showStudents: true,  // Mostrar estudiantes por defecto en notificaciones
           ));
         } else {
           print('[FCM] Invalid trip_id format');
