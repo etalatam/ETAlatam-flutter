@@ -433,45 +433,6 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                 ),
               ),
 
-              const SizedBox(height: 24),
-
-              // Info section
-              FadeTransition(
-                opacity: _fadeAnimation,
-                child: Container(
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.blue.shade100,
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        color: Colors.blue.shade600,
-                        size: 20,
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          lang.translate('Password reset instructions will be sent to your email'),
-                          style: TextStyle(
-                            color: Colors.blue.shade700,
-                            fontSize: 13,
-                            height: 1.4,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
               // Footer removido - no se muestran créditos
             ],
           ),
