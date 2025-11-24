@@ -34,8 +34,8 @@ class _SupportMessagesUnifiedPageState extends State<SupportMessagesUnifiedPage>
   String message = '';
   List<SupportHelpCategory>? categories;
   int categoryId = 0;
-  List<String> priorities = <String>['Normal', 'High', 'Low'];
-  String priority = 'Normal';
+  List<String> priorities = <String>['normal', 'high', 'low'];
+  String priority = 'normal';
 
   // Controladores
   final TextEditingController _messageController = TextEditingController();
@@ -117,7 +117,7 @@ class _SupportMessagesUnifiedPageState extends State<SupportMessagesUnifiedPage>
       if (!isCreatingMessage) {
         _messageController.clear();
         message = '';
-        priority = 'Normal';
+        priority = 'normal';
         if (categories != null && categories!.isNotEmpty) {
           categoryId = categories![0].id!;
         }
@@ -467,12 +467,12 @@ class _SupportMessagesUnifiedPageState extends State<SupportMessagesUnifiedPage>
     IconData icon;
     Color color;
 
-    switch (priority) {
-      case 'High':
+    switch (priority.toLowerCase()) {
+      case 'high':
         icon = Icons.priority_high_rounded;
         color = Colors.red;
         break;
-      case 'Low':
+      case 'low':
         icon = Icons.low_priority_rounded;
         color = Colors.blue;
         break;
