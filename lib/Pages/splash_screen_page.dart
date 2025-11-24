@@ -181,9 +181,9 @@ class _SplashScreenState extends State<SplashScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF1E3050),
-              Color(0xFF2A4570),
-              Color(0xFF3A5590),
+              Color.fromARGB(255, 45, 105, 100),  // Verde primario oscuro
+              Color.fromARGB(255, 52, 120, 115),  // Verde primario medio
+              Color.fromARGB(255, 59, 140, 135),  // Verde primario del app
             ],
           ),
         ),
@@ -228,7 +228,7 @@ class _SplashScreenState extends State<SplashScreen>
                               offset: Offset(0, 15),
                             ),
                             BoxShadow(
-                              color: Colors.blue.withOpacity(0.3),
+                              color: Color.fromARGB(255, 59, 140, 135).withOpacity(0.3),
                               blurRadius: 40,
                               offset: Offset(0, 10),
                               spreadRadius: -10,
@@ -247,53 +247,7 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   ),
 
-                  Spacer(flex: 2),
-
-                  // Animated progress indicator
-                  FadeTransition(
-                    opacity: _textFadeAnimation,
-                    child: Container(
-                      width: 200,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                      child: AnimatedBuilder(
-                        animation: _progressAnimation,
-                        builder: (context, child) {
-                          return FractionallySizedBox(
-                            alignment: Alignment.centerLeft,
-                            widthFactor: _progressAnimation.value,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.white.withOpacity(0.8),
-                                    Colors.white,
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(2),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.white.withOpacity(0.5),
-                                    blurRadius: 10,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: 20),
-
-                  // Loading text removed - simplifying splash screen
-
-                  Spacer(flex: 1),
+                  Spacer(flex: 3),
 
                   // Version info
                   FadeTransition(

@@ -79,7 +79,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                           shape: BoxShape.circle,
                           gradient: RadialGradient(
                             colors: [
-                              Color(0xFF4A90E2).withOpacity(0.1),
+                              Color.fromARGB(255, 59, 140, 135).withOpacity(0.1),
                               Colors.transparent,
                             ],
                           ),
@@ -117,27 +117,15 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Logo section with animation
+                              // Logo section with animation - Flat design
                               FadeTransition(
                                 opacity: _fadeAnimation,
                                 child: Center(
                                   child: Hero(
                                     tag: 'app_logo',
-                                    child: Container(
-                                      width: 120,
-                                      height: 120,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(30),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withOpacity(0.1),
-                                            blurRadius: 20,
-                                            offset: Offset(0, 10),
-                                          ),
-                                        ],
-                                      ),
-                                      padding: EdgeInsets.all(20),
+                                    child: SizedBox(
+                                      width: 140,
+                                      height: 140,
                                       child: Image.asset(
                                         'assets/logo.png',
                                         fit: BoxFit.contain,
@@ -224,7 +212,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                                                   boxShadow: fieldFocusNode.hasFocus
                                                     ? [
                                                         BoxShadow(
-                                                          color: Color(0xFF4A90E2).withOpacity(0.3),
+                                                          color: Color.fromARGB(255, 59, 140, 135).withOpacity(0.3),
                                                           blurRadius: 8,
                                                           offset: Offset(0, 2),
                                                         )
@@ -266,7 +254,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                                                     focusedBorder: OutlineInputBorder(
                                                       borderRadius: BorderRadius.circular(16),
                                                       borderSide: BorderSide(
-                                                        color: Color(0xFF4A90E2),
+                                                        color: Color.fromARGB(255, 59, 140, 135),
                                                         width: 2,
                                                       ),
                                                     ),
@@ -289,7 +277,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                                                     prefixIcon: Icon(
                                                       Icons.email_outlined,
                                                       color: fieldFocusNode.hasFocus
-                                                          ? Color(0xFF4A90E2)
+                                                          ? Color.fromARGB(255, 59, 140, 135)
                                                           : Colors.grey[400],
                                                       size: 20,
                                                     ),
@@ -340,7 +328,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                                               boxShadow: _passwordFocusNode.hasFocus
                                                 ? [
                                                     BoxShadow(
-                                                      color: Color(0xFF4A90E2).withOpacity(0.3),
+                                                      color: Color.fromARGB(255, 59, 140, 135).withOpacity(0.3),
                                                       blurRadius: 8,
                                                       offset: Offset(0, 2),
                                                     )
@@ -380,7 +368,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                                                 focusedBorder: OutlineInputBorder(
                                                   borderRadius: BorderRadius.circular(16),
                                                   borderSide: BorderSide(
-                                                    color: Color(0xFF4A90E2),
+                                                    color: Color.fromARGB(255, 59, 140, 135),
                                                     width: 2,
                                                   ),
                                                 ),
@@ -403,7 +391,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                                                 prefixIcon: Icon(
                                                   Icons.lock_outline,
                                                   color: _passwordFocusNode.hasFocus
-                                                      ? Color(0xFF4A90E2)
+                                                      ? Color.fromARGB(255, 59, 140, 135)
                                                       : Colors.grey[400],
                                                   size: 20,
                                                 ),
@@ -416,7 +404,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                                                           : Icons.visibility_outlined,
                                                       key: ValueKey(_obscurePassword),
                                                       color: _passwordFocusNode.hasFocus
-                                                          ? Color(0xFF4A90E2)
+                                                          ? Color.fromARGB(255, 59, 140, 135)
                                                           : Colors.grey[400],
                                                       size: 20,
                                                     ),
@@ -453,12 +441,12 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                                           borderRadius: BorderRadius.circular(16),
                                           gradient: LinearGradient(
                                             colors: _isLoginPressed
-                                                ? [Color(0xFF2A5298), Color(0xFF1E3C72)]
-                                                : [Color(0xFF4A90E2), Color(0xFF357ABD)],
+                                                ? [Color.fromARGB(255, 45, 105, 100), Color.fromARGB(255, 40, 95, 90)]
+                                                : [Color.fromARGB(255, 59, 140, 135), Color.fromARGB(255, 52, 120, 115)],
                                           ),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Color(0xFF4A90E2).withOpacity(0.3),
+                                              color: Color.fromARGB(255, 59, 140, 135).withOpacity(0.3),
                                               blurRadius: 12,
                                               offset: Offset(0, 4),
                                             ),
@@ -533,7 +521,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                                     child: Text(
                                       lang.translate('Forgot_password'),
                                       style: TextStyle(
-                                        color: Color(0xFF4A90E2),
+                                        color: Color.fromARGB(255, 59, 140, 135),
                                         fontSize: 15,
                                         fontWeight: FontWeight.w500,
                                       ),

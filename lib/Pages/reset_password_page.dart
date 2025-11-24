@@ -73,7 +73,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                           shape: BoxShape.circle,
                           gradient: RadialGradient(
                             colors: [
-                              Color(0xFF4A90E2).withOpacity(0.1),
+                              Color.fromARGB(255, 59, 140, 135).withOpacity(0.1),
                               Colors.transparent,
                             ],
                           ),
@@ -166,13 +166,13 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                       width: 100,
                       height: 100,
                       decoration: BoxDecoration(
-                        color: Color(0xFF4A90E2).withOpacity(0.1),
+                        color: Color.fromARGB(255, 59, 140, 135).withOpacity(0.1),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         Icons.lock_reset,
                         size: 50,
-                        color: Color(0xFF4A90E2),
+                        color: Color.fromARGB(255, 59, 140, 135),
                       ),
                     ),
                   ),
@@ -237,7 +237,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                           boxShadow: _emailFocusNode.hasFocus
                             ? [
                                 BoxShadow(
-                                  color: Color(0xFF4A90E2).withOpacity(0.3),
+                                  color: Color.fromARGB(255, 59, 140, 135).withOpacity(0.3),
                                   blurRadius: 8,
                                   offset: Offset(0, 2),
                                 )
@@ -276,7 +276,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: BorderSide(
-                                color: Color(0xFF4A90E2),
+                                color: Color.fromARGB(255, 59, 140, 135),
                                 width: 2,
                               ),
                             ),
@@ -306,7 +306,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                             prefixIcon: Icon(
                               Icons.email_outlined,
                               color: _emailFocusNode.hasFocus
-                                  ? Color(0xFF4A90E2)
+                                  ? Color.fromARGB(255, 59, 140, 135)
                                   : Colors.grey[400],
                               size: 20,
                             ),
@@ -326,10 +326,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                       Container(
                         padding: EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Color(0xFF4A90E2).withOpacity(0.05),
+                          color: Color.fromARGB(255, 59, 140, 135).withOpacity(0.05),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: Color(0xFF4A90E2).withOpacity(0.2),
+                            color: Color.fromARGB(255, 59, 140, 135).withOpacity(0.2),
                             width: 1,
                           ),
                         ),
@@ -337,7 +337,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                           children: [
                             Icon(
                               Icons.email_outlined,
-                              color: Color(0xFF4A90E2),
+                              color: Color.fromARGB(255, 59, 140, 135),
                               size: 24,
                             ),
                             SizedBox(width: 12),
@@ -372,12 +372,12 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                     borderRadius: BorderRadius.circular(16),
                     gradient: LinearGradient(
                       colors: _isSendPressed
-                          ? [Color(0xFF2A5298), Color(0xFF1E3C72)]
-                          : [Color(0xFF4A90E2), Color(0xFF357ABD)],
+                          ? [Color.fromARGB(255, 45, 105, 100), Color.fromARGB(255, 40, 95, 90)]
+                          : [Color.fromARGB(255, 59, 140, 135), Color.fromARGB(255, 52, 120, 115)],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Color(0xFF4A90E2).withOpacity(0.3),
+                        color: Color.fromARGB(255, 59, 140, 135).withOpacity(0.3),
                         blurRadius: 12,
                         offset: Offset(0, 4),
                       ),
@@ -552,7 +552,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                       Navigator.pop(context); // Go back to login
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF4A90E2),
+                      backgroundColor: Color.fromARGB(255, 59, 140, 135),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -629,7 +629,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                       Navigator.pop(context); // Close dialog only
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF4A90E2),
+                      backgroundColor: Color.fromARGB(255, 59, 140, 135),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
