@@ -269,14 +269,6 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
       print(e);
     }
 
-    if (mounted) {
-      setState(() {
-        showLoader = false;
-      });
-    } else {
-      showLoader = false;
-    }
-
     try {
       final driverQuery = await httpService.getDriver();
       if (mounted) {
@@ -351,6 +343,13 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
         } catch (e) {
           print("[DriverHome.loadResources] Error starting LocationService: $e");
         }
+      }
+
+      // Ocultar loader al final de todas las operaciones
+      if (mounted) {
+        setState(() {
+          showLoader = false;
+        });
       }
     }
   }
