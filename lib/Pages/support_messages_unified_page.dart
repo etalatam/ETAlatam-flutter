@@ -499,50 +499,10 @@ class _SupportMessagesUnifiedPageState extends State<SupportMessagesUnifiedPage>
               slivers: [
                 // App Bar con filtros
                 SliverAppBar(
-                  expandedHeight: 180,
+                  expandedHeight: 120,
                   floating: false,
                   pinned: true,
                   backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                  flexibleSpace: FlexibleSpaceBar(
-                    title: Text(
-                      lang.translate('Support Messages'),
-                      style: TextStyle(
-                        color: activeTheme.main_color,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    background: Container(
-                      padding: const EdgeInsets.only(top: 100),
-                      child: Column(
-                        children: [
-                          // Estadísticas
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                _buildStatCard(
-                                  icon: Icons.message_outlined,
-                                  value: messagesList!.length.toString(),
-                                  label: lang.translate('Total'),
-                                ),
-                                _buildStatCard(
-                                  icon: Icons.pending_outlined,
-                                  value: messagesList!.where((m) => m.status == 'new').length.toString(),
-                                  label: lang.translate('Pending'),
-                                ),
-                                _buildStatCard(
-                                  icon: Icons.check_circle_outline,
-                                  value: messagesList!.where((m) => m.status == 'completed').length.toString(),
-                                  label: lang.translate('Completed'),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
                 ),
 
                 // Filtros
@@ -555,24 +515,28 @@ class _SupportMessagesUnifiedPageState extends State<SupportMessagesUnifiedPage>
                       children: [
                         _buildFilterChip(
                           label: lang.translate('All'),
+                          count: messagesList!.length,
                           selected: filterStatus == null,
                           onSelected: () => setState(() => filterStatus = null),
                         ),
                         const SizedBox(width: 8),
                         _buildFilterChip(
                           label: lang.translate('New'),
+                          count: messagesList!.where((m) => m.status == 'new').length,
                           selected: filterStatus == 'new',
                           onSelected: () => setState(() => filterStatus = 'new'),
                         ),
                         const SizedBox(width: 8),
                         _buildFilterChip(
                           label: lang.translate('In Progress'),
+                          count: messagesList!.where((m) => m.status == 'in_progress').length,
                           selected: filterStatus == 'in_progress',
                           onSelected: () => setState(() => filterStatus = 'in_progress'),
                         ),
                         const SizedBox(width: 8),
                         _buildFilterChip(
                           label: lang.translate('Completed'),
+                          count: messagesList!.where((m) => m.status == 'completed').length,
                           selected: filterStatus == 'completed',
                           onSelected: () => setState(() => filterStatus = 'completed'),
                         ),
@@ -631,55 +595,16 @@ class _SupportMessagesUnifiedPageState extends State<SupportMessagesUnifiedPage>
     );
   }
 
-  Widget _buildStatCard({
-    required IconData icon,
-    required String value,
-    required String label,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: activeTheme.main_color, size: 24),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: activeTheme.main_color,
-            ),
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: activeTheme.main_color.withOpacity(0.7),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildFilterChip({
     required String label,
+    required int count,
     required bool selected,
     required VoidCallback onSelected,
   }) {
+    final displayLabel = count > 0 ? '$label ($count)' : label;
+
     return FilterChip(
-      label: Text(label),
+      label: Text(displayLabel),
       selected: selected,
       onSelected: (_) => onSelected(),
       backgroundColor: Theme.of(context).cardColor,
