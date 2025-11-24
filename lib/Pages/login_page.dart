@@ -245,11 +245,12 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                                                   ),
                                                   validator: (value) {
                                                     if (value == null || value.isEmpty) {
-                                                      return lang.translate('Please enter your email');
+                                                      return 'Por favor ingrese su correo electrónico';
                                                     }
-                                                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                                                    // Validación mejorada que permite '+' en el email
+                                                    if (!RegExp(r'^[\w\-\.\+]+@([\w\-]+\.)+[\w\-]{2,4}$')
                                                         .hasMatch(value)) {
-                                                      return lang.translate('Please enter a valid email');
+                                                      return 'Por favor ingrese un correo electrónico válido';
                                                     }
                                                     return null;
                                                   },
@@ -360,10 +361,10 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                                               ),
                                               validator: (value) {
                                                 if (value == null || value.isEmpty) {
-                                                  return lang.translate('Please enter your password');
+                                                  return 'Por favor ingrese su contraseña';
                                                 }
                                                 if (value.length < 6) {
-                                                  return lang.translate('Password must be at least 6 characters');
+                                                  return 'La contraseña debe tener al menos 6 caracteres';
                                                 }
                                                 return null;
                                               },
@@ -543,19 +544,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
 
                               const SizedBox(height: 40),
 
-                              // Footer
-                              FadeTransition(
-                                opacity: _fadeAnimation,
-                                child: Center(
-                                  child: Text(
-                                    '© ${DateTime.now().year} ETA School App',
-                                    style: TextStyle(
-                                      color: Colors.grey[400],
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                              ),
+                              // Footer removido - no se muestran créditos
                             ],
                           ),
                         ),

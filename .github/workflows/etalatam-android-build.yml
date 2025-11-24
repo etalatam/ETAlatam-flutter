@@ -43,6 +43,17 @@ jobs:
           flutter --version
           flutter pub get
 
+      - name: 🏷️ Extract App Version
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //')
+          VERSION_NAME=$(echo $VERSION | cut -d'+' -f1)
+          VERSION_CODE=$(echo $VERSION | cut -d'+' -f2)
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_OUTPUT
+          echo "📱 ETAlatam Version: $VERSION_NAME (Build $VERSION_CODE)"
+
       - name: 📝 Configure ETAlatam Environment
         run: |
           # Create environment configuration if needed
@@ -76,6 +87,8 @@ jobs:
       - name: 📊 Display Build Info
         run: |
           echo "=== ETAlatam Build Information ==="
+          echo "App Version: ${{ steps.version.outputs.VERSION_NAME }}"
+          echo "Build Code: ${{ steps.version.outputs.VERSION_CODE }}"
           echo "Build Number: ${{ github.run_number }}"
           echo "Commit: ${{ github.sha }}"
           echo "Branch: ${{ github.ref_name }}"
@@ -87,14 +100,14 @@ jobs:
       - name: 📤 Upload ETAlatam ARM64 APK
         uses: actions/upload-artifact@v4
         with:
-          name: etalatam-arm64-v8a-apk
+          name: ETAlatam-v${{ steps.version.outputs.VERSION_NAME }}-arm64-v8a
           path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
           retention-days: 30
 
       - name: 📤 Upload ETAlatam ARMv7 APK
         uses: actions/upload-artifact@v4
         with:
-          name: etalatam-armeabi-v7a-apk
+          name: ETAlatam-v${{ steps.version.outputs.VERSION_NAME }}-armeabi-v7a
           path: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
           retention-days: 30
 
@@ -102,28 +115,32 @@ jobs:
         uses: actions/upload-artifact@v4
         if: hashFiles('build/app/outputs/flutter-apk/app-x86_64-release.apk') != ''
         with:
-          name: etalatam-x86_64-apk
+          name: ETAlatam-v${{ steps.version.outputs.VERSION_NAME }}-x86_64
           path: build/app/outputs/flutter-apk/app-x86_64-release.apk
           retention-days: 30
 
-      - name: 💬 Comment on PR with APK Links
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const artifactUrl = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## 🎉 ETAlatam Android Build Successful!\n\n` +
-                    `### 📦 Download APKs:\n` +
-                    `- [ARM64 APK](${artifactUrl})\n` +
-                    `- [ARMv7 APK](${artifactUrl})\n\n` +
-                    `**Build #**: ${{ github.run_number }}\n` +
-                    `**Commit**: \`${{ github.sha }}\`\n` +
-                    `**Flutter**: ${{ env.FLUTTER_VERSION }}`
-            })
+      # TEMPORARILY DISABLED: Comment on PR with APK Links
+      # Issue: The GitHub token doesn't have sufficient permissions to write comments
+      # Error: Resource not accessible by integration (403)
+      # TODO: Fix permissions in repository settings or update token permissions
+      # - name: 💬 Comment on PR with APK Links
+      #   if: github.event_name == 'pull_request'
+      #   uses: actions/github-script@v7
+      #   with:
+      #     script: |
+      #       const artifactUrl = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+      #       github.rest.issues.createComment({
+      #         issue_number: context.issue.number,
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         body: `## 🎉 ETAlatam Android Build Successful!\n\n` +
+      #               `### 📦 Download APKs:\n` +
+      #               `- [ARM64 APK](${artifactUrl})\n` +
+      #               `- [ARMv7 APK](${artifactUrl})\n\n` +
+      #               `**Build #**: ${{ github.run_number }}\n` +
+      #               `**Commit**: \`${{ github.sha }}\`\n` +
+      #               `**Flutter**: ${{ env.FLUTTER_VERSION }}`
+      #       })
 
       - name: 🎯 Build Summary
         if: always()
@@ -133,6 +150,8 @@ jobs:
           echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| Status | ${{ job.status }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| App Version | ${{ steps.version.outputs.VERSION_NAME }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build Code | ${{ steps.version.outputs.VERSION_CODE }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Build Number | ${{ github.run_number }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Branch | ${{ github.ref_name }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Flutter Version | ${{ env.FLUTTER_VERSION }} |" >> $GITHUB_STEP_SUMMARY
@@ -140,6 +159,8 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           if [ -f build/app/outputs/flutter-apk/app-arm64-v8a-release.apk ]; then
             echo "### ✅ APKs Generated Successfully" >> $GITHUB_STEP_SUMMARY
+            echo "- ETAlatam-v${{ steps.version.outputs.VERSION_NAME }}-arm64-v8a.apk" >> $GITHUB_STEP_SUMMARY
+            echo "- ETAlatam-v${{ steps.version.outputs.VERSION_NAME }}-armeabi-v7a.apk" >> $GITHUB_STEP_SUMMARY
           else
             echo "### ❌ Build Failed" >> $GITHUB_STEP_SUMMARY
           fi

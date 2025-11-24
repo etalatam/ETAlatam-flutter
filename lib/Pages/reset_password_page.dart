@@ -255,11 +255,12 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return lang.translate('Please enter your email address');
+                              return 'Por favor ingrese su correo electrónico';
                             }
-                            final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                            // Validación mejorada que permite '+' en el email
+                            final emailRegex = RegExp(r'^[\w\-\.\+]+@([\w\-]+\.)+[\w\-]{2,4}$');
                             if (!emailRegex.hasMatch(value)) {
-                              return lang.translate('Please enter a valid email address');
+                              return 'Por favor ingrese un correo electrónico válido';
                             }
                             return null;
                           },
@@ -471,21 +472,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                 ),
               ),
 
-              const SizedBox(height: 40),
-
-              // Footer
-              FadeTransition(
-                opacity: _fadeAnimation,
-                child: Center(
-                  child: Text(
-                    '© ${DateTime.now().year} ETA School App',
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ),
+              // Footer removido - no se muestran créditos
             ],
           ),
         ),
@@ -587,17 +574,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                 ),
                 SizedBox(height: 12),
                 Text(
-                  lang.translate('Recovery password mail sended'),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: darkBlueColor,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  lang.translate('Please check your email inbox and follow the instructions to reset your password.'),
+                  'Se ha enviado un correo de recuperación',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,

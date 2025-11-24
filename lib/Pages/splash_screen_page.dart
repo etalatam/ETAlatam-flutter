@@ -247,46 +247,6 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   ),
 
-                  SizedBox(height: 50),
-
-                  // App name with slide animation
-                  SlideTransition(
-                    position: _textSlideAnimation,
-                    child: FadeTransition(
-                      opacity: _textFadeAnimation,
-                      child: Column(
-                        children: [
-                          Text(
-                            'ETA School',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 36,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.5,
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black.withOpacity(0.3),
-                                  offset: Offset(0, 3),
-                                  blurRadius: 10,
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Safe School Transport',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.9),
-                              fontSize: 16,
-                              letterSpacing: 0.5,
-                              fontWeight: FontWeight.w300,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
                   Spacer(flex: 2),
 
                   // Animated progress indicator
@@ -331,30 +291,7 @@ class _SplashScreenState extends State<SplashScreen>
 
                   SizedBox(height: 20),
 
-                  // Loading text
-                  FadeTransition(
-                    opacity: _textFadeAnimation,
-                    child: AnimatedBuilder(
-                      animation: _progressAnimation,
-                      builder: (context, child) {
-                        final messages = [
-                          'Initializing...',
-                          'Loading resources...',
-                          'Almost ready...',
-                          'Starting app...',
-                        ];
-                        final index = (_progressAnimation.value * 3).floor().clamp(0, 3);
-                        return Text(
-                          messages[index],
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
-                            fontSize: 14,
-                            letterSpacing: 0.5,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+                  // Loading text removed - simplifying splash screen
 
                   Spacer(flex: 1),
 
@@ -364,7 +301,7 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Padding(
                       padding: EdgeInsets.only(bottom: 30),
                       child: Text(
-                        'Version 1.12.39',
+                        'Versión 1.12.40',
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.5),
                           fontSize: 12,
