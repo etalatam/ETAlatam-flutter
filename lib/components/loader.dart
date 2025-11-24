@@ -105,11 +105,11 @@ class _LoaderState extends State<Loader> with TickerProviderStateMixin {
                         shape: BoxShape.circle,
                         gradient: SweepGradient(
                           colors: [
-                            Color(0xFF4A90E2),
-                            Color(0xFF357ABD),
-                            Color(0xFF4A90E2).withOpacity(0.5),
-                            Color(0xFF4A90E2).withOpacity(0.1),
-                            Color(0xFF4A90E2),
+                            Color.fromARGB(255, 59, 140, 135),
+                            Color.fromARGB(255, 52, 120, 115),
+                            Color.fromARGB(255, 59, 140, 135).withOpacity(0.5),
+                            Color.fromARGB(255, 59, 140, 135).withOpacity(0.1),
+                            Color.fromARGB(255, 59, 140, 135),
                           ],
                           stops: [0.0, 0.25, 0.5, 0.75, 1.0],
                         ),
@@ -129,7 +129,7 @@ class _LoaderState extends State<Loader> with TickerProviderStateMixin {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Color(0xFF4A90E2).withOpacity(0.3),
+                                  color: Color.fromARGB(255, 59, 140, 135).withOpacity(0.3),
                                   width: 2,
                                 ),
                               ),
@@ -161,7 +161,7 @@ class _LoaderState extends State<Loader> with TickerProviderStateMixin {
                       height: 8,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Color(0xFF4A90E2).withOpacity(
+                        color: Color.fromARGB(255, 59, 140, 135).withOpacity(
                           opacity.clamp(0.3, 1.0),
                         ),
                       ),
@@ -177,7 +177,7 @@ class _LoaderState extends State<Loader> with TickerProviderStateMixin {
               Text(
                 widget.message!,
                 style: TextStyle(
-                  color: Color(0xFF1E3050),
+                  color: Color.fromARGB(255, 45, 105, 100),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                   letterSpacing: 0.3,
@@ -248,7 +248,7 @@ class _InlineLoaderState extends State<InlineLoader>
             child: CircularProgressIndicator(
               strokeWidth: 2.5,
               valueColor: AlwaysStoppedAnimation<Color>(
-                widget.color ?? Color(0xFF4A90E2),
+                widget.color ?? Color.fromARGB(255, 59, 140, 135),
               ),
               backgroundColor: Colors.grey.withOpacity(0.2),
             ),
