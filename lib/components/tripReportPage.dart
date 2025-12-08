@@ -280,8 +280,16 @@ class _TripReport extends State<TripReport> {
                                           padding: const EdgeInsets.all(5),
                                           child:
                                               Text(lang.translate('Distance'))),
+                                      // Text(
+                                      //   '${trip!.distance} KM',
+                                      //   style: const TextStyle(
+                                      //       fontSize: 16,
+                                      //       fontWeight: FontWeight.bold),
+                                      // ),
                                       Text(
-                                        '${trip!.distance} KM',
+                                        ((trip!.distance ?? 0) >= 1000)
+                                            ? '${((trip!.distance ?? 0) / 1000).toStringAsFixed(2)} KM'
+                                            : '${(trip!.distance ?? 0).toStringAsFixed(2)} m',
                                         style: const TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold),

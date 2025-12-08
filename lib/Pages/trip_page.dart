@@ -571,8 +571,8 @@ class _TripPageState extends State<TripPage>
                                             Text(tripDuration),
                                             const SizedBox(width: 10),
                                             Icon(Icons.route, size: 20),
-                                            Text(tripDistance > 1000
-                                                ? '${numberFormat.format(tripDistance)} KM'
+                                            Text(tripDistance >= 1000
+                                                ? '${numberFormat.format(tripDistance / 1000)} KM'
                                                 : '${numberFormat.format(tripDistance)} m'),
                                             const SizedBox(width: 10),
                                             (trip.pickup_locations != null)
@@ -906,7 +906,8 @@ class _TripPageState extends State<TripPage>
         CameraOptions(
           center: busPosition,
           zoom: 16,
-          pitch: 60,
+          // pitch: 60, // original 3D tilt
+          pitch: 0,
         ),
         MapAnimationOptions(duration: 1000, startDelay: 0)
       );
@@ -921,7 +922,8 @@ class _TripPageState extends State<TripPage>
         CameraOptions(
           center: Point(coordinates: position),
           zoom: 16,
-          pitch: 60,
+          // pitch: 60, // original 3D tilt
+          pitch: 0,
         ),
         MapAnimationOptions(duration: 1000, startDelay: 0)
       );
@@ -1033,10 +1035,22 @@ class _TripPageState extends State<TripPage>
   void showTripGeoJson(MapboxMap mapboxMap) async {
     print("[TripPage.showTripGeoJson]");
 
+    if (annotationManager == null) {
+      try {
+        final value = await mapboxMap.annotations.createPointAnnotationManager();
+        annotationManager = value;
+        annotationManager?.addOnPointAnnotationClickListener(this);
+        print("[TripPage.showTripGeoJson] AnnotationManager created");
+      } catch (e) {
+        print("[TripPage.showTripGeoJson] Error creating annotation manager: $e");
+      }
+    }
+
     if (existsTripGeoJson) return;
 
     Map<String, dynamic> data = trip.geoJson!;
-    final lineColorValue = Color.fromRGBO(33, 150, 243, 0.4).value; 
+    // final lineColorValue = Color.fromRGBO(33, 150, 243, 0.4).value; // original semi-transparent
+    final lineColorValue = Color.fromRGBO(33, 150, 243, 1.0).value; // más sólido
 
     if (trip.route_attributes != null &&
         trip.route_attributes!["lineColor"] != null) {
@@ -1046,18 +1060,145 @@ class _TripPageState extends State<TripPage>
     await mapboxMap.style
         .addSource(GeoJsonSource(id: "trip_source", data: jsonEncode(data)));
 
-    await mapboxMap.style.addLayer(LineLayer(
-        id: "line_layer",
-        sourceId: "trip_source",
-        lineJoin: LineJoin.ROUND,
-        lineCap: LineCap.ROUND,
-        lineColor: lineColorValue,
-        lineBlur: 0.5,
-        lineDasharray: [1.0, 2.2],
-        lineWidth: 5.0,
-        lineSortKey: 0,
-        lineOpacity: 0.4
-    ));
+    final lineLayer = LineLayer(
+      id: "line_layer",
+      sourceId: "trip_source",
+      lineJoin: LineJoin.ROUND,
+      lineCap: LineCap.ROUND,
+      lineColor: lineColorValue,
+      lineBlur: 0.0,
+      // lineDasharray: [1.0, 2.2], // original línea punteada
+      lineWidth: 5.0,
+      lineSortKey: 0,
+      // lineOpacity: 0.4, // original más transparente
+      lineOpacity: 1.0,
+    );
+
+    // Intentar colocar la línea por debajo de las labels de transporte/POI
+    try {
+      await mapboxMap.style.addLayerAt(
+        lineLayer,
+        LayerPosition(below: "transit-label"),
+      );
+    } catch (e) {
+      print("[TripPage.showTripGeoJson] addLayerAt below 'transit-label' failed: $e");
+      try {
+        await mapboxMap.style.addLayerAt(
+          lineLayer,
+          LayerPosition(below: "poi-label"),
+        );
+      } catch (e2) {
+        print("[TripPage.showTripGeoJson] addLayerAt below 'poi-label' failed: $e2, falling back to addLayer");
+        await mapboxMap.style.addLayer(lineLayer);
+      }
+    }
+
+    // Banderas de inicio y fin basadas en la geometría de la ruta (geoJson)
+    try {
+      if (annotationManager != null) {
+        List<dynamic>? coordinates;
+
+        final type = data['type'];
+        if (type == 'FeatureCollection') {
+          final features = data['features'] as List?;
+          if (features != null && features.isNotEmpty) {
+            final feature = features.first;
+            final geom = feature['geometry'];
+            if (geom != null) {
+              final geomType = geom['type'];
+              if (geomType == 'LineString') {
+                coordinates = geom['coordinates'] as List?;
+              } else if (geomType == 'MultiLineString') {
+                final lines = geom['coordinates'] as List?;
+                if (lines != null && lines.isNotEmpty) {
+                  coordinates = [];
+                  for (final line in lines) {
+                    coordinates.addAll(line as List);
+                  }
+                }
+              }
+            }
+          }
+        } else if (type == 'Feature') {
+          final geom = data['geometry'];
+          if (geom != null) {
+            final geomType = geom['type'];
+            if (geomType == 'LineString') {
+              coordinates = geom['coordinates'] as List?;
+            } else if (geomType == 'MultiLineString') {
+              final lines = geom['coordinates'] as List?;
+              if (lines != null && lines.isNotEmpty) {
+                coordinates = [];
+                for (final line in lines) {
+                  coordinates.addAll(line as List);
+                }
+              }
+            }
+          }
+        } else if (type == 'LineString') {
+          coordinates = data['coordinates'] as List?;
+        }
+
+        if (coordinates != null && coordinates.isNotEmpty) {
+          final start = coordinates.first;
+          final end = coordinates.last;
+
+          final startLng = (start[0] as num).toDouble();
+          final startLat = (start[1] as num).toDouble();
+          final endLng = (end[0] as num).toDouble();
+          final endLat = (end[1] as num).toDouble();
+
+          final startPosition = Position(startLng, startLat);
+          final endPosition = Position(endLng, endLat);
+
+          final Uint8List startMarker = await createCircleMarkerImage(
+            circleColor: Colors.white,
+            icon: FontAwesomeIcons.flag,
+            size: 104,
+            iconColor: Colors.yellow,
+            iconSize: 56,
+          );
+
+          final Uint8List endMarker = await createCircleMarkerImage(
+            circleColor: Colors.white,
+            icon: FontAwesomeIcons.flagCheckered,
+            size: 104,
+            iconColor: Colors.green,
+            iconSize: 56,
+          );
+
+          await annotationManager?.create(PointAnnotationOptions(
+            textField: '',
+            textColor: Colors.black.value,
+            textLineHeight: 1,
+            textSize: 11,
+            iconSize: 0.8,
+            textOffset: [0.0, -2.0],
+            symbolSortKey: 3,
+            geometry: Point(coordinates: startPosition),
+            image: startMarker,
+            textHaloColor: Colors.white.value,
+            textHaloWidth: 2,
+          ));
+
+          await annotationManager?.create(PointAnnotationOptions(
+            textField: '',
+            textColor: Colors.black.value,
+            textLineHeight: 1,
+            textSize: 11,
+            iconSize: 0.8,
+            textOffset: [0.0, -2.0],
+            symbolSortKey: 3,
+            geometry: Point(coordinates: endPosition),
+            image: endMarker,
+            textHaloColor: Colors.white.value,
+            textHaloWidth: 2,
+          ));
+        }
+      }
+    } catch (e) {
+      print("[TripPage.showTripGeoJson] Error creating start/end flags from geoJson: $e");
+    }
 
     existsTripGeoJson = true;
   }
@@ -1280,11 +1421,13 @@ class _TripPageState extends State<TripPage>
       // El método _updateIcon verificará internamente si debe mostrar el ícono
       _updateIcon(
           position, 'driver-position', trip.driver_id!, label);
-      mapboxMap.setCamera(CameraOptions(zoom: 18, pitch: 70));
+      // mapboxMap.setCamera(CameraOptions(zoom: 18, pitch: 70)); // original 3D tilt
+      mapboxMap.setCamera(CameraOptions(zoom: 18, pitch: 0));
     } else {
       final coordinateBounds = getCoordinateBounds(points);
+      // mapboxMap.setCamera(CameraOptions(center: coordinateBounds.southwest, zoom: 18, pitch: 45)); // original 3D tilt
       mapboxMap.setCamera(CameraOptions(
-          center: coordinateBounds.southwest, zoom: 18, pitch: 45));
+          center: coordinateBounds.southwest, zoom: 18, pitch: 0));
     }
   }
 
@@ -1405,7 +1548,8 @@ class _TripPageState extends State<TripPage>
 
         // Solo ajustar el zoom la primera vez
         _mapboxMapController?.setCamera(CameraOptions(
-            center: Point(coordinates: position), zoom: 18, pitch: 70));
+            // center: Point(coordinates: position), zoom: 18, pitch: 70)); // original 3D tilt
+            center: Point(coordinates: position), zoom: 18, pitch: 0));
       }
       // Si ya existe, eliminamos la anterior y creamos una nueva para evitar duplicados
       else  {

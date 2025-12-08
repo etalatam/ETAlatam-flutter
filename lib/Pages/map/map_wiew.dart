@@ -216,7 +216,8 @@ class MapWiewState extends State<MapWiew> {
                 print('[MapView.build._firstLocationUpdate] $_firstLocationUpdate');
                 mapboxMap?.setCamera(CameraOptions(
                   zoom: 18,
-                  pitch: widget.navigationMode ? 80 : 0,
+                  // pitch: widget.navigationMode ? 80 : 0, // original 3D tilt
+                  pitch: 0,
                   center: Point(
                     coordinates: Position(
                       singletonLocationData['longitude'], 

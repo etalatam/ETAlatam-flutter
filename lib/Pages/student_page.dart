@@ -591,7 +591,8 @@ class _StudentPageState extends State<StudentPage> {
         _mapboxMapController?.setCamera(CameraOptions(
           center: Point(coordinates: position),
           zoom: 15.5,
-          pitch: 70,
+          // pitch: 70, // original 3D tilt
+          pitch: 0,
         ));
       }
     } else {
@@ -749,7 +750,8 @@ class _StudentPageState extends State<StudentPage> {
         CameraOptions(
           center: studentPosition,
           zoom: 16.5,
-          pitch: 70,
+          // pitch: 70, // original 3D tilt
+          pitch: 0,
         ),
         MapAnimationOptions(duration: 1200, startDelay: 0)
       );
@@ -762,7 +764,8 @@ class _StudentPageState extends State<StudentPage> {
           CameraOptions(
             center: Point(coordinates: position),
             zoom: 16.5,
-            pitch: 70,
+            // pitch: 70, // original 3D tilt
+            pitch: 0,
           ),
           MapAnimationOptions(duration: 1200, startDelay: 0)
         );

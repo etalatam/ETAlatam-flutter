@@ -154,9 +154,16 @@ class _ActiveTripState extends State<ActiveTrip> {
                                       Icon(Icons.route,
                                           color: activeTheme.buttonColor,
                                           size: 20),
-                                      Text('${widget.trip?.distance} KM',
-                                          style: TextStyle(
-                                              color: activeTheme.buttonColor)),
+                                      // Text('${widget.trip?.distance} KM',
+                                      //     style: TextStyle(
+                                      //         color: activeTheme.buttonColor)),
+                                      Text(
+                                        ((widget.trip?.distance ?? 0) >= 1000)
+                                            ? '${((widget.trip?.distance ?? 0) / 1000).toStringAsFixed(2)} KM'
+                                            : '${(widget.trip?.distance ?? 0).toStringAsFixed(2)} m',
+                                        style: TextStyle(
+                                            color: activeTheme.buttonColor),
+                                      ),
                                       const SizedBox(width: 10),
                                       (widget.trip != null &&
                                               widget.trip!.pickup_locations != null)
