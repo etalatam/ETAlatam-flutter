@@ -16,6 +16,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
 
     <application
         android:label="ETA"
@@ -52,23 +54,12 @@
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         
+        <!-- flutter_foreground_task Service -->
         <service
-            android:name="yukams.app.background_locator_2.IsolateHolderService"
+            android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
             android:foregroundServiceType="location"
-            android:stopWithTask="true"
-            android:enabled="true"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="yukams.app.background_locator_2.IsolateHolderService" />
-            </intent-filter>
-        </service>
-
-        <receiver android:name="yukams.app.background_locator_2.BootBroadcastReceiver"
-            android:enabled="false" android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-            </intent-filter>
-        </receiver>
+            android:stopWithTask="false"
+            android:exported="false" />
 
         <meta-data
         android:name="flutterEmbedding"

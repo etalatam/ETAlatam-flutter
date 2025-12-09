@@ -272,6 +272,9 @@ class SlidePage extends StatelessWidget {
     await permissions.Permission.location.request();
     final permission = await permissions.Permission.locationAlways.request();
     await permissions.Permission.notification.request();
+    
+    // Solicitar exclusión de optimización de batería para tracking en background
+    await permissions.Permission.ignoreBatteryOptimizations.request();
 
     if (permission == permissions.PermissionStatus.granted) {
       return true;
