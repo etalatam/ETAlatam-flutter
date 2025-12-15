@@ -192,6 +192,25 @@ class HttpService {
     return [];
   }
 
+  Future<List<TripModel>> getMonitorLatestTrips({int limit = 1}) async {
+    const endpoint = "/rpc/trips_monitor";
+    http.Response res =
+        await getQuery("$endpoint?select=*&limit=$limit&order=start_ts.desc");
+
+    print("[$endpoint.latest] res.statusCode: ${res.statusCode}");
+    print("[$endpoint.latest] res.body: ${res.body}");
+
+    if (res.statusCode == 200) {
+      List<dynamic> body = jsonDecode(res.body);
+      final List<TripModel> trips = await Future.wait(
+        body.map((dynamic item) async => TripModel.fromJson(item)).toList(),
+      );
+      return trips;
+    }
+    debugPrint(res.body.toString());
+    return [];
+  }
+
   /// Load Trips
   Future<List<TripModel>> getStudentTrips(studentId) async {
     const endpoint = "/rpc/student_trips";
@@ -288,10 +307,13 @@ class HttpService {
     http.Response res = await getQuery("$endpoint?order=id.desc");
 
     print("[$endpoint] res.statusCode: ${res.statusCode}");
-    print("[$endpoint] res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
+      if (body.isNotEmpty) {
+        print("[$endpoint] First message keys: ${body[0].keys.toList()}");
+        print("[$endpoint] First message: ${body[0]}");
+      }
       final List<HelpMessageModel> supportMessage = await Future.wait(
         body
             .map((dynamic item) async => HelpMessageModel.fromJson(item))
@@ -301,6 +323,25 @@ class HttpService {
     }
     debugPrint(res.body.toString());
     return [];
+  }
+
+  Future<HelpMessageModel?> getHelpMessageById(int messageId) async {
+    const endpoint = "/rpc/support_message";
+    http.Response res =
+        await getQuery("$endpoint?select=*&id=eq.$messageId&limit=1");
+
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
+
+    if (res.statusCode == 200) {
+      final body = jsonDecode(res.body);
+      if (body is List && body.isNotEmpty) {
+        return HelpMessageModel.fromJson(body[0]);
+      }
+      return null;
+    }
+    debugPrint(res.body.toString());
+    return null;
   }
 
   /// Load Route
@@ -329,11 +370,18 @@ class HttpService {
     http.Response res = await getQuery(endpoint);
 
     print("[$endpoint] res.statusCode: ${res.statusCode}");
-    print("[$endpoint] res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
+      print("[$endpoint] school_id: ${body['school_id']}, id_esc: ${body['id_esc']}");
       final driverModel = DriverModel.fromJson(body);
+      print("[$endpoint] parsed schoolId: ${driverModel.schoolId}");
+      try {
+        if (driverModel.schoolId != null) {
+          await storage.setItem('driver_school_id', driverModel.schoolId);
+          print("[$endpoint] driver_school_id guardado: ${driverModel.schoolId}");
+        }
+      } catch (_) {}
       final Driver driver = DriverMapper.convert(driverModel);
       await driverProvider.save(driver);
       return driverModel;
@@ -348,7 +396,10 @@ class HttpService {
           await postQuery(endpoint, null, contentType: 'application/json');
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
-        return StudentModel.fromJson(json);
+        print("[$endpoint] school_id: ${json['school_id']}, id_esc: ${json['id_esc']}, id_school: ${json['id_school']}");
+        final student = StudentModel.fromJson(json);
+        print("[$endpoint] parsed schoolId: ${student.schoolId}");
+        return student;
       }
     } catch (e) {
       print("sendTracking error: ${e.toString()}");
@@ -460,11 +511,8 @@ class HttpService {
 
   Future<EmitterKeyGenModel?> emitterKeyGen(String channel) async {
     const endpoint = "/rpc/emitter_keygen";
-    http.Response res = await getQuery(
-        "$endpoint?order=ts.asc&channel=ilike.*$channel*&limit=1");
-
-    print("[$endpoint] res.statusCode: ${res.statusCode}");
-    print("[$endpoint] res.body: ${res.body}");
+    final query = "$endpoint?channel=ilike.*$channel*&order=ts.desc.nullslast&limit=1";
+    http.Response res = await getQuery(query);
 
     try {
       if (res.statusCode == 200) {
@@ -475,6 +523,25 @@ class HttpService {
       }
     } catch (e) {
       print("emitterKeyGen.error ${e.toString()}");
+    }
+    return null;
+  }
+
+  Future<EmitterKeyGenModel?> emitterKeyGenEncoded(String channel) async {
+    const endpoint = "/rpc/emitter_keygen";
+    final String encodedChannel = Uri.encodeQueryComponent('ilike.*$channel*');
+    final query = "$endpoint?channel=$encodedChannel&order=ts.desc.nullslast&limit=1";
+    http.Response res = await getQuery(query);
+
+    try {
+      if (res.statusCode == 200) {
+        List<dynamic> body = jsonDecode(res.body);
+        if (body.isNotEmpty) {
+          return EmitterKeyGenModel.fromJson(body[0]);
+        }
+      }
+    } catch (e) {
+      print("emitterKeyGenEncoded.error ${e.toString()}");
     }
     return null;
   }
@@ -749,6 +816,15 @@ class HttpService {
         } on Exception catch (e) {
           debugPrint('Error saving login info: $e');
         }
+
+        // Al cambiar de perfil sin reiniciar la app, EmitterService (singleton)
+        // puede quedarse con topics del usuario anterior. Limpiamos antes de re-conectar.
+        try {
+          await EmitterService.instance.resetSubscriptions();
+        } catch (e) {
+          print('[login] Error reseteando suscripciones Emitter: $e');
+        }
+
         if(!EmitterService.instance.isConnected()){
           EmitterService.instance.connect();
         }
@@ -790,8 +866,40 @@ class HttpService {
     print("[$endpoint] res.body: ${res.body}");
 
     if (res.statusCode == 200) {
-      var body = jsonDecode(res.body);
-      //return (body['success'] != null) ? body['result'] : body['error'];
+      final body = jsonDecode(res.body);
+
+      if (body is Map && body['success'] == true) {
+        final dynamic rawId = body['id'];
+        final int? createdId = rawId is int ? rawId : int.tryParse('$rawId');
+
+        if (createdId != null) {
+          try {
+            const detailsEndpoint = '/rpc/support_message';
+            final http.Response detailsRes =
+                await getQuery('$detailsEndpoint?select=*&id=eq.$createdId&limit=1');
+
+            if (detailsRes.statusCode == 200) {
+              final detailsBody = jsonDecode(detailsRes.body);
+              if (detailsBody is List && detailsBody.isNotEmpty) {
+                return HelpMessageModel.fromJson(detailsBody[0]);
+              }
+            }
+          } catch (_) {}
+
+          return HelpMessageModel(
+            message_id: createdId,
+            title: '',
+            message: message,
+            status: 'new',
+            priority: '$priority',
+            user_id: 0,
+            short_date: '',
+            date: '',
+            comments: [],
+          );
+        }
+      }
+
       return HelpMessageModel.fromJson(body);
     }
 
@@ -913,7 +1021,8 @@ class HttpService {
     // Disconnect EmitterService
     try {
       print("[httpService.logout] Disconnecting EmitterService...");
-      EmitterService.instance.disconnect();
+      await EmitterService.instance.resetSubscriptions();
+      EmitterService.instance.disconnectWithOptions(allowReconnect: false);
     } catch (e) {
       print("[httpService.logout] Error disconnecting EmitterService: $e");
     }

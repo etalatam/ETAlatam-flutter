@@ -7,9 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class TripReport extends StatefulWidget {
-  const TripReport({super.key, required this.trip});
+  const TripReport({super.key, required this.trip, this.onClose});
 
   final TripModel? trip;
+  final VoidCallback? onClose;
   @override
   _TripReport createState() => _TripReport();
 }
@@ -339,7 +340,13 @@ class _TripReport extends State<TripReport> {
             ),
           ),
           GestureDetector(
-            onTap: () => {Get.offAll(DriverHome())},
+            onTap: () => {
+              if (widget.onClose != null) {
+                widget.onClose!()
+              } else {
+                Get.offAll(DriverHome())
+              }
+            },
             child: Container(
                 child: Container(
               width: 100,

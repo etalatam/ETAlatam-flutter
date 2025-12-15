@@ -212,6 +212,9 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
     try {
       trip = await httpService.startTrip(route);
       if (trip.trip_id != 0) {
+        if (trip.school_id != null) {
+          await storage.setItem('driver_school_id', trip.school_id);
+        }
         await LocationService.instance.init();
         await LocationService.instance.startLocationService(
             calculateDistance: true);
@@ -321,6 +324,8 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
 
     try {
       TripModel? activeTripWrapper = await httpService.getActiveTrip();
+      final bool hadActiveTrip = hasActiveTrip;
+      
       if (mounted) {
         setState(() {
           activeTrip = activeTripWrapper;
@@ -330,22 +335,24 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
         activeTrip = activeTripWrapper;
         hasActiveTrip = (activeTripWrapper.trip_id != 0) ? true : false;
       }
+      
+      if (hasActiveTrip && activeTrip != null) {
+        // Iniciar tracking si hay viaje activo
+        if (!LocationService.instance.isTracking) {
+          print("[DriverHome.loadResources] Viaje activo detectado (ID: ${activeTrip!.trip_id}), iniciando tracking");
+          await LocationService.instance.init();
+          await LocationService.instance.startLocationService(calculateDistance: true);
+        }
+      } else if (hadActiveTrip && !hasActiveTrip) {
+        // Detener tracking si el viaje finalizó
+        if (LocationService.instance.isTracking) {
+          print("[DriverHome.loadResources] Viaje finalizado, deteniendo tracking");
+          await LocationService.instance.stopLocationService();
+        }
+      }
     } catch (e) {
       print("[DriverHome.loadrResources.getActiveTrip.error] $e");
     } finally {
-      if (hasActiveTrip && activeTrip != null) {
-        try {
-          print("[DriverHome.loadResources] Active trip detected (ID: ${activeTrip!.trip_id}), initializing LocationService");
-          await LocationService.instance.init();
-          await LocationService.instance.startLocationService(
-              calculateDistance: true);
-          print("[DriverHome.loadResources] LocationService started successfully for trip ${activeTrip!.trip_id}");
-        } catch (e) {
-          print("[DriverHome.loadResources] Error starting LocationService: $e");
-        }
-      }
-
-      // Ocultar loader al final de todas las operaciones
       if (mounted) {
         setState(() {
           showLoader = false;
@@ -374,13 +381,17 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
 
     // showLoader = true;
 
-    Provider.of<NotificationService>(context, listen: false)
-        .addListener(onPushMessage);
+    // Comentado: esto causaba refresh innecesario del chat cuando llegaba push notification
+    // El chat ahora se actualiza en tiempo real via Emitter, no necesita refresh por FCM
+    // Provider.of<NotificationService>(context, listen: false)
+    //     .addListener(onPushMessage);
 
     loadResources();
   }
 
-  onPushMessage() {
-    loadResources();
-  }
+  // Comentado: esto causaba refresh innecesario del chat cuando llegaba push notification
+  // El chat ahora se actualiza en tiempo real via Emitter, no necesita refresh por FCM
+  // onPushMessage() {
+  //   loadResources();
+  // }
 }

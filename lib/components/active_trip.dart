@@ -140,18 +140,23 @@ class _ActiveTripState extends State<ActiveTrip> {
                                         MainAxisAlignment.spaceEvenly,
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.access_time,
-                                          color: activeTheme.buttonColor,
-                                          size: 20),
-                                      Text(
-                                        widget.trip?.trip_id == 0
-                                            ? ""
-                                            : "${widget.trip?.runningTripDuration()}",
-                                        style: TextStyle(
-                                            color: activeTheme.buttonColor),
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.access_time,
+                                              color: activeTheme.buttonColor,
+                                              size: 20),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            widget.trip?.trip_id == 0
+                                                ? ""
+                                                : "${widget.trip?.runningTripDuration()}",
+                                            style: TextStyle(
+                                                color: activeTheme.buttonColor),
+                                          ),
+                                        ],
                                       ),
-                                      const SizedBox(width: 10),
-                                      Icon(Icons.route,
+                                     /* Icon(Icons.route,
                                           color: activeTheme.buttonColor,
                                           size: 20),
                                       // Text('${widget.trip?.distance} KM',
@@ -163,22 +168,30 @@ class _ActiveTripState extends State<ActiveTrip> {
                                             : '${(widget.trip?.distance ?? 0).toStringAsFixed(2)} m',
                                         style: TextStyle(
                                             color: activeTheme.buttonColor),
+                                      ),*/
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          (widget.trip != null &&
+                                                  widget.trip!.pickup_locations != null)
+                                              ? Icon(Icons.pin_drop_outlined,
+                                                  color: activeTheme.buttonColor,
+                                                  size: 20)
+                                              : const SizedBox.shrink(),
+                                          (widget.trip != null &&
+                                                  widget.trip!.pickup_locations != null)
+                                              ? const SizedBox(width: 4)
+                                              : const SizedBox.shrink(),
+                                          (widget.trip != null &&
+                                                  widget.trip!.pickup_locations != null)
+                                              ? Text(
+                                                  '${widget.trip!.visitedLocation()}/${widget.trip!.pickup_locations!.length.toString()} ',
+                                                  style: TextStyle(
+                                                      color: activeTheme.buttonColor),
+                                                )
+                                              : const SizedBox.shrink(),
+                                        ],
                                       ),
-                                      const SizedBox(width: 10),
-                                      (widget.trip != null &&
-                                              widget.trip!.pickup_locations != null)
-                                          ? Icon(Icons.pin_drop_outlined,
-                                              color: activeTheme.buttonColor,
-                                              size: 20)
-                                          : const Center(),
-                                      (widget.trip != null &&
-                                              widget.trip!.pickup_locations != null)
-                                          ? Text(
-                                              '${widget.trip!.visitedLocation()}/${widget.trip!.pickup_locations!.length.toString()} ',
-                                              style: TextStyle(
-                                                  color: activeTheme.buttonColor),
-                                            )
-                                          : const Center(),
                                     ],
                                   ),
                                 ),

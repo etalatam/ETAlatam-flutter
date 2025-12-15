@@ -34,6 +34,7 @@ import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../components/marquee_text.dart';
 import 'map/map_wiew.dart';
+import 'package:eta_school_app/Pages/home_screen.dart';
 
 class TripPage extends StatefulWidget {
   const TripPage(
@@ -97,6 +98,7 @@ class _TripPageState extends State<TripPage>
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
   EmitterService? _emitterServiceProvider;
+  EmitterTopic? _schoolEventsTopic;
 
   late NotificationService _notificationService;
 
@@ -132,6 +134,8 @@ class _TripPageState extends State<TripPage>
   bool _autoFollowBus = true;
   DateTime? _lastUserInteraction;
   Timer? _autoFollowTimer;
+  
+  bool _isInitialCameraSet = false;
   
   // Timer para actualizar el tiempo del viaje
   Timer? _tripDurationTimer;
@@ -231,7 +235,6 @@ class _TripPageState extends State<TripPage>
                       if (_mapboxMapController != null && annotationManager != null) {
                         Future.delayed(Duration(milliseconds: 300), () {
                           if (_mapboxMapController != null && mounted) {
-                            // Solo mostrar los marcadores si el manager ya existe
                             showTripGeoJson(_mapboxMapController!);
                             showPickupLocations(_mapboxMapController!);
                           }
@@ -566,24 +569,35 @@ class _TripPageState extends State<TripPage>
                                           crossAxisAlignment:
                                               CrossAxisAlignment.center,
                                           children: [
-                                            const SizedBox(height: 10),
-                                            Icon(Icons.access_time, size: 20),
-                                            Text(tripDuration),
-                                            const SizedBox(width: 10),
-                                            Icon(Icons.route, size: 20),
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(Icons.access_time, size: 20),
+                                                const SizedBox(width: 4),
+                                                Text(tripDuration),
+                                              ],
+                                            ),
+                                            /*Icon(Icons.route, size: 20),
                                             Text(tripDistance >= 1000
                                                 ? '${numberFormat.format(tripDistance / 1000)} KM'
-                                                : '${numberFormat.format(tripDistance)} m'),
-                                            const SizedBox(width: 10),
-                                            (trip.pickup_locations != null)
-                                                ? Icon(Icons.pin_drop_outlined,
-                                                    size: 20)
-                                                : const Center(),
-                                            (trip.pickup_locations != null)
-                                                ? Text(
-                                                    '${trip.visitedLocation()}/${trip.pickup_locations!.length.toString()} ',
-                                                  )
-                                                : const Center(),
+                                                : '${numberFormat.format(tripDistance)} m'),*/
+                                            //const SizedBox(width: 40),
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                (trip.pickup_locations != null)
+                                                    ? Icon(Icons.pin_drop_outlined, size: 20)
+                                                    : const SizedBox.shrink(),
+                                                (trip.pickup_locations != null)
+                                                    ? const SizedBox(width: 4)
+                                                    : const SizedBox.shrink(),
+                                                (trip.pickup_locations != null)
+                                                    ? Text(
+                                                        '${trip.visitedLocation()}/${trip.pickup_locations!.length.toString()} ',
+                                                      )
+                                                    : const SizedBox.shrink(),
+                                              ],
+                                            ),
                                             if (trip.trip_status ==
                                                     'Completed' &&
                                                 relationName == 'eta.drivers')
@@ -695,7 +709,13 @@ class _TripPageState extends State<TripPage>
                         },
                       ),
                     showTripReportModal
-                        ? TripReport(trip: trip)
+                        ? TripReport(
+                            trip: trip,
+                            onClose: relationName != 'eta.drivers' ? () {
+                              cleanResources();
+                              Get.offAll(() => HomeScreen());
+                            } : null,
+                          )
                         : const Center(),
                   ]),
                   // ])
@@ -857,6 +877,8 @@ class _TripPageState extends State<TripPage>
         
         trip.subscribeToTripEvents(_emitterServiceProvider);
         trip.subscribeToTripTracking(_emitterServiceProvider);
+        
+        await _subscribeToSchoolEvents();
 
         _notificationService =
             Provider.of<NotificationService>(context, listen: false);
@@ -864,6 +886,11 @@ class _TripPageState extends State<TripPage>
 
         // Suscribirse a los temas relevantes
         _notificationService.subscribeToTopic("trip-${trip.trip_id}");
+        
+        // Suscribirse a eventos de inicio/fin de viaje para esta ruta
+        if (trip.route_id != null) {
+          _notificationService.subscribeToTopic("end-trip-${trip.route_id}");
+        }
       }
     } catch (e) {
       print("[TripPage.loadTrip] $e");
@@ -906,13 +933,10 @@ class _TripPageState extends State<TripPage>
         CameraOptions(
           center: busPosition,
           zoom: 16,
-          // pitch: 60, // original 3D tilt
-          pitch: 0,
         ),
         MapAnimationOptions(duration: 1000, startDelay: 0)
       );
     } else if (_lastPositionPayload != null && _mapboxMapController != null) {
-      // Si no hay anotación pero tenemos la última posición conocida
       final Position position = Position(
         double.parse("${_lastPositionPayload?['longitude']}"),
         double.parse("${_lastPositionPayload?['latitude']}")
@@ -922,8 +946,6 @@ class _TripPageState extends State<TripPage>
         CameraOptions(
           center: Point(coordinates: position),
           zoom: 16,
-          // pitch: 60, // original 3D tilt
-          pitch: 0,
         ),
         MapAnimationOptions(duration: 1000, startDelay: 0)
       );
@@ -939,19 +961,59 @@ class _TripPageState extends State<TripPage>
       _connectivitySubscription.cancel();
       Wakelock.disable();
 
-      // Limpiar el mapa solo si es una limpieza completa (cuando se destruye la página)
       print("Realizando limpieza completa de recursos");
       annotationManager?.deleteAll();
       annotationManager = null;
       busPointAnnotation = null;
 
-      // Desuscribirse de eventos
+      _unsubscribeFromSchoolEvents();
+
       if (trip.trip_status == "Running") {
         trip.unSubscribeToTripTracking(_emitterServiceProvider);
         trip.unSubscribeToTripEvents(_emitterServiceProvider);
       }
     } catch (e) {
       print("Error cleaning resources: $e");
+    }
+  }
+
+  Future<void> _subscribeToSchoolEvents() async {
+    try {
+      final int? schoolId = trip.school_id;
+      
+      if (schoolId == null) {
+        print('[TripPage] No se pudo obtener schoolId para suscribirse a eventos');
+        return;
+      }
+
+      final channel = 'events/school/$schoolId/';
+      final keyModel = await httpService.emitterKeyGen('events/school/$schoolId/');
+      
+      if (keyModel?.key == null || keyModel!.key!.isEmpty) {
+        print('[TripPage] No se pudo obtener key para canal de eventos');
+        return;
+      }
+
+      if (_schoolEventsTopic != null) {
+        try {
+          _emitterServiceProvider?.unsubscribe(_schoolEventsTopic!);
+        } catch (_) {}
+      }
+
+      _schoolEventsTopic = EmitterTopic(channel, keyModel.key!);
+      _emitterServiceProvider?.subscribe(_schoolEventsTopic!);
+      print('[TripPage] Suscrito a canal de eventos: $channel');
+    } catch (e) {
+      print('[TripPage] Error suscribiendo a eventos de escuela: $e');
+    }
+  }
+
+  void _unsubscribeFromSchoolEvents() {
+    if (_schoolEventsTopic != null) {
+      try {
+        _emitterServiceProvider?.unsubscribe(_schoolEventsTopic!);
+      } catch (_) {}
+      _schoolEventsTopic = null;
     }
   }
 
@@ -1421,13 +1483,17 @@ class _TripPageState extends State<TripPage>
       // El método _updateIcon verificará internamente si debe mostrar el ícono
       _updateIcon(
           position, 'driver-position', trip.driver_id!, label);
-      // mapboxMap.setCamera(CameraOptions(zoom: 18, pitch: 70)); // original 3D tilt
-      mapboxMap.setCamera(CameraOptions(zoom: 18, pitch: 0));
+      if (!_isInitialCameraSet) {
+        mapboxMap.setCamera(CameraOptions(zoom: 18, pitch: 0));
+        _isInitialCameraSet = true;
+      }
     } else {
       final coordinateBounds = getCoordinateBounds(points);
-      // mapboxMap.setCamera(CameraOptions(center: coordinateBounds.southwest, zoom: 18, pitch: 45)); // original 3D tilt
-      mapboxMap.setCamera(CameraOptions(
-          center: coordinateBounds.southwest, zoom: 18, pitch: 0));
+      if (!_isInitialCameraSet) {
+        mapboxMap.setCamera(CameraOptions(
+            center: coordinateBounds.southwest, zoom: 18, pitch: 0));
+        _isInitialCameraSet = true;
+      }
     }
   }
 
@@ -1546,10 +1612,11 @@ class _TripPageState extends State<TripPage>
           symbolSortKey: 3,
         ));
 
-        // Solo ajustar el zoom la primera vez
-        _mapboxMapController?.setCamera(CameraOptions(
-            // center: Point(coordinates: position), zoom: 18, pitch: 70)); // original 3D tilt
-            center: Point(coordinates: position), zoom: 18, pitch: 0));
+        if (!_isInitialCameraSet) {
+          _mapboxMapController?.setCamera(CameraOptions(
+              center: Point(coordinates: position), zoom: 18, pitch: 0));
+          _isInitialCameraSet = true;
+        }
       }
       // Si ya existe, eliminamos la anterior y creamos una nueva para evitar duplicados
       else  {
@@ -1665,12 +1732,23 @@ class _TripPageState extends State<TripPage>
     _lastReceivedTime = DateTime.now();
 
     final String message = _emitterServiceProvider!.lastMessage();
+    print('[TripPage.onEmitterMessage] Mensaje recibido: $message');
 
     if (mounted) {
       setState(() {
         tripDuration = Utils.formatElapsedTime(trip.dt!);
       });
     }
+
+    // Verificar si es un evento de viaje (start-trip, end-trip, etc.)
+    try {
+      final jsonMsg = jsonDecode(message);
+      if (jsonMsg['event_type'] != null) {
+        print('[TripPage.onEmitterMessage] Evento detectado: ${jsonMsg['event_type']}');
+        await proccessTripEventMessage(message);
+        return;
+      }
+    } catch (_) {}
 
     try {
       if (!widget.navigationMode) {
@@ -1684,8 +1762,13 @@ class _TripPageState extends State<TripPage>
   void processTrackingMessage(Map<String, dynamic> tracking) async {
     print("[processTrackingMessage] $tracking");
 
+    // Determinar si los datos vienen envueltos en 'payload' o directamente en el objeto
+    final Map<String, dynamic> payload = tracking['payload'] ?? tracking;
+    final String? relationName = tracking['relation_name'] ?? payload['relation_name'];
+    final dynamic relationId = tracking['relation_id'] ?? payload['relation_id'];
+
     final lastTime = _lastPositionPayload?['time']?.toInt();
-    final currentTime = tracking['payload']?['time']?.toInt();
+    final currentTime = payload['time']?.toInt();
 
     if (_lastPositionPayload != null &&
         lastTime != null &&
@@ -1695,58 +1778,46 @@ class _TripPageState extends State<TripPage>
       return;
     }
 
-    if (tracking['relation_name'] != null &&
-        tracking['relation_name'] == "eta.drivers") {
-      final driverId = tracking['relation_id'];
+    if (relationName != null && relationName == "eta.drivers") {
+      final driverId = relationId;
 
-      if (tracking['payload'] != null) {
+      if (payload['latitude'] != null && payload['longitude'] != null) {
         final Position position = Position(
-            double.parse("${tracking['payload']['longitude']}"),
-            double.parse("${tracking['payload']['latitude']}"));
-        final label = formatUnixEpoch(tracking['payload']['time']?.toInt());
+            double.parse("${payload['longitude']}"),
+            double.parse("${payload['latitude']}"));
+        final label = formatUnixEpoch(payload['time']?.toInt());
 
         try {
-          tripDistance = double.parse("${tracking['payload']['distance']}");
+          tripDistance = double.parse("${payload['distance']}");
         } catch (e) {
           print("Error procesando la distancia: $e");
         }
 
-        // FIX: Pasar identificador correcto para mostrar posición del conductor
         _updateIcon(position, 'driver-position', driverId, label);
 
-        _lastPositionPayload = tracking['payload'];
+        _lastPositionPayload = payload;
         try {
-          busHeading = _lastPositionPayload?['heading'] ??
-              _lastPositionPayload?['heading'];
+          busHeading = _lastPositionPayload?['heading'] ?? 0.0;
         } catch (e) {
           print("busHeading error $e");
         }
         EmitterService.instance.updateLastEmitterDate(DateTime.now());
+        print("[processTrackingMessage] Bus position updated: lat=${payload['latitude']}, lng=${payload['longitude']}");
       }
     }
   }
 
   Future<void> proccessTripEventMessage(String message) async {
     try {
-      // si es un evento del viaje
       final event = EventModel.fromJson(jsonDecode(message));
       if (event.type == "end-trip" && relationName != 'eta.drivers') {
-        try {
-          // Limpiar recursos y navegar al home
-          // cleanResources(fullCleanup: true);
-
-          if (mounted) {
-            Navigator.of(context).popUntil((route) => route.isFirst);
-          }
-        } catch (e) {
-          //
+        if (event.tripId != null && event.tripId != trip.trip_id) {
+          print('[TripPage] Evento end-trip ignorado (trip_id ${event.tripId} != ${trip.trip_id})');
+          return;
         }
-
-        if (mounted) {
-          setState(() {
-            Get.back();
-          });
-        }
+        
+        print('[TripPage] Evento end-trip recibido, mostrando modal...');
+        _showTripEndedModal();
       } else {
         final updatedTrip = await httpService.getTrip(trip.trip_id);
         if (mounted) {
@@ -1769,13 +1840,31 @@ class _TripPageState extends State<TripPage>
     return Utils.formatearFechaCorta(dateTimeLocal);
   }
 
-  void onPushMessage() {
-    print("[TripPage.onPushMessage]");
+  void onPushMessage() async {
+    print("[TripPage.onPushMessage] Notificación recibida");
     final LastMessage? lastMessage = NotificationService.instance.lastMessage;
-    final title = lastMessage?.message!.notification!.title ?? "Nuevo mensaje";
+    final title = lastMessage?.message.notification?.title ?? "Nuevo mensaje";
+    
+    print('[TripPage.onPushMessage] title: $title');
+    
+    // Para usuarios no-conductores, verificar si el viaje sigue activo
+    if (relationName != 'eta.drivers' && mounted) {
+      try {
+        final tripStatus = await httpService.getTrip(trip.trip_id);
+        print('[TripPage.onPushMessage] trip_status actual: ${tripStatus.trip_status}');
+        
+        // Si el viaje ya no está en Running, mostrar modal y navegar al home
+        if (tripStatus.trip_status != 'Running') {
+          print('[TripPage.onPushMessage] Viaje finalizado, mostrando modal...');
+          _showTripEndedModal();
+          return;
+        }
+      } catch (e) {
+        print('[TripPage.onPushMessage] Error verificando estado del viaje: $e');
+      }
+    }
 
     if (lastMessage != null && mounted) {
-      // Mostrar el mensaje como un snackbar o diálogo
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(title),
@@ -1783,6 +1872,14 @@ class _TripPageState extends State<TripPage>
         ),
       );
     }
+  }
+  
+  void _showTripEndedModal() {
+    if (!mounted) return;
+    
+    setState(() {
+      showTripReportModal = true;
+    });
   }
 }
 

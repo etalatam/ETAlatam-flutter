@@ -287,8 +287,12 @@ class Lang {
     "invalid_email": "Invalid Email",
     "please_enter_a_valid_email_address": "Please enter a valid email address",
     "success": "Success",
+    "your_help_messages": "Your help messages",
     "error": "Error",
     "recovery_password_mail_sended": "Password recovery email sent successfully!",
+    "pending": "Pending",
+    "in_review": "In review",
+    "resolved": "Resolved",
   };
 
   Map<String, dynamic> esLangs = {
@@ -361,8 +365,10 @@ class Lang {
     'all': 'Todos',
     'new': 'Nuevo',
     'pending': 'Pendiente',
+    'in_review': 'En revisión',
     'in_progress': 'En Progreso',
     'completed': 'Completado',
+    'resolved': 'Resuelto',
     'status': 'Estado',
     'total': 'Total',
     'comments': 'comentarios',
@@ -451,5 +457,6 @@ class Lang {
     "please_enter_a_valid_email_address": "Por favor ingrese una dirección de correo electrónico válida",
     "success": "Éxito",
     "error": "Error",
+    "your_help_messages": "Tus mensajes de ayuda",
   };
 }

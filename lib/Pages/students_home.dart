@@ -48,6 +48,7 @@ class _StudentsHomeState extends State<StudentsHome>
   List<TripModel> oldTripsList = [];
   
   EmitterService? _emitterServiceProvider;
+  EmitterTopic? _schoolEventsTopic;
   
   @override
   Widget build(BuildContext context) {
@@ -134,26 +135,8 @@ class _StudentsHomeState extends State<StudentsHome>
                                                   fontWeight:
                                                       activeTheme.h6.fontWeight,
                                                 )))
-                                        : Consumer<EmitterService>(builder:
-                                            (context, emitterService, child) {
-                                            try {
-                                              final jsonMessage =
-                                                  emitterService.jsonMessage();
-                                              final String type =
-                                                  jsonMessage['event_type'];
-
-                                              if (type == "end-trip") {
-                                                setState(() {
-                                                  loadResources();
-                                                });
-                                              }
-                                            } catch (e) {
-                                              print(e);
-                                            }
-
-                                            return ActiveTrip(
-                                                openTripcallback, activeTrip);
-                                          }),
+                                        : ActiveTrip(
+                                            openTripcallback, activeTrip),
                                     ETAWidgets.svgTitle("assets/svg/route.svg",
                                         lang.translate('trips_history')),
 
@@ -238,13 +221,6 @@ class _StudentsHomeState extends State<StudentsHome>
     }
 
     try {
-      // Los estudiantes no deben calcular distancia, solo reportar ubicación
-      await LocationService.instance.startLocationService(calculateDistance: false);
-    } catch (e) {
-      print("[StudentPage.loadResources.startLocationService.error] $e");
-    }
-
-    try {
       final studentQuery = await httpService.getStudent();
       if(mounted){
         setState(() {
@@ -259,15 +235,19 @@ class _StudentsHomeState extends State<StudentsHome>
 
     try {
       List<TripModel>? oldTrips = await httpService.getStudentTrips(studentId);
-      setState(() {
-        oldTripsList = oldTrips;
-      });
+      if (mounted) {
+        setState(() {
+          oldTripsList = oldTrips;
+        });
+      }
     } catch (e) {
       print("[StudentPage.loadResources.getstudents.error] $e");
     }
 
     try {
       TripModel? activeTrip_ = await httpService.getActiveTrip();
+      final bool hadActiveTrip = hasActiveTrip;
+      
       if(mounted){
         setState(() {
           activeTrip = activeTrip_;
@@ -278,15 +258,24 @@ class _StudentsHomeState extends State<StudentsHome>
         hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
       }
 
-      if (hasActiveTrip) {
-        // _emitterServiceProvider =
-        //     Provider.of<EmitterService>(context, listen: false);
-        // _emitterServiceProvider?.addListener(onEmitterMessage);
-        // _emitterServiceProvider?.startTimer();
-        // trip.subscribeToTripEvents(_emitterServiceProvider);
-        // trip.subscribeToTripTracking(_emitterServiceProvider);
-        // activeTrip?.subscribeToTripTracking();
+      if (hasActiveTrip && activeTrip != null) {
+        activeTrip!.subscribeToTripTracking(_emitterServiceProvider);
+        
+        // Iniciar tracking solo si hay viaje activo
+        if (!LocationService.instance.isTracking) {
+          print("[StudentsHome] Viaje activo detectado, iniciando tracking de ubicación");
+          await LocationService.instance.init();
+          await LocationService.instance.startLocationService(calculateDistance: false);
+        }
+      } else if (hadActiveTrip && !hasActiveTrip) {
+        // Si tenía viaje activo y ya no lo tiene, detener tracking
+        if (LocationService.instance.isTracking) {
+          print("[StudentsHome] Viaje finalizado, deteniendo tracking de ubicación");
+          await LocationService.instance.stopLocationService();
+        }
       }
+
+      await _subscribeToSchoolEvents();
 
     } catch (e) {
       print("[StudentPage.loadResources.getActiveTrip.error] $e");
@@ -296,8 +285,11 @@ class _StudentsHomeState extends State<StudentsHome>
       List<RouteModel> routes = await httpService.getStudentRoutes();
       for (var route in routes) {
         String routeTopic = "route-${route.route_id}-student";
-
         NotificationService.instance.subscribeToTopic(routeTopic);
+
+        // Suscribirse a eventos de inicio/fin de viaje para esta ruta
+        NotificationService.instance.subscribeToTopic("start-trip-${route.route_id}");
+        NotificationService.instance.subscribeToTopic("end-trip-${route.route_id}");
 
         for (var pickupPoint in student.pickup_points) {
           var pickupPointTopic =
@@ -305,7 +297,6 @@ class _StudentsHomeState extends State<StudentsHome>
           NotificationService.instance.subscribeToTopic(pickupPointTopic);
         }
       }
-
     } catch (e) {
       print("[StudentPage.loadResources.getActiveTrip.error] $e");
     }
@@ -328,6 +319,10 @@ class _StudentsHomeState extends State<StudentsHome>
 
   @override
   void dispose() {
+    _unsubscribeFromSchoolEvents();
+    _emitterServiceProvider?.removeListener(_onEmitterMessage);
+    Provider.of<NotificationService>(context, listen: false)
+        .removeListener(onPushMessage);
     super.dispose();
   }
 
@@ -352,28 +347,82 @@ class _StudentsHomeState extends State<StudentsHome>
   }
 
   void _onEmitterMessage() {
-    if (!mounted || !hasActiveTrip || activeTrip == null) return;
+    if (!mounted) return;
     
     final message = _emitterServiceProvider?.lastMessage();
     try {
       final jsonMsg = jsonDecode(message!);
       
       // Actualizar viaje activo del estudiante
-      if (jsonMsg['relation_name'] == 'eta.drivers' && 
+      if (hasActiveTrip && activeTrip != null &&
+          jsonMsg['relation_name'] == 'eta.drivers' && 
           jsonMsg['payload'] != null &&
           activeTrip?.driver_id == jsonMsg['relation_id']) {
         
-        setState(() {
-          activeTrip?.lastPositionPayload = jsonMsg['payload'];
-        });
+        if (mounted) {
+          setState(() {
+            activeTrip?.lastPositionPayload = jsonMsg['payload'];
+          });
+        }
       }
       
-      // Si el viaje terminó, recargar datos
-      if (jsonMsg['event_type'] == 'end-trip') {
-        // loadResources();
+      // Si el viaje terminó o inició, verificar si es relevante para el usuario
+      if (jsonMsg['event_type'] == 'end-trip' || jsonMsg['event_type'] == 'start-trip') {
+        final eventTripId = jsonMsg['id_trip'];
+        
+        if (jsonMsg['event_type'] == 'start-trip') {
+          print('[StudentsHome] Evento start-trip recibido, recargando datos...');
+          if (mounted) loadResources();
+        } else if (jsonMsg['event_type'] == 'end-trip') {
+          final bool isRelevant = hasActiveTrip && activeTrip?.trip_id == eventTripId;
+          if (isRelevant) {
+            print('[StudentsHome] Evento end-trip recibido para viaje activo $eventTripId, recargando datos...');
+            if (mounted) loadResources();
+          }
+        }
       }
     } catch (e) {
       // No es un mensaje JSON válido o no es relevante
+    }
+  }
+
+  Future<void> _subscribeToSchoolEvents() async {
+    try {
+      final int? schoolId = student.schoolId;
+      
+      if (schoolId == null) {
+        print('[StudentsHome] No se pudo obtener schoolId para suscribirse a eventos');
+        return;
+      }
+
+      final channel = 'events/school/$schoolId/';
+      final keyModel = await httpService.emitterKeyGen('events/school/$schoolId/');
+      
+      if (keyModel?.key == null || keyModel!.key!.isEmpty) {
+        print('[StudentsHome] No se pudo obtener key para canal de eventos');
+        return;
+      }
+
+      if (_schoolEventsTopic != null) {
+        try {
+          _emitterServiceProvider?.unsubscribe(_schoolEventsTopic!);
+        } catch (_) {}
+      }
+
+      _schoolEventsTopic = EmitterTopic(channel, keyModel.key!);
+      _emitterServiceProvider?.subscribe(_schoolEventsTopic!);
+      print('[StudentsHome] Suscrito a canal de eventos: $channel');
+    } catch (e) {
+      print('[StudentsHome] Error suscribiendo a eventos de escuela: $e');
+    }
+  }
+
+  void _unsubscribeFromSchoolEvents() {
+    if (_schoolEventsTopic != null) {
+      try {
+        _emitterServiceProvider?.unsubscribe(_schoolEventsTopic!);
+      } catch (_) {}
+      _schoolEventsTopic = null;
     }
   }
 

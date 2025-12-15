@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 
 class CommentBlock extends StatelessWidget {
-  const CommentBlock(this.comment, {super.key});
+  const CommentBlock(this.comment, {super.key, this.currentUserId});
 
   final CommentModel comment;
+  final int? currentUserId;
+
+  bool get isOwnMessage => currentUserId != null && comment.user_id == currentUserId;
 
   @override
   Widget build(BuildContext context) {
@@ -13,15 +16,24 @@ class CommentBlock extends StatelessWidget {
       child: Column(children: [
         Container(
           width: double.infinity,
-          // height: 446.03,
           clipBehavior: Clip.antiAlias,
-          margin: const EdgeInsets.all(10),
+          margin: EdgeInsets.only(
+            top: 10,
+            bottom: 10,
+            left: isOwnMessage ? 40 : 10,
+            right: isOwnMessage ? 10 : 40,
+          ),
           decoration: ShapeDecoration(
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
+                borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
-                    width: 1, color: activeTheme.main_color.withOpacity(.2))),
-            color: activeTheme.main_bg,
+                    width: 1, 
+                    color: isOwnMessage 
+                        ? activeTheme.main_color.withOpacity(.3)
+                        : Colors.grey.withOpacity(.2))),
+            color: isOwnMessage 
+                ? const Color(0xFFE3F2FD)
+                : activeTheme.main_bg,
             shadows: [
               BoxShadow(
                 color: shadowColor,
@@ -94,7 +106,10 @@ class CommentBlock extends StatelessWidget {
                       width: double.infinity,
                       child: Text(
                         comment.comment!,
-                        style: activeTheme.h5,
+                        style: activeTheme.normalText.copyWith(
+                          fontSize: 16,
+                          height: 1.25,
+                        ),
                       ),
                     ),
                   ],

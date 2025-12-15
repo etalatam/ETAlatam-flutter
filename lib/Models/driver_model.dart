@@ -3,6 +3,7 @@ import 'package:eta_school_app/Models/VehicleModel.dart';
 
 class DriverModel {
   int? driver_id;
+  int? schoolId;
   String? first_name;
   String? last_name;
   String? name;
@@ -14,6 +15,7 @@ class DriverModel {
 
   DriverModel({
     required this.driver_id,
+    this.schoolId,
     required this.first_name,
     this.last_name,
     this.name,
@@ -33,9 +35,15 @@ class DriverModel {
     }catch(e){
       print(e.toString());
     }
+
+    final dynamic rawSchoolId = json['school_id'] ?? json['id_esc'] ?? json['id_school'];
+    final int? parsedSchoolId = rawSchoolId is int
+        ? rawSchoolId
+        : int.tryParse('${rawSchoolId ?? ''}');
         
     return DriverModel(
       driver_id: json['driver_id'] as int?,
+      schoolId: parsedSchoolId,
       first_name: json['driver_firstname'] as String?,
       last_name: json['driver_lastname'] as String?,
       name: json['driver_firstname']+' '+json['driver_lastname'] as String?,

@@ -58,6 +58,8 @@ class _StudentPageState extends State<StudentPage> {
   late bool hasActiveTrip;
   bool isMapExpand = false;
   String relationName = '';
+  
+  bool _isInitialCameraSet = false;
 
   // Variables for Emitter connection statistics (same as trip_page)
   int _messageCount = 0; // Total de mensajes (para compatibilidad)
@@ -587,13 +589,13 @@ class _StudentPageState extends State<StudentPage> {
       studentPointAnnotation = await mapboxUtils.createAnnotation(
           annotationManager, position, circleImage, label);
 
-      if ("$relationId" == "${widget.student?.student_id}") {
+      if ("$relationId" == "${widget.student?.student_id}" && !_isInitialCameraSet) {
         _mapboxMapController?.setCamera(CameraOptions(
           center: Point(coordinates: position),
           zoom: 15.5,
-          // pitch: 70, // original 3D tilt
           pitch: 0,
         ));
+        _isInitialCameraSet = true;
       }
     } else {
       studentPointAnnotation?.geometry = Point(coordinates: position);
@@ -601,10 +603,14 @@ class _StudentPageState extends State<StudentPage> {
       annotationManager?.update(studentPointAnnotation!);
     }
 
-    if ("$relationId" == "${widget.student?.student_id}") {
+    if ("$relationId" == "${widget.student?.student_id}" && !_isInitialCameraSet) {
       _mapboxMapController?.flyTo(
-          CameraOptions(center: Point(coordinates: position)),
+          CameraOptions(
+            center: Point(coordinates: position),
+            pitch: 0,
+          ),
           MapAnimationOptions(duration: 1));
+      _isInitialCameraSet = true;
     }
   }
 
@@ -750,13 +756,10 @@ class _StudentPageState extends State<StudentPage> {
         CameraOptions(
           center: studentPosition,
           zoom: 16.5,
-          // pitch: 70, // original 3D tilt
-          pitch: 0,
         ),
         MapAnimationOptions(duration: 1200, startDelay: 0)
       );
     } else if (widget.student?.lastPositionPayload != null && _mapboxMapController != null) {
-      // Si no hay anotación pero tenemos la última posición conocida del estudiante
       final Position? position = widget.student?.lastPosition();
       if (position != null) {
         print("[StudentPage._centerOnStudent] Centering on last known student position: $position");
@@ -764,8 +767,6 @@ class _StudentPageState extends State<StudentPage> {
           CameraOptions(
             center: Point(coordinates: position),
             zoom: 16.5,
-            // pitch: 70, // original 3D tilt
-            pitch: 0,
           ),
           MapAnimationOptions(duration: 1200, startDelay: 0)
         );

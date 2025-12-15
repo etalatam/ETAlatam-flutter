@@ -10,6 +10,7 @@ class EmitterService extends ChangeNotifier {
   static final EmitterService _instance = EmitterService._internal();
 
   bool _updatelastTime = false;
+  bool _allowAutoReconnect = true;
 
   factory EmitterService() => _instance;
   
@@ -38,6 +39,7 @@ class EmitterService extends ChangeNotifier {
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
   Future<void> connect() async {
+    _allowAutoReconnect = true;
     _client = EmitterClient(
         host: 'wss://emitter.etalatam.com', port: 443, secure: true);
 
@@ -78,9 +80,8 @@ class EmitterService extends ChangeNotifier {
 
   void unsubscribe(EmitterTopic topic) {
     _client.unsubscribe(topic.name, key: topic.key);
-    for (var t in _subscribedTopics) {
-      _subscribedTopics.remove(topic);
-    }
+    _subscribedTopics.removeWhere(
+        (t) => t.name == topic.name && t.key == topic.key);
   }
 
   bool isConnected() {
@@ -88,11 +89,30 @@ class EmitterService extends ChangeNotifier {
   }
 
   disconnect() {
+    disconnectWithOptions();
+  }
+
+  void disconnectWithOptions({bool allowReconnect = true}) {
     try {
+      _allowAutoReconnect = allowReconnect;
       _client.disconnect();
     } catch (e) {
       print(e);
     }
+  }
+
+  Future<void> resetSubscriptions() async {
+    try {
+      final topics = List<EmitterTopic>.from(_subscribedTopics);
+      for (final t in topics) {
+        try {
+          _client.unsubscribe(t.name, key: t.key);
+        } catch (_) {}
+      }
+    } catch (_) {}
+
+    _subscribedTopics.clear();
+    _lastMessage = "";
   }
 
   void _onMessage(String message) {
@@ -127,7 +147,9 @@ class EmitterService extends ChangeNotifier {
     print("[EmitterService._onDisconnect]");
     notifyListeners();
     // Intentar reconectar después de la desconexión
-    connect();
+    if (_allowAutoReconnect) {
+      connect();
+    }
   }
 
   void _onSubscribed(String topic) {

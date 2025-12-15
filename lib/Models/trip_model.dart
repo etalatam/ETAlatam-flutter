@@ -241,33 +241,26 @@ class TripModel {
   }
 
   subscribeToTripEvents(emitterServiceProvider) async {
-    // if (isEmitterSubcribedToEvents) return;
-
-    String encodedValue =
-          Uri.encodeComponent("school/$school_id/trip/$trip_id/event/#/");
-      emitterKeyGenModelEvents = await httpService.emitterKeyGen(encodedValue);
-      if (emitterKeyGenModelEvents != null ) {
-        emitterServiceProvider.subscribe(EmitterTopic(
-            "school/$school_id/trip/$trip_id/event/",
-            emitterKeyGenModelEvents!.key!));
-        isEmitterSubcribedToEvents = true;
-      }
+    final eventChannel = "school/$school_id/trip/$trip_id/event/";
+    emitterKeyGenModelEvents = await httpService.emitterKeyGen(eventChannel);
+    if (emitterKeyGenModelEvents != null) {
+      emitterServiceProvider.subscribe(EmitterTopic(
+          eventChannel,
+          emitterKeyGenModelEvents!.key!));
+      isEmitterSubcribedToEvents = true;
+    }
   }
 
   subscribeToTripTracking(emitterServiceProvider) async {
-    // if (!isEmitterSubcribedToTracking) {
-      String encodedValue =
-          Uri.encodeComponent("school/$school_id/trip/$trip_id/tracking/#/");
-      emitterKeyGenModelTracking =
-          await httpService.emitterKeyGen(encodedValue);
-      if (emitterKeyGenModelTracking != null &&
-          emitterServiceProvider.isConnected()) {
-        emitterServiceProvider.subscribe(EmitterTopic(
-            "school/$school_id/trip/$trip_id/tracking/eta.drivers/$driver_id/",
-            emitterKeyGenModelTracking!.key!));
-        isEmitterSubcribedToTracking = true;
-      }
-    // }
+    final trackingChannel = "school/$school_id/trip/$trip_id/tracking/eta.drivers/$driver_id/";
+    emitterKeyGenModelTracking = await httpService.emitterKeyGen(trackingChannel);
+    if (emitterKeyGenModelTracking != null &&
+        emitterServiceProvider.isConnected()) {
+      emitterServiceProvider.subscribe(EmitterTopic(
+          trackingChannel,
+          emitterKeyGenModelTracking!.key!));
+      isEmitterSubcribedToTracking = true;
+    }
   }
 
   Position? lastPosition() {

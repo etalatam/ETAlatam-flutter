@@ -539,6 +539,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   @override
   void dispose() {
+    Provider.of<NotificationService>(context, listen: false)
+        .removeListener(onPushMessage);
     super.dispose();
   }
 }

@@ -2,6 +2,7 @@ import 'dart:core';
 
 class UserModel {
   int? id;
+  int? schoolId;
   String? firstName;
   String? lastName;
   String? name;
@@ -13,6 +14,7 @@ class UserModel {
 
   UserModel({
     required this.id,
+    this.schoolId,
     required this.firstName,
     this.lastName,
     this.name,
@@ -24,9 +26,14 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
-        
+    final dynamic rawSchoolId = json['id_esc'] ?? json['school_id'];
+    final int? parsedSchoolId = rawSchoolId is int
+        ? rawSchoolId
+        : int.tryParse('${rawSchoolId ?? ''}');
+
     return UserModel(
       id: json['user_id'] as int?,
+      schoolId: parsedSchoolId,
       firstName: "${json['user_firstname']}",
       lastName: "${json['user_lastname']}",
       name: "${json['user_firstname']} ${json['user_lastname']}",
