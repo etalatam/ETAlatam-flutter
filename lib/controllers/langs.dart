@@ -223,6 +223,10 @@ class Lang {
   Map<String, dynamic> enLangs = {
     'sitename': 'ETA',
     'trips_history': 'Trips log history',
+    'real_route': 'Real route',
+    'planned_route': 'Planned route',
+    'show_real_route': 'Show real route',
+    'show_planned_route': 'Show planned route',
     'show_map': 'Show map route',
     'login_intro_message':
         'Please create your account with your valid information. \nSign in to manage your account.',
@@ -298,6 +302,10 @@ class Lang {
   Map<String, dynamic> esLangs = {
     'sitename': 'ETA Latam',
     'trips_history': 'Historial de viajes',
+    'real_route': 'Recorrido real',
+    'planned_route': 'Ruta planificada',
+    'show_real_route': 'Ver recorrido real',
+    'show_planned_route': 'Ver ruta planificada',
     'show_map': 'Mostrar ruta en el mapa',
     'login_intro_message': 'Inicie sesión con su usuario y contraseña.',
     'send_your_message_below':

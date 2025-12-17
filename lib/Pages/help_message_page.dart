@@ -12,6 +12,7 @@ import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/components/comment_block.dart';
 import 'package:eta_school_app/components/full_text_button.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
+import 'package:eta_school_app/shared/fcm/notification_service.dart';
 
 class HelpMessagePage extends StatefulWidget {
   final HelpMessageModel? message;
@@ -28,6 +29,8 @@ class _SentMessageState extends State<HelpMessagePage>
   final EmitterService emitterService = EmitterService.instance;
 
   List<CommentModel> commentsList = [];
+
+  Duration _userTzOffset = const Duration(hours: -5);
   HelpMessageModel? message;
   int? currentUserId;
 
@@ -73,6 +76,52 @@ class _SentMessageState extends State<HelpMessagePage>
         ],
       ),
     );
+  }
+
+  Future<void> _loadUserTzOffset() async {
+    try {
+      await storage.ready;
+      final tzRaw = await storage.getItem('user_tz');
+      final String tz = (tzRaw == null || tzRaw.toString().isEmpty)
+          ? '-5:00'
+          : tzRaw.toString();
+      final m = RegExp(r'^([+-]?)(\d{1,2}):(\d{2})$').firstMatch(tz.trim());
+      if (m == null) {
+        _userTzOffset = const Duration(hours: -5);
+        return;
+      }
+      final signStr = m.group(1) ?? '';
+      final hours = int.tryParse(m.group(2) ?? '') ?? 0;
+      final minutes = int.tryParse(m.group(3) ?? '') ?? 0;
+      final sign = (signStr == '-') ? -1 : 1;
+      _userTzOffset = Duration(hours: hours * sign, minutes: minutes * sign);
+    } catch (_) {
+      _userTzOffset = const Duration(hours: -5);
+    }
+  }
+
+  String? _applyOffsetToEmitterTs(dynamic rawTs) {
+    final String? ts = rawTs?.toString();
+    if (ts == null || ts.isEmpty) return ts;
+    try {
+      final String s = ts.trim();
+      final bool hasZone = s.endsWith('Z') || RegExp(r'([+-]\d{2}:\d{2})$').hasMatch(s);
+      final DateTime utc = DateTime.parse(hasZone ? s : '${s}Z');
+      final DateTime wall = utc.add(_userTzOffset);
+      final DateTime localLike = DateTime(
+        wall.year,
+        wall.month,
+        wall.day,
+        wall.hour,
+        wall.minute,
+        wall.second,
+        wall.millisecond,
+        wall.microsecond,
+      );
+      return localLike.toIso8601String();
+    } catch (_) {
+      return ts;
+    }
   }
 
   @override
@@ -263,6 +312,8 @@ class _SentMessageState extends State<HelpMessagePage>
         return;
       }
 
+      print('[HelpMessagePage.loadMessage] refreshed schoolId: ${refreshed?.schoolId}, message_id: ${refreshed?.message_id}');
+
       setState(() {
         message = refreshed ?? message ?? widget.message;
         commentsList = message?.comments ?? [];
@@ -416,8 +467,10 @@ class _SentMessageState extends State<HelpMessagePage>
   }
 
   Future<void> _subscribeToSupportComments() async {
-    final int? messageId = widget.message?.message_id;
+    await _loadUserTzOffset();
+    final int? messageId = message?.message_id ?? widget.message?.message_id;
     if (messageId == null) {
+      print('[HelpMessagePage._subscribeToSupportComments] messageId is null, skipping');
       return;
     }
 
@@ -436,9 +489,14 @@ class _SentMessageState extends State<HelpMessagePage>
     }
 
     try {
-      final int? schoolId =
-          message?.schoolId ?? widget.message?.schoolId ?? await _resolveSchoolIdForEmitter();
+      int? schoolId = message?.schoolId ?? widget.message?.schoolId;
+      print('[HelpMessagePage._subscribeToSupportComments] schoolId from message: $schoolId');
       if (schoolId == null) {
+        schoolId = await _resolveSchoolIdForEmitter();
+        print('[HelpMessagePage._subscribeToSupportComments] schoolId from resolver: $schoolId');
+      }
+      if (schoolId == null) {
+        print('[HelpMessagePage._subscribeToSupportComments] schoolId is null, skipping subscription');
         return;
       }
 
@@ -473,15 +531,22 @@ class _SentMessageState extends State<HelpMessagePage>
         return;
       }
 
+      emitterService.addListener(_onEmitterUpdate);
+
       _supportCommentsTopic = EmitterTopic(channel, key);
       emitterService.subscribe(_supportCommentsTopic!);
 
       _supportStatusTopic = EmitterTopic(statusChannel, key);
       emitterService.subscribe(_supportStatusTopic!);
-
-      emitterService.addListener(_onEmitterUpdate);
-    } catch (_) {}
+      
+      print('[HelpMessagePage._subscribeToSupportComments] Subscription complete');
+    } catch (e) {
+      print('[HelpMessagePage._subscribeToSupportComments] error: $e');
+    }
   }
+
+  String? _lastProcessedMessage;
+  final NotificationService _notificationService = NotificationService.instance;
 
   void _onEmitterUpdate() {
     final raw = emitterService.lastMessage();
@@ -489,6 +554,12 @@ class _SentMessageState extends State<HelpMessagePage>
     if (raw.isEmpty) {
       return;
     }
+    
+    if (raw == _lastProcessedMessage) {
+      print('[HelpMessagePage._onEmitterUpdate] SKIPPING: already processed this message');
+      return;
+    }
+    _lastProcessedMessage = raw;
 
     try {
       final dynamic decoded = jsonDecode(raw);
@@ -498,9 +569,10 @@ class _SentMessageState extends State<HelpMessagePage>
 
       final String? eventType = decoded['event_type']?.toString();
       final int? msgId = int.tryParse('${decoded['message_id']}');
-      final int? currentMsgId = widget.message?.message_id;
-      print('[HelpMessagePage._onEmitterUpdate] eventType: $eventType, msgId: $msgId, currentMsgId: $currentMsgId');
+      final int? currentMsgId = message?.message_id ?? widget.message?.message_id;
+      print('[HelpMessagePage._onEmitterUpdate] eventType: $eventType, msgId: $msgId, currentMsgId: $currentMsgId, widget.message_id: ${widget.message?.message_id}, message.message_id: ${message?.message_id}');
       if (currentMsgId == null || msgId == null || msgId != currentMsgId) {
+        print('[HelpMessagePage._onEmitterUpdate] SKIPPING: msgId mismatch or null');
         return;
       }
 
@@ -513,7 +585,7 @@ class _SentMessageState extends State<HelpMessagePage>
 
         final mapped = {
           'id': decoded['comment_id'],
-          'ts': decoded['ts'],
+          'ts': _applyOffsetToEmitterTs(decoded['ts']),
           'id_usu': decoded['id_usu'],
           'txt': decoded['txt'],
           'message_id': decoded['message_id'],
@@ -590,10 +662,26 @@ class _SentMessageState extends State<HelpMessagePage>
     WidgetsBinding.instance.addObserver(this);
     message = widget.message;
     commentsList = widget.message?.comments ?? [];
+
     _loadCurrentUserId();
     loadMessage(showSpinner: true).then((_) {
       _subscribeToSupportComments();
     });
+    
+    _notificationService.addListener(_onFCMNotification);
+  }
+
+  void _onFCMNotification() {
+    final messageId = message?.message_id;
+    if (messageId == null) return;
+    
+    final commentCount = commentsList.length;
+    print('[HelpMessagePage._onFCMNotification] messageId: $messageId, commentCount: $commentCount');
+    
+    if (commentCount == 0) {
+      print('[HelpMessagePage._onFCMNotification] Ticket sin comentarios, recargando silenciosamente');
+      loadMessage(showSpinner: false);
+    }
   }
 
   Future<void> _loadCurrentUserId() async {
@@ -609,6 +697,7 @@ class _SentMessageState extends State<HelpMessagePage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     emitterService.removeListener(_onEmitterUpdate);
+    _notificationService.removeListener(_onFCMNotification);
     if (_supportCommentsTopic != null) {
       try {
         emitterService.unsubscribe(_supportCommentsTopic!);

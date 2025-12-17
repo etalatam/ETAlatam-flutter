@@ -46,6 +46,85 @@ class HttpService {
 
   Map? headers;
 
+  Map<String, dynamic>? _decodeJwtPayload(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length < 2) return null;
+      final normalized = base64Url.normalize(parts[1]);
+      final payload = utf8.decode(base64Url.decode(normalized));
+      final decoded = jsonDecode(payload);
+      if (decoded is Map<String, dynamic>) return decoded;
+      if (decoded is Map) return decoded.cast<String, dynamic>();
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Duration _parseTzOffset(String? tz) {
+    // Fallback: Panamá (UTC-5)
+    final String value = (tz == null || tz.trim().isEmpty) ? '-5:00' : tz.trim();
+    final m = RegExp(r'^([+-]?)(\d{1,2}):(\d{2})$').firstMatch(value);
+    if (m == null) {
+      return const Duration(hours: -5);
+    }
+    final signStr = m.group(1) ?? '';
+    final hours = int.tryParse(m.group(2) ?? '') ?? 0;
+    final minutes = int.tryParse(m.group(3) ?? '') ?? 0;
+    final sign = (signStr == '-') ? -1 : 1;
+    return Duration(hours: hours * sign, minutes: minutes * sign);
+  }
+
+  Future<void> _ensureUserTzStored({String? tokenOverride}) async {
+    try {
+      await storage.ready;
+      final existing = await storage.getItem('user_tz');
+      // Si viene un token nuevo (login/cambio de usuario), re-escribir el tz aunque ya exista.
+      if ((tokenOverride == null || tokenOverride.isEmpty) &&
+          existing != null &&
+          existing.toString().isNotEmpty) {
+        return;
+      }
+      final String? token = tokenOverride ?? await storage.getItem('token');
+      if (token == null || token.isEmpty) {
+        await storage.setItem('user_tz', '-5:00');
+        return;
+      }
+      final payload = _decodeJwtPayload(token);
+      final tz = (payload?['tz'] ?? payload?['timezone'])?.toString();
+      await storage.setItem('user_tz', (tz == null || tz.isEmpty) ? '-5:00' : tz);
+    } catch (_) {}
+  }
+
+  Future<Duration> _getUserTzOffset() async {
+    await _ensureUserTzStored();
+    final tzRaw = await storage.getItem('user_tz');
+    return _parseTzOffset(tzRaw?.toString());
+  }
+
+  String? _applyOffsetToUtcTsString(String? ts, Duration offset) {
+    if (ts == null || ts.isEmpty) return ts;
+    try {
+      final String s = ts.trim();
+      final bool hasZone = s.endsWith('Z') || RegExp(r'([+-]\d{2}:\d{2})$').hasMatch(s);
+      final DateTime utc = DateTime.parse(hasZone ? s : '${s}Z');
+      final DateTime wall = utc.add(offset);
+      final DateTime localLike = DateTime(
+        wall.year,
+        wall.month,
+        wall.day,
+        wall.hour,
+        wall.minute,
+        wall.second,
+        wall.millisecond,
+        wall.microsecond,
+      );
+      return localLike.toIso8601String();
+    } catch (_) {
+      return ts;
+    }
+  }
+
 
   String getAvatarUrl(relationId, relationName) {
     final url =
@@ -116,6 +195,10 @@ class HttpService {
       token = await storage.getItem('temp_access_token');
     }
 
+    if (token != null && token.isNotEmpty) {
+      await _ensureUserTzStored(tokenOverride: token);
+    }
+
     final url = Uri.parse(apiURL + path);
     print("$url");
 
@@ -138,6 +221,10 @@ class HttpService {
     // Si no hay token de usuario, intentar usar el token temporal
     if (token == null || token.isEmpty) {
       token = await storage.getItem('temp_access_token');
+    }
+
+    if (token != null && token.isNotEmpty) {
+      await _ensureUserTzStored(tokenOverride: token);
     }
 
     final url = Uri.parse(apiURL + path);
@@ -586,6 +673,29 @@ class HttpService {
     return [];
   }
 
+  Future<Map<String, dynamic>?> getTripTrace(int tripId) async {
+    const endpoint = '/rpc/trip_trace';
+    final data = {"id": tripId};
+
+    http.Response res = await postQuery(endpoint, jsonEncode(data),
+        contentType: 'application/json');
+
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
+
+    if (res.statusCode == 200) {
+      try {
+        final body = jsonDecode(res.body);
+        if (body is Map<String, dynamic>) {
+          return body;
+        }
+      } catch (e) {
+        print("[getTripTrace] error: $e");
+      }
+    }
+    return null;
+  }
+
   /// Load Trip
   Future<TripModel> getTrip(id) async {
     const endpoint = '/rpc/driver_trips';
@@ -779,6 +889,9 @@ class HttpService {
         if (body['token'] != null && body['token'].toString().isNotEmpty) {
           await storage.setItem('token', body['token']);
           print('[login] Token saved successfully');
+
+          // Guardar tz del JWT (fallback Panamá)
+          await _ensureUserTzStored(tokenOverride: body['token'].toString());
         } else {
           print('[login] Warning: Token is empty or null!');
         }
@@ -919,6 +1032,13 @@ class HttpService {
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
+      if (body is Map) {
+        try {
+          final Duration offset = await _getUserTzOffset();
+          final String? rawTs = body['ts']?.toString();
+          body['ts'] = _applyOffsetToUtcTsString(rawTs, offset);
+        } catch (_) {}
+      }
       return CommentModel.fromJson(body);
     }
 

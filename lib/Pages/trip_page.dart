@@ -60,6 +60,10 @@ class _TripPageState extends State<TripPage>
     with ETAWidgets, MediansTheme
     implements OnPointAnnotationClickListener {
   bool existsTripGeoJson = false;
+  bool existsRealTrace = false;
+  bool _showPlannedRoute = false;
+  Map<String, dynamic>? _realTraceGeoJson;
+  bool _loadingRealTrace = false;
 
   @override
   void onPointAnnotationClick(PointAnnotation annotation) {
@@ -147,7 +151,7 @@ class _TripPageState extends State<TripPage>
     trip = widget.trip!;
     _lastPositionPayload = trip.lastPositionPayload;
 
-    print('[TripPage.initState] trip_id: ${trip.trip_id}, trip_status: "${trip.trip_status}", is Running: ${trip.trip_status == 'Running'}');
+    print('[TripPage.initState] trip_id: ${trip.trip_id}, trip_status: "${trip.trip_status}", is Running: ${trip.trip_status == 'Running'}, geoJson is null: ${trip.geoJson == null}');
 
     // Cargar relationName de forma síncrona UNA SOLA VEZ
     _loadRelationName();
@@ -232,7 +236,8 @@ class _TripPageState extends State<TripPage>
                     if (info.visibleFraction > 0) {
                       loadTrip();
                       // Si el mapa está listo y necesitamos recrear los marcadores
-                      if (_mapboxMapController != null && annotationManager != null) {
+                      // Solo para viajes activos (Running), no para históricos
+                      if (_mapboxMapController != null && annotationManager != null && trip.trip_status == 'Running') {
                         Future.delayed(Duration(milliseconds: 300), () {
                           if (_mapboxMapController != null && mounted) {
                             showTripGeoJson(_mapboxMapController!);
@@ -306,9 +311,16 @@ class _TripPageState extends State<TripPage>
                             // TODO: Implementar detección de gestos cuando la API de Mapbox lo soporte
                           },
                           onStyleLoadedListener: (MapboxMap mapboxMap) async {
-                            showTripGeoJson(mapboxMap);
-                            await Future.delayed(Duration(milliseconds: 100));
-                            showPickupLocations(mapboxMap);
+                            print('[TripPage.onStyleLoadedListener] trip_status: ${trip.trip_status}');
+                            if (trip.trip_status != 'Running') {
+                              print('[TripPage.onStyleLoadedListener] Viaje histórico, cargando recorrido real');
+                              await _loadAndShowRealTrace();
+                            } else {
+                              print('[TripPage.onStyleLoadedListener] Viaje en vivo, mostrando ruta planificada');
+                              showTripGeoJson(mapboxMap);
+                              await Future.delayed(Duration(milliseconds: 100));
+                              showPickupLocations(mapboxMap);
+                            }
                           }),
                     ),
 
@@ -489,7 +501,7 @@ class _TripPageState extends State<TripPage>
                             ? 0.05
                             : isMapExpand
                                 ? (trip.trip_status == 'Running' ? 0.05 : 0.15)
-                                : (trip.trip_status == 'Running' ? 0.4 : 0.25),
+                                : (trip.trip_status == 'Running' ? 0.4 : 0.35),
                         minChildSize:
                             isLandscape ? 0.05 : (isMapExpand ? 0.05 : 0.25),
                         maxChildSize: 0.95,
@@ -634,6 +646,52 @@ class _TripPageState extends State<TripPage>
                                       trip.trip_status == 'Completed'
                                           ? ETAWidgets.tripInfoRow(trip)
                                           : const Center(),
+                                      Builder(builder: (context) {
+                                        print('[TripPage.build] trip_status for switch: "${trip.trip_status}", show switch: ${trip.trip_status != 'Running'}');
+                                        return const SizedBox.shrink();
+                                      }),
+                                      if (trip.trip_status != 'Running')
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 10),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                _showPlannedRoute 
+                                                    ? lang.translate('planned_route')
+                                                    : lang.translate('real_route'),
+                                                style: activeTheme.smallText.copyWith(
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    lang.translate('show_planned_route'),
+                                                    style: activeTheme.smallText,
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  _loadingRealTrace
+                                                      ? SizedBox(
+                                                          width: 20,
+                                                          height: 20,
+                                                          child: CircularProgressIndicator(
+                                                            strokeWidth: 2,
+                                                            color: activeTheme.main_color,
+                                                          ),
+                                                        )
+                                                      : Switch(
+                                                          value: _showPlannedRoute,
+                                                          onChanged: (value) {
+                                                            _togglePlannedRouteView(value);
+                                                          },
+                                                          activeColor: Color.fromRGBO(76, 175, 80, 1.0),
+                                                        ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       // DEBUG: Print relationName and button visibility
                                       Builder(builder: (context) {
                                         print('[TripPage.build] relationName: "$relationName"');
@@ -902,6 +960,7 @@ class _TripPageState extends State<TripPage>
       TripModel? trip_ = await httpService.getTrip(widget.trip?.trip_id);
       print("[TripPage.loadTrip][getTrip] ${trip.trip_status}");
       if (trip_.trip_id != 0) {
+        final bool hadGeoJson = trip.geoJson != null;
         setState(() {
           trip = trip_;
           showLoader = false;
@@ -909,6 +968,11 @@ class _TripPageState extends State<TripPage>
               "[TripPage.loadTrip][trip_.lastPositionPayload] ${trip_.lastPositionPayload}");
           processTrackingMessage(trip_.lastPositionPayload);
         });
+        
+        if (!hadGeoJson && trip.geoJson != null && _mapboxMapController != null && !existsTripGeoJson) {
+          print("[TripPage.loadTrip] geoJson now available, drawing route line");
+          showTripGeoJson(_mapboxMapController!);
+        }
       }
     } catch (e) {
       print("[TripPage.loadTrip.error] $e");
@@ -1094,8 +1158,8 @@ class _TripPageState extends State<TripPage>
   //   );
   // }
 
-  void showTripGeoJson(MapboxMap mapboxMap) async {
-    print("[TripPage.showTripGeoJson]");
+  Future<void> showTripGeoJson(MapboxMap mapboxMap) async {
+    print("[TripPage.showTripGeoJson] geoJson is null: ${trip.geoJson == null}");
 
     if (annotationManager == null) {
       try {
@@ -1109,6 +1173,11 @@ class _TripPageState extends State<TripPage>
     }
 
     if (existsTripGeoJson) return;
+
+    if (trip.geoJson == null) {
+      print("[TripPage.showTripGeoJson] geoJson is null, skipping route line");
+      return;
+    }
 
     Map<String, dynamic> data = trip.geoJson!;
     // final lineColorValue = Color.fromRGBO(33, 150, 243, 0.4).value; // original semi-transparent
@@ -1263,6 +1332,394 @@ class _TripPageState extends State<TripPage>
     }
 
     existsTripGeoJson = true;
+  }
+
+  Future<void> _loadAndShowRealTrace() async {
+    if (_loadingRealTrace || _mapboxMapController == null) return;
+    
+    setState(() {
+      _loadingRealTrace = true;
+    });
+
+    try {
+      if (_realTraceGeoJson == null) {
+        final tripId = trip.trip_id;
+        if (tripId == null || tripId == 0) {
+          print("[TripPage._loadAndShowRealTrace] tripId is null, showing only pickup locations");
+          showPickupLocations(_mapboxMapController!);
+          return;
+        }
+        final trace = await httpService.getTripTrace(tripId);
+        if (trace != null && trace['coordinates'] != null) {
+          _realTraceGeoJson = trace;
+          print("[TripPage._loadAndShowRealTrace] Real trace loaded successfully");
+        } else {
+          print("[TripPage._loadAndShowRealTrace] No real trace data, showing only pickup locations");
+        }
+      }
+
+      if (_realTraceGeoJson != null && _mapboxMapController != null) {
+        await _drawRealTrace(_mapboxMapController!);
+      } else {
+        showPickupLocations(_mapboxMapController!);
+      }
+    } catch (e) {
+      print("[TripPage._loadAndShowRealTrace] error: $e");
+      showPickupLocations(_mapboxMapController!);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loadingRealTrace = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _drawRealTrace(MapboxMap mapboxMap) async {
+    if (_realTraceGeoJson == null) return;
+
+    try {
+      if (existsRealTrace) {
+        await mapboxMap.style.removeStyleLayer("real_trace_layer");
+        await mapboxMap.style.removeStyleSource("real_trace_source");
+        existsRealTrace = false;
+      }
+    } catch (_) {}
+
+    try {
+      final geoJsonFeature = {
+        "type": "Feature",
+        "geometry": _realTraceGeoJson,
+        "properties": {}
+      };
+
+      await mapboxMap.style.addSource(
+        GeoJsonSource(id: "real_trace_source", data: jsonEncode(geoJsonFeature))
+      );
+
+      final lineColorValue = Color.fromRGBO(33, 150, 243, 1.0).value;
+
+      final lineLayer = LineLayer(
+        id: "real_trace_layer",
+        sourceId: "real_trace_source",
+        lineJoin: LineJoin.ROUND,
+        lineCap: LineCap.ROUND,
+        lineColor: lineColorValue,
+        lineBlur: 0.0,
+        lineWidth: 5.0,
+        lineSortKey: 1,
+        lineOpacity: 1.0,
+      );
+
+      try {
+        await mapboxMap.style.addLayerAt(
+          lineLayer,
+          LayerPosition(below: "transit-label"),
+        );
+      } catch (e) {
+        try {
+          await mapboxMap.style.addLayerAt(
+            lineLayer,
+            LayerPosition(below: "poi-label"),
+          );
+        } catch (e2) {
+          await mapboxMap.style.addLayer(lineLayer);
+        }
+      }
+
+      existsRealTrace = true;
+      await _centerOnTrace(_realTraceGeoJson!);
+      showPickupLocations(mapboxMap);
+      await _showStartEndFlags(mapboxMap);
+      print("[TripPage._drawRealTrace] Real trace drawn successfully");
+    } catch (e) {
+      print("[TripPage._drawRealTrace] error: $e");
+    }
+  }
+
+  Future<void> _showStartEndFlags(MapboxMap mapboxMap) async {
+    if (trip.geoJson == null || annotationManager == null) return;
+
+    try {
+      final data = trip.geoJson!;
+      List<dynamic>? coordinates;
+
+      final type = data['type'];
+      if (type == 'FeatureCollection') {
+        final features = data['features'] as List?;
+        if (features != null && features.isNotEmpty) {
+          final feature = features.first;
+          final geom = feature['geometry'];
+          if (geom != null) {
+            final geomType = geom['type'];
+            if (geomType == 'LineString') {
+              coordinates = geom['coordinates'] as List?;
+            } else if (geomType == 'MultiLineString') {
+              final lines = geom['coordinates'] as List?;
+              if (lines != null && lines.isNotEmpty) {
+                coordinates = [];
+                for (final line in lines) {
+                  coordinates.addAll(line as List);
+                }
+              }
+            }
+          }
+        }
+      } else if (type == 'Feature') {
+        final geom = data['geometry'];
+        if (geom != null) {
+          final geomType = geom['type'];
+          if (geomType == 'LineString') {
+            coordinates = geom['coordinates'] as List?;
+          } else if (geomType == 'MultiLineString') {
+            final lines = geom['coordinates'] as List?;
+            if (lines != null && lines.isNotEmpty) {
+              coordinates = [];
+              for (final line in lines) {
+                coordinates.addAll(line as List);
+              }
+            }
+          }
+        }
+      } else if (type == 'LineString') {
+        coordinates = data['coordinates'] as List?;
+      }
+
+      if (coordinates != null && coordinates.isNotEmpty) {
+        final start = coordinates.first;
+        final end = coordinates.last;
+
+        final startLng = (start[0] as num).toDouble();
+        final startLat = (start[1] as num).toDouble();
+        final endLng = (end[0] as num).toDouble();
+        final endLat = (end[1] as num).toDouble();
+
+        final startPosition = Position(startLng, startLat);
+        final endPosition = Position(endLng, endLat);
+
+        final Uint8List startMarker = await createCircleMarkerImage(
+          circleColor: Colors.white,
+          icon: FontAwesomeIcons.flag,
+          size: 104,
+          iconColor: Colors.yellow,
+          iconSize: 56,
+        );
+
+        final Uint8List endMarker = await createCircleMarkerImage(
+          circleColor: Colors.white,
+          icon: FontAwesomeIcons.flagCheckered,
+          size: 104,
+          iconColor: Colors.green,
+          iconSize: 56,
+        );
+
+        await annotationManager?.create(PointAnnotationOptions(
+          textField: '',
+          textColor: Colors.black.value,
+          textLineHeight: 1,
+          textSize: 11,
+          iconSize: 0.8,
+          textOffset: [0.0, -2.0],
+          symbolSortKey: 3,
+          geometry: Point(coordinates: startPosition),
+          image: startMarker,
+          textHaloColor: Colors.white.value,
+          textHaloWidth: 2,
+        ));
+
+        await annotationManager?.create(PointAnnotationOptions(
+          textField: '',
+          textColor: Colors.black.value,
+          textLineHeight: 1,
+          textSize: 11,
+          iconSize: 0.8,
+          textOffset: [0.0, -2.0],
+          symbolSortKey: 3,
+          geometry: Point(coordinates: endPosition),
+          image: endMarker,
+          textHaloColor: Colors.white.value,
+          textHaloWidth: 2,
+        ));
+      }
+    } catch (e) {
+      print("[TripPage._showStartEndFlags] error: $e");
+    }
+  }
+
+  Future<void> _removeRealTrace() async {
+    if (_mapboxMapController == null || !existsRealTrace) return;
+
+    try {
+      await _mapboxMapController!.style.removeStyleLayer("real_trace_layer");
+      await _mapboxMapController!.style.removeStyleSource("real_trace_source");
+      existsRealTrace = false;
+      print("[TripPage._removeRealTrace] Real trace removed");
+    } catch (e) {
+      print("[TripPage._removeRealTrace] error: $e");
+    }
+  }
+
+  Future<void> _hidePlannedRoute() async {
+    if (_mapboxMapController == null || !existsTripGeoJson) return;
+    try {
+      await _mapboxMapController!.style.setStyleLayerProperty(
+        "line_layer", "visibility", "none"
+      );
+    } catch (e) {
+      print("[TripPage._hidePlannedRoute] error: $e");
+    }
+  }
+
+  Future<void> _displayPlannedRoute() async {
+    if (_mapboxMapController == null || !existsTripGeoJson) return;
+    try {
+      await _mapboxMapController!.style.setStyleLayerProperty(
+        "line_layer", "visibility", "visible"
+      );
+      await _centerOnPlannedRoute();
+    } catch (e) {
+      print("[TripPage._displayPlannedRoute] error: $e");
+    }
+  }
+
+  Future<void> _centerOnTrace(Map<String, dynamic> traceGeoJson) async {
+    if (_mapboxMapController == null) return;
+    try {
+      final coordinates = traceGeoJson['coordinates'] as List?;
+      if (coordinates == null || coordinates.isEmpty) return;
+
+      double minLat = double.infinity, maxLat = -double.infinity;
+      double minLng = double.infinity, maxLng = -double.infinity;
+
+      for (final coord in coordinates) {
+        final lng = (coord[0] as num).toDouble();
+        final lat = (coord[1] as num).toDouble();
+        if (lat < minLat) minLat = lat;
+        if (lat > maxLat) maxLat = lat;
+        if (lng < minLng) minLng = lng;
+        if (lng > maxLng) maxLng = lng;
+      }
+
+      final bounds = CoordinateBounds(
+        southwest: Point(coordinates: Position(minLng, minLat)),
+        northeast: Point(coordinates: Position(maxLng, maxLat)),
+        infiniteBounds: false,
+      );
+
+      final camera = await _mapboxMapController!.cameraForCoordinateBounds(
+        bounds,
+        MbxEdgeInsets(top: 80, left: 40, bottom: 200, right: 40),
+        null, null, null, null,
+      );
+      await _mapboxMapController!.flyTo(camera, MapAnimationOptions(duration: 500));
+    } catch (e) {
+      print("[TripPage._centerOnTrace] error: $e");
+    }
+  }
+
+  Future<void> _centerOnPlannedRoute() async {
+    if (_mapboxMapController == null || trip.geoJson == null) return;
+    try {
+      List<dynamic>? coordinates;
+      final data = trip.geoJson!;
+      final type = data['type'];
+
+      if (type == 'FeatureCollection') {
+        final features = data['features'] as List?;
+        if (features != null && features.isNotEmpty) {
+          final geom = features.first['geometry'];
+          if (geom != null) {
+            final geomType = geom['type'];
+            if (geomType == 'LineString') {
+              coordinates = geom['coordinates'] as List?;
+            } else if (geomType == 'MultiLineString') {
+              final lines = geom['coordinates'] as List?;
+              if (lines != null && lines.isNotEmpty) {
+                coordinates = [];
+                for (final line in lines) {
+                  coordinates.addAll(line as List);
+                }
+              }
+            }
+          }
+        }
+      } else if (type == 'Feature') {
+        final geom = data['geometry'];
+        if (geom != null) {
+          final geomType = geom['type'];
+          if (geomType == 'LineString') {
+            coordinates = geom['coordinates'] as List?;
+          } else if (geomType == 'MultiLineString') {
+            final lines = geom['coordinates'] as List?;
+            if (lines != null && lines.isNotEmpty) {
+              coordinates = [];
+              for (final line in lines) {
+                coordinates.addAll(line as List);
+              }
+            }
+          }
+        }
+      } else if (type == 'LineString') {
+        coordinates = data['coordinates'] as List?;
+      } else if (type == 'MultiLineString') {
+        final lines = data['coordinates'] as List?;
+        if (lines != null && lines.isNotEmpty) {
+          coordinates = [];
+          for (final line in lines) {
+            coordinates.addAll(line as List);
+          }
+        }
+      }
+
+      if (coordinates == null || coordinates.isEmpty) return;
+
+      double minLat = double.infinity, maxLat = -double.infinity;
+      double minLng = double.infinity, maxLng = -double.infinity;
+
+      for (final coord in coordinates) {
+        final lng = (coord[0] as num).toDouble();
+        final lat = (coord[1] as num).toDouble();
+        if (lat < minLat) minLat = lat;
+        if (lat > maxLat) maxLat = lat;
+        if (lng < minLng) minLng = lng;
+        if (lng > maxLng) maxLng = lng;
+      }
+
+      final bounds = CoordinateBounds(
+        southwest: Point(coordinates: Position(minLng, minLat)),
+        northeast: Point(coordinates: Position(maxLng, maxLat)),
+        infiniteBounds: false,
+      );
+
+      final camera = await _mapboxMapController!.cameraForCoordinateBounds(
+        bounds,
+        MbxEdgeInsets(top: 80, left: 40, bottom: 200, right: 40),
+        null, null, null, null,
+      );
+      await _mapboxMapController!.flyTo(camera, MapAnimationOptions(duration: 500));
+    } catch (e) {
+      print("[TripPage._centerOnPlannedRoute] error: $e");
+    }
+  }
+
+  Future<void> _togglePlannedRouteView(bool showPlanned) async {
+    if (showPlanned == _showPlannedRoute) return;
+
+    setState(() {
+      _showPlannedRoute = showPlanned;
+    });
+
+    if (showPlanned) {
+      await _removeRealTrace();
+      if (!existsTripGeoJson && _mapboxMapController != null) {
+        await showTripGeoJson(_mapboxMapController!);
+        existsTripGeoJson = true;
+      }
+      await _displayPlannedRoute();
+    } else {
+      await _hidePlannedRoute();
+      await _loadAndShowRealTrace();
+    }
   }
 
   int _convertColor(String colorStr) {

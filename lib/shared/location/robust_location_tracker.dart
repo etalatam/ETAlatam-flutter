@@ -89,10 +89,10 @@ class RobustLocationTracker extends ChangeNotifier {
       ),
       foregroundTaskOptions: ForegroundTaskOptions(
         eventAction: ForegroundTaskEventAction.repeat(30000),
-        autoRunOnBoot: true,
-        autoRunOnMyPackageReplaced: true,
-        allowWakeLock: true,
-        allowWifiLock: true,
+        autoRunOnBoot: false,
+        autoRunOnMyPackageReplaced: false,
+        allowWakeLock: false,
+        allowWifiLock: false,
       ),
     );
 
@@ -238,12 +238,12 @@ class RobustLocationTracker extends ChangeNotifier {
           accuracy: LocationAccuracy.high,
           distanceFilter: _distanceFilter,
           forceLocationManager: false,
-          intervalDuration: const Duration(seconds: 5),
+          intervalDuration: const Duration(seconds: 10),
           foregroundNotificationConfig: const ForegroundNotificationConfig(
             notificationTitle: 'Ubicación activa',
             notificationText: 'Compartiendo ubicación en tiempo real',
             notificationIcon: AndroidResource(name: 'ic_launcher', defType: 'mipmap'),
-            enableWakeLock: true,
+            enableWakeLock: false,
           ),
         );
       } else if (Platform.isIOS) {

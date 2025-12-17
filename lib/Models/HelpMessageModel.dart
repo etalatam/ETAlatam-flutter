@@ -42,6 +42,35 @@ class HelpMessageModel {
   });
 
   factory HelpMessageModel.fromJson(json) {
+    DateTime _parseSupportTs(String tsString) {
+      try {
+        return DateTime.parse(tsString);
+      } catch (_) {
+        try {
+          return DateTime.parse(tsString.replaceFirst(' ', 'T'));
+        } catch (_) {
+          if (tsString.contains('T') &&
+              (tsString.endsWith(' AM') || tsString.endsWith(' PM'))) {
+            return DateFormat("yyyy-MM-dd'T'hh:mm:ss.SSSSSS a").parse(tsString);
+          }
+
+          if (tsString.contains('T')) {
+            try {
+              return DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS").parse(tsString);
+            } catch (_) {
+              return DateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(tsString);
+            }
+          }
+
+          try {
+            return DateFormat('yyyy-MM-dd HH:mm:ss.SSSSSS').parse(tsString);
+          } catch (_) {
+            return DateFormat('yyyy-MM-dd HH:mm:ss').parse(tsString);
+          }
+        }
+      }
+    }
+
     List<CommentModel>? comments = [];
 
     final dynamic rawUserId = json['id_usu'];
@@ -59,11 +88,10 @@ class HelpMessageModel {
     String? parsedDate;
     if (tsString != null) {
       try {
-        final DateTime utc = DateFormat('yyyy-MM-dd HH:mm').parseUtc(tsString);
-        final DateTime local = utc.toLocal();
+        final DateTime parsed = _parseSupportTs(tsString);
         final DateFormat out = DateFormat('yyyy-MM-dd hh:mm a');
-        parsedShortDate = out.format(local);
-        parsedDate = out.format(local);
+        parsedShortDate = out.format(parsed);
+        parsedDate = out.format(parsed);
       } catch (_) {
         parsedShortDate = tsString;
         parsedDate = tsString;
@@ -71,14 +99,18 @@ class HelpMessageModel {
     }
 
     try {
-      Iterable commentsList = json['comments'];
-      comments = json['comments'] != null
-          ? List<CommentModel>.from(
-              commentsList.map((model) => CommentModel.fromJson(model)))
-          : [];
-      comments.sort((a, b) => (a.id ?? 0).compareTo(b.id ?? 0));
+      final dynamic rawComments = json['comments'];
+      print('[HelpMessageModel.fromJson] rawComments type: ${rawComments.runtimeType}, value: $rawComments');
+      if (rawComments != null && rawComments is Iterable) {
+        comments = List<CommentModel>.from(
+            rawComments.map((model) => CommentModel.fromJson(model)));
+        comments.sort((a, b) => (a.id ?? 0).compareTo(b.id ?? 0));
+        print('[HelpMessageModel.fromJson] Parsed ${comments.length} comments');
+      } else {
+        print('[HelpMessageModel.fromJson] No comments or invalid format');
+      }
     } catch (e) {
-      print(e.toString());
+      print('[HelpMessageModel.fromJson] Error parsing comments: $e');
     }
 
     return HelpMessageModel(
@@ -145,21 +177,31 @@ class CommentModel {
     String? parsedDate;
     if (tsString != null) {
       try {
-        String cleanTs = tsString;
-        if (cleanTs.endsWith(' AM') || cleanTs.endsWith(' PM')) {
-          cleanTs = cleanTs.substring(0, cleanTs.length - 3);
+        DateTime parsed;
+
+        try {
+          parsed = DateTime.parse(tsString);
+        } catch (_) {
+          if (tsString.contains('T') &&
+              (tsString.endsWith(' AM') || tsString.endsWith(' PM'))) {
+            parsed = DateFormat("yyyy-MM-dd'T'hh:mm:ss.SSSSSS a").parse(tsString);
+          } else if (tsString.contains('T')) {
+            try {
+              parsed = DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS").parse(tsString);
+            } catch (_) {
+              parsed = DateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(tsString);
+            }
+          } else {
+            try {
+              parsed = DateTime.parse(tsString.replaceFirst(' ', 'T'));
+            } catch (_) {
+              parsed = DateFormat('yyyy-MM-dd HH:mm:ss.SSSSSS').parse(tsString);
+            }
+          }
         }
-        DateTime utc;
-        if (cleanTs.endsWith('Z')) {
-          utc = DateTime.parse(cleanTs);
-        } else if (cleanTs.contains('T')) {
-          utc = DateTime.parse('${cleanTs}Z');
-        } else {
-          utc = DateTime.parse(cleanTs.replaceFirst(' ', 'T') + 'Z');
-        }
-        final DateTime local = utc.toLocal();
-        parsedShortDate = shortDateFormat.format(local);
-        parsedDate = shortDateFormat.format(local);
+
+        parsedShortDate = shortDateFormat.format(parsed);
+        parsedDate = shortDateFormat.format(parsed);
       } catch (_) {
         parsedShortDate = tsString;
         parsedDate = tsString;

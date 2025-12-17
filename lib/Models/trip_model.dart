@@ -184,7 +184,7 @@ class TripModel {
         driver_id: json['driver_id'] as int?,
         // trip_date: format.format(DateTime.parse(json['start_ts'])) as String?,
         trip_date: json['start_ts'],
-        trip_status: json['running'] ? 'Running' : 'Completed',
+        trip_status: (json['running'] == true) ? 'Running' : 'Completed',
         distance: double.parse(
             json['distance'].toString().replaceAll(RegExp(r','), '')),
         duration: json['duration'] as String?,

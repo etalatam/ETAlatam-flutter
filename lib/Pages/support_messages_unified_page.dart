@@ -4,6 +4,7 @@ import 'package:eta_school_app/Models/HelpMessageModel.dart';
 import 'package:eta_school_app/Pages/help_message_page.dart';
 import 'package:eta_school_app/Pages/create_support_message_page.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
+import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:eta_school_app/API/client.dart';
@@ -27,6 +28,7 @@ class _SupportMessagesUnifiedPageState extends State<SupportMessagesUnifiedPage>
     with SingleTickerProviderStateMixin {
   final HttpService httpService = HttpService();
   final EmitterService emitterService = EmitterService.instance;
+  final NotificationService _notificationService = NotificationService.instance;
 
   // Estados de la página
   bool showLoader = true;
@@ -61,6 +63,7 @@ class _SupportMessagesUnifiedPageState extends State<SupportMessagesUnifiedPage>
       curve: Curves.easeInOut,
     );
     _initPage();
+    _notificationService.addListener(_onFCMNotification);
   }
 
   Future<void> _initPage() async {
@@ -72,8 +75,40 @@ class _SupportMessagesUnifiedPageState extends State<SupportMessagesUnifiedPage>
   @override
   void dispose() {
     _unsubscribeFromEmitter();
+    _notificationService.removeListener(_onFCMNotification);
     _fabAnimationController.dispose();
     super.dispose();
+  }
+
+  void _onFCMNotification() {
+    print('[SupportMessages._onFCMNotification] FCM notification received');
+    if (messagesList == null || messagesList!.isEmpty) return;
+    
+    for (final message in messagesList!) {
+      final commentCount = message.comments?.length ?? 0;
+      if (commentCount == 0) {
+        print('[SupportMessages._onFCMNotification] Ticket ${message.message_id} sin comentarios, recargando silenciosamente');
+        _reloadMessageSilently(message.message_id);
+      }
+    }
+  }
+
+  Future<void> _reloadMessageSilently(int? messageId) async {
+    if (messageId == null) return;
+    try {
+      final refreshed = await httpService.getHelpMessageById(messageId);
+      if (refreshed != null && mounted && messagesList != null) {
+        final index = messagesList!.indexWhere((m) => m.message_id == messageId);
+        if (index >= 0) {
+          setState(() {
+            messagesList![index] = refreshed;
+          });
+          print('[SupportMessages._reloadMessageSilently] Ticket $messageId actualizado silenciosamente');
+        }
+      }
+    } catch (e) {
+      print('[SupportMessages._reloadMessageSilently] Error: $e');
+    }
   }
 
   Future<void> _loadCurrentUserId() async {
