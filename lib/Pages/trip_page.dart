@@ -1294,7 +1294,7 @@ class _TripPageState extends State<TripPage>
             circleColor: Colors.white,
             icon: FontAwesomeIcons.flagCheckered,
             size: 104,
-            iconColor: Colors.green,
+            iconColor: Colors.black,
             iconSize: 56,
           );
 
@@ -1509,7 +1509,7 @@ class _TripPageState extends State<TripPage>
           circleColor: Colors.white,
           icon: FontAwesomeIcons.flagCheckered,
           size: 104,
-          iconColor: Colors.green,
+          iconColor: Colors.black,
           iconSize: 56,
         );
 

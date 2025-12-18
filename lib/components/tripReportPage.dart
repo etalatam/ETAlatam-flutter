@@ -1,7 +1,7 @@
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/API/client.dart';
-import 'package:eta_school_app/Pages/driver_home.dart';
+import 'package:eta_school_app/Pages/home_screen.dart';
 import 'package:eta_school_app/shared/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -344,7 +344,7 @@ class _TripReport extends State<TripReport> {
               if (widget.onClose != null) {
                 widget.onClose!()
               } else {
-                Get.offAll(DriverHome())
+                Get.offAll(() => HomeScreen())
               }
             },
             child: Container(

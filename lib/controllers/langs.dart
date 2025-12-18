@@ -293,6 +293,7 @@ class Lang {
     "success": "Success",
     "your_help_messages": "Your help messages",
     "error": "Error",
+    "close": "Close",
     "recovery_password_mail_sended": "Password recovery email sent successfully!",
     "pending": "Pending",
     "in_review": "In review",
@@ -466,5 +467,6 @@ class Lang {
     "success": "Éxito",
     "error": "Error",
     "your_help_messages": "Tus mensajes de ayuda",
+    "close": "Cerrar",
   };
 }
