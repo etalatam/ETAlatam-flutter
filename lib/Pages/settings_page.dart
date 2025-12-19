@@ -30,8 +30,8 @@ class _SettingsPageState extends State<SettingsPage>
 
   final preferences = PreferencesSetting();
 
-  String appVersion = '1.12.42';
-  String buildNumber = '42';
+  String appVersion = '1.12.43';
+  String buildNumber = '43';
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +119,7 @@ class _SettingsPageState extends State<SettingsPage>
                               indent: 15,
                               endIndent: 10,
                             ),
-                            Row(
+                           /* Row(
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Expanded(
@@ -147,7 +147,7 @@ class _SettingsPageState extends State<SettingsPage>
                                           () => allowNotifications = value);
                                     }),
                               ],
-                            ),
+                            ),*/
                             // Sección "Acerca de" - SOLO visible en DEBUG mode
                             if (kDebugMode) ...[
                               Divider(
