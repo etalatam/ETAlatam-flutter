@@ -573,18 +573,20 @@ class _StudentPageState extends State<StudentPage> {
   Future<void> _updateIcon(Position position, String relationName,
       int relationId, String label) async {
 
-    if (studentPointAnnotation== null) {
+    if (studentPointAnnotation == null) {
+      debugPrint('[StudentPage._updateIcon] Creando nueva anotación en posición: $position');
+
       String studentName = "";
       if (widget.student != null) {
         studentName = widget.student!.first_name ?? '';
       }
-      
+
       final networkImage = await mapboxUtils
           .getNetworkImage(
             httpService.getAvatarUrl(relationId, relationName),
             name: studentName
           );
-          
+
       final circleImage = await mapboxUtils.createCircleImage(networkImage, hasActiveTrip: hasActiveTrip, isOnBoard: widget.isOnBoard);
       studentPointAnnotation = await mapboxUtils.createAnnotation(
           annotationManager, position, circleImage, label);
@@ -598,6 +600,7 @@ class _StudentPageState extends State<StudentPage> {
         _isInitialCameraSet = true;
       }
     } else {
+      debugPrint('[StudentPage._updateIcon] Actualizando anotación existente a posición: $position');
       studentPointAnnotation?.geometry = Point(coordinates: position);
       studentPointAnnotation?.textField = label;
       annotationManager?.update(studentPointAnnotation!);
@@ -854,7 +857,18 @@ class _StudentPageState extends State<StudentPage> {
     _emitterServiceProvider?.stopTimer();
     _connectivitySubscription.cancel();
     Wakelock.disable();
-    
+
+    // Limpiar la anotación del estudiante del mapa
+    if (studentPointAnnotation != null && annotationManager != null) {
+      try {
+        annotationManager?.delete(studentPointAnnotation!);
+        debugPrint('[StudentPage.cleanResources] Anotación del estudiante eliminada del mapa');
+      } catch (e) {
+        debugPrint('[StudentPage.cleanResources] Error eliminando anotación: $e');
+      }
+      studentPointAnnotation = null;
+    }
+
     // Stop LocationService if we started it
     if (_shouldEnableTracking()) {
       try {
@@ -864,7 +878,7 @@ class _StudentPageState extends State<StudentPage> {
         print("[StudentPage.cleanResources.stopLocationService.error] $e");
       }
     }
-    
+
     super.dispose();
   }
 }

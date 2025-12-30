@@ -260,19 +260,16 @@ class _StudentsHomeState extends State<StudentsHome>
 
       if (hasActiveTrip && activeTrip != null) {
         activeTrip!.subscribeToTripTracking(_emitterServiceProvider);
-        
+
         // Iniciar tracking solo si hay viaje activo
-        if (!LocationService.instance.isTracking) {
-          print("[StudentsHome] Viaje activo detectado, iniciando tracking de ubicación");
-          await LocationService.instance.init();
-          await LocationService.instance.startLocationService(calculateDistance: false);
-        }
+        // Nota: No verificamos isTracking - startLocationService() maneja reintentos internamente
+        print("[StudentsHome] Viaje activo detectado, asegurando tracking de ubicación");
+        await LocationService.instance.init();
+        await LocationService.instance.startLocationService(calculateDistance: false);
       } else if (hadActiveTrip && !hasActiveTrip) {
         // Si tenía viaje activo y ya no lo tiene, detener tracking
-        if (LocationService.instance.isTracking) {
-          print("[StudentsHome] Viaje finalizado, deteniendo tracking de ubicación");
-          await LocationService.instance.stopLocationService();
-        }
+        print("[StudentsHome] Viaje finalizado, deteniendo tracking de ubicación");
+        await LocationService.instance.stopLocationService();
       }
 
       await _subscribeToSchoolEvents();

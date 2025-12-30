@@ -3,7 +3,7 @@ description: APP for ETA School Routes system.
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 1.12.43+43
+version: 1.12.44+44
 
 environment:
   sdk: ">=3.2.0 <4.0.0"

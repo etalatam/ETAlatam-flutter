@@ -320,13 +320,32 @@ class RobustLocationTracker extends ChangeNotifier {
 
   void _startHealthCheck() {
     _healthCheckTimer?.cancel();
-    
+
     _healthCheckTimer = Timer.periodic(const Duration(seconds: 30), (timer) async {
       if (!_isTracking) {
         timer.cancel();
         return;
       }
 
+      // Verificar si el Foreground Service está realmente corriendo (Android)
+      if (Platform.isAndroid) {
+        try {
+          final isServiceRunning = await FlutterForegroundTask.isRunningService;
+          if (!isServiceRunning) {
+            debugPrint('[RobustLocationTracker] ⚠️ Health check: Service NOT running! Restarting...');
+            _isTracking = false;  // Sincronizar estado
+            await _startForegroundService();
+            await _startLocationStream();
+            _isTracking = true;
+            notifyListeners();
+            return;
+          }
+        } catch (e) {
+          debugPrint('[RobustLocationTracker] Error checking service status: $e');
+        }
+      }
+
+      // Verificar si hay posiciones recientes
       final timeSinceLastPosition = _lastPositionTime != null
           ? DateTime.now().difference(_lastPositionTime!)
           : const Duration(minutes: 5);
