@@ -197,6 +197,7 @@ class _StudentsHomeState extends State<StudentsHome>
 
   // Function to simulate data retrieval or refresh
   Future<void> _refreshData() async {
+    if (!mounted) return;
     setState(() {
       showLoader = true;
     });
@@ -205,6 +206,7 @@ class _StudentsHomeState extends State<StudentsHome>
   }
 
   openPage(context, page) {
+    if (!mounted) return;
     setState(() => openNewPage(context, page));
   }
 

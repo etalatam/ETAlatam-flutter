@@ -105,6 +105,11 @@ class _StudentPageState extends State<StudentPage> {
                     onCenterRequest: (relationName.isEmpty || !_shouldCenterOnSelf()) ? _centerOnStudent : null, // Callback para centrar en estudiante si es padre o rol no cargado
                     onMapReady: (MapboxMap mapboxMap) async {
                       _mapboxMapController = mapboxMap;
+
+                      // Resetear la anotación del estudiante porque se está creando un nuevo manager
+                      // Esto evita que se mantenga una referencia a una anotación del manager anterior
+                      studentPointAnnotation = null;
+
                       annotationManager = await mapboxMap.annotations
                           .createPointAnnotationManager();
 

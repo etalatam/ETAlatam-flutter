@@ -205,6 +205,7 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
   createTrip(RouteModel route) async {
     TripModel? trip;
 
+    if (!mounted) return;
     setState(() {
       showLoader = true;
     });
@@ -233,6 +234,7 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
     } catch (e) {
       print(e.toString());
       var msg = e.toString().split('/');
+      if (!mounted) return;
       setState(() {
         showLoader = false;
       });
@@ -243,17 +245,20 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
 
   // Function to simulate data retrieval or refresh
   Future<void> _refreshData() async {
+    if (!mounted) return;
     setState(() {
       showLoader = true;
     });
 
     await Future.delayed(const Duration(seconds: 1));
+    if (!mounted) return;
     setState(() {
       loadResources();
     });
   }
 
   openPage(context, page) {
+    if (!mounted) return;
     setState(() => openNewPage(context, page));
   }
 

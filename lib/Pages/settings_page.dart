@@ -30,8 +30,8 @@ class _SettingsPageState extends State<SettingsPage>
 
   final preferences = PreferencesSetting();
 
-  String appVersion = '1.12.44';
-  String buildNumber = '44';
+  String appVersion = '1.12.45';
+  String buildNumber = '45';
 
   @override
   Widget build(BuildContext context) {
@@ -82,12 +82,14 @@ class _SettingsPageState extends State<SettingsPage>
                                     style: TextStyle(
                                         color: theme.textTheme.bodyMedium?.color),
                                     onChanged: (String? value) {
+                                      if (!mounted) return;
                                       setState(() {
                                         showLoader = true;
                                       });
 
                                       Future.delayed(const Duration(seconds: 2),
                                           () {
+                                        if (!mounted) return;
                                         setState(() {
                                           localeController.changeLocale(Locale(
                                               value == 'Español'
@@ -143,6 +145,7 @@ class _SettingsPageState extends State<SettingsPage>
                                 Switch(
                                     value: allowNotifications,
                                     onChanged: (value) {
+                                      if (!mounted) return;
                                       setState(
                                           () => allowNotifications = value);
                                     }),
@@ -281,11 +284,12 @@ class _SettingsPageState extends State<SettingsPage>
     super.initState();
     getLang().then((value) => selectedLang = value);
 
-    Future.delayed(const Duration(seconds: 1)).then((value) => {
-          setState(() {
-            showLoader = false;
-          })
-        });
+    Future.delayed(const Duration(seconds: 1)).then((value) {
+      if (!mounted) return;
+      setState(() {
+        showLoader = false;
+      });
+    });
   }
 
   Future<String> getLang() async {

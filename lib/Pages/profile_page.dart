@@ -254,13 +254,44 @@ class _ProfilePageState extends State<ProfilePage> {
                                       ),
                                       GestureDetector(
                                           onTap: () async {
-                                            setState(() {
-                                              showLoader = true;
-                                            });
+                                            // Mostrar dialog de carga que bloquea toda la UI
+                                            showDialog(
+                                              context: context,
+                                              barrierDismissible: false, // No se puede cerrar tocando afuera
+                                              builder: (BuildContext context) {
+                                                return PopScope(
+                                                  canPop: false, // Bloquear botón de atrás
+                                                  child: Center(
+                                                    child: Card(
+                                                      child: Padding(
+                                                        padding: const EdgeInsets.all(20.0),
+                                                        child: Column(
+                                                          mainAxisSize: MainAxisSize.min,
+                                                          children: [
+                                                            CircularProgressIndicator(),
+                                                            SizedBox(height: 16),
+                                                            Text(lang.translate('logging_out')),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            );
+
+                                            // Ejecutar logout
                                             await httpService.logout();
-                                            await Future.delayed(
-                                                const Duration(seconds: 1));
-                                            Get.offAll(Login());
+
+                                            // Limpiar controladores GetX para detener listeners
+                                            Get.deleteAll(force: true);
+
+                                            // Navegar al login destruyendo todas las rutas anteriores
+                                            // Usar Get.offAll con predicate para asegurar limpieza completa
+                                            Get.offAll(
+                                              () => Login(),
+                                              predicate: (route) => false, // Eliminar TODAS las rutas anteriores
+                                            );
                                           },
                                           child: Text(lang.translate('Logout'),
                                               style: TextStyle(
