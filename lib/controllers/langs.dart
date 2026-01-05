@@ -128,6 +128,7 @@ class Lang {
     'new': 'جديدة',
     'all': 'الجميع',
     'logout': 'تسجيل الخروج',
+    'logging_out': 'جارٍ تسجيل الخروج...',
     'closed': 'مغلقة',
     'app_preferences': 'إعدادات التطبيق',
     'get_permission': 'عرض الصلاحيات',
@@ -298,6 +299,8 @@ class Lang {
     "pending": "Pending",
     "in_review": "In review",
     "resolved": "Resolved",
+    "logout": "Logout",
+    "logging_out": "Logging out...",
   };
 
   Map<String, dynamic> esLangs = {
@@ -364,6 +367,7 @@ class Lang {
     'last_name': 'Apellido',
     'contact_number': 'Teléfono',
     'logout': 'Salir',
+    'logging_out': 'Cerrando sesión...',
     'change_password': 'Cambiar contraseña',
     'high': 'Alta',
     'low': 'Baja',

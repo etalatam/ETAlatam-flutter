@@ -197,6 +197,7 @@ class _StudentsHomeState extends State<StudentsHome>
 
   // Function to simulate data retrieval or refresh
   Future<void> _refreshData() async {
+    if (!mounted) return;
     setState(() {
       showLoader = true;
     });
@@ -205,6 +206,7 @@ class _StudentsHomeState extends State<StudentsHome>
   }
 
   openPage(context, page) {
+    if (!mounted) return;
     setState(() => openNewPage(context, page));
   }
 
@@ -246,8 +248,7 @@ class _StudentsHomeState extends State<StudentsHome>
 
     try {
       TripModel? activeTrip_ = await httpService.getActiveTrip();
-      final bool hadActiveTrip = hasActiveTrip;
-      
+
       if(mounted){
         setState(() {
           activeTrip = activeTrip_;
@@ -260,19 +261,12 @@ class _StudentsHomeState extends State<StudentsHome>
 
       if (hasActiveTrip && activeTrip != null) {
         activeTrip!.subscribeToTripTracking(_emitterServiceProvider);
-        
-        // Iniciar tracking solo si hay viaje activo
-        if (!LocationService.instance.isTracking) {
-          print("[StudentsHome] Viaje activo detectado, iniciando tracking de ubicación");
-          await LocationService.instance.init();
-          await LocationService.instance.startLocationService(calculateDistance: false);
-        }
-      } else if (hadActiveTrip && !hasActiveTrip) {
-        // Si tenía viaje activo y ya no lo tiene, detener tracking
-        if (LocationService.instance.isTracking) {
-          print("[StudentsHome] Viaje finalizado, deteniendo tracking de ubicación");
-          await LocationService.instance.stopLocationService();
-        }
+      }
+
+      if (!LocationService.instance.isTracking) {
+        print("[StudentsHome] Iniciando tracking de ubicación (estudiante siempre envía)");
+        await LocationService.instance.init();
+        await LocationService.instance.startLocationService(calculateDistance: false);
       }
 
       await _subscribeToSchoolEvents();

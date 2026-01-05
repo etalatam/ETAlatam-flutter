@@ -6,6 +6,8 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'tracking_config.dart';
+
 @pragma('vm:entry-point')
 void startCallback() {
   FlutterForegroundTask.setTaskHandler(LocationTaskHandler());
@@ -57,10 +59,10 @@ class RobustLocationTracker extends ChangeNotifier {
   bool _isInitialized = false;
   int _retryCount = 0;
   static const int _maxRetries = 3;
-  
+
   DateTime? _lastPositionTime;
   Timer? _healthCheckTimer;
-  int _distanceFilter = 10;
+  TrackingConfig _config = TrackingConfig.studentTest;
 
   bool get isTracking => _isTracking;
   bool get isInitialized => _isInitialized;
@@ -78,9 +80,9 @@ class RobustLocationTracker extends ChangeNotifier {
       androidNotificationOptions: AndroidNotificationOptions(
         channelId: 'eta_location_channel',
         channelName: 'Seguimiento de ubicación',
-        channelDescription: 'Seguimiento en segundo plano esta activo para mantener su ubicación actualizada',
-        channelImportance: NotificationChannelImportance.LOW,
-        priority: NotificationPriority.LOW,
+        channelDescription: 'Seguimiento en segundo plano activo',
+        channelImportance: NotificationChannelImportance.HIGH,
+        priority: NotificationPriority.HIGH,
         visibility: NotificationVisibility.VISIBILITY_PUBLIC,
       ),
       iosNotificationOptions: const IOSNotificationOptions(
@@ -89,9 +91,9 @@ class RobustLocationTracker extends ChangeNotifier {
       ),
       foregroundTaskOptions: ForegroundTaskOptions(
         eventAction: ForegroundTaskEventAction.repeat(30000),
-        autoRunOnBoot: false,
-        autoRunOnMyPackageReplaced: false,
-        allowWakeLock: false,
+        autoRunOnBoot: true,
+        autoRunOnMyPackageReplaced: true,
+        allowWakeLock: true,
         allowWifiLock: false,
       ),
     );
@@ -174,7 +176,7 @@ class RobustLocationTracker extends ChangeNotifier {
 
   Future<void> startTracking({
     required Function(Map<String, dynamic>) onPositionUpdate,
-    int distanceFilter = 10,
+    TrackingConfig? config,
   }) async {
     if (_isTracking) {
       debugPrint('[RobustLocationTracker] Already tracking, restarting stream...');
@@ -183,7 +185,9 @@ class RobustLocationTracker extends ChangeNotifier {
     }
 
     _onPositionUpdate = onPositionUpdate;
-    _distanceFilter = distanceFilter;
+    if (config != null) {
+      _config = config;
+    }
 
     if (!_isInitialized) {
       await initialize();
@@ -235,10 +239,10 @@ class RobustLocationTracker extends ChangeNotifier {
 
       if (Platform.isAndroid) {
         locationSettings = AndroidSettings(
-          accuracy: LocationAccuracy.high,
-          distanceFilter: _distanceFilter,
+          accuracy: _config.accuracy,
+          distanceFilter: _config.distanceFilter,
           forceLocationManager: false,
-          intervalDuration: const Duration(seconds: 10),
+          intervalDuration: _config.sendInterval,
           foregroundNotificationConfig: const ForegroundNotificationConfig(
             notificationTitle: 'Ubicación activa',
             notificationText: 'Compartiendo ubicación en tiempo real',
@@ -248,8 +252,8 @@ class RobustLocationTracker extends ChangeNotifier {
         );
       } else if (Platform.isIOS) {
         locationSettings = AppleSettings(
-          accuracy: LocationAccuracy.high,
-          distanceFilter: _distanceFilter,
+          accuracy: _config.accuracy,
+          distanceFilter: _config.distanceFilter,
           activityType: ActivityType.automotiveNavigation,
           pauseLocationUpdatesAutomatically: false,
           showBackgroundLocationIndicator: true,
@@ -257,8 +261,8 @@ class RobustLocationTracker extends ChangeNotifier {
         );
       } else {
         locationSettings = LocationSettings(
-          accuracy: LocationAccuracy.high,
-          distanceFilter: _distanceFilter,
+          accuracy: _config.accuracy,
+          distanceFilter: _config.distanceFilter,
         );
       }
 
@@ -320,22 +324,65 @@ class RobustLocationTracker extends ChangeNotifier {
 
   void _startHealthCheck() {
     _healthCheckTimer?.cancel();
-    
-    _healthCheckTimer = Timer.periodic(const Duration(seconds: 30), (timer) async {
+
+    debugPrint('[RobustLocationTracker] Health check iniciado - interval: ${_config.healthCheckInterval.inSeconds}s, threshold: ${_config.healthCheckThreshold.inSeconds}s');
+
+    _healthCheckTimer = Timer.periodic(_config.healthCheckInterval, (timer) async {
       if (!_isTracking) {
         timer.cancel();
         return;
       }
 
-      final timeSinceLastPosition = _lastPositionTime != null
-          ? DateTime.now().difference(_lastPositionTime!)
-          : const Duration(minutes: 5);
+      bool needsRestart = false;
 
-      if (timeSinceLastPosition.inSeconds > 60) {
-        debugPrint('[RobustLocationTracker] Health check: No position in ${timeSinceLastPosition.inSeconds}s, restarting stream...');
-        await restartStream();
+      if (Platform.isAndroid) {
+        try {
+          final isServiceRunning = await FlutterForegroundTask.isRunningService;
+          if (!isServiceRunning) {
+            debugPrint('[RobustLocationTracker] Health check: Foreground service muerto, reiniciando...');
+            needsRestart = true;
+          }
+        } catch (e) {
+          debugPrint('[RobustLocationTracker] Error verificando servicio: $e');
+        }
+      }
+
+      if (!needsRestart) {
+        final timeSinceLastPosition = _lastPositionTime != null
+            ? DateTime.now().difference(_lastPositionTime!)
+            : Duration(seconds: _config.healthCheckThreshold.inSeconds * 2);
+
+        if (timeSinceLastPosition > _config.healthCheckThreshold) {
+          debugPrint('[RobustLocationTracker] Health check: Sin posición hace ${timeSinceLastPosition.inSeconds}s (threshold: ${_config.healthCheckThreshold.inSeconds}s)');
+          needsRestart = true;
+        }
+      }
+
+      if (needsRestart) {
+        debugPrint('[RobustLocationTracker] Reiniciando servicios de ubicación...');
+        _retryCount = 0;
+
+        try {
+          await _positionSubscription?.cancel();
+          _positionSubscription = null;
+
+          if (Platform.isAndroid) {
+            final isRunning = await FlutterForegroundTask.isRunningService;
+            if (!isRunning) {
+              await _startForegroundService();
+            }
+          }
+
+          await _startLocationStream();
+          debugPrint('[RobustLocationTracker] Servicios reiniciados correctamente');
+        } catch (e) {
+          debugPrint('[RobustLocationTracker] Error reiniciando servicios: $e');
+        }
       } else {
-        debugPrint('[RobustLocationTracker] Health check: OK (${timeSinceLastPosition.inSeconds}s since last position)');
+        final elapsed = _lastPositionTime != null
+            ? DateTime.now().difference(_lastPositionTime!).inSeconds
+            : 0;
+        debugPrint('[RobustLocationTracker] Health check OK - última posición hace ${elapsed}s');
       }
     });
   }
