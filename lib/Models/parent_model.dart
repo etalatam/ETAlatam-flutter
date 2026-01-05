@@ -4,6 +4,7 @@ import 'package:eta_school_app/Models/student_model.dart';
 
 class ParentModel {
   int? parentId;
+  int? schoolId;
   String? firstName;
   String? lastName;
   String? parentName;
@@ -16,6 +17,7 @@ class ParentModel {
 
   ParentModel({
     required this.parentId,
+    this.schoolId,
     this.firstName,
     this.lastName,
     this.parentName,
@@ -45,8 +47,14 @@ class ParentModel {
       print("ParentModel.fromJson.studentsParseError: ${e.toString()}");
     }
 
+    final dynamic rawSchoolId =
+        json['school_id'] ?? json['id_esc'] ?? json['id_school'] ?? json['schoolId'];
+    final int? parsedSchoolId =
+        rawSchoolId is int ? rawSchoolId : int.tryParse('${rawSchoolId ?? ''}');
+
     return ParentModel(
       parentId: json['guardian_id'] as int?,
+      schoolId: parsedSchoolId,
       firstName: json['guardian_firstname'] as String?,
       lastName: json['guardian_lastname'] as String?,
       parentName: "${json['guardian_firstname']} ${json['guardian_lastname']}",

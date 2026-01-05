@@ -33,36 +33,51 @@ class _UserAvatarState extends State<UserAvatar> {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = httpService.getImage(relationId, relationName);
+    final bool hasValidRelation =
+        relationId != null &&
+        relationId != 'null' &&
+        relationName != null &&
+        relationName != 'null';
+
+    final String? imageUrl = hasValidRelation
+        ? httpService.getImage(relationId, relationName)
+        : null;
     return GestureDetector(
         onTap: () {
           openNewPage(context, ProfilePage());
         },
         child: Stack(children: [
           SizedBox(
-              width: 44,
-              height: 44,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(50),
-                child: Image.network(
-                  imageUrl,
-                  headers: {
-                    'Accept': 'image/png'
-                  },
-                  fit: BoxFit.fill,
-                  height: 44,
-                  width: 44,
-                 loadingBuilder: (context, child, loadingProgress){
-                    if (loadingProgress == null) {
-                      return child;
-                    }
-                    return CircularProgressIndicator();
-                  },
-                  errorBuilder: (context, error, stackTrace){
-                    return  ImageDefault(name: nomUsu!, height: 44, width: 44);
-                    },
-                ),
-              ),
+            width: 44,
+            height: 44,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(50),
+              child: hasValidRelation && imageUrl != null
+                  ? Image.network(
+                      imageUrl,
+                      headers: {
+                        'Accept': 'image/png'
+                      },
+                      fit: BoxFit.fill,
+                      height: 44,
+                      width: 44,
+                      loadingBuilder:
+                          (context, child, loadingProgress) {
+                        if (loadingProgress == null) {
+                          return child;
+                        }
+                        return CircularProgressIndicator();
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return ImageDefault(
+                            name: nomUsu ?? 'SN',
+                            height: 44,
+                            width: 44);
+                      },
+                    )
+                  : ImageDefault(
+                      name: nomUsu ?? 'SN', height: 44, width: 44),
+            ),
           ),
           Consumer<EmitterService>(builder: (context, emitterService, child) {
             return Positioned(

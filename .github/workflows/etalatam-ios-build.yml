@@ -1,0 +1,194 @@
+name: ETAlatam iOS Build (DISABLED)
+
+# iOS builds are currently disabled. Uncomment the 'on' section below to re-enable
+# on:
+#   push:
+#     branches:
+#       - main
+#       - master
+#       - 'release/**'
+#   pull_request:
+#     branches:
+#       - main
+#       - master
+#   workflow_dispatch:
+#     inputs:
+#       deploy_testflight:
+#         description: 'Deploy to TestFlight'
+#         required: false
+#         type: boolean
+#         default: false
+
+# Workflow disabled - only manual trigger available
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_testflight:
+        description: 'Deploy to TestFlight'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  FLUTTER_VERSION: '3.19.0'
+  XCODE_VERSION: '15.0'
+
+jobs:
+  ios-build:
+    name: Build ETAlatam iOS
+    runs-on: macos-latest  # Note: Requires macOS runner (self-hosted or paid)
+
+    steps:
+      - name: 📥 Checkout ETAlatam Repository
+        uses: actions/checkout@v4
+
+      - name: 🍎 Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+
+      - name: 🔧 Setup Flutter for ETAlatam
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          architecture: x64
+
+      - name: 📦 Install ETAlatam Dependencies
+        run: |
+          flutter --version
+          flutter pub get
+
+      - name: 🏷️ Extract App Version
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //')
+          VERSION_NAME=$(echo $VERSION | cut -d'+' -f1)
+          VERSION_CODE=$(echo $VERSION | cut -d'+' -f2)
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_OUTPUT
+          echo "📱 ETAlatam Version: $VERSION_NAME (Build $VERSION_CODE)"
+
+      - name: 🔑 Setup iOS Certificates for ETAlatam
+        env:
+          ETALATAM_IOS_CERTIFICATE_BASE64: ${{ secrets.ETALATAM_IOS_BUILD_CERTIFICATE_BASE64 }}
+          ETALATAM_IOS_CERTIFICATE_PASSWORD: ${{ secrets.ETALATAM_IOS_BUILD_CERTIFICATE_PASSWORD }}
+          ETALATAM_IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.ETALATAM_IOS_MOBILE_PROVISIONING_PROFILE_BASE64 }}
+          ETALATAM_KEYCHAIN_PASSWORD: ${{ secrets.ETALATAM_IOS_GITHUB_KEYCHAIN_PASSWORD }}
+        run: |
+          # Create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/etalatam_build_certificate.p12
+          PP_PATH=$RUNNER_TEMP/etalatam_build_pp.mobileprovision
+          KEYCHAIN_PATH=$RUNNER_TEMP/etalatam-signing.keychain-db
+
+          # Import certificate to keychain
+          echo -n "$ETALATAM_IOS_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          echo -n "$ETALATAM_IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode -o $PP_PATH
+
+          # Create temporary keychain
+          security create-keychain -p "$ETALATAM_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$ETALATAM_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # Import certificate
+          security import $CERTIFICATE_PATH -P "$ETALATAM_IOS_CERTIFICATE_PASSWORD" \
+            -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+          # Apply provisioning profile
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+
+      - name: 📱 Build ETAlatam iOS App
+        run: |
+          cd ios
+          pod install --repo-update
+          cd ..
+          flutter build ios --release --no-codesign
+
+      - name: 📦 Archive ETAlatam iOS App
+        run: |
+          xcodebuild archive \
+            -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -archivePath build/ETAlatam.xcarchive \
+            -allowProvisioningUpdates \
+            DEVELOPMENT_TEAM="${{ secrets.ETALATAM_APPLE_TEAM_ID }}"
+
+      - name: 📤 Export ETAlatam IPA
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath build/ETAlatam.xcarchive \
+            -exportPath build/ios \
+            -exportOptionsPlist ios/ExportOptions.plist
+
+      - name: 📊 Display Build Info
+        run: |
+          echo "=== ETAlatam iOS Build Information ==="
+          echo "App Version: ${{ steps.version.outputs.VERSION_NAME }}"
+          echo "Build Code: ${{ steps.version.outputs.VERSION_CODE }}"
+          echo "Build Number: ${{ github.run_number }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Flutter Version: ${{ env.FLUTTER_VERSION }}"
+          echo "Xcode Version: ${{ env.XCODE_VERSION }}"
+          echo ""
+          echo "=== IPA File Generated ==="
+          ls -lh build/ios/*.ipa
+
+      - name: 📤 Upload ETAlatam IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ETAlatam-v${{ steps.version.outputs.VERSION_NAME }}-ios
+          path: build/ios/*.ipa
+          retention-days: 30
+
+      - name: 🚀 Deploy to TestFlight (Optional)
+        if: ${{ github.event.inputs.deploy_testflight == 'true' || github.ref == 'refs/heads/main' }}
+        env:
+          ETALATAM_APP_STORE_API_KEY: ${{ secrets.ETALATAM_APP_STORE_CONNECT_API_KEY_CONTENT }}
+          ETALATAM_APP_STORE_API_KEY_ID: ${{ secrets.ETALATAM_APP_STORE_CONNECT_API_KEY_ID }}
+          ETALATAM_APP_STORE_ISSUER_ID: ${{ secrets.ETALATAM_APP_STORE_CONNECT_API_ISSUER_ID }}
+        run: |
+          echo "🚀 Uploading ETAlatam to TestFlight..."
+
+          # Save API Key to file
+          echo "$ETALATAM_APP_STORE_API_KEY" > /tmp/etalatam_api_key.p8
+
+          xcrun altool --upload-app \
+            --type ios \
+            --file build/ios/*.ipa \
+            --apiKey "$ETALATAM_APP_STORE_API_KEY_ID" \
+            --apiIssuer "$ETALATAM_APP_STORE_ISSUER_ID" \
+            --apiKeyPath /tmp/etalatam_api_key.p8
+
+      # TEMPORARILY DISABLED: Comment on PR with IPA Link
+      # Issue: The GitHub token doesn't have sufficient permissions to write comments
+      # Error: Resource not accessible by integration (403)
+      # TODO: Fix permissions in repository settings or update token permissions
+      # - name: 💬 Comment on PR with IPA Link
+      #   if: github.event_name == 'pull_request'
+      #   uses: actions/github-script@v7
+      #   with:
+      #     script: |
+      #       const artifactUrl = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+      #       github.rest.issues.createComment({
+      #         issue_number: context.issue.number,
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         body: `## 🎉 ETAlatam iOS Build Successful!\n\n` +
+      #               `### 📦 Download IPA:\n` +
+      #               `- [ETAlatam IPA](${artifactUrl})\n\n` +
+      #               `**Build #**: ${{ github.run_number }}\n` +
+      #               `**Commit**: \`${{ github.sha }}\`\n` +
+      #               `**Flutter**: ${{ env.FLUTTER_VERSION }}\n` +
+      #               `**Xcode**: ${{ env.XCODE_VERSION }}`
+      #       })
+
+      - name: 🧹 Cleanup
+        if: always()
+        run: |
+          security delete-keychain $RUNNER_TEMP/etalatam-signing.keychain-db
+          rm -f ~/Library/MobileDevice/Provisioning\ Profiles/etalatam_build_pp.mobileprovision

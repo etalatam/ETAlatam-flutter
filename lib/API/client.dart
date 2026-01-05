@@ -46,6 +46,85 @@ class HttpService {
 
   Map? headers;
 
+  Map<String, dynamic>? _decodeJwtPayload(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length < 2) return null;
+      final normalized = base64Url.normalize(parts[1]);
+      final payload = utf8.decode(base64Url.decode(normalized));
+      final decoded = jsonDecode(payload);
+      if (decoded is Map<String, dynamic>) return decoded;
+      if (decoded is Map) return decoded.cast<String, dynamic>();
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Duration _parseTzOffset(String? tz) {
+    // Fallback: Panamá (UTC-5)
+    final String value = (tz == null || tz.trim().isEmpty) ? '-5:00' : tz.trim();
+    final m = RegExp(r'^([+-]?)(\d{1,2}):(\d{2})$').firstMatch(value);
+    if (m == null) {
+      return const Duration(hours: -5);
+    }
+    final signStr = m.group(1) ?? '';
+    final hours = int.tryParse(m.group(2) ?? '') ?? 0;
+    final minutes = int.tryParse(m.group(3) ?? '') ?? 0;
+    final sign = (signStr == '-') ? -1 : 1;
+    return Duration(hours: hours * sign, minutes: minutes * sign);
+  }
+
+  Future<void> _ensureUserTzStored({String? tokenOverride}) async {
+    try {
+      await storage.ready;
+      final existing = await storage.getItem('user_tz');
+      // Si viene un token nuevo (login/cambio de usuario), re-escribir el tz aunque ya exista.
+      if ((tokenOverride == null || tokenOverride.isEmpty) &&
+          existing != null &&
+          existing.toString().isNotEmpty) {
+        return;
+      }
+      final String? token = tokenOverride ?? await storage.getItem('token');
+      if (token == null || token.isEmpty) {
+        await storage.setItem('user_tz', '-5:00');
+        return;
+      }
+      final payload = _decodeJwtPayload(token);
+      final tz = (payload?['tz'] ?? payload?['timezone'])?.toString();
+      await storage.setItem('user_tz', (tz == null || tz.isEmpty) ? '-5:00' : tz);
+    } catch (_) {}
+  }
+
+  Future<Duration> _getUserTzOffset() async {
+    await _ensureUserTzStored();
+    final tzRaw = await storage.getItem('user_tz');
+    return _parseTzOffset(tzRaw?.toString());
+  }
+
+  String? _applyOffsetToUtcTsString(String? ts, Duration offset) {
+    if (ts == null || ts.isEmpty) return ts;
+    try {
+      final String s = ts.trim();
+      final bool hasZone = s.endsWith('Z') || RegExp(r'([+-]\d{2}:\d{2})$').hasMatch(s);
+      final DateTime utc = DateTime.parse(hasZone ? s : '${s}Z');
+      final DateTime wall = utc.add(offset);
+      final DateTime localLike = DateTime(
+        wall.year,
+        wall.month,
+        wall.day,
+        wall.hour,
+        wall.minute,
+        wall.second,
+        wall.millisecond,
+        wall.microsecond,
+      );
+      return localLike.toIso8601String();
+    } catch (_) {
+      return ts;
+    }
+  }
+
 
   String getAvatarUrl(relationId, relationName) {
     final url =
@@ -116,6 +195,10 @@ class HttpService {
       token = await storage.getItem('temp_access_token');
     }
 
+    if (token != null && token.isNotEmpty) {
+      await _ensureUserTzStored(tokenOverride: token);
+    }
+
     final url = Uri.parse(apiURL + path);
     print("$url");
 
@@ -138,6 +221,10 @@ class HttpService {
     // Si no hay token de usuario, intentar usar el token temporal
     if (token == null || token.isEmpty) {
       token = await storage.getItem('temp_access_token');
+    }
+
+    if (token != null && token.isNotEmpty) {
+      await _ensureUserTzStored(tokenOverride: token);
     }
 
     final url = Uri.parse(apiURL + path);
@@ -180,6 +267,25 @@ class HttpService {
 
     print("[$endpoint] res.statusCode: ${res.statusCode}");
     print("[$endpoint] res.body: ${res.body}");
+
+    if (res.statusCode == 200) {
+      List<dynamic> body = jsonDecode(res.body);
+      final List<TripModel> trips = await Future.wait(
+        body.map((dynamic item) async => TripModel.fromJson(item)).toList(),
+      );
+      return trips;
+    }
+    debugPrint(res.body.toString());
+    return [];
+  }
+
+  Future<List<TripModel>> getMonitorLatestTrips({int limit = 1}) async {
+    const endpoint = "/rpc/trips_monitor";
+    http.Response res =
+        await getQuery("$endpoint?select=*&limit=$limit&order=start_ts.desc");
+
+    print("[$endpoint.latest] res.statusCode: ${res.statusCode}");
+    print("[$endpoint.latest] res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
@@ -288,10 +394,13 @@ class HttpService {
     http.Response res = await getQuery("$endpoint?order=id.desc");
 
     print("[$endpoint] res.statusCode: ${res.statusCode}");
-    print("[$endpoint] res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       List<dynamic> body = jsonDecode(res.body);
+      if (body.isNotEmpty) {
+        print("[$endpoint] First message keys: ${body[0].keys.toList()}");
+        print("[$endpoint] First message: ${body[0]}");
+      }
       final List<HelpMessageModel> supportMessage = await Future.wait(
         body
             .map((dynamic item) async => HelpMessageModel.fromJson(item))
@@ -301,6 +410,25 @@ class HttpService {
     }
     debugPrint(res.body.toString());
     return [];
+  }
+
+  Future<HelpMessageModel?> getHelpMessageById(int messageId) async {
+    const endpoint = "/rpc/support_message";
+    http.Response res =
+        await getQuery("$endpoint?select=*&id=eq.$messageId&limit=1");
+
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
+
+    if (res.statusCode == 200) {
+      final body = jsonDecode(res.body);
+      if (body is List && body.isNotEmpty) {
+        return HelpMessageModel.fromJson(body[0]);
+      }
+      return null;
+    }
+    debugPrint(res.body.toString());
+    return null;
   }
 
   /// Load Route
@@ -329,11 +457,18 @@ class HttpService {
     http.Response res = await getQuery(endpoint);
 
     print("[$endpoint] res.statusCode: ${res.statusCode}");
-    print("[$endpoint] res.body: ${res.body}");
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
+      print("[$endpoint] school_id: ${body['school_id']}, id_esc: ${body['id_esc']}");
       final driverModel = DriverModel.fromJson(body);
+      print("[$endpoint] parsed schoolId: ${driverModel.schoolId}");
+      try {
+        if (driverModel.schoolId != null) {
+          await storage.setItem('driver_school_id', driverModel.schoolId);
+          print("[$endpoint] driver_school_id guardado: ${driverModel.schoolId}");
+        }
+      } catch (_) {}
       final Driver driver = DriverMapper.convert(driverModel);
       await driverProvider.save(driver);
       return driverModel;
@@ -348,7 +483,10 @@ class HttpService {
           await postQuery(endpoint, null, contentType: 'application/json');
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
-        return StudentModel.fromJson(json);
+        print("[$endpoint] school_id: ${json['school_id']}, id_esc: ${json['id_esc']}, id_school: ${json['id_school']}");
+        final student = StudentModel.fromJson(json);
+        print("[$endpoint] parsed schoolId: ${student.schoolId}");
+        return student;
       }
     } catch (e) {
       print("sendTracking error: ${e.toString()}");
@@ -460,11 +598,8 @@ class HttpService {
 
   Future<EmitterKeyGenModel?> emitterKeyGen(String channel) async {
     const endpoint = "/rpc/emitter_keygen";
-    http.Response res = await getQuery(
-        "$endpoint?order=ts.asc&channel=ilike.*$channel*&limit=1");
-
-    print("[$endpoint] res.statusCode: ${res.statusCode}");
-    print("[$endpoint] res.body: ${res.body}");
+    final query = "$endpoint?channel=ilike.*$channel*&order=ts.desc.nullslast&limit=1";
+    http.Response res = await getQuery(query);
 
     try {
       if (res.statusCode == 200) {
@@ -475,6 +610,25 @@ class HttpService {
       }
     } catch (e) {
       print("emitterKeyGen.error ${e.toString()}");
+    }
+    return null;
+  }
+
+  Future<EmitterKeyGenModel?> emitterKeyGenEncoded(String channel) async {
+    const endpoint = "/rpc/emitter_keygen";
+    final String encodedChannel = Uri.encodeQueryComponent('ilike.*$channel*');
+    final query = "$endpoint?channel=$encodedChannel&order=ts.desc.nullslast&limit=1";
+    http.Response res = await getQuery(query);
+
+    try {
+      if (res.statusCode == 200) {
+        List<dynamic> body = jsonDecode(res.body);
+        if (body.isNotEmpty) {
+          return EmitterKeyGenModel.fromJson(body[0]);
+        }
+      }
+    } catch (e) {
+      print("emitterKeyGenEncoded.error ${e.toString()}");
     }
     return null;
   }
@@ -517,6 +671,29 @@ class HttpService {
     }
 
     return [];
+  }
+
+  Future<Map<String, dynamic>?> getTripTrace(int tripId) async {
+    const endpoint = '/rpc/trip_trace';
+    final data = {"id": tripId};
+
+    http.Response res = await postQuery(endpoint, jsonEncode(data),
+        contentType: 'application/json');
+
+    print("[$endpoint] res.statusCode: ${res.statusCode}");
+    print("[$endpoint] res.body: ${res.body}");
+
+    if (res.statusCode == 200) {
+      try {
+        final body = jsonDecode(res.body);
+        if (body is Map<String, dynamic>) {
+          return body;
+        }
+      } catch (e) {
+        print("[getTripTrace] error: $e");
+      }
+    }
+    return null;
   }
 
   /// Load Trip
@@ -712,6 +889,9 @@ class HttpService {
         if (body['token'] != null && body['token'].toString().isNotEmpty) {
           await storage.setItem('token', body['token']);
           print('[login] Token saved successfully');
+
+          // Guardar tz del JWT (fallback Panamá)
+          await _ensureUserTzStored(tokenOverride: body['token'].toString());
         } else {
           print('[login] Warning: Token is empty or null!');
         }
@@ -734,7 +914,11 @@ class HttpService {
         }
         // monitor puede ser false, así que guardamos aunque sea false
         await storage.setItem('monitor', body['monitor'] ?? false);
-        print('[login] monitor saved: ${body['monitor'] ?? false}');    
+        print('[login] monitor saved: ${body['monitor'] ?? false}');
+
+        // Guardar el email del usuario para usarlo en las suscripciones FCM
+        await storage.setItem('user_email', email);
+        print('[login] user_email saved: $email');
 
         try {
           final LoginInformation login =
@@ -745,6 +929,15 @@ class HttpService {
         } on Exception catch (e) {
           debugPrint('Error saving login info: $e');
         }
+
+        // Al cambiar de perfil sin reiniciar la app, EmitterService (singleton)
+        // puede quedarse con topics del usuario anterior. Limpiamos antes de re-conectar.
+        try {
+          await EmitterService.instance.resetSubscriptions();
+        } catch (e) {
+          print('[login] Error reseteando suscripciones Emitter: $e');
+        }
+
         if(!EmitterService.instance.isConnected()){
           EmitterService.instance.connect();
         }
@@ -786,8 +979,40 @@ class HttpService {
     print("[$endpoint] res.body: ${res.body}");
 
     if (res.statusCode == 200) {
-      var body = jsonDecode(res.body);
-      //return (body['success'] != null) ? body['result'] : body['error'];
+      final body = jsonDecode(res.body);
+
+      if (body is Map && body['success'] == true) {
+        final dynamic rawId = body['id'];
+        final int? createdId = rawId is int ? rawId : int.tryParse('$rawId');
+
+        if (createdId != null) {
+          try {
+            const detailsEndpoint = '/rpc/support_message';
+            final http.Response detailsRes =
+                await getQuery('$detailsEndpoint?select=*&id=eq.$createdId&limit=1');
+
+            if (detailsRes.statusCode == 200) {
+              final detailsBody = jsonDecode(detailsRes.body);
+              if (detailsBody is List && detailsBody.isNotEmpty) {
+                return HelpMessageModel.fromJson(detailsBody[0]);
+              }
+            }
+          } catch (_) {}
+
+          return HelpMessageModel(
+            message_id: createdId,
+            title: '',
+            message: message,
+            status: 'new',
+            priority: '$priority',
+            user_id: 0,
+            short_date: '',
+            date: '',
+            comments: [],
+          );
+        }
+      }
+
       return HelpMessageModel.fromJson(body);
     }
 
@@ -807,6 +1032,13 @@ class HttpService {
 
     if (res.statusCode == 200) {
       var body = jsonDecode(res.body);
+      if (body is Map) {
+        try {
+          final Duration offset = await _getUserTzOffset();
+          final String? rawTs = body['ts']?.toString();
+          body['ts'] = _applyOffsetToUtcTsString(rawTs, offset);
+        } catch (_) {}
+      }
       return CommentModel.fromJson(body);
     }
 
@@ -909,7 +1141,8 @@ class HttpService {
     // Disconnect EmitterService
     try {
       print("[httpService.logout] Disconnecting EmitterService...");
-      EmitterService.instance.disconnect();
+      await EmitterService.instance.resetSubscriptions();
+      EmitterService.instance.disconnectWithOptions(allowReconnect: false);
     } catch (e) {
       print("[httpService.logout] Error disconnecting EmitterService: $e");
     }
@@ -956,9 +1189,9 @@ class HttpService {
       'altitude': position['altitude'],
       'speedAccuracy': position['speedAccuracy'],
       'time': position['time'],
+      'heading': position['heading'],  // Asegurar que heading esté incluido
       'background': position['background'],
-      'distance': position['distance']
-
+      'distance': position['distance'] ?? 0.0  // Asegurar valor por defecto
     };
     final jsonData = jsonEncode(data);
     try {

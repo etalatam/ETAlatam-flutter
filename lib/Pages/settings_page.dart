@@ -8,6 +8,7 @@ import '../components/loader.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/controllers/preferences.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -28,6 +29,9 @@ class _SettingsPageState extends State<SettingsPage>
   String? selectedLang = 'Español';
 
   final preferences = PreferencesSetting();
+
+  String appVersion = '1.12.43';
+  String buildNumber = '43';
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +119,7 @@ class _SettingsPageState extends State<SettingsPage>
                               indent: 15,
                               endIndent: 10,
                             ),
-                            Row(
+                           /* Row(
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Expanded(
@@ -143,7 +147,91 @@ class _SettingsPageState extends State<SettingsPage>
                                           () => allowNotifications = value);
                                     }),
                               ],
-                            ),
+                            ),*/
+                            // Sección "Acerca de" - SOLO visible en DEBUG mode
+                            if (kDebugMode) ...[
+                              Divider(
+                                height: 1,
+                                color: theme.dividerColor,
+                                indent: 15,
+                                endIndent: 10,
+                              ),
+                              Container(
+                                margin: const EdgeInsets.all(20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      lang.translate('About'),
+                                      style: theme.textTheme.titleLarge,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          '${lang.translate('Version')}: ',
+                                          style: theme.textTheme.bodyMedium?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Text(
+                                          appVersion.isNotEmpty ? appVersion : '...',
+                                          style: theme.textTheme.bodyMedium,
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          '${lang.translate('Build')}: ',
+                                          style: theme.textTheme.bodyMedium?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Text(
+                                          buildNumber.isNotEmpty ? buildNumber : '...',
+                                          style: theme.textTheme.bodyMedium,
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange.withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(
+                                          color: Colors.orange,
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            Icons.bug_report,
+                                            size: 16,
+                                            color: Colors.orange,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'DEBUG MODE',
+                                            style: theme.textTheme.bodySmall?.copyWith(
+                                              color: Colors.orange,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                             // Comentado temporalmente - Opción de tema oscuro
                             // Divider(
                             //   height: 1,

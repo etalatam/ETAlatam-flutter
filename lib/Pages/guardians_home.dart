@@ -43,6 +43,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
   List<Map<String, dynamic>> studentsTrips = [];
 
   EmitterService? _emitterServiceProvider;
+  EmitterTopic? _schoolEventsTopic;
 
   bool _studentHasActiveTrip(int studentId) {
     for (var studentInfo in studentsTrips) {
@@ -108,35 +109,11 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                                 itemBuilder:
                                                     (BuildContext context,
                                                         int index) {
-                                                  return Consumer<
-                                                          EmitterService>(
-                                                      builder: (context,
-                                                          emitterService,
-                                                          child) {
-                                                    try {
-                                                      final jsonMessage =
-                                                          emitterService
-                                                              .jsonMessage();
-                                                      final String type =
-                                                          jsonMessage[
-                                                              'event_type'];
-
-                                                      if (type == "end-trip") {
-                                                        setState(() {
-                                                          loadParent();
-                                                        });
-                                                      }
-                                                    } catch (e) {
-                                                      // print("[guardianHome] $e");
-                                                    }
-
-                                                    return SizedBox(
-                                                        width: 400,
-                                                        child: ActiveTrip(
-                                                            openTrip,
-                                                            activeTrips[
-                                                                index]));
-                                                  });
+                                                  return SizedBox(
+                                                      width: 400,
+                                                      child: ActiveTrip(
+                                                          openTrip,
+                                                          activeTrips[index]));
                                                 })),
 
                                     ETAWidgets.svgTitle(
@@ -289,6 +266,8 @@ class _GuardiansHomeState extends State<GuardiansHome>
         trip.subscribeToTripTracking(_emitterServiceProvider);
       }
 
+      await _subscribeToSchoolEvents();
+
       if(mounted){
         setState(() {
           activeTrips = trips;
@@ -302,12 +281,18 @@ class _GuardiansHomeState extends State<GuardiansHome>
 
     try {
       final List<RouteModel> routes = await httpService.getGuardianRoutes();
+      print("[GuardianHome.loadParent] routes count: ${routes.length}");
 
       for (var route in routes) {
         var routeTopic = "route-${route.route_id}";
         var routeTopicGuardian = "$routeTopic-guardian";
+        print("[GuardianHome.loadParent] Subscribing to: $routeTopicGuardian");
 
         NotificationService.instance.subscribeToTopic(routeTopicGuardian);
+
+        // Suscribirse a eventos de inicio/fin de viaje para esta ruta
+        NotificationService.instance.subscribeToTopic("start-trip-${route.route_id}");
+        NotificationService.instance.subscribeToTopic("end-trip-${route.route_id}");
 
         for (var student in parentModel!.students) {
           var topic = "$routeTopic-student-${student.student_id}";          
@@ -317,7 +302,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
             NotificationService.instance.subscribeToTopic(topic);
           }
         }
-      }      
+      }
     } catch (e) {
       print("[GuardianHome.loadParent] error  subscribing to topics : $e");
     }
@@ -369,10 +354,11 @@ class _GuardiansHomeState extends State<GuardiansHome>
 
   @override
   void dispose() {
-    // Break references to this State object here
-    super.dispose();
+    _unsubscribeFromSchoolEvents();
     _emitterServiceProvider?.removeListener(_onEmitterMessage);
-
+    Provider.of<NotificationService>(context, listen: false)
+        .removeListener(onPushMessage);
+    super.dispose();
   }
 
   onPushMessage() {
@@ -390,23 +376,78 @@ class _GuardiansHomeState extends State<GuardiansHome>
       if (jsonMsg['relation_name'] == 'eta.drivers' && 
           jsonMsg['payload'] != null) {
         
-        setState(() {
-          // Buscar y actualizar el viaje correspondiente
-          for (var i = 0; i < activeTrips.length; i++) {
-            if (activeTrips[i].driver_id == jsonMsg['relation_id']) {
-              activeTrips[i].lastPositionPayload = jsonMsg['payload'];
-              break;
+        if (mounted) {
+          setState(() {
+            for (var i = 0; i < activeTrips.length; i++) {
+              if (activeTrips[i].driver_id == jsonMsg['relation_id']) {
+                activeTrips[i].lastPositionPayload = jsonMsg['payload'];
+                break;
+              }
             }
-          }
-        });
+          });
+        }
       }
       
-      // Si el viaje terminó, recargar datos
-      if (jsonMsg['event_type'] == 'end-trip') {
-        // loadParent();
+      // Si el viaje terminó o inició, verificar si es relevante para el usuario
+      if (jsonMsg['event_type'] == 'end-trip' || jsonMsg['event_type'] == 'start-trip') {
+        final eventTripId = jsonMsg['id_trip'];
+        
+        if (jsonMsg['event_type'] == 'start-trip') {
+          print('[GuardiansHome] Evento start-trip recibido, recargando datos...');
+          if (mounted) loadParent();
+        } else if (jsonMsg['event_type'] == 'end-trip') {
+          final bool isRelevant = activeTrips.any((trip) => trip.trip_id == eventTripId);
+          if (isRelevant) {
+            print('[GuardiansHome] Evento end-trip recibido para viaje activo $eventTripId, recargando datos...');
+            if (mounted) loadParent();
+          }
+        }
       }
     } catch (e) {
       // No es un mensaje JSON válido o no es relevante
+    }
+  }
+
+  Future<void> _subscribeToSchoolEvents() async {
+    try {
+      if (parentModel == null || parentModel!.students.isEmpty) return;
+      
+      final int? schoolId = parentModel!.schoolId ?? 
+          parentModel!.students.fold<int?>(null, (prev, s) => prev ?? s.schoolId);
+      
+      if (schoolId == null) {
+        print('[GuardiansHome] No se pudo obtener schoolId para suscribirse a eventos');
+        return;
+      }
+
+      final channel = 'events/school/$schoolId/';
+      final keyModel = await httpService.emitterKeyGen('events/school/$schoolId/');
+      
+      if (keyModel?.key == null || keyModel!.key!.isEmpty) {
+        print('[GuardiansHome] No se pudo obtener key para canal de eventos');
+        return;
+      }
+
+      if (_schoolEventsTopic != null) {
+        try {
+          _emitterServiceProvider?.unsubscribe(_schoolEventsTopic!);
+        } catch (_) {}
+      }
+
+      _schoolEventsTopic = EmitterTopic(channel, keyModel.key!);
+      _emitterServiceProvider?.subscribe(_schoolEventsTopic!);
+      print('[GuardiansHome] Suscrito a canal de eventos: $channel');
+    } catch (e) {
+      print('[GuardiansHome] Error suscribiendo a eventos de escuela: $e');
+    }
+  }
+
+  void _unsubscribeFromSchoolEvents() {
+    if (_schoolEventsTopic != null) {
+      try {
+        _emitterServiceProvider?.unsubscribe(_schoolEventsTopic!);
+      } catch (_) {}
+      _schoolEventsTopic = null;
     }
   }
 

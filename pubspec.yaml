@@ -3,14 +3,15 @@ description: APP for ETA School Routes system.
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 1.12.36
+version: 1.12.43+43
 
 environment:
   sdk: ">=3.2.0 <4.0.0"
   flutter: ">= 3.19.0 <4.0.0"
 dependencies:
   android_intent_plus: ^5.3.0
-  background_locator_2: ^2.0.6
+  # background_locator_2: ^2.0.6  # DEPRECATED - Reemplazado por flutter_foreground_task
+  flutter_foreground_task: ^8.10.0
   cached_network_image: ^3.2.3
   carousel_slider: ^4.2.1
   connectivity_plus: ^6.1.2
@@ -27,7 +28,7 @@ dependencies:
   flutter_slidable: ^3.0.1
   flutter_svg: ^2.0.9
   geocoding: ^2.1.1
-  geolocator: ^10.1.0
+  geolocator: ^10.1.1
   get: ^4.6.5
   google_fonts: ^6.1.0
   google_maps_flutter: ^2.2.6
@@ -53,7 +54,7 @@ dependencies:
   url_launcher: ^6.0.0
   visibility_detector: ^0.4.0+2
   wakelock: ^0.6.2
-  workmanager: ^0.5.2
+  # workmanager: ^0.5.2  # No necesario con flutter_foreground_task
   font_awesome_flutter: ^10.8.0
   synchronized: ^3.1.0+1
   marquee: ^2.2.3

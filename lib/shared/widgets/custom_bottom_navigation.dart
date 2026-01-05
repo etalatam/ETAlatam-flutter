@@ -7,8 +7,9 @@ class CustomBottonNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p.PageController pageController = Get.find<p.PageController>();
-    Get.put(pageController);
+    final p.PageController pageController = Get.isRegistered<p.PageController>()
+        ? Get.find<p.PageController>()
+        : Get.put(p.PageController());
 
     return Obx(() => BottomNavigationBar(
           currentIndex: pageController.currentIndex.value,

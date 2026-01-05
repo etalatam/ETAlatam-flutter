@@ -1,0 +1,556 @@
+================================================================================
+                  ETAlatam Flutter - CI/CD Architecture Diagram
+================================================================================
+
+
+OVERALL CI/CD ARCHITECTURE
+================================================================================
+
+                          ┌─────────────────────┐
+                          │   Git Repository    │
+                          │  (main branch)      │
+                          └──────────┬──────────┘
+                                     │
+                    ┌────────────────┼────────────────┐
+                    │                │                │
+                    ▼                ▼                ▼
+              ┌──────────┐      ┌──────────┐    ┌──────────┐
+              │ Push to  │      │ Pull     │    │ Manual   │
+              │   main   │      │ Request  │    │ Trigger  │
+              └────┬─────┘      └────┬─────┘    └────┬─────┘
+                   │                 │              │
+                   └─────────────────┼──────────────┘
+                                     │
+                                     ▼
+                        ┌────────────────────────┐
+                        │  GitHub Actions        │
+                        │  (android-build.yml)   │
+                        └────────────┬───────────┘
+                                     │
+        ┌────────────────────────────┼────────────────────────────┐
+        │                            │                            │
+        ▼                            ▼                            ▼
+   ┌─────────┐              ┌──────────────────┐         ┌─────────────┐
+   │ Ubuntu  │              │ Retrieve Secrets │         │ Decode      │
+   │ Latest  │              │ from GitHub      │         │ Keystore    │
+   └────┬────┘              └────────┬─────────┘         └──────┬──────┘
+        │                           │                          │
+        ├───────────────┬───────────┼──────────────┬───────────┤
+        │               │           │              │           │
+        ▼               ▼           ▼              ▼           ▼
+    ┌────────┐  ┌──────────┐  ┌───────────┐ ┌──────────┐ ┌────────┐
+    │Checkout│  │ Setup    │  │ Get Deps  │ │Build APK │ │Rename  │
+    │ Code   │  │ Flutter  │  │(pub get)  │ │(split)   │ │Upload  │
+    │        │  │          │  │           │ │          │ │Artifact│
+    └────────┘  └──────────┘  └───────────┘ └──────────┘ └────────┘
+
+
+ANDROID BUILD PIPELINE (Automated via GitHub Actions)
+================================================================================
+
+  1. CHECKOUT
+     ├─ Clones repository
+     └─ Checkout specific commit
+
+  2. ENVIRONMENT SETUP
+     ├─ Setup Flutter 3.19.2
+     ├─ Cache Flutter packages
+     └─ Verify tools
+
+  3. CONFIGURATION
+     ├─ Read pubspec.yaml
+     └─ Extract version (1.12.38+38)
+
+  4. DEPENDENCIES
+     ├─ flutter pub get
+     ├─ Resolve all pub packages
+     └─ Download (or use cache)
+
+  5. SIGNING SETUP
+     ├─ Retrieve KEYSTORE_FILE secret
+     ├─ Base64 decode
+     └─ Write to android/app/upload-keystore.jks
+
+  6. BUILD
+     ├─ flutter build apk --split-per-abi
+     ├─ Compile for arm64-v8a (64-bit)
+     ├─ Compile for armeabi-v7a (32-bit)
+     └─ Sign with keystore
+
+  7. POST-PROCESS
+     ├─ Rename:
+     │  ├─ eta-arm64-v8a-1.12.38.apk
+     │  └─ eta-armeabi-v7a-1.12.38.apk
+     └─ Calculate checksums
+
+  8. UPLOAD
+     ├─ Upload arm64 as artifact
+     ├─ Upload armeabi-v7a as artifact
+     └─ Make available in Actions UI
+
+  Duration: ~10-15 minutes
+  Failure point: Build fails → Stop pipeline (no artifacts)
+
+
+iOS/APP STORE DEPLOYMENT PIPELINE (Manual via Fastlane)
+================================================================================
+
+  SETUP PHASE (One-time, macOS only)
+  ──────────────────────────────────
+
+    Developer (macOS)
+         │
+         ▼
+    ./setup_appstore.sh
+         │
+         ├─ Check macOS ✓
+         ├─ Check Flutter 3.19.0 ✓
+         ├─ Check Ruby + Bundler ✓
+         ├─ Create .env.appstore
+         ├─ Verify AuthKey_2A6UCBGW5Z.p8
+         ├─ cd ios && bundle install
+         ├─ cd ios && pod install
+         └─ Validate credentials
+
+
+  METADATA UPLOAD (No Build)
+  ──────────────────────────
+
+    Command: cd ios && bundle exec fastlane upload_metadata
+         │
+         ├─ Load .env.appstore
+         ├─ Read metadata files:
+         │  ├─ ios/fastlane/metadata/es-ES/*
+         │  └─ ios/fastlane/metadata/en-US/*
+         ├─ Authenticate to App Store Connect API
+         ├─ Find app by bundle ID
+         ├─ Upload localized metadata
+         │  ├─ Name, subtitle, description
+         │  ├─ Keywords, URLs
+         │  └─ Release notes
+         └─ ~30 seconds
+
+
+  TESTFLIGHT DEPLOYMENT (Full Build)
+  ──────────────────────────────────
+
+    Command: cd ios && bundle exec fastlane upload_testflight
+         │
+         ├─ flutter clean
+         ├─ flutter pub get
+         ├─ flutter build ios --release (no-codesign)
+         │
+         ├─ xcodebuild build-for-testing
+         │  ├─ Create Xcode archive
+         │  ├─ Sign with provisioning profile
+         │  └─ Create .ipa
+         │
+         ├─ Authenticate to App Store Connect
+         ├─ Upload .ipa to TestFlight
+         ├─ Wait for processing
+         └─ ~15-20 minutes
+
+
+  APP STORE DEPLOYMENT (Full Build)
+  ─────────────────────────────────
+
+    Command: cd ios && bundle exec fastlane upload_appstore
+         │
+         ├─ [same as TestFlight upload]
+         │
+         ├─ Upload .ipa to App Store
+         ├─ Upload metadata (optional)
+         ├─ Upload screenshots (optional)
+         ├─ [Optional] Auto-submit for review
+         └─ ~15-20 minutes
+
+
+  FULL RELEASE PROCESS
+  ───────────────────
+
+    Command: cd ios && bundle exec fastlane release
+         │
+         ├─ flutter clean
+         ├─ flutter pub get
+         ├─ flutter build ios --release
+         │
+         ├─ xcodebuild + sign + archive
+         │
+         ├─ Upload metadata to App Store
+         ├─ Upload .ipa to App Store
+         │
+         └─ ~20-25 minutes
+            (Requires manual submission in App Store Connect)
+
+
+VERSION MANAGEMENT FLOW
+================================================================================
+
+  Old Version: 1.12.37+37
+  (in pubspec.yaml)
+
+  Developer Decision: "Ready for new release"
+         │
+         ▼
+  Choose increment type:
+  ├─ Major: 1.13.0+1
+  ├─ Minor: 1.12.38+38
+  └─ Patch: 1.12.37+38
+
+  Command: cd ios && bundle exec fastlane increment_version [type:minor]
+         │
+         ├─ Updates pubspec.yaml
+         ├─ Updates iOS build number
+         ├─ Updates Xcode version
+         └─ Commit to git (manual)
+
+  New Version: 1.12.38+38
+         │
+         ▼
+  Next Build automatically uses new version
+  ├─ GitHub Actions reads pubspec.yaml
+  └─ Output: eta-*-1.12.38.apk
+
+
+FASTLANE LANE DEPENDENCY TREE
+================================================================================
+
+  release (complete workflow)
+    │
+    ├─ build_archive
+    │  └─ build
+    │     ├─ flutter clean
+    │     ├─ flutter pub get
+    │     └─ flutter build ios --release
+    │
+    ├─ upload_metadata
+    │  ├─ Load environment
+    │  └─ Upload es-ES + en-US metadata
+    │
+    └─ upload_appstore
+       ├─ [reuses .ipa from build_archive]
+       ├─ Upload metadata (skip if already done)
+       ├─ Upload screenshots (optional)
+       └─ Submit for review (optional)
+
+
+  upload_testflight
+    │
+    ├─ build_archive
+    │  └─ build
+    │
+    └─ upload_to_testflight
+       ├─ [reuses .ipa]
+       └─ Upload to TestFlight
+
+
+SECRETS FLOW
+================================================================================
+
+  GITHUB ACTIONS (Android)
+  ───────────────────────
+
+    1. Developer pushes code → GitHub
+    2. GitHub Actions triggered
+    3. GitHub retrieves secrets from vault:
+       ├─ KEYSTORE_FILE (base64)
+       ├─ KEYSTORE_PASSWORD
+       ├─ KEY_PASSWORD
+       └─ KEY_ALIAS
+    4. Secrets injected into runner environment
+    5. APK build uses secrets for signing
+    6. Secrets never written to logs (masked)
+    7. Secrets deleted after job completes
+
+
+  LOCAL FASTLANE (iOS)
+  ───────────────────
+
+    1. Developer has .env.appstore file (local, .gitignored)
+    2. setup_appstore.sh reads .env.appstore
+    3. Exports variables to shell:
+       export $(cat .env.appstore | xargs)
+    4. Fastlane accesses env variables:
+       ├─ ENV["APPLE_ID"]
+       ├─ ENV["TEAM_ID"]
+       ├─ ENV["APP_STORE_CONNECT_API_KEY_ID"]
+       ├─ ENV["APP_STORE_CONNECT_API_ISSUER_ID"]
+       └─ ENV["APP_STORE_CONNECT_API_KEY_PATH"]
+    5. Fastlane authenticates to App Store Connect API
+    6. Variables remain in shell (not in git)
+
+
+  .gitignore Protection
+  ────────────────────
+
+    Never committed to Git:
+    ├─ .env.appstore              (actual credentials)
+    ├─ *.p8                        (API key files)
+    ├─ *.cer                       (certificates)
+    ├─ *.p12                       (PKCS12 files)
+    ├─ *.mobileprovision          (provisioning profiles)
+    └─ ios/fastlane/report.xml    (build reports)
+
+    Protected by: .gitignore rules
+
+
+BUILD ARTIFACT FLOW
+================================================================================
+
+  ANDROID ARTIFACTS (GitHub Actions Output)
+  ───────────────────────────────────────
+
+    Build Outputs:
+    ├─ build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+    ├─ build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+    └─ build/app/outputs/flutter-apk/app-x86_64-release.apk (if included)
+
+    GitHub Actions Processing:
+    ├─ Rename files with version
+    ├─ Upload as workflow artifacts
+    └─ Available for 90 days
+
+    Download Options:
+    ├─ GitHub Actions UI (browser)
+    ├─ GitHub CLI (gh artifact download)
+    └─ Manual upload to Play Store
+
+
+  iOS ARTIFACTS (Fastlane Output)
+  ────────────────────────────
+
+    Build Outputs:
+    ├─ build/ios/iphoneos/Runner.app
+    └─ [archive]/Products/Applications/Runner.app
+
+    Fastlane Processing:
+    ├─ Xcode creates Runner.ipa
+    ├─ Sign with App Store provisioning profile
+    ├─ Submit to App Store Connect
+    └─ TestFlight or App Store availability
+
+
+DATA FLOW: FROM CODE TO STORE
+================================================================================
+
+  ANDROID (Full Path)
+  ──────────────────
+
+    GitHub
+      ↓ (clone)
+    Runner (Ubuntu)
+      ├─ Checkout code
+      ├─ Setup Flutter
+      ├─ flutter pub get
+      ├─ flutter build apk
+      └─ Sign with secrets
+        ↓
+    Build Outputs
+      ├─ eta-arm64-v8a-1.12.38.apk
+      └─ eta-armeabi-v7a-1.12.38.apk
+        ↓
+    GitHub Artifacts
+      ├─ Download from UI
+      └─ Manual upload to Play Store Console
+        ↓
+    Google Play Store
+      ├─ Internal Testing Track
+      ├─ Beta/Staged Rollout
+      └─ Production Release
+
+
+  iOS (Full Path)
+  ───────────────
+
+    Developer (macOS)
+      ├─ ./setup_appstore.sh
+      └─ cd ios
+        ↓
+    Fastlane
+      ├─ bundle exec fastlane upload_metadata
+      │  └─ Upload ES + EN metadata
+      │
+      └─ bundle exec fastlane release
+         ├─ flutter build ios
+         ├─ xcodebuild archive
+         ├─ Sign with provisioning profile
+         └─ Upload to App Store Connect
+           ↓
+    App Store Connect
+      ├─ TestFlight (for testing)
+      └─ App Store (after review)
+        ↓
+    Apple App Store
+      ├─ Release
+      └─ Available to users
+
+
+PARALLEL vs SEQUENTIAL OPERATIONS
+================================================================================
+
+  CAN RUN IN PARALLEL (Independent):
+  ─────────────────────────────────
+
+    ✓ Android build (GitHub Actions) && iOS build (local Fastlane)
+      - Different platforms
+      - Different CI/CD systems
+      - No dependencies
+
+    ✓ Metadata upload && Screenshot upload
+      - Separate Fastlane lanes
+      - No dependencies
+
+    ✓ Build APK && Build App Bundle
+      - Both Android, but separate lanes
+      - Can run in separate CI jobs
+
+
+  MUST RUN SEQUENTIALLY (Dependent):
+  ────────────────────────────────
+
+    → flutter clean
+    → flutter pub get
+    → flutter build [platform]
+      (each depends on previous)
+
+    → build_archive (depends on build)
+    → upload_appstore (depends on build_archive)
+
+    → upload_metadata (independent)
+    → release (depends on upload_metadata? No - can skip)
+
+
+FAILURE SCENARIOS & RECOVERY
+================================================================================
+
+  ANDROID (GitHub Actions)
+  ─────────────────────
+
+    Failure Point          Symptom                Recovery
+    ────────────────────────────────────────────────────────────────
+    Flutter setup          Build fails            Push trigger again
+    Keystore decode        Invalid key            Update GitHub secret
+    Dependencies           Pod resolve error      flutter clean + retry
+    Build                  Compilation error      Fix Dart/Flutter code
+    Signing                Key not found          Update KEYSTORE_FILE secret
+    Artifact upload        Network error          Retry workflow
+
+
+  iOS (Fastlane)
+  ──────────────
+
+    Failure Point          Symptom                Recovery
+    ────────────────────────────────────────────────────────────────
+    Credentials            "No token found"       Check .env.appstore
+    Build                  Xcode error            flutter clean + rebuild
+    Signing                "No provisioning"      Renew provisioning profile
+    API auth               "Unauthorized"         Verify .p8 key validity
+    App not found          "App ID not found"     Verify bundle ID
+    TestFlight upload      "Build processing"     Wait or retry later
+    Version exists         "Version duplicate"    Increment build number
+    Metadata syntax        "Validation error"     Check metadata files
+
+
+MONITORING & LOGGING
+================================================================================
+
+  GITHUB ACTIONS (Visible in UI)
+  ──────────────────────────────
+
+    Build Logs:
+    ├─ Step output visible in browser
+    ├─ Downloadable as zip
+    └─ Searchable by step name
+
+    Artifacts:
+    ├─ Listed in Actions UI
+    ├─ Download button available
+    └─ 90-day retention
+
+
+  FASTLANE (Terminal Output)
+  ──────────────────────
+
+    Real-time:
+    ├─ Lane execution shown on screen
+    ├─ Step-by-step progress
+    └─ Color-coded (green=success, red=error)
+
+    Reports:
+    ├─ ios/fastlane/report.xml (generated, ignored)
+    └─ Can be parsed for CI integration
+
+
+  LOCAL TESTING
+  ─────────────
+
+    Run Tests:
+    $ flutter test
+    $ flutter test integration_test/
+    $ ./run_tests.sh
+
+    Output:
+    ├─ Console output
+    └─ test_results/test_output.log
+
+
+COMPARISON: Manual vs Automated
+================================================================================
+
+  Feature                 Android (Auto)          iOS (Manual)
+  ──────────────────────────────────────────────────────────────
+  Trigger                 Push/PR to main         Manual command
+  Platform                Ubuntu (any OS)         macOS only
+  Duration                10-15 min               15-25 min
+  Parallelization         Single job              Single developer
+  Secrets Management      GitHub Secrets vault    Local .env.appstore
+  Signing                 Automatic               Requires provisioning
+  Version bump            Read from pubspec.yaml  Manual increment
+  Metadata upload         Manual (separate job)   Via fastlane
+  TestFlight upload       N/A                     Via fastlane
+  App Store upload        Manual                  Via fastlane
+
+
+INTEGRATION POINTS
+================================================================================
+
+  Version Synchronization:
+    pubspec.yaml (single source)
+      ├─ Read by: Android build
+      └─ Update by: fastlane increment_version
+
+  Configuration:
+    pubspec.yaml + gradle files + build.gradle
+      ├─ Android SDK versions defined
+      ├─ Flutter version specified
+      └─ All read by build systems
+
+  Secrets:
+    GitHub Secrets (Android)
+      ├─ Keystore password
+      ├─ Key password
+      └─ Key alias
+
+    Local .env.appstore (iOS)
+      ├─ Apple credentials
+      └─ API key information
+
+  Metadata:
+    ios/fastlane/metadata/
+      ├─ Read by: upload_metadata lane
+      └─ Manually maintained
+
+
+================================================================================
+                              END OF DIAGRAM
+================================================================================
+
+This architecture provides:
+  ✓ Automated Android builds on every push/PR
+  ✓ Flexible iOS deployment with multiple options
+  ✓ Secure secret management
+  ✓ Localized metadata for multiple languages
+  ✓ Version management integration
+  ✓ Clear separation of concerns
+  ✓ Multiple deployment paths (TestFlight, App Store, Play Store)
+

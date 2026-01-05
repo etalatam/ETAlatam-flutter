@@ -1,0 +1,223 @@
+# Fastfile for ETA School Transport App
+# More documentation: https://docs.fastlane.tools
+
+default_platform(:ios)
+
+platform :ios do
+
+  # ==========================================
+  # BEFORE ALL LANES
+  # ==========================================
+  before_all do
+    # Ensure we're using the correct Flutter version
+    sh("flutter --version")
+  end
+
+  # ==========================================
+  # BUILD LANES
+  # ==========================================
+
+  desc "Build iOS app for release"
+  lane :build do
+    # Clean Flutter build
+    sh("flutter clean")
+    sh("flutter pub get")
+
+    # Run Flutter build for iOS
+    sh("flutter build ios --release --no-codesign")
+
+    UI.success("✅ Flutter iOS build completed successfully!")
+  end
+
+  desc "Build and archive iOS app"
+  lane :build_archive do
+    # First run Flutter build
+    build
+
+    # Then create the Xcode archive
+    build_app(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "app-store",
+      export_options: {
+        provisioningProfiles: {
+          "com.etalatam.schoolapp" => "match AppStore com.etalatam.schoolapp"
+        }
+      }
+    )
+
+    UI.success("✅ iOS archive created successfully!")
+  end
+
+  # ==========================================
+  # UPLOAD TO APP STORE CONNECT
+  # ==========================================
+
+  desc "Upload metadata to App Store Connect (Spanish and English)"
+  lane :upload_metadata do
+    # Verify API Key is configured
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"] || "2A6UCBGW5Z",
+      issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
+      key_filepath: ENV["APP_STORE_CONNECT_API_KEY_PATH"] || "../AuthKey_2A6UCBGW5Z.p8",
+      in_house: false
+    )
+
+    # Upload metadata for Spanish
+    upload_to_app_store(
+      api_key: api_key,
+      skip_binary_upload: true,
+      skip_screenshots: true,
+      force: true,
+      languages: ["es-ES", "en-US"],
+      app_version: get_version_number(xcodeproj: "Runner.xcodeproj"),
+      metadata_path: "./fastlane/metadata"
+    )
+
+    UI.success("✅ Metadata uploaded successfully for Spanish and English!")
+  end
+
+  desc "Upload screenshots to App Store Connect"
+  lane :upload_screenshots do
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"] || "2A6UCBGW5Z",
+      issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
+      key_filepath: ENV["APP_STORE_CONNECT_API_KEY_PATH"] || "../AuthKey_2A6UCBGW5Z.p8",
+      in_house: false
+    )
+
+    upload_to_app_store(
+      api_key: api_key,
+      skip_binary_upload: true,
+      skip_metadata: true,
+      force: true,
+      languages: ["es-ES", "en-US"],
+      metadata_path: "./fastlane/metadata"
+    )
+
+    UI.success("✅ Screenshots uploaded successfully!")
+  end
+
+  desc "Upload build to TestFlight"
+  lane :upload_testflight do |options|
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"] || "2A6UCBGW5Z",
+      issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
+      key_filepath: ENV["APP_STORE_CONNECT_API_KEY_PATH"] || "../AuthKey_2A6UCBGW5Z.p8",
+      in_house: false
+    )
+
+    # Build the app if not already built
+    unless options[:skip_build]
+      build_archive
+    end
+
+    # Upload to TestFlight
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true,
+      changelog: "Version #{get_version_number(xcodeproj: 'Runner.xcodeproj')} - See release notes for details"
+    )
+
+    UI.success("✅ Build uploaded to TestFlight successfully!")
+  end
+
+  desc "Upload build to App Store"
+  lane :upload_appstore do |options|
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"] || "2A6UCBGW5Z",
+      issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
+      key_filepath: ENV["APP_STORE_CONNECT_API_KEY_PATH"] || "../AuthKey_2A6UCBGW5Z.p8",
+      in_house: false
+    )
+
+    # Build the app if not already built
+    unless options[:skip_build]
+      build_archive
+    end
+
+    # Upload to App Store
+    upload_to_app_store(
+      api_key: api_key,
+      skip_metadata: options[:skip_metadata] || false,
+      skip_screenshots: options[:skip_screenshots] || true,
+      force: true,
+      submit_for_review: options[:submit_for_review] || false,
+      automatic_release: false,
+      languages: ["es-ES", "en-US"],
+      metadata_path: "./fastlane/metadata"
+    )
+
+    UI.success("✅ Build uploaded to App Store successfully!")
+  end
+
+  # ==========================================
+  # COMPLETE RELEASE PROCESS
+  # ==========================================
+
+  desc "Complete release process: build, upload metadata, and submit to App Store"
+  lane :release do |options|
+    # 1. Build and archive
+    build_archive
+
+    # 2. Upload metadata (Spanish and English)
+    upload_metadata
+
+    # 3. Upload to App Store
+    upload_appstore(
+      skip_build: true,
+      skip_metadata: false,
+      skip_screenshots: false,
+      submit_for_review: options[:submit_for_review] || false
+    )
+
+    UI.success("🎉 Complete release process finished successfully!")
+    UI.message("📱 App is ready in App Store Connect")
+    UI.message("👀 Please review the app in App Store Connect before submitting for review")
+  end
+
+  # ==========================================
+  # UTILITY LANES
+  # ==========================================
+
+  desc "Increment build number"
+  lane :increment_build do
+    increment_build_number(xcodeproj: "Runner.xcodeproj")
+    build_number = get_build_number(xcodeproj: "Runner.xcodeproj")
+    UI.success("✅ Build number incremented to: #{build_number}")
+  end
+
+  desc "Increment version number"
+  lane :increment_version do |options|
+    type = options[:type] || "patch" # major, minor, or patch
+    increment_version_number(
+      xcodeproj: "Runner.xcodeproj",
+      bump_type: type
+    )
+    version_number = get_version_number(xcodeproj: "Runner.xcodeproj")
+    UI.success("✅ Version number incremented to: #{version_number}")
+  end
+
+  desc "Get app information"
+  lane :app_info do
+    version = get_version_number(xcodeproj: "Runner.xcodeproj")
+    build = get_build_number(xcodeproj: "Runner.xcodeproj")
+
+    UI.header("App Information")
+    UI.message("Bundle ID: com.etalatam.schoolapp")
+    UI.message("Version: #{version}")
+    UI.message("Build: #{build}")
+  end
+
+  # ==========================================
+  # ERROR HANDLING
+  # ==========================================
+
+  error do |lane, exception|
+    UI.error("❌ Error in lane '#{lane}': #{exception.message}")
+  end
+
+  after_all do |lane|
+    UI.success("✅ Lane '#{lane}' completed successfully!")
+  end
+end

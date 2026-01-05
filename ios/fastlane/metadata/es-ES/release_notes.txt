@@ -1,0 +1,25 @@
+Versión 1.12.38
+
+🎉 Novedades y Mejoras:
+
+✨ Mejoras de Rendimiento
+• Optimización del seguimiento GPS para mayor precisión
+• Reducción del consumo de batería en segundo plano
+• Mejoras en la velocidad de carga de mapas
+
+🔧 Correcciones de Errores
+• Resuelto problema de servicio de ubicación en Android 14+
+• Corregida visibilidad de iconos en mapas
+• Solucionado problema de loop infinito en login
+• Mejorada estabilidad del sistema de autenticación
+
+🔐 Seguridad
+• Mejoras en el manejo de tokens de sesión
+• Actualización de protocolos de seguridad
+
+📱 Experiencia de Usuario
+• Interfaz más fluida y responsiva
+• Mejor manejo de errores con mensajes más claros
+• Optimización de notificaciones push
+
+Gracias por usar ETAlatam. Si tienes comentarios o sugerencias, contáctanos en support@etalatam.com

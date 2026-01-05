@@ -1,10 +1,15 @@
 import 'package:eta_school_app/API/client.dart';
 import 'package:eta_school_app/Models/recipient_group_model.dart';
 import 'package:eta_school_app/Models/user_topic_model.dart';
+import 'package:eta_school_app/Models/trip_model.dart';
+import 'package:eta_school_app/Pages/trip_page.dart';
+import 'package:eta_school_app/Pages/support_messages_unified_page.dart';
+import 'package:eta_school_app/Pages/notifications_page.dart';
 import 'package:eta_school_app/components/animated_snackbar_content.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:get/get.dart';
 
 // Handler de mensajes en background - debe estar fuera de la clase
 @pragma('vm:entry-point')
@@ -100,7 +105,25 @@ class NotificationService with ChangeNotifier {
         print("[NotificationService] Topic personal guardado: $userTopic");
       }
 
-      // 2. Obtener y suscribirse a los topics de grupos con timeout
+      // 2. Suscribirse al topic basado en el ID del usuario
+      final dynamic userId = await storage.getItem('id_usu');
+      if (userId != null) {
+        String userIdTopic = 'user-${userId.toString()}';
+        await subscribeToTopic(userIdTopic);
+        print("[NotificationService] Suscrito a topic de user ID: $userIdTopic");
+      }
+
+      // 3. Suscribirse al topic basado en el email del usuario
+      final String? userEmail = await storage.getItem('user_email');
+      if (userEmail != null && userEmail.isNotEmpty) {
+        // Convertir email a formato válido para topic FCM
+        // Reemplazar @ con _at_ y . con _dot_ para crear un topic válido
+        String emailTopic = 'email-${userEmail.replaceAll('@', '_at_').replaceAll('.', '_dot_')}';
+        await subscribeToTopic(emailTopic);
+        print("[NotificationService] Suscrito a topic de email: $emailTopic");
+      }
+
+      // 4. Obtener y suscribirse a los topics de grupos con timeout
       // useSessionCheck: false para evitar bucle infinito durante el login
       final List<RecipientGroupModel> groups = await _httpService.getMyRecipientGroups(useSessionCheck: false)
         .timeout(Duration(seconds: 3), onTimeout: () => <RecipientGroupModel>[]);
@@ -176,6 +199,157 @@ class NotificationService with ChangeNotifier {
     notifyListeners();
   }
 
+  /// Navegar según el tipo de notificación
+  Future<void> _navigateBasedOnNotificationType(RemoteMessage message) async {
+    try {
+      print('[FCM] Navigating based on notification type');
+      print('[FCM] Message data: ${message.data}');
+
+      // Extraer información del payload
+      final Map<String, dynamic> data = message.data;
+      final String? notificationType = data['type']?.toString();
+      final String? topic = data['topic']?.toString();
+
+      // Detectar tipo de notificación basado en el tipo o topic
+      if (notificationType != null) {
+        switch (notificationType.toLowerCase()) {
+          case 'trip':
+          case 'viaje':
+            await _navigateToTrip(data);
+            break;
+          case 'support':
+          case 'soporte':
+          case 'message':
+          case 'mensaje':
+            await _navigateToSupportMessage(data);
+            break;
+          case 'announcement':
+          case 'anuncio':
+            await _navigateToAnnouncements(data);
+            break;
+          default:
+            // Si no hay tipo específico, intentar detectar por topic
+            if (topic != null && topic.contains('trip-')) {
+              await _navigateToTrip(data);
+            } else {
+              await _navigateToNotifications();
+            }
+        }
+      } else if (topic != null) {
+        // Detectar por el formato del topic si no hay type
+        if (topic.contains('trip-')) {
+          await _navigateToTrip(data);
+        } else if (topic.contains('support-') || topic.contains('message-')) {
+          await _navigateToSupportMessage(data);
+        } else {
+          await _navigateToNotifications();
+        }
+      } else {
+        // Por defecto, ir a la página de notificaciones
+        await _navigateToNotifications();
+      }
+    } catch (e) {
+      print('[FCM] Error navigating: $e');
+      // En caso de error, ir a notificaciones por defecto
+      await _navigateToNotifications();
+    }
+  }
+
+  /// Navegar a un viaje específico
+  Future<void> _navigateToTrip(Map<String, dynamic> data) async {
+    try {
+      // Extraer trip_id del payload
+      final dynamic tripId = data['trip_id'] ?? data['tripId'] ?? data['id'];
+
+      if (tripId != null) {
+        print('[FCM] Navigating to trip: $tripId');
+
+        // Obtener información del viaje
+        final tripIdInt = int.tryParse(tripId.toString());
+        if (tripIdInt != null) {
+          // Crear un modelo de viaje básico con el ID
+          // El TripPage se encargará de cargar los detalles
+          final TripModel trip = TripModel(
+            trip_id: tripIdInt,
+            trip_status: data['trip_status'] ?? 'Running',
+          );
+
+          // Determinar el modo de navegación basado en el rol del usuario
+          final String? relationName = await storage.getItem('relation_name');
+          bool navigationMode = false;
+          bool showBus = true;
+
+          if (relationName == 'Driver') {
+            navigationMode = trip.trip_status == 'Running';
+            showBus = false;
+          } else {
+            navigationMode = false;
+            showBus = true;
+          }
+
+          // Navegar a la página del viaje
+          Get.to(() => TripPage(
+            trip: trip,
+            navigationMode: navigationMode,
+            showBus: showBus,
+            showStudents: true,  // Mostrar estudiantes por defecto en notificaciones
+          ));
+        } else {
+          print('[FCM] Invalid trip_id format');
+          await _navigateToNotifications();
+        }
+      } else {
+        print('[FCM] No trip_id in notification data');
+        await _navigateToNotifications();
+      }
+    } catch (e) {
+      print('[FCM] Error navigating to trip: $e');
+      await _navigateToNotifications();
+    }
+  }
+
+  /// Navegar a un mensaje de soporte específico
+  Future<void> _navigateToSupportMessage(Map<String, dynamic> data) async {
+    try {
+      // Extraer message_id del payload
+      final dynamic messageId = data['message_id'] ?? data['messageId'] ?? data['id'];
+
+      if (messageId != null) {
+        print('[FCM] Navigating to support message: $messageId');
+
+        // Navegar a la página unificada de mensajes de soporte
+        Get.to(() => SupportMessagesUnifiedPage());
+      } else {
+        print('[FCM] No message_id in notification data');
+        await _navigateToNotifications();
+      }
+    } catch (e) {
+      print('[FCM] Error navigating to support message: $e');
+      await _navigateToNotifications();
+    }
+  }
+
+  /// Navegar a anuncios
+  Future<void> _navigateToAnnouncements(Map<String, dynamic> data) async {
+    try {
+      print('[FCM] Navigating to announcements');
+      Get.to(() => NotificationsPage());
+    } catch (e) {
+      print('[FCM] Error navigating to announcements: $e');
+      await _navigateToNotifications();
+    }
+  }
+
+  /// Navegar a la página de notificaciones por defecto
+  Future<void> _navigateToNotifications() async {
+    try {
+      print('[FCM] Navigating to notifications page');
+      Get.to(() => NotificationsPage());
+    } catch (e) {
+      print('[FCM] Error navigating to notifications: $e');
+    }
+  }
+
   configureFirebaseMessaging() async {
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
@@ -227,6 +401,9 @@ class NotificationService with ChangeNotifier {
         if (status == '1' || status == '2') {
           // Sincronizar grupos al abrir la app desde notificación
           syncGroups();
+        } else {
+          // Navegar según el tipo de notificación
+          _navigateBasedOnNotificationType(message);
         }
       });
     } catch (e) {

@@ -99,6 +99,12 @@ class StudentModel {
       print(e);
     }
 
+    final dynamic rawSchoolId =
+        json['id_esc'] ?? json['school_id'] ?? json['id_school'] ?? json['schoolId'];
+    final int? parsedSchoolId = rawSchoolId is int
+        ? rawSchoolId
+        : int.tryParse('${rawSchoolId ?? ''}');
+
     return StudentModel(
         student_id: json['student_id'] as int,
         parent_id: json['guardian_id'] as int?,
@@ -115,7 +121,7 @@ class StudentModel {
         trips_count: json['trips_count'] as int?,
         pickup_points: pickupLocations,
         // destination: destination,
-        schoolId: json['school_id'],
+        schoolId: parsedSchoolId,
         statusCode: json['status_code'],
         // route: route,
         lastPositionPayload: lastPositionWrapper,
@@ -139,9 +145,7 @@ class StudentModel {
   subscribeToStudentTracking() async {
     if (!isEmitterSubcribedToTracking) {
       final channel = "school/$schoolId/tracking/eta.students/$student_id/";
-      String encodedValue = Uri.encodeComponent(channel);
-      emitterKeyGenModelTracking =
-          await httpService.emitterKeyGen(encodedValue);
+      emitterKeyGenModelTracking = await httpService.emitterKeyGen(channel);
       if (emitterKeyGenModelTracking != null &&
           EmitterService.instance.isConnected()) {
         EmitterService.instance

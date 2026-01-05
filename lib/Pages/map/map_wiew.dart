@@ -90,18 +90,18 @@ class MapWiewState extends State<MapWiew> {
       // Solo mostrar el dock/puck de posición para conductores
       if(widget.showLocationPuck) {
         print('[MapView._onMapCreated.showLocationPuck] SHOWING location puck - showLocationPuck: ${widget.showLocationPuck}');
-        // const double puckScale = 10.0;
 
-        this.mapboxMap?.location.updateSettings(LocationComponentSettings(
-            enabled: true,
-            pulsingEnabled: true,
-            showAccuracyRing: true,
-            puckBearingEnabled: true,
-            // locationPuck: LocationPuck(
-            //       locationPuck3D: LocationPuck3D(
-            //           modelUri: "https://raw.githubusercontent.com/CesiumGS/cesium/refs/heads/master/Apps/SampleData/models/BoxInstanced/BoxInstanced.gltf",
-            //           modelScale: [puckScale, puckScale, puckScale]))
+        try {
+          await this.mapboxMap?.location.updateSettings(LocationComponentSettings(
+              enabled: true,
+              pulsingEnabled: true,
+              showAccuracyRing: true,
+              puckBearingEnabled: true,
           ));
+          print('[MapView._onMapCreated.showLocationPuck] Location puck configured successfully');
+        } catch (e) {
+          print('[MapView._onMapCreated.showLocationPuck] ERROR configuring location puck: $e');
+        }
       } else {
         print('[MapView._onMapCreated.showLocationPuck] NOT showing location puck - showLocationPuck: ${widget.showLocationPuck}');
       }
@@ -136,9 +136,14 @@ class MapWiewState extends State<MapWiew> {
     print('[MapView._onStyleLoadedListener] Style loaded');
     
     // Configurar el componente de ubicación después de que el estilo se haya cargado
+    // CRÍTICO: El location puck debe configurarse después de cargar el estilo
     if(widget.navigationMode && widget.showLocationPuck && mapboxMap != null) {
       print('[MapView._onStyleLoadedListener] Configuring location component after style load');
       try {
+        // Verificar primero si LocationService está activo
+        final locationData = LocationService.instance.locationData;
+        print('[MapView._onStyleLoadedListener] LocationService data: $locationData');
+
         await mapboxMap!.location.updateSettings(LocationComponentSettings(
             enabled: true,
             pulsingEnabled: true,
@@ -146,6 +151,13 @@ class MapWiewState extends State<MapWiew> {
             puckBearingEnabled: true
         ));
         print('[MapView._onStyleLoadedListener] Location component configured successfully');
+
+        // Si ya hay datos de ubicación, centrar el mapa
+        if (locationData != null) {
+          final lat = locationData['latitude'];
+          final lng = locationData['longitude'];
+          print('[MapView._onStyleLoadedListener] Initial position: lat=$lat, lng=$lng');
+        }
       } catch (e) {
         print('[MapView._onStyleLoadedListener] Error configuring location component: $e');
       }
@@ -204,7 +216,8 @@ class MapWiewState extends State<MapWiew> {
                 print('[MapView.build._firstLocationUpdate] $_firstLocationUpdate');
                 mapboxMap?.setCamera(CameraOptions(
                   zoom: 18,
-                  pitch: widget.navigationMode ? 80 : 0,
+                  // pitch: widget.navigationMode ? 80 : 0, // original 3D tilt
+                  pitch: 0,
                   center: Point(
                     coordinates: Position(
                       singletonLocationData['longitude'], 

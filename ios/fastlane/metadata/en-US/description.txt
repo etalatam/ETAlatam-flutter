@@ -1,0 +1,61 @@
+ETAlatam is the comprehensive solution for real-time school transport tracking. Connecting drivers, students, and parents, providing safety and peace of mind on every trip.
+
+KEY FEATURES:
+
+REAL-TIME TRACKING
+• Accurate GPS location of the school bus
+• Interactive map route visualization
+• Constantly updated estimated time of arrival
+• Proximity notifications to your stop
+
+FOR DRIVERS
+• Complete daily route management
+• Student registration at each stop
+• Digital attendance control
+• Direct communication with dispatch
+• Emergency alerts
+
+FOR STUDENTS
+• View the exact location of your bus
+• Know how long until it arrives
+• Complete trip history
+• Easy-access emergency button
+• Personalized notifications
+
+FOR PARENTS AND GUARDIANS
+• Monitor multiple students simultaneously
+• Receive notifications when boarding or leaving the bus
+• Access complete attendance history
+• Communicate with drivers
+• Check routes and schedules
+
+INTELLIGENT NOTIFICATION SYSTEM
+• Personalized alerts per student and route
+• Arrival notifications at pickup points
+• Trip start and end alerts
+• Priority emergency messages
+
+SECURITY AND PRIVACY
+• End-to-end data encryption
+• Role-based access control
+• Complete activity history
+• Compliance with data protection regulations
+
+ADDITIONAL FEATURES
+• Multi-language support
+• Works in background without draining battery
+• Offline maps for areas without coverage
+• Intuitive and easy-to-use interface
+• Compatible with iOS and Android
+
+BENEFITS:
+
+- Peace of mind for parents: Know where your child is at all times
+- Improved punctuality: Better plan your time knowing exact schedules
+- Effective communication: Stay informed about any changes
+- Enhanced safety: Alert system and complete trip records
+- Time savings: No more unnecessary waiting at stops
+
+ETAlatam transforms the school transport experience, providing cutting-edge technology for student safety and family peace of mind.
+
+Download now and join thousands of families who already trust ETAlatam for their children's school transport.

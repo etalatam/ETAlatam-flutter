@@ -1,15 +1,16 @@
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/API/client.dart';
-import 'package:eta_school_app/Pages/driver_home.dart';
+import 'package:eta_school_app/Pages/home_screen.dart';
 import 'package:eta_school_app/shared/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class TripReport extends StatefulWidget {
-  const TripReport({super.key, required this.trip});
+  const TripReport({super.key, required this.trip, this.onClose});
 
   final TripModel? trip;
+  final VoidCallback? onClose;
   @override
   _TripReport createState() => _TripReport();
 }
@@ -280,8 +281,16 @@ class _TripReport extends State<TripReport> {
                                           padding: const EdgeInsets.all(5),
                                           child:
                                               Text(lang.translate('Distance'))),
+                                      // Text(
+                                      //   '${trip!.distance} KM',
+                                      //   style: const TextStyle(
+                                      //       fontSize: 16,
+                                      //       fontWeight: FontWeight.bold),
+                                      // ),
                                       Text(
-                                        '${trip!.distance} KM',
+                                        ((trip!.distance ?? 0) >= 1000)
+                                            ? '${((trip!.distance ?? 0) / 1000).toStringAsFixed(2)} KM'
+                                            : '${(trip!.distance ?? 0).toStringAsFixed(2)} m',
                                         style: const TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold),
@@ -331,7 +340,13 @@ class _TripReport extends State<TripReport> {
             ),
           ),
           GestureDetector(
-            onTap: () => {Get.offAll(DriverHome())},
+            onTap: () => {
+              if (widget.onClose != null) {
+                widget.onClose!()
+              } else {
+                Get.offAll(() => HomeScreen())
+              }
+            },
             child: Container(
                 child: Container(
               width: 100,

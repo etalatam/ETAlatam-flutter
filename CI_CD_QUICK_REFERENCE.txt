@@ -1,0 +1,451 @@
+================================================================================
+                    ETAlatam Flutter - CI/CD PIPELINE SUMMARY
+================================================================================
+
+PROJECT INFORMATION
+───────────────────────────────────────────────────────────────────────────────
+  • Name:              ETA School Transport
+  • Current Version:   1.12.38 (Build 38)
+  • Flutter Version:   3.19.0
+  • Dart SDK:          3.2.0
+  • Current Branch:    tareas-pendientes-fix-android
+  • Repository:        github.com/etalatam/ETAlatam-flutter
+
+
+WORKFLOW AUTOMATION PIPELINE
+───────────────────────────────────────────────────────────────────────────────
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         GITHUB ACTIONS (ANDROID)                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  File:        .github/workflows/android-build.yml                           │
+│  Trigger:     Push to main / Pull Request to main                           │
+│  Platform:    Ubuntu Latest                                                 │
+│  Duration:    ~10-15 minutes                                                │
+│                                                                              │
+│  Pipeline Steps:                                                             │
+│  1. Checkout code                                                           │
+│  2. Setup Flutter 3.19.2 (with cache)                                       │
+│  3. Extract version from pubspec.yaml                                       │
+│  4. Install dependencies (flutter pub get)                                  │
+│  5. Decode keystore from GitHub secrets                                     │
+│  6. Build APKs (split by architecture)                                      │
+│  7. Rename APKs with version number                                         │
+│  8. Upload artifacts to GitHub                                              │
+│                                                                              │
+│  Outputs:                                                                    │
+│  • eta-arm64-v8a-1.12.38.apk  (64-bit ARM - primary)                       │
+│  • eta-armeabi-v7a-1.12.38.apk (32-bit ARM - fallback)                     │
+│                                                                              │
+│  Secrets Required:                                                           │
+│  ✓ KEYSTORE_FILE           (base64 encoded .jks)                           │
+│  ✓ KEYSTORE_PASSWORD       (password)                                       │
+│  ✓ KEY_PASSWORD            (key password)                                   │
+│  ✓ KEY_ALIAS               (signing key alias)                             │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       FASTLANE (iOS/App Store)                              │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Location:    ios/fastlane/                                                 │
+│  Platforms:   macOS only (requires Xcode, Ruby, CocoaPods)                 │
+│  Manual:      cd ios && bundle exec fastlane <lane_name>                   │
+│                                                                              │
+│  Available Lanes:                                                            │
+│                                                                              │
+│  BUILD LANES:                                                                │
+│  ├─ build              → Flutter build iOS (no signing)                     │
+│  ├─ build_archive      → Build + create IPA with App Store signing        │
+│  ├─ increment_build    → Bump build number                                 │
+│  ├─ increment_version  → Bump version (major/minor/patch)                 │
+│  └─ app_info           → Display app metadata                              │
+│                                                                              │
+│  METADATA LANES:                                                             │
+│  ├─ upload_metadata    → Upload to App Store (ES + EN)                     │
+│  └─ upload_screenshots → Upload screenshots (ES + EN)                      │
+│                                                                              │
+│  DISTRIBUTION LANES:                                                         │
+│  ├─ upload_testflight  → Build → Archive → Sign → TestFlight              │
+│  ├─ upload_appstore    → Build → Archive → Sign → App Store               │
+│  └─ release            → Full process: build + metadata + upload           │
+│                                                                              │
+│  Configuration Files:                                                        │
+│  ├─ Appfile            → App ID, Team ID, Apple ID config                 │
+│  ├─ Fastfile           → Lane definitions                                  │
+│  ├─ Gemfile            → Ruby dependencies (fastlane, cocoapods)           │
+│  └─ metadata/          → App Store metadata (name, description, keywords)  │
+│                                                                              │
+│  Environment Variables (.env.appstore):                                    │
+│  ✓ APPLE_ID                          (etalatamdev@gmail.com)              │
+│  ✓ TEAM_ID                           (494S8338AJ)                          │
+│  ✓ ITC_TEAM_ID                       (494S8338AJ)                          │
+│  ✓ APP_STORE_CONNECT_API_KEY_ID      (2A6UCBGW5Z)                         │
+│  ✓ APP_STORE_CONNECT_API_ISSUER_ID   (633d3064-8dbd-412b-...)             │
+│  ✓ APP_STORE_CONNECT_API_KEY_PATH    (../AuthKey_2A6UCBGW5Z.p8)           │
+│                                                                              │
+│  Security:                                                                   │
+│  • .env.appstore is .gitignored (never committed)                          │
+│  • AuthKey_2A6UCBGW5Z.p8 is .gitignored (keep private)                    │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+BUILD SCRIPTS
+───────────────────────────────────────────────────────────────────────────────
+
+Script                    Platform  Purpose
+─────────────────────────────────────────────────────────────────────────────
+build_app.sh              Any       Interactive multi-platform build (APK/AAB/iOS/Web)
+build_debug.sh            Android   Quick debug APK build (uses FVM + Java 17)
+run_tests.sh              Any       E2E/Integration test execution with options
+setup_appstore.sh         macOS     One-time setup for iOS/App Store deployment
+
+
+GRADLE CONFIGURATION (Android)
+───────────────────────────────────────────────────────────────────────────────
+
+Root Configuration (android/build.gradle):
+  • Kotlin:                  1.9.21
+  • Android Gradle Plugin:   8.0.2
+  • Google Services:         4.3.5
+
+App Configuration (android/app/build.gradle):
+  • Namespace:               com.etalatam.schoolapp
+  • Compile SDK:             34
+  • Min SDK:                 21
+  • Target SDK:              33
+  • Version:                 1.12.38+38 (from pubspec.yaml)
+  • Plugins:                 Android App, Google Services, Kotlin, Flutter
+
+Key Dependencies:
+  • Google Play Services Maps:  18.1.0
+  • OneSignal:                  [5.0.0, 5.99.99]
+  • Firebase:                   32.5.0 (BOM)
+
+Signing:
+  • Release Signing:            TODO (commented out, using debug keys)
+
+
+METADATA & LOCALIZATION
+───────────────────────────────────────────────────────────────────────────────
+
+Location:  ios/fastlane/metadata/
+
+Languages: Spanish (es-ES) + English (en-US)
+
+Files per Language:
+  • name.txt              → App name
+  • subtitle.txt          → Short description
+  • description.txt       → Full description (~1,850 chars)
+  • keywords.txt          → Search keywords (12 terms)
+  • marketing_url.txt     → https://etalatam.com
+  • support_url.txt       → https://etalatam.com/support
+  • privacy_url.txt       → https://etalatam.com/privacy
+  • release_notes.txt     → Version-specific release notes
+
+Screenshots:  ios/fastlane/screenshots/
+  • es-ES/iPhone 6.5 inch/   (1284 x 2778 px each)
+  • en-US/iPhone 6.5 inch/   (1284 x 2778 px each)
+
+
+DEPLOYMENT WORKFLOWS
+───────────────────────────────────────────────────────────────────────────────
+
+ANDROID DEPLOYMENT:
+  
+  Automated:
+    Developer → Push/PR to main → GitHub Actions → Build APKs → Upload artifacts
+                                    ↓
+                            Available for download
+                            (can be uploaded to Play Store manually)
+
+  Manual:
+    $ ./build_app.sh
+    → Select option 1 (Android APK)
+    → Manual upload to Google Play Store
+
+
+iOS/APP STORE DEPLOYMENT (requires macOS):
+
+  Setup (once):
+    $ ./setup_appstore.sh
+    → Installs Fastlane, CocoaPods
+    → Validates credentials
+    → Tests Fastlane
+
+  Metadata Only (no build):
+    $ cd ios && bundle exec fastlane upload_metadata
+    → Uploads app name, description, keywords (ES+EN)
+    → ~30 seconds
+
+  TestFlight (with build):
+    $ cd ios && bundle exec fastlane upload_testflight
+    → Builds with Flutter
+    → Archives with Xcode
+    → Signs with provisioning profile
+    → Uploads to TestFlight
+    → ~15-20 minutes
+
+  App Store Direct (with build):
+    $ cd ios && bundle exec fastlane upload_appstore
+    → Builds, archives, signs, uploads to App Store
+    → Optional auto-submit for review
+    → ~15-20 minutes
+
+  Full Release:
+    $ cd ios && bundle exec fastlane release [submit_for_review:false]
+    → Build + Archive + Upload Metadata + Upload to App Store
+    → ~20-25 minutes
+
+
+PYTHON METADATA UPLOAD (Linux Alternative)
+───────────────────────────────────────────────────────────────────────────────
+
+Purpose:  Upload App Store metadata on Linux (no macOS needed)
+
+Files:
+  • upload_metadata_api.py      (v1)
+  • upload_metadata_api_v2.py   (v2 - improved)
+
+Requirements:
+  $ pip3 install PyJWT cryptography requests
+
+Usage:
+  $ python3 upload_metadata_api.py
+
+Features:
+  • JWT token generation (20 min expiry)
+  • Find app by bundle ID
+  • Upload metadata for multiple languages
+  • Uses App Store Connect API
+
+
+TESTING
+───────────────────────────────────────────────────────────────────────────────
+
+Unit/Widget Tests:
+  $ flutter test
+
+Integration Tests:
+  $ flutter test integration_test/
+
+With Test Script:
+  $ ./run_tests.sh
+  → Interactive menu:
+    1. Basic login tests (quick)
+    2. Detailed login tests (complete)
+    3. All tests
+    4. Headless mode (CI/CD)
+
+Test Credentials:
+  • Email:    etalatam+representante1@gmail.com
+  • Password: casa1234
+
+Output:  test_results/test_output.log
+
+
+VERSION MANAGEMENT
+───────────────────────────────────────────────────────────────────────────────
+
+Format:  major.minor.patch+build
+
+Storage:  pubspec.yaml
+  version: 1.12.38+38
+
+Bumping (iOS via Fastlane):
+  $ cd ios && bundle exec fastlane increment_build       # Build only
+  $ cd ios && bundle exec fastlane increment_version [type:major/minor/patch]
+
+
+SECRETS & SECURITY
+───────────────────────────────────────────────────────────────────────────────
+
+GitHub Actions Secrets (in repository settings):
+  ✓ KEYSTORE_FILE           - base64 encoded Android keystore
+  ✓ KEYSTORE_PASSWORD       - keystore password
+  ✓ KEY_PASSWORD            - key password
+  ✓ KEY_ALIAS               - signing key alias
+
+Local Files (.gitignored):
+  ✓ .env.appstore           - App Store Connect credentials (NEVER COMMIT)
+  ✓ AuthKey_*.p8            - API key files (NEVER COMMIT)
+  ✓ *.cer                   - Certificates (NEVER COMMIT)
+  ✓ *.p12                   - PKCS12 files (NEVER COMMIT)
+  ✓ *.mobileprovision       - Provisioning profiles (NEVER COMMIT)
+
+API Keys:
+  App Store Connect:
+  • Key ID:        2A6UCBGW5Z
+  • Issuer ID:     633d3064-8dbd-412b-aa53-2c4aa211c354
+  • Key File:      AuthKey_2A6UCBGW5Z.p8 (Team Key - most secure)
+
+
+DOCUMENTATION
+───────────────────────────────────────────────────────────────────────────────
+
+Setup Guides:
+  • docs/app-store-setup.md           (Spanish, comprehensive)
+  • docs/app-store-setup-en.md        (English, comprehensive)
+
+Configuration:
+  • APP_STORE_CONFIGURATION_SUMMARY.md (Full overview)
+  • APPSTORE_README.md                (Quick reference)
+
+Deployment:
+  • COMO_SUBIR_METADATOS.md           (3 upload methods for metadata)
+
+FCM:
+  • docs/fcm-notifications.md         (Push notification system)
+
+
+QUICK START CHECKLIST
+───────────────────────────────────────────────────────────────────────────────
+
+Android CI/CD (First Time):
+  ☐ Create GitHub Actions secrets (4 keystore-related)
+  ☐ Ensure keystore file available
+  ☐ Verify Flutter version 3.19.0+
+  ☐ Test by pushing to main or creating PR
+  ☐ Download APKs from GitHub Actions artifacts
+
+iOS/App Store (First Time):
+  ☐ Get macOS machine (required for Xcode/Fastlane)
+  ☐ Run ./setup_appstore.sh
+  ☐ Complete .env.appstore with credentials
+  ☐ Verify AuthKey file exists
+  ☐ Test: cd ios && bundle exec fastlane app_info
+  ☐ Upload metadata: bundle exec fastlane upload_metadata
+
+Ongoing:
+  ☐ Update version in pubspec.yaml
+  ☐ Update metadata files in ios/fastlane/metadata/
+  ☐ Add/update screenshots in ios/fastlane/screenshots/
+  ☐ Update release notes in release_notes.txt files
+  ☐ Commit changes (not secrets!)
+
+
+COMMAND REFERENCE
+───────────────────────────────────────────────────────────────────────────────
+
+Build Commands:
+  flutter build apk --release              Android APK
+  flutter build appbundle --release        Android Bundle
+  flutter build ios --release              iOS
+  flutter build web --release              Web
+  ./build_app.sh                           Interactive menu
+  ./build_debug.sh                         Debug Android APK
+
+iOS Fastlane:
+  bundle exec fastlane app_info            Show app info
+  bundle exec fastlane upload_metadata     Upload metadata only
+  bundle exec fastlane upload_testflight   Build → TestFlight
+  bundle exec fastlane upload_appstore     Build → App Store
+  bundle exec fastlane release             Full release process
+  bundle exec fastlane increment_build     Bump build number
+  bundle exec fastlane increment_version   Bump version
+
+Testing:
+  flutter test                             All tests
+  ./run_tests.sh                           Interactive test menu
+  flutter test integration_test/           Integration tests
+
+Utilities:
+  flutter analyze                          Code analysis
+  dart format .                            Format code
+  flutter clean && flutter pub get         Clean build
+
+
+KEY FILES & LOCATIONS
+───────────────────────────────────────────────────────────────────────────────
+
+Configuration:
+  .github/workflows/android-build.yml      GitHub Actions workflow
+  android/build.gradle                     Root Gradle config
+  android/app/build.gradle                 App Gradle config
+  android/settings.gradle                  Gradle settings
+  pubspec.yaml                             Flutter configuration
+  .env.appstore                            App Store credentials (GITIGNORED)
+  .env.appstore.example                    Config template
+
+iOS/Fastlane:
+  ios/Gemfile                              Ruby dependencies
+  ios/Podfile                              CocoaPods config
+  ios/fastlane/Appfile                     Fastlane app config
+  ios/fastlane/Fastfile                    Fastlane lanes
+  ios/fastlane/metadata/                   App Store metadata
+  ios/fastlane/screenshots/                Screenshots directory
+
+Scripts:
+  build_app.sh                             Interactive multi-platform build
+  build_debug.sh                           Debug Android build
+  run_tests.sh                             Test execution
+  setup_appstore.sh                        iOS/App Store setup
+  upload_metadata_api.py                   Metadata upload v1
+  upload_metadata_api_v2.py                Metadata upload v2
+
+Documentation:
+  docs/app-store-setup.md                  iOS guide (ES)
+  docs/app-store-setup-en.md               iOS guide (EN)
+  APP_STORE_CONFIGURATION_SUMMARY.md       Configuration details
+  COMO_SUBIR_METADATOS.md                  Metadata upload guide
+
+
+KNOWN ISSUES & TODOS
+───────────────────────────────────────────────────────────────────────────────
+
+Android:
+  ⚠ Flutter version mismatch: workflow uses 3.19.2, CLAUDE.md requires 3.19.0
+  ⚠ Release signing commented out: currently using debug keys for release APKs
+  ⚠ Gradle configurations need review for production deployment
+
+iOS:
+  ⚠ Fastlane requires macOS - cannot run on Linux/Windows CI/CD
+  ⚠ CocoaPods must be installed before fastlane usage
+  ⚠ Provisioning profiles need renewal (Apple Developer account management)
+
+Testing:
+  ⚠ Integration tests require physical device or emulator
+  ⚠ Test credentials hardcoded (etalatam+representante1@gmail.com / casa1234)
+
+Deployment:
+  ⚠ Manual intervention needed for App Store review submission
+  ⚠ TestFlight builds not auto-submitted for internal testing
+  ⚠ No automated screenshot generation or testing
+
+
+PLATFORMS & REQUIREMENTS
+───────────────────────────────────────────────────────────────────────────────
+
+Android Development/Build:
+  • Flutter 3.19.0+ (3.19.2 in Actions)
+  • Dart SDK 3.2.0+
+  • Android SDK 21+ (minSdkVersion)
+  • Gradle 7.3.0+
+  • Java 8+ (Java 17 recommended)
+  • Kotlin 1.9.21+
+
+iOS Development/Deployment:
+  • macOS (required for Xcode, Fastlane)
+  • Xcode 13+
+  • Ruby 2.7+
+  • Bundler
+  • CocoaPods
+  • Apple Developer Account (paid)
+  • App Store Connect access
+
+CI/CD:
+  • GitHub Actions (for Android)
+  • macOS machine (for iOS)
+  • Internet connection
+  • GitHub repository with Actions enabled
+
+
+END OF SUMMARY
+================================================================================
+Last Updated: November 2025
+Maintained by: Robert Bruno
+Repository: ETAlatam-flutter (tareas-pendientes-fix-android branch)

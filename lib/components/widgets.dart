@@ -779,8 +779,14 @@ mixin ETAWidgets {
                 padding: const EdgeInsets.all(5),
                 child: Text(lang.translate('Distance'),
                     style: activeTheme.smallText)),
+            // Text(
+            //   '${trip.distance} KM',
+            //   style: activeTheme.h6,
+            // ),
             Text(
-              '${trip.distance} KM',
+              ((trip.distance ?? 0) >= 1000)
+                  ? '${((trip.distance ?? 0) / 1000).toStringAsFixed(2)} KM'
+                  : '${(trip.distance ?? 0).toStringAsFixed(2)} m',
               style: activeTheme.h6,
             ),
           ],

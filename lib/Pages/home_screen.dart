@@ -13,7 +13,7 @@ import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:eta_school_app/controllers/page_controller.dart' as p;
-import 'package:eta_school_app/Pages/help_page.dart';
+import 'package:eta_school_app/Pages/support_messages_unified_page.dart';
 import 'package:eta_school_app/Pages/settings_page.dart';
 import 'package:eta_school_app/shared/widgets/custom_bottom_navigation.dart';
 
@@ -64,25 +64,25 @@ class _HomeScreenState extends State<HomeScreen> {
         SettingsPage(),
         DriverHome(),
         NotificationsPage(),
-        SendMessagePage()
+        SupportMessagesUnifiedPage()
       ],
       "eta.students": [
         SettingsPage(),
         StudentsHome(),
         NotificationsPage(),
-        SendMessagePage()
+        SupportMessagesUnifiedPage()
       ],
       "eta.guardians": [
         SettingsPage(),
         GuardiansHome(),
         NotificationsPage(),
-        SendMessagePage()
+        SupportMessagesUnifiedPage()
       ],
       "eta.monitor": [
         SettingsPage(),
         _buildMonitorHome(), // Ahora accesible
         NotificationsPage(),
-        SendMessagePage()
+        SupportMessagesUnifiedPage()
       ]
     };
   }
@@ -140,13 +140,26 @@ class _HomeScreenState extends State<HomeScreen> {
           if(isMonitor && userRelationName=='eta.employees'){
             userRelationName = 'eta.monitor';
           }
-          return Scaffold(
-            bottomNavigationBar: CustomBottonNavigation(),
-            body: Obx(() => IndexedStack(
+          return Obx(() {
+            final canPop = _pageController.currentIndex.value == 1;
+
+            return PopScope(
+              canPop: canPop,
+              onPopInvoked: (didPop) {
+                if (!didPop && _pageController.currentIndex.value != 1) {
+                  _pageController.changePage(1);
+                }
+              },
+              child: Scaffold(
+                bottomNavigationBar: CustomBottonNavigation(),
+                body: IndexedStack(
                   index: _pageController.currentIndex.value,
-                  children: getWidgetsByKey(userRelationName) ?? defaultWidgets,
-                )),
-          );
+                  children:
+                      getWidgetsByKey(userRelationName) ?? defaultWidgets,
+                ),
+              ),
+            );
+          });
         }
       },
     );

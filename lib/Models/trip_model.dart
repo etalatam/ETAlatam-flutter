@@ -184,7 +184,7 @@ class TripModel {
         driver_id: json['driver_id'] as int?,
         // trip_date: format.format(DateTime.parse(json['start_ts'])) as String?,
         trip_date: json['start_ts'],
-        trip_status: json['running'] ? 'Running' : 'Completed',
+        trip_status: (json['running'] == true) ? 'Running' : 'Completed',
         distance: double.parse(
             json['distance'].toString().replaceAll(RegExp(r','), '')),
         duration: json['duration'] as String?,
@@ -241,33 +241,26 @@ class TripModel {
   }
 
   subscribeToTripEvents(emitterServiceProvider) async {
-    // if (isEmitterSubcribedToEvents) return;
-
-    String encodedValue =
-          Uri.encodeComponent("school/$school_id/trip/$trip_id/event/#/");
-      emitterKeyGenModelEvents = await httpService.emitterKeyGen(encodedValue);
-      if (emitterKeyGenModelEvents != null ) {
-        emitterServiceProvider.subscribe(EmitterTopic(
-            "school/$school_id/trip/$trip_id/event/",
-            emitterKeyGenModelEvents!.key!));
-        isEmitterSubcribedToEvents = true;
-      }
+    final eventChannel = "school/$school_id/trip/$trip_id/event/";
+    emitterKeyGenModelEvents = await httpService.emitterKeyGen(eventChannel);
+    if (emitterKeyGenModelEvents != null) {
+      emitterServiceProvider.subscribe(EmitterTopic(
+          eventChannel,
+          emitterKeyGenModelEvents!.key!));
+      isEmitterSubcribedToEvents = true;
+    }
   }
 
   subscribeToTripTracking(emitterServiceProvider) async {
-    // if (!isEmitterSubcribedToTracking) {
-      String encodedValue =
-          Uri.encodeComponent("school/$school_id/trip/$trip_id/tracking/#/");
-      emitterKeyGenModelTracking =
-          await httpService.emitterKeyGen(encodedValue);
-      if (emitterKeyGenModelTracking != null &&
-          emitterServiceProvider.isConnected()) {
-        emitterServiceProvider.subscribe(EmitterTopic(
-            "school/$school_id/trip/$trip_id/tracking/eta.drivers/$driver_id/",
-            emitterKeyGenModelTracking!.key!));
-        isEmitterSubcribedToTracking = true;
-      }
-    // }
+    final trackingChannel = "school/$school_id/trip/$trip_id/tracking/eta.drivers/$driver_id/";
+    emitterKeyGenModelTracking = await httpService.emitterKeyGen(trackingChannel);
+    if (emitterKeyGenModelTracking != null &&
+        emitterServiceProvider.isConnected()) {
+      emitterServiceProvider.subscribe(EmitterTopic(
+          trackingChannel,
+          emitterKeyGenModelTracking!.key!));
+      isEmitterSubcribedToTracking = true;
+    }
   }
 
   Position? lastPosition() {
