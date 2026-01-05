@@ -248,8 +248,7 @@ class _StudentsHomeState extends State<StudentsHome>
 
     try {
       TripModel? activeTrip_ = await httpService.getActiveTrip();
-      final bool hadActiveTrip = hasActiveTrip;
-      
+
       if(mounted){
         setState(() {
           activeTrip = activeTrip_;
@@ -262,16 +261,12 @@ class _StudentsHomeState extends State<StudentsHome>
 
       if (hasActiveTrip && activeTrip != null) {
         activeTrip!.subscribeToTripTracking(_emitterServiceProvider);
+      }
 
-        // Iniciar tracking solo si hay viaje activo
-        // Nota: No verificamos isTracking - startLocationService() maneja reintentos internamente
-        print("[StudentsHome] Viaje activo detectado, asegurando tracking de ubicación");
+      if (!LocationService.instance.isTracking) {
+        print("[StudentsHome] Iniciando tracking de ubicación (estudiante siempre envía)");
         await LocationService.instance.init();
         await LocationService.instance.startLocationService(calculateDistance: false);
-      } else if (hadActiveTrip && !hasActiveTrip) {
-        // Si tenía viaje activo y ya no lo tiene, detener tracking
-        print("[StudentsHome] Viaje finalizado, deteniendo tracking de ubicación");
-        await LocationService.instance.stopLocationService();
       }
 
       await _subscribeToSchoolEvents();
