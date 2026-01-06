@@ -31,22 +31,10 @@ class _HomeScreenState extends State<HomeScreen> {
   final HttpService _httpService = HttpService();
   bool _syncCompleted = false;
 
-  // Cache de widgets por rol para evitar recrearlos en cada rebuild
-  Map<String, List<Widget>>? _cachedWidgetMap;
-
   @override
   void initState() {
     super.initState();
     _checkAndSyncNotifications();
-  }
-
-  @override
-  void dispose() {
-    // Limpiar el cache de widgets al destruir HomeScreen
-    // Esto es crítico para evitar que widgets cacheados sigan ejecutándose después del logout
-    _cachedWidgetMap = null;
-    print("[HomeScreen.dispose] Cache de widgets limpiado");
-    super.dispose();
   }
 
   /// Verificar y sincronizar notificaciones al iniciar la app
@@ -70,14 +58,8 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Map<String, List<Widget>> _buildWidgetMap() {
-    // Retornar cache si ya existe para evitar recrear widgets en cada rebuild
-    if (_cachedWidgetMap != null) {
-      return _cachedWidgetMap!;
-    }
-
-    // Crear widgets solo la primera vez
-    _cachedWidgetMap = {
+    Map<String, List<Widget>> _buildWidgetMap() {
+    return {
       "eta.drivers": [
         SettingsPage(),
         DriverHome(),
@@ -103,8 +85,6 @@ class _HomeScreenState extends State<HomeScreen> {
         SupportMessagesUnifiedPage()
       ]
     };
-
-    return _cachedWidgetMap!;
   }
   final List<Widget> defaultWidgets = [
     SettingsPage(),

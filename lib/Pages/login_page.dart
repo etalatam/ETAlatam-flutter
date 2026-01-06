@@ -701,9 +701,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
     _loadEmailHistory();
     // Solo verificar sesión después de inicializar
     Future.delayed(Duration(milliseconds: 500), () async {
-      if (!mounted) return; // Verificar si el widget todavía está montado
       await _cleanupResourcesIfNoSession();
-      if (!mounted) return; // Verificar nuevamente antes de navegar
       goHome();
     });
   }

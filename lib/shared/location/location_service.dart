@@ -5,9 +5,7 @@ import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:synchronized/synchronized.dart';
 
-import 'location_resurrector.dart';
 import 'robust_location_tracker.dart';
-import 'tracking_config.dart';
 
 class LocationService extends ChangeNotifier {
   String? domain;
@@ -137,22 +135,10 @@ class LocationService extends ChangeNotifier {
       return;
     }
 
-    String? relationName;
-    try {
-      relationName = await storage.getItem('relation_name');
-    } catch (e) {
-      debugPrint('[LocationService] Error getting relation_name: $e');
-    }
-
-    final config = TrackingConfig.forRole(relationName, isTestMode: true);
-    debugPrint('[LocationService] Usando config para rol: ${config.roleName} - interval: ${config.sendInterval.inSeconds}s');
-
     await _tracker.startTracking(
       onPositionUpdate: _handlePositionUpdate,
-      config: config,
+      distanceFilter: 10,
     );
-
-    await LocationResurrector.instance.startPeriodicCheck();
 
     debugPrint('[LocationService] Location service started successfully');
   }
@@ -234,8 +220,6 @@ class LocationService extends ChangeNotifier {
 
         _positionsSent = 0;
         _lastPositionSentTime = null;
-
-        await LocationResurrector.instance.stopPeriodicCheck();
       }
 
       initialization = false;

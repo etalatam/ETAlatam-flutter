@@ -63,18 +63,6 @@
             android:stopWithTask="false"
             android:exported="false" />
 
-        <!-- Boot Receiver para reiniciar tracking al encender dispositivo -->
-        <receiver
-            android:name="com.etalatam.schoolapp.BootReceiver"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
-                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
-            </intent-filter>
-        </receiver>
-
         <meta-data
         android:name="flutterEmbedding"
         android:value="2" />
