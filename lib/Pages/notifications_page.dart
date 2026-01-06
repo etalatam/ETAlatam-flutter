@@ -443,7 +443,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
   /// Carga notificaciones basadas en los topics suscritos
   ///
   loadNotifications() async {
-    if (!mounted) return;
     setState(() {
       showLoader = true;
     });
@@ -457,7 +456,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
       final notificationslistResponse = await httpService
           .getNotifications(topicsList.toString());
 
-      if (!mounted) return;
       setState(() {
         showLoader = false;
         if (notificationslistResponse.isNotEmpty) {
@@ -469,7 +467,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
       });
     } catch (e) {
       print("[NotificationsPage] Error loading notifications: $e");
-      if (!mounted) return;
       setState(() {
         showLoader = false;
       });
@@ -480,13 +477,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   // Function to simulate data retrieval or refresh
   Future<void> _refreshData() async {
-    if (!mounted) return;
     setState(() {
       showLoader = true;
     });
 
     await Future.delayed(const Duration(seconds: 1));
-    if (!mounted) return;
     setState(() {
       loadNotifications();
     });
@@ -495,7 +490,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
   handleNotification(NotificationModel notification) async {
     httpService.readNotification(await storage.getItem('parent_id'), notification.id);
 
-    if (!mounted) return;
     setState(() {
       notification.status = 'read';
     });
@@ -514,7 +508,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   openPage(context, page) {
-    if (!mounted) return;
     setState(() => openNewPage(context, page));
   }
 

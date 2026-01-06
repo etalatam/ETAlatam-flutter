@@ -1133,7 +1133,7 @@ class HttpService {
     // Stop location services
     try {
       print("[httpService.logout] Stopping LocationService...");
-      await LocationService.instance.stopLocationService();
+      LocationService.instance.stopLocationService();
     } catch (e) {
       print("[httpService.logout] Error stopping LocationService: $e");
     }

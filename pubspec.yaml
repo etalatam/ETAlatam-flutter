@@ -3,7 +3,7 @@ description: APP for ETA School Routes system.
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 1.12.46+46
+version: 1.12.43+43
 
 environment:
   sdk: ">=3.2.0 <4.0.0"
@@ -54,7 +54,7 @@ dependencies:
   url_launcher: ^6.0.0
   visibility_detector: ^0.4.0+2
   wakelock: ^0.6.2
-  workmanager: ^0.5.2
+  # workmanager: ^0.5.2  # No necesario con flutter_foreground_task
   font_awesome_flutter: ^10.8.0
   synchronized: ^3.1.0+1
   marquee: ^2.2.3

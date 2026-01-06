@@ -205,7 +205,6 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
   createTrip(RouteModel route) async {
     TripModel? trip;
 
-    if (!mounted) return;
     setState(() {
       showLoader = true;
     });
@@ -234,7 +233,6 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
     } catch (e) {
       print(e.toString());
       var msg = e.toString().split('/');
-      if (!mounted) return;
       setState(() {
         showLoader = false;
       });
@@ -245,20 +243,17 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
 
   // Function to simulate data retrieval or refresh
   Future<void> _refreshData() async {
-    if (!mounted) return;
     setState(() {
       showLoader = true;
     });
 
     await Future.delayed(const Duration(seconds: 1));
-    if (!mounted) return;
     setState(() {
       loadResources();
     });
   }
 
   openPage(context, page) {
-    if (!mounted) return;
     setState(() => openNewPage(context, page));
   }
 
@@ -343,14 +338,17 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
       
       if (hasActiveTrip && activeTrip != null) {
         // Iniciar tracking si hay viaje activo
-        // Nota: No verificamos isTracking - startLocationService() maneja reintentos internamente
-        print("[DriverHome.loadResources] Viaje activo detectado (ID: ${activeTrip!.trip_id}), asegurando tracking");
-        await LocationService.instance.init();
-        await LocationService.instance.startLocationService(calculateDistance: true);
+        if (!LocationService.instance.isTracking) {
+          print("[DriverHome.loadResources] Viaje activo detectado (ID: ${activeTrip!.trip_id}), iniciando tracking");
+          await LocationService.instance.init();
+          await LocationService.instance.startLocationService(calculateDistance: true);
+        }
       } else if (hadActiveTrip && !hasActiveTrip) {
         // Detener tracking si el viaje finalizó
-        print("[DriverHome.loadResources] Viaje finalizado, deteniendo tracking");
-        await LocationService.instance.stopLocationService();
+        if (LocationService.instance.isTracking) {
+          print("[DriverHome.loadResources] Viaje finalizado, deteniendo tracking");
+          await LocationService.instance.stopLocationService();
+        }
       }
     } catch (e) {
       print("[DriverHome.loadrResources.getActiveTrip.error] $e");

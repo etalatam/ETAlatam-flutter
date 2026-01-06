@@ -413,25 +413,14 @@ class NotificationService with ChangeNotifier {
 
   /// Cerrar servicio y desuscribirse de todos los topics
   Future<void> close() async {
-    print("[NotificationService.close] Desuscribiendo de todos los topics (${topicsList.length} topics)");
+    print("[NotificationService.close] Desuscribiendo de todos los topics");
     try {
       final List<String> topicsToUnsubscribe = List.from(topicsList);
 
-      // Desuscribir de todos los topics en paralelo para acelerar el proceso
-      final unsubscribeFutures = topicsToUnsubscribe.map((topic) {
+      for (var topic in topicsToUnsubscribe) {
         print("[NotificationService] Desuscribiendo de: $topic");
-        return FirebaseMessaging.instance.unsubscribeFromTopic(topic).timeout(
-          const Duration(seconds: 5),
-          onTimeout: () {
-            print("[NotificationService] Timeout desuscribiendo de: $topic");
-          },
-        ).catchError((e) {
-          print("[NotificationService] Error desuscribiendo de $topic: $e");
-        });
-      }).toList();
-
-      // Esperar a que todas las desuscripciones completen (máximo 5 segundos cada una)
-      await Future.wait(unsubscribeFutures);
+        await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
+      }
 
       // Limpiar la lista y variables
       topicsList.clear();
@@ -442,7 +431,7 @@ class NotificationService with ChangeNotifier {
       await storage.deleteItem('user_topic');
       await storage.deleteItem('recipient_groups');
 
-      print("[NotificationService.close] Todos los topics desuscritos completado");
+      print("[NotificationService.close] Todos los topics desuscritos");
     } catch (e) {
       print("[NotificationService.close] error: ${e.toString()}");
     }
