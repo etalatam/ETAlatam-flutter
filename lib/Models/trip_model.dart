@@ -217,30 +217,39 @@ class TripModel {
   }
 
   unSubscribeToTripEvents(emitterServiceProvider) async {
-    // if (isEmitterSubcribedToEvents) return;
+    if (!isEmitterSubcribedToEvents) return;
 
     try {
       emitterServiceProvider.unsubscribe(EmitterTopic(
           "school/$school_id/$trip_id/event",
           emitterKeyGenModelEvents!.key!));
+      isEmitterSubcribedToEvents = false;
+      print("[TripModel.unSubscribeToTripEvents] Desuscrito exitosamente");
     } catch (e) {
       print("[TripModel.unSubscribeToTripEvents.error] ${e.toString()}");
     }
   }
 
   unSubscribeToTripTracking(emitterServiceProvider) async {
-    // if (isEmitterSubcribedToTracking) return;
+    if (!isEmitterSubcribedToTracking) return;
 
     try {
       emitterServiceProvider.unsubscribe(EmitterTopic(
           "school/$school_id/$trip_id/tracking",
           emitterKeyGenModelTracking!.key!));
+      isEmitterSubcribedToTracking = false;
+      print("[TripModel.unSubscribeToTripTracking] Desuscrito exitosamente");
     } catch (e) {
       print("[TripModel.unSubscribeToTripTracking.error] ${e.toString()}");
     }
   }
 
   subscribeToTripEvents(emitterServiceProvider) async {
+    if (trip_status != "Running") {
+      print("[TripModel.subscribeToTripEvents] Viaje no está Running (status: $trip_status), no se suscribe");
+      return;
+    }
+
     final eventChannel = "school/$school_id/trip/$trip_id/event/";
     emitterKeyGenModelEvents = await httpService.emitterKeyGen(eventChannel);
     if (emitterKeyGenModelEvents != null) {
@@ -248,10 +257,16 @@ class TripModel {
           eventChannel,
           emitterKeyGenModelEvents!.key!));
       isEmitterSubcribedToEvents = true;
+      print("[TripModel.subscribeToTripEvents] Suscrito a canal: $eventChannel");
     }
   }
 
   subscribeToTripTracking(emitterServiceProvider) async {
+    if (trip_status != "Running") {
+      print("[TripModel.subscribeToTripTracking] Viaje no está Running (status: $trip_status), no se suscribe");
+      return;
+    }
+
     final trackingChannel = "school/$school_id/trip/$trip_id/tracking/eta.drivers/$driver_id/";
     emitterKeyGenModelTracking = await httpService.emitterKeyGen(trackingChannel);
     if (emitterKeyGenModelTracking != null &&
@@ -260,6 +275,7 @@ class TripModel {
           trackingChannel,
           emitterKeyGenModelTracking!.key!));
       isEmitterSubcribedToTracking = true;
+      print("[TripModel.subscribeToTripTracking] Suscrito a canal: $trackingChannel");
     }
   }
 
