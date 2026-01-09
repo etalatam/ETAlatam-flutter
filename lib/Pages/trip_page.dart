@@ -32,6 +32,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:synchronized/synchronized.dart';
 import '../components/marquee_text.dart';
 import 'map/map_wiew.dart';
 import 'package:eta_school_app/Pages/home_screen.dart';
@@ -90,6 +91,8 @@ class _TripPageState extends State<TripPage>
 
   // Map<String, PointAnnotation> annotationsMap = {};
   PointAnnotation? busPointAnnotation;
+
+  final Lock _busAnnotationLock = Lock();
 
   bool waitingBusPosition = true;
 
@@ -280,9 +283,6 @@ class _TripPageState extends State<TripPage>
                             // Asegurar que el annotationManager esté creado (solo si no existe)
                             if (annotationManager == null) {
                               try {
-                                // Limpiar cualquier anotación previa antes de crear el manager
-                                busPointAnnotation = null;
-                                
                                 final value = await mapboxMap.annotations
                                     .createPointAnnotationManager();
                                 annotationManager = value;
@@ -292,6 +292,8 @@ class _TripPageState extends State<TripPage>
                               } catch (e) {
                                 print("[TripPage] Error creating annotation manager: $e");
                               }
+                            } else {
+                              print("[TripPage.onMapReady] Reutilizando AnnotationManager existente");
                             }
 
                             // Detectar cuando el usuario interactúa con el mapa
@@ -2028,96 +2030,10 @@ class _TripPageState extends State<TripPage>
     _lastAnnotationUpdate = DateTime.now();
 
     try {
-      // If the annotation doesn't exist, create it
-      if (busPointAnnotation == null) {
-        print("[TripPage._updateIcon] creating new point annotation");
+      await _busAnnotationLock.synchronized(() async {
+        if (busPointAnnotation == null) {
+          print("[TripPage._updateIcon] Creando nueva anotación del bus");
 
-        // final int currentBusColor = trip.bus_color != null
-        //     ? _convertColor(trip.bus_color!)
-        //     : Colors.blue.value;
-        final int currentBusColor = Colors.white.value;
-
-        Uint8List? imageData;
-        // if (_busMarkerCache.containsKey(currentBusColor) &&
-        //     _busMarkerCache[currentBusColor] != null) {
-        //   imageData = _busMarkerCache[currentBusColor]!;
-        // // } else {
-        final ui.Image busImage =
-            await loadImageFromAsset('assets/bus_color.png');
-        imageData = await createCircleMarkerImage(
-            circleColor: Color(currentBusColor),
-            image: busImage,
-            size: 96,
-            imageSize: 72);
-        _busMarkerCache[currentBusColor] = imageData;
-        // }
-
-        busPointAnnotation =
-            await annotationManager?.create(PointAnnotationOptions(
-          geometry: Point(coordinates: position),
-          image: imageData,
-          textSize: 14,
-          textField: label,
-          textOffset: [
-            0.0,
-            -2.0
-          ], // Ajustado de -3.5 a -2.0 para acercar el texto
-          textColor: Colors.black.value,
-          textHaloColor: Colors.white.value,
-          textHaloWidth: 2,
-          iconSize: 1.0, // Reducido de 1.2 a 1.0 para tamaño más adecuado
-          symbolSortKey: 3,
-        ));
-
-        if (!_isInitialCameraSet) {
-          _mapboxMapController?.setCamera(CameraOptions(
-              center: Point(coordinates: position), zoom: 18, pitch: 0));
-          _isInitialCameraSet = true;
-        }
-      }
-      // Si ya existe, actualizar sin recrear para evitar parpadeo
-      else  {
-        print("[TripPage._updateIcon] updating existing point annotation");
-
-        try {
-          busPointAnnotation?.geometry = Point(coordinates: position);
-          busPointAnnotation?.textField = label;
-
-          if (busPointAnnotation != null) {
-            await annotationManager?.update(busPointAnnotation!);
-          }
-
-          // Solo centrar el mapa si el auto-seguimiento está activado
-          if (_autoFollowBus) {
-            _mapboxMapController?.flyTo(
-              CameraOptions(center: Point(coordinates: position)),
-              MapAnimationOptions(duration: 1000, startDelay: 0)
-            );
-          }
-
-          // Si el usuario no ha interactuado en los últimos 30 segundos, reactivar auto-seguimiento
-          if (_lastUserInteraction != null) {
-            final timeSinceInteraction = DateTime.now().difference(_lastUserInteraction!);
-            if (timeSinceInteraction.inSeconds > 30) {
-              setState(() {
-                _autoFollowBus = true;
-              });
-            }
-          }
-        } catch (e) {
-          print("[TripPage._updateIcon] Error actualizando anotación: $e - recreando");
-
-          // Si falla, eliminar y recrear
-          if (busPointAnnotation != null) {
-            try {
-              await annotationManager?.delete(busPointAnnotation!);
-            } catch (deleteError) {
-              print("[TripPage._updateIcon] Error eliminando anotación: $deleteError");
-            }
-          }
-          busPointAnnotation = null;
-
-          // Crear nueva anotación
           final int currentBusColor = Colors.white.value;
 
           Uint8List? imageData;
@@ -2151,6 +2067,37 @@ class _TripPageState extends State<TripPage>
             iconSize: 1.0,
             symbolSortKey: 3,
           ));
+
+          if (!_isInitialCameraSet) {
+            _mapboxMapController?.setCamera(CameraOptions(
+                center: Point(coordinates: position), zoom: 18, pitch: 0));
+            _isInitialCameraSet = true;
+          }
+        } else {
+          print("[TripPage._updateIcon] Actualizando anotación existente del bus");
+
+          busPointAnnotation?.geometry = Point(coordinates: position);
+          busPointAnnotation?.textField = label;
+
+          if (busPointAnnotation != null) {
+            await annotationManager?.update(busPointAnnotation!);
+          }
+        }
+      });
+
+      if (_autoFollowBus) {
+        _mapboxMapController?.flyTo(
+          CameraOptions(center: Point(coordinates: position)),
+          MapAnimationOptions(duration: 1000, startDelay: 0)
+        );
+      }
+
+      if (_lastUserInteraction != null) {
+        final timeSinceInteraction = DateTime.now().difference(_lastUserInteraction!);
+        if (timeSinceInteraction.inSeconds > 30) {
+          setState(() {
+            _autoFollowBus = true;
+          });
         }
       }
 

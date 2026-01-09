@@ -25,6 +25,7 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:wakelock/wakelock.dart';
+import 'package:synchronized/synchronized.dart';
 
 class StudentPage extends StatefulWidget {
   StudentPage({super.key, this.student, this.hasActiveTrip = false, this.isOnBoard = false});
@@ -60,6 +61,8 @@ class _StudentPageState extends State<StudentPage> {
   String relationName = '';
   
   bool _isInitialCameraSet = false;
+
+  final Lock _annotationLock = Lock();
 
   // Variables for Emitter connection statistics (same as trip_page)
   int _messageCount = 0; // Total de mensajes (para compatibilidad)
@@ -106,16 +109,17 @@ class _StudentPageState extends State<StudentPage> {
                     onMapReady: (MapboxMap mapboxMap) async {
                       _mapboxMapController = mapboxMap;
 
-                      // Resetear la anotación del estudiante porque se está creando un nuevo manager
-                      // Esto evita que se mantenga una referencia a una anotación del manager anterior
-                      studentPointAnnotation = null;
+                      if (annotationManager == null) {
+                        annotationManager = await mapboxMap.annotations
+                            .createPointAnnotationManager();
+                        debugPrint('[StudentPage.onMapReady] Nuevo AnnotationManager creado');
+                      } else {
+                        debugPrint('[StudentPage.onMapReady] Reutilizando AnnotationManager existente');
+                      }
 
-                      annotationManager = await mapboxMap.annotations
-                          .createPointAnnotationManager();
-
-                      if (widget.student?.lastPositionPayload != null) {
+                      if (studentPointAnnotation == null && widget.student?.lastPositionPayload != null) {
                         print(
-                            "[StudentPage] lasposition ${widget.student?.lastPosition}");
+                            "[StudentPage] Creando anotación inicial con lastPosition ${widget.student?.lastPosition}");
                         final Position? position =
                             widget.student?.lastPosition()!;
                         final label = formatUnixEpoch(widget
@@ -123,6 +127,8 @@ class _StudentPageState extends State<StudentPage> {
 
                         _updateIcon(position!, 'eta.students',
                             widget.student!.student_id, label);
+                      } else if (studentPointAnnotation != null) {
+                        debugPrint('[StudentPage.onMapReady] Anotación del estudiante ya existe, se mantiene');
                       }
                     },
                     onStyleLoadedListener: (MapboxMap mapboxMap) async {},
@@ -578,53 +584,9 @@ class _StudentPageState extends State<StudentPage> {
   Future<void> _updateIcon(Position position, String relationName,
       int relationId, String label) async {
 
-    if (studentPointAnnotation == null) {
-      debugPrint('[StudentPage._updateIcon] Creando nueva anotación en posición: $position');
-
-      String studentName = "";
-      if (widget.student != null) {
-        studentName = widget.student!.first_name ?? '';
-      }
-
-      final networkImage = await mapboxUtils
-          .getNetworkImage(
-            httpService.getAvatarUrl(relationId, relationName),
-            name: studentName
-          );
-
-      final circleImage = await mapboxUtils.createCircleImage(networkImage, hasActiveTrip: hasActiveTrip, isOnBoard: widget.isOnBoard);
-      studentPointAnnotation = await mapboxUtils.createAnnotation(
-          annotationManager, position, circleImage, label);
-
-      if ("$relationId" == "${widget.student?.student_id}" && !_isInitialCameraSet) {
-        _mapboxMapController?.setCamera(CameraOptions(
-          center: Point(coordinates: position),
-          zoom: 15.5,
-          pitch: 0,
-        ));
-        _isInitialCameraSet = true;
-      }
-    } else {
-      debugPrint('[StudentPage._updateIcon] Actualizando posición de anotación existente: $position');
-
-      try {
-        studentPointAnnotation?.geometry = Point(coordinates: position);
-        studentPointAnnotation?.textField = label;
-
-        if (studentPointAnnotation != null) {
-          await annotationManager?.update(studentPointAnnotation!);
-        }
-      } catch (e) {
-        debugPrint('[StudentPage._updateIcon] Error actualizando anotación: $e - recreando');
-
-        if (studentPointAnnotation != null) {
-          try {
-            await annotationManager?.delete(studentPointAnnotation!);
-          } catch (deleteError) {
-            debugPrint('[StudentPage._updateIcon] Error eliminando anotación: $deleteError');
-          }
-        }
-        studentPointAnnotation = null;
+    await _annotationLock.synchronized(() async {
+      if (studentPointAnnotation == null) {
+        debugPrint('[StudentPage._updateIcon] Creando nueva anotación en posición: $position');
 
         String studentName = "";
         if (widget.student != null) {
@@ -640,18 +602,26 @@ class _StudentPageState extends State<StudentPage> {
         final circleImage = await mapboxUtils.createCircleImage(networkImage, hasActiveTrip: hasActiveTrip, isOnBoard: widget.isOnBoard);
         studentPointAnnotation = await mapboxUtils.createAnnotation(
             annotationManager, position, circleImage, label);
-      }
-    }
 
-    if ("$relationId" == "${widget.student?.student_id}" && !_isInitialCameraSet) {
-      _mapboxMapController?.flyTo(
-          CameraOptions(
+        if ("$relationId" == "${widget.student?.student_id}" && !_isInitialCameraSet) {
+          _mapboxMapController?.setCamera(CameraOptions(
             center: Point(coordinates: position),
+            zoom: 15.5,
             pitch: 0,
-          ),
-          MapAnimationOptions(duration: 1));
-      _isInitialCameraSet = true;
-    }
+          ));
+          _isInitialCameraSet = true;
+        }
+      } else {
+        debugPrint('[StudentPage._updateIcon] Actualizando anotación existente a: $position');
+
+        studentPointAnnotation?.geometry = Point(coordinates: position);
+        studentPointAnnotation?.textField = label;
+
+        if (studentPointAnnotation != null) {
+          await annotationManager?.update(studentPointAnnotation!);
+        }
+      }
+    });
   }
 
   void onEmitterMessage() async {
