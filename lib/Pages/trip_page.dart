@@ -272,10 +272,10 @@ class _TripPageState extends State<TripPage>
                                   : 0.15), // Ocupar toda la pantalla cuando el panel está oculto
                       child: MapWiew(
                           navigationMode: widget.navigationMode,
-                          showLocationPuck: widget.navigationMode, // Si navigationMode es true, es conductor con viaje activo
-                          centerOnSelf: widget.navigationMode, // Conductores centran en sí mismos
-                          showAutoFollowButton: trip.trip_status == 'Running', // Solo mostrar botón en viajes activos
-                          onCenterRequest: widget.navigationMode ? null : _centerOnBus, // Padres/estudiantes centran en el bus
+                          showLocationPuck: widget.navigationMode,
+                          centerOnSelf: widget.navigationMode,
+                          showAutoFollowButton: trip.trip_status == 'Running',
+                          onCenterRequest: (widget.navigationMode || trip.trip_status != 'Running') ? null : _centerOnBus,
                           onMapReady: (MapboxMap mapboxMap) async {
                             print('[TripPage.MapWiew] trip_status: "${trip.trip_status}", showAutoFollowButton: ${trip.trip_status == 'Running'}');
                             _mapboxMapController = mapboxMap;
@@ -876,6 +876,7 @@ class _TripPageState extends State<TripPage>
 
     try {
       await trip.endTrip();
+      await storage.setItem('has_active_trip', 'false');
       setState(() {
         showLoader = false;
         showTripReportModal = true;
@@ -890,10 +891,11 @@ class _TripPageState extends State<TripPage>
           lang.translate(msg[0]), () {
         Get.back();
       });
+      return;
     }
 
     try {
-      LocationService.instance.stopLocationService();
+      await LocationService.instance.stopLocationService();
       cleanResources();
     } catch (e) {
       print(e);
@@ -919,6 +921,14 @@ class _TripPageState extends State<TripPage>
         print("[TripPage.loadTrip][trip.trip_status] ${trip.trip_status}");
         Wakelock.enable();
 
+        if (relationName == 'eta.drivers') {
+          await storage.setItem('has_active_trip', 'true');
+          await LocationService.instance.init();
+          await LocationService.instance.startLocationService(calculateDistance: true);
+        }
+
+        if (!mounted) return;
+
         initConnectivity();
         _connectivitySubscription =
             _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
@@ -927,14 +937,13 @@ class _TripPageState extends State<TripPage>
             Provider.of<EmitterService>(context, listen: false);
         _emitterServiceProvider?.addListener(onEmitterMessage);
         _emitterServiceProvider?.startTimer(false);
-        
-        // Initialize Emitter session tracking
+
         _sessionStartTime = DateTime.now();
         _messageCount = 0;
         _receivedCount = 0;
         _lastMessageTime = null;
         _lastReceivedTime = null;
-        
+
         trip.subscribeToTripEvents(_emitterServiceProvider);
         trip.subscribeToTripTracking(_emitterServiceProvider);
         
@@ -1034,8 +1043,10 @@ class _TripPageState extends State<TripPage>
 
       _unsubscribeFromSchoolEvents();
 
-      if (trip.trip_status == "Running") {
+      if (trip.isEmitterSubcribedToTracking) {
         trip.unSubscribeToTripTracking(_emitterServiceProvider);
+      }
+      if (trip.isEmitterSubcribedToEvents) {
         trip.unSubscribeToTripEvents(_emitterServiceProvider);
       }
     } catch (e) {
@@ -1935,16 +1946,27 @@ class _TripPageState extends State<TripPage>
         trip.trip_status == "Running") {
       print(
           "[TripPage.initState] lastPositionPayload ${trip.lastPositionPayload}");
-      final Position position = trip.lastPosition()!;
-      final label = formatUnixEpoch(trip.lastPositionPayload['time'].toInt());
+      final Position? position = trip.lastPosition();
 
-      // FIX: Pasar el driver_id directamente en lugar de usar relationName del driver
-      // El método _updateIcon verificará internamente si debe mostrar el ícono
-      _updateIcon(
-          position, 'driver-position', trip.driver_id!, label);
-      if (!_isInitialCameraSet) {
-        mapboxMap.setCamera(CameraOptions(zoom: 18, pitch: 0));
-        _isInitialCameraSet = true;
+      if (position != null) {
+        final label = formatUnixEpoch(trip.lastPositionPayload['time'].toInt());
+
+        // FIX: Pasar el driver_id directamente en lugar de usar relationName del driver
+        // El método _updateIcon verificará internamente si debe mostrar el ícono
+        _updateIcon(
+            position, 'driver-position', trip.driver_id!, label);
+        if (!_isInitialCameraSet) {
+          mapboxMap.setCamera(CameraOptions(zoom: 18, pitch: 0));
+          _isInitialCameraSet = true;
+        }
+      } else {
+        print("[TripPage.initState] lastPosition es null, esperando primera actualización");
+        final coordinateBounds = getCoordinateBounds(points);
+        if (!_isInitialCameraSet) {
+          mapboxMap.setCamera(CameraOptions(
+              center: coordinateBounds.southwest, zoom: 18, pitch: 0));
+          _isInitialCameraSet = true;
+        }
       }
     } else {
       final coordinateBounds = getCoordinateBounds(points);
@@ -2196,6 +2218,16 @@ class _TripPageState extends State<TripPage>
 
     if (relationName != null && relationName == "eta.drivers") {
       final driverId = relationId;
+
+      if (driverId != trip.driver_id) {
+        print("[processTrackingMessage] Ignorando tracking de driver $driverId (este viaje es driver ${trip.driver_id})");
+        return;
+      }
+
+      if (trip.trip_status != "Running") {
+        print("[processTrackingMessage] Viaje no está Running (${trip.trip_status}), ignorando tracking");
+        return;
+      }
 
       if (payload['latitude'] != null && payload['longitude'] != null) {
         final Position position = Position(

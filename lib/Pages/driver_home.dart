@@ -215,6 +215,7 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
         if (trip.school_id != null) {
           await storage.setItem('driver_school_id', trip.school_id);
         }
+        await storage.setItem('has_active_trip', 'true');
         await LocationService.instance.init();
         await LocationService.instance.startLocationService(
             calculateDistance: true);

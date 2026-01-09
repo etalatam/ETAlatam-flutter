@@ -120,13 +120,17 @@ class _StudentPageState extends State<StudentPage> {
                       if (studentPointAnnotation == null && widget.student?.lastPositionPayload != null) {
                         print(
                             "[StudentPage] Creando anotación inicial con lastPosition ${widget.student?.lastPosition}");
-                        final Position? position =
-                            widget.student?.lastPosition()!;
-                        final label = formatUnixEpoch(widget
-                            .student?.lastPositionPayload['time']?.toInt());
+                        final Position? position = widget.student?.lastPosition();
 
-                        _updateIcon(position!, 'eta.students',
-                            widget.student!.student_id, label);
+                        if (position != null) {
+                          final label = formatUnixEpoch(widget
+                              .student?.lastPositionPayload['time']?.toInt());
+
+                          _updateIcon(position, 'eta.students',
+                              widget.student!.student_id, label);
+                        } else {
+                          print("[StudentPage.onMapReady] lastPosition es null, esperando primera actualización");
+                        }
                       } else if (studentPointAnnotation != null) {
                         debugPrint('[StudentPage.onMapReady] Anotación del estudiante ya existe, se mantiene');
                       }

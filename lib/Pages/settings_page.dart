@@ -30,8 +30,8 @@ class _SettingsPageState extends State<SettingsPage>
 
   final preferences = PreferencesSetting();
 
-  String appVersion = '1.12.48';
-  String buildNumber = '48';
+  String appVersion = '1.12.49';
+  String buildNumber = '49';
 
   @override
   Widget build(BuildContext context) {
