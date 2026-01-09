@@ -129,6 +129,7 @@ class Lang {
     'all': 'الجميع',
     'logout': 'تسجيل الخروج',
     'logging_out': 'جارٍ تسجيل الخروج...',
+    'error_starting_trip': 'حدث خطأ أثناء محاولة بدء الرحلة، يرجى المحاولة مرة أخرى',
     'closed': 'مغلقة',
     'app_preferences': 'إعدادات التطبيق',
     'get_permission': 'عرض الصلاحيات',
@@ -301,6 +302,7 @@ class Lang {
     "resolved": "Resolved",
     "logout": "Logout",
     "logging_out": "Logging out...",
+    "error_starting_trip": "An error occurred while trying to start the trip, please try again",
   };
 
   Map<String, dynamic> esLangs = {
@@ -368,6 +370,7 @@ class Lang {
     'contact_number': 'Teléfono',
     'logout': 'Salir',
     'logging_out': 'Cerrando sesión...',
+    'error_starting_trip': 'Ha ocurrido un error intentando iniciar el viaje, por favor intente nuevamente',
     'change_password': 'Cambiar contraseña',
     'high': 'Alta',
     'low': 'Baja',

@@ -2075,70 +2075,82 @@ class _TripPageState extends State<TripPage>
           _isInitialCameraSet = true;
         }
       }
-      // Si ya existe, eliminamos la anterior y creamos una nueva para evitar duplicados
+      // Si ya existe, actualizar sin recrear para evitar parpadeo
       else  {
-        print("[TripPage._updateIcon] updating existing point annotation - recreating to avoid duplicates");
-        
-        // Eliminar la anotación anterior
-        if (busPointAnnotation != null) {
-          try {
-            await annotationManager?.delete(busPointAnnotation!);
-          } catch (e) {
-            print("[TripPage._updateIcon] Error deleting old annotation: $e");
-          }
-        }
-        
-        // Crear nueva anotación con la posición y etiqueta actualizadas
-        final int currentBusColor = Colors.white.value;
-        
-        Uint8List? imageData;
-        if (_busMarkerCache.containsKey(currentBusColor) &&
-            _busMarkerCache[currentBusColor] != null) {
-          imageData = _busMarkerCache[currentBusColor]!;
-        } else {
-          final ui.Image busImage =
-              await loadImageFromAsset('assets/bus_color.png');
-          imageData = await createCircleMarkerImage(
-              circleColor: Color(currentBusColor),
-              image: busImage,
-              size: 96,
-              imageSize: 72);
-          _busMarkerCache[currentBusColor] = imageData;
-        }
-        
-        busPointAnnotation =
-            await annotationManager?.create(PointAnnotationOptions(
-          geometry: Point(coordinates: position),
-          image: imageData,
-          textSize: 14,
-          textField: label,
-          textOffset: [
-            0.0,
-            -2.0
-          ],
-          textColor: Colors.black.value,
-          textHaloColor: Colors.white.value,
-          textHaloWidth: 2,
-          iconSize: 1.0,
-          symbolSortKey: 3,
-        ));
+        print("[TripPage._updateIcon] updating existing point annotation");
 
-        // Solo centrar el mapa si el auto-seguimiento está activado
-        if (_autoFollowBus) {
-          _mapboxMapController?.flyTo(
-            CameraOptions(center: Point(coordinates: position)),
-            MapAnimationOptions(duration: 1000, startDelay: 0)
-          );
-        }
-        
-        // Si el usuario no ha interactuado en los últimos 30 segundos, reactivar auto-seguimiento
-        if (_lastUserInteraction != null) {
-          final timeSinceInteraction = DateTime.now().difference(_lastUserInteraction!);
-          if (timeSinceInteraction.inSeconds > 30) {
-            setState(() {
-              _autoFollowBus = true;
-            });
+        try {
+          busPointAnnotation?.geometry = Point(coordinates: position);
+          busPointAnnotation?.textField = label;
+
+          if (busPointAnnotation != null) {
+            await annotationManager?.update(busPointAnnotation!);
           }
+
+          // Solo centrar el mapa si el auto-seguimiento está activado
+          if (_autoFollowBus) {
+            _mapboxMapController?.flyTo(
+              CameraOptions(center: Point(coordinates: position)),
+              MapAnimationOptions(duration: 1000, startDelay: 0)
+            );
+          }
+
+          // Si el usuario no ha interactuado en los últimos 30 segundos, reactivar auto-seguimiento
+          if (_lastUserInteraction != null) {
+            final timeSinceInteraction = DateTime.now().difference(_lastUserInteraction!);
+            if (timeSinceInteraction.inSeconds > 30) {
+              setState(() {
+                _autoFollowBus = true;
+              });
+            }
+          }
+        } catch (e) {
+          print("[TripPage._updateIcon] Error actualizando anotación: $e - recreando");
+
+          // Si falla, eliminar y recrear
+          if (busPointAnnotation != null) {
+            try {
+              await annotationManager?.delete(busPointAnnotation!);
+            } catch (deleteError) {
+              print("[TripPage._updateIcon] Error eliminando anotación: $deleteError");
+            }
+          }
+          busPointAnnotation = null;
+
+          // Crear nueva anotación
+          final int currentBusColor = Colors.white.value;
+
+          Uint8List? imageData;
+          if (_busMarkerCache.containsKey(currentBusColor) &&
+              _busMarkerCache[currentBusColor] != null) {
+            imageData = _busMarkerCache[currentBusColor]!;
+          } else {
+            final ui.Image busImage =
+                await loadImageFromAsset('assets/bus_color.png');
+            imageData = await createCircleMarkerImage(
+                circleColor: Color(currentBusColor),
+                image: busImage,
+                size: 96,
+                imageSize: 72);
+            _busMarkerCache[currentBusColor] = imageData;
+          }
+
+          busPointAnnotation =
+              await annotationManager?.create(PointAnnotationOptions(
+            geometry: Point(coordinates: position),
+            image: imageData,
+            textSize: 14,
+            textField: label,
+            textOffset: [
+              0.0,
+              -2.0
+            ],
+            textColor: Colors.black.value,
+            textHaloColor: Colors.white.value,
+            textHaloWidth: 2,
+            iconSize: 1.0,
+            symbolSortKey: 3,
+          ));
         }
       }
 

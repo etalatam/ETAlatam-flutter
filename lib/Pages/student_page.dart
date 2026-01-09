@@ -605,10 +605,42 @@ class _StudentPageState extends State<StudentPage> {
         _isInitialCameraSet = true;
       }
     } else {
-      debugPrint('[StudentPage._updateIcon] Actualizando anotación existente a posición: $position');
-      studentPointAnnotation?.geometry = Point(coordinates: position);
-      studentPointAnnotation?.textField = label;
-      annotationManager?.update(studentPointAnnotation!);
+      debugPrint('[StudentPage._updateIcon] Actualizando posición de anotación existente: $position');
+
+      try {
+        studentPointAnnotation?.geometry = Point(coordinates: position);
+        studentPointAnnotation?.textField = label;
+
+        if (studentPointAnnotation != null) {
+          await annotationManager?.update(studentPointAnnotation!);
+        }
+      } catch (e) {
+        debugPrint('[StudentPage._updateIcon] Error actualizando anotación: $e - recreando');
+
+        if (studentPointAnnotation != null) {
+          try {
+            await annotationManager?.delete(studentPointAnnotation!);
+          } catch (deleteError) {
+            debugPrint('[StudentPage._updateIcon] Error eliminando anotación: $deleteError');
+          }
+        }
+        studentPointAnnotation = null;
+
+        String studentName = "";
+        if (widget.student != null) {
+          studentName = widget.student!.first_name ?? '';
+        }
+
+        final networkImage = await mapboxUtils
+            .getNetworkImage(
+              httpService.getAvatarUrl(relationId, relationName),
+              name: studentName
+            );
+
+        final circleImage = await mapboxUtils.createCircleImage(networkImage, hasActiveTrip: hasActiveTrip, isOnBoard: widget.isOnBoard);
+        studentPointAnnotation = await mapboxUtils.createAnnotation(
+            annotationManager, position, circleImage, label);
+      }
     }
 
     if ("$relationId" == "${widget.student?.student_id}" && !_isInitialCameraSet) {
@@ -646,6 +678,11 @@ class _StudentPageState extends State<StudentPage> {
             tracking['relation_name'] == 'eta.students') {
           final relationName = tracking['relation_name'];
           final relationId = tracking['relation_id'];
+
+          if (relationId != widget.student?.student_id) {
+            print("[StudentPage.onEmitterMessage] Ignorando tracking de estudiante $relationId (esperando ${widget.student?.student_id})");
+            return;
+          }
 
           if (tracking['payload'] != null) {
             final Position position = Position(

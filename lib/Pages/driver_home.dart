@@ -16,7 +16,6 @@ import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/home_route_block.dart';
 import 'package:eta_school_app/Models/EventModel.dart';
-import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class DriverHome extends StatefulWidget {
@@ -232,14 +231,29 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
         loadResources();
       }
     } catch (e) {
-      print(e.toString());
-      var msg = e.toString().split('/');
+      print("[DriverHome.createTrip.error] ${e.toString()}");
+
       if (!mounted) return;
       setState(() {
         showLoader = false;
       });
-      showSuccessDialog(context, "${lang.translate('Error')} (${msg[1]})",
-          lang.translate(msg[0]), null);
+
+      String errorTitle = lang.translate('Error');
+      String errorMessage = lang.translate('error_starting_trip');
+
+      var errorString = e.toString();
+      if (errorString.contains('/')) {
+        var parts = errorString.split('/');
+        if (parts.length >= 2) {
+          errorTitle = "${lang.translate('Error')} (${parts[1]})";
+          var translatedMsg = lang.translate(parts[0]);
+          if (translatedMsg != parts[0]) {
+            errorMessage = translatedMsg;
+          }
+        }
+      }
+
+      showSuccessDialog(context, errorTitle, errorMessage, null);
     }
   }
 
