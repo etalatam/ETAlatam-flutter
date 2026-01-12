@@ -303,6 +303,16 @@ class Lang {
     "logout": "Logout",
     "logging_out": "Logging out...",
     "error_starting_trip": "An error occurred while trying to start the trip, please try again",
+    "visited": "Visited",
+    "not_visited": "Not visited",
+    "cancel": "Cancel",
+    "pickup_marked_visited": "Stop marked as visited",
+    "pickup_marked_not_visited": "Stop marked as not visited",
+    "invalid_access": "Invalid access",
+    "only_drivers_allowed": "Only drivers can perform this action",
+    "trip_not_found": "Active trip not found",
+    "pickup_point_not_found": "Stop not found",
+    "server_error": "Server error, please try again",
   };
 
   Map<String, dynamic> esLangs = {
@@ -475,5 +485,15 @@ class Lang {
     "error": "Error",
     "your_help_messages": "Tus mensajes de ayuda",
     "close": "Cerrar",
+    "visited": "Visitada",
+    "not_visited": "No visitada",
+    "cancel": "Cancelar",
+    "pickup_marked_visited": "Parada marcada como visitada",
+    "pickup_marked_not_visited": "Parada marcada como no visitada",
+    "invalid_access": "Acceso inválido",
+    "only_drivers_allowed": "Solo los conductores pueden realizar esta acción",
+    "trip_not_found": "Viaje activo no encontrado",
+    "pickup_point_not_found": "Parada no encontrada",
+    "server_error": "Error del servidor, intente nuevamente",
   };
 }

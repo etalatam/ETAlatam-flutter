@@ -363,7 +363,7 @@ class _StudentsHomeState extends State<StudentsHome>
       // Si el viaje terminó o inició, verificar si es relevante para el usuario
       if (jsonMsg['event_type'] == 'end-trip' || jsonMsg['event_type'] == 'start-trip') {
         final eventTripId = jsonMsg['id_trip'];
-        
+
         if (jsonMsg['event_type'] == 'start-trip') {
           print('[StudentsHome] Evento start-trip recibido, recargando datos...');
           if (mounted) loadResources();
@@ -373,6 +373,16 @@ class _StudentsHomeState extends State<StudentsHome>
             print('[StudentsHome] Evento end-trip recibido para viaje activo $eventTripId, recargando datos...');
             if (mounted) loadResources();
           }
+        }
+      }
+
+      // Si una parada fue visitada o reseteada, recargar datos para actualizar el contador
+      if (jsonMsg['event_type'] == 'point-arrival' || jsonMsg['event_type'] == 'point-reset') {
+        final eventTripId = jsonMsg['id_trip'];
+        final bool isRelevant = hasActiveTrip && activeTrip?.trip_id == eventTripId;
+        if (isRelevant) {
+          print('[StudentsHome] Evento ${jsonMsg['event_type']} recibido para viaje activo $eventTripId, recargando datos...');
+          if (mounted) loadResources();
         }
       }
     } catch (e) {

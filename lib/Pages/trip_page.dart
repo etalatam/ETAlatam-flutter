@@ -34,6 +34,7 @@ import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:synchronized/synchronized.dart';
 import '../components/marquee_text.dart';
+import '../components/icon_button_with_text.dart';
 import 'map/map_wiew.dart';
 import 'package:eta_school_app/Pages/home_screen.dart';
 
@@ -143,9 +144,11 @@ class _TripPageState extends State<TripPage>
   Timer? _autoFollowTimer;
   
   bool _isInitialCameraSet = false;
-  
-  // Timer para actualizar el tiempo del viaje
+
   Timer? _tripDurationTimer;
+
+  int? _selectedPickupIndex;
+  bool _isMarkingPickup = false;
 
   @override
   void initState() {
@@ -757,7 +760,7 @@ class _TripPageState extends State<TripPage>
                                         activeTab == 'pickup'
                                             ? Row(children: [
                                                 tripUser(
-                                                    trip.pickup_locations![i]),
+                                                    trip.pickup_locations![i], i),
                                               ])
                                             : const Center(),
                                     ],
@@ -777,6 +780,17 @@ class _TripPageState extends State<TripPage>
                             } : null,
                           )
                         : const Center(),
+                    if (_isMarkingPickup)
+                      Positioned.fill(
+                        child: Container(
+                          color: Colors.black.withOpacity(0.3),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
                   ]),
                   // ])
                 ),
@@ -806,8 +820,9 @@ class _TripPageState extends State<TripPage>
     );
   }
 
-  Widget tripUser(TripPickupLocation pickupLocation) {
-    // print('[TripPage.tripUser.pickupLocation]');
+  Widget tripUser(TripPickupLocation pickupLocation, int index) {
+    bool isSelected = _selectedPickupIndex == index;
+
     return GestureDetector(
       onTap: () {
         _mapboxMapController?.setCamera(CameraOptions(
@@ -815,11 +830,15 @@ class _TripPageState extends State<TripPage>
             center: Point(
                 coordinates: Position(pickupLocation.location!.longitude as num,
                     pickupLocation.location!.latitude as num))));
+
+        if (trip.trip_status == 'Running' && relationName == 'eta.drivers') {
+          setState(() {
+            _selectedPickupIndex = isSelected ? null : index;
+          });
+        }
       },
       child: Row(children: [
-        const SizedBox(
-          width: 10,
-        ),
+        const SizedBox(width: 10),
         Column(
           children: [
             SizedBox(
@@ -846,7 +865,7 @@ class _TripPageState extends State<TripPage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             MarqueeText(
-              text: '${pickupLocation.location?.location_name ?? ''}',
+              text: pickupLocation.location?.location_name ?? '',
               style: activeTheme.h5,
               width: 300,
               autoStart: true,
@@ -854,17 +873,109 @@ class _TripPageState extends State<TripPage>
             SizedBox(
                 width: 300,
                 child: Text(
-                  '${pickupLocation.location?.address}',
+                  pickupLocation.location?.address ?? '',
                   softWrap: true,
                   maxLines: 2,
                   style: TextStyle(
                       fontSize: activeTheme.smallText.fontSize,
                       color: activeTheme.smallText.color),
                 )),
+            if (isSelected && pickupLocation.pickup_id != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Row(
+                  children: [
+                    IconButtonWithText(
+                      label: Text(lang.translate('visited'), style: activeTheme.smallText),
+                      icon: Icon(Icons.check_circle, color: Colors.green),
+                      onPressed: () => _markPickupStatus(index, pickupLocation.pickup_id!, true),
+                    ),
+                    const SizedBox(width: 30),
+                    IconButtonWithText(
+                      label: Text(lang.translate('not_visited'), style: activeTheme.smallText),
+                      icon: Icon(Icons.check_circle, color: Colors.orange),
+                      onPressed: () => _markPickupStatus(index, pickupLocation.pickup_id!, false),
+                    ),
+                    const SizedBox(width: 30),
+                    IconButton(
+                      icon: Icon(Icons.close),
+                      onPressed: () {
+                        setState(() {
+                          _selectedPickupIndex = null;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
           ],
         )
       ]),
     );
+  }
+
+  Future<void> _markPickupStatus(int pickupIndex, int pickupPointId, bool visited) async {
+    print('[_markPickupStatus] START - tripId: ${trip.trip_id}, pickupPointId: $pickupPointId, visited: $visited');
+
+    setState(() {
+      _isMarkingPickup = true;
+    });
+
+    try {
+      final response = await httpService.markPickupPointStatus(
+        trip.trip_id!,
+        pickupPointId,
+        visited,
+      );
+
+      print('[_markPickupStatus] response: $response');
+
+      if (response['success'] == true) {
+        setState(() {
+          trip.pickup_locations![pickupIndex].status = visited ? 'visited' : 'waiting';
+          _selectedPickupIndex = null;
+          _isMarkingPickup = false;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(lang.translate(visited ? 'pickup_marked_visited' : 'pickup_marked_not_visited')),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        print('[_markPickupStatus] ERROR response - mounted: $mounted, error: ${response['error']}');
+        if (mounted) {
+          setState(() {
+            _isMarkingPickup = false;
+          });
+          final errorKey = response['error'] ?? 'server_error';
+          print('[_markPickupStatus] Showing SnackBar with error: $errorKey');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(lang.translate(errorKey)),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('[_markPickupStatus] ERROR: $e');
+      if (mounted) {
+        setState(() {
+          _isMarkingPickup = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(lang.translate('connection_error')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   endTrip() async {
@@ -2160,11 +2271,12 @@ class _TripPageState extends State<TripPage>
 
   void onEmitterMessage() async {
     if (!_isVisible) return; // No procesar si no está visible
+    if (_emitterServiceProvider == null) return;
 
     // Update Emitter statistics
     _messageCount++;
     _lastMessageTime = DateTime.now();
-    
+
     // Los mensajes recibidos en trip_page son eventos del viaje
     _receivedCount++;
     _lastReceivedTime = DateTime.now();
@@ -2172,7 +2284,7 @@ class _TripPageState extends State<TripPage>
     final String message = _emitterServiceProvider!.lastMessage();
     print('[TripPage.onEmitterMessage] Mensaje recibido: $message');
 
-    if (mounted) {
+    if (mounted && trip.dt != null) {
       setState(() {
         tripDuration = Utils.formatElapsedTime(trip.dt!);
       });
@@ -2263,19 +2375,20 @@ class _TripPageState extends State<TripPage>
           print('[TripPage] Evento end-trip ignorado (trip_id ${event.tripId} != ${trip.trip_id})');
           return;
         }
-        
+
         print('[TripPage] Evento end-trip recibido, mostrando modal...');
         _showTripEndedModal();
       } else {
         final updatedTrip = await httpService.getTrip(trip.trip_id);
-        if (mounted) {
+        // Solo actualizar si el trip es válido (no es un modelo vacío por error)
+        if (mounted && updatedTrip.trip_id != 0 && updatedTrip.pickup_locations != null) {
           setState(() {
             trip = updatedTrip;
           });
         }
       }
     } catch (e) {
-      // print("[TripPage] $e");
+      print("[TripPage.proccessTripEventMessage] Error: $e");
     }
   }
 

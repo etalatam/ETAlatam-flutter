@@ -306,7 +306,6 @@ class TripPickupLocation {
   double? longitude;
   PickupLocationModel? location;
   StudentModel? student;
-  
 
   TripPickupLocation({
     this.trip_pickup_id,
@@ -338,12 +337,18 @@ class TripPickupLocation {
       print('[TripPickupLocation.fromJson.student] ${e.toString()}');
     }
 
+    // pickup_id puede venir como 'pickup_point_id' o dentro del location
+    int? pickupId = json['pickup_point_id'] as int?;
+    if (pickupId == null && pickupLocation != null) {
+      pickupId = pickupLocation.pickup_id;
+    }
+
     return TripPickupLocation(
-      trip_pickup_id: json['trip_pickup_id'] as int?,
+      trip_pickup_id: json['id'] as int?,
       trip_id: json['trip_id'] as int?,
       model_id: json['model_id'] as int?,
-      pickup_id: json['pickup_id'] as int?,
-      status: json['in_ts'] != null ? 'visited' : 'waiting',
+      pickup_id: pickupId,
+      status: json['in_ts'] != null && json['in_ts'] != 'null' ? 'visited' : 'waiting',
       boarding_time: json['boarding_time'] as String?,
       dropoff_time: json['dropoff_time'] as String?,
       latitude: double.parse(json['pickup_point_lat'].toString()),

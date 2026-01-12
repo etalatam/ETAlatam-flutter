@@ -741,6 +741,44 @@ class HttpService {
     return TripModel(trip_id: 0);
   }
 
+  /// Mark pickup point as visited or not visited
+  Future<Map<String, dynamic>> markPickupPointStatus(int tripId, int pickupPointId, bool visited) async {
+    const endpoint = '/rpc/mark_pickup_point_status';
+
+    try {
+      http.Response res = await postQuery(
+        endpoint,
+        jsonEncode({
+          'p_trip_id': tripId,
+          'p_pickup_point_id': pickupPointId,
+          'p_visited': visited,
+        }),
+        contentType: 'application/json',
+      );
+
+      print("[$endpoint] res.statusCode: ${res.statusCode}");
+      print("[$endpoint] res.body: ${res.body}");
+
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body);
+      } else {
+        print("[$endpoint] ERROR - statusCode: ${res.statusCode}");
+        print("[$endpoint] ERROR - body completo: ${res.body}");
+        var body = jsonDecode(res.body);
+        print("[$endpoint] ERROR - hint: ${body['hint']}");
+        print("[$endpoint] ERROR - message: ${body['message']}");
+        print("[$endpoint] ERROR - details: ${body['details']}");
+        print("[$endpoint] ERROR - code: ${body['code']}");
+        String errorKey = body['hint'] ?? 'server_error';
+        return {'success': false, 'error': errorKey};
+      }
+    } catch (e, stackTrace) {
+      print("[$endpoint] error: ${e.toString()}");
+      print("[$endpoint] stackTrace: $stackTrace");
+      return {'success': false, 'error': 'connection_error'};
+    }
+  }
+
   Future<List<TripModel>> getGuardianTrips(String active) async {
     const endpoint = "/rpc/guardian_trips";
     http.Response res =
