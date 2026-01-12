@@ -170,7 +170,8 @@ class LocationService extends ChangeNotifier {
       if (relationName == 'eta.drivers') {
         String? hasActiveTrip = await storage.getItem('has_active_trip');
         if (hasActiveTrip != 'true') {
-          debugPrint('[LocationService.trackingDynamic] Driver sin viaje activo, no se envía tracking');
+          debugPrint('[LocationService.trackingDynamic] Driver sin viaje activo, deteniendo tracking');
+          stopLocationService();
           return;
         }
       }
