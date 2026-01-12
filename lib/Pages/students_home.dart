@@ -376,17 +376,31 @@ class _StudentsHomeState extends State<StudentsHome>
         }
       }
 
-      // Si una parada fue visitada o reseteada, recargar datos para actualizar el contador
-      if (jsonMsg['event_type'] == 'point-arrival' || jsonMsg['event_type'] == 'point-reset') {
+      // Si una parada fue visitada o reseteada, solo actualizar el activeTrip (no todo el home)
+      if (jsonMsg['event_type'] == 'point-arrival' || jsonMsg['event_type'] == 'point-reset' ||
+          jsonMsg['event_type'] == 'point-departure' || jsonMsg['event_type'] == 'proximity-to-point') {
         final eventTripId = jsonMsg['id_trip'];
         final bool isRelevant = hasActiveTrip && activeTrip?.trip_id == eventTripId;
         if (isRelevant) {
-          print('[StudentsHome] Evento ${jsonMsg['event_type']} recibido para viaje activo $eventTripId, recargando datos...');
-          if (mounted) loadResources();
+          print('[StudentsHome] Evento ${jsonMsg['event_type']} recibido para viaje activo $eventTripId, actualizando trip...');
+          if (mounted) _refreshActiveTrip();
         }
       }
     } catch (e) {
       // No es un mensaje JSON válido o no es relevante
+    }
+  }
+
+  Future<void> _refreshActiveTrip() async {
+    try {
+      TripModel? updatedTrip = await httpService.getActiveTrip();
+      if (mounted && updatedTrip.trip_id != 0 && updatedTrip.pickup_locations != null) {
+        setState(() {
+          activeTrip = updatedTrip;
+        });
+      }
+    } catch (e) {
+      print('[StudentsHome._refreshActiveTrip] Error: $e');
     }
   }
 

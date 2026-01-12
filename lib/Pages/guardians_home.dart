@@ -404,17 +404,40 @@ class _GuardiansHomeState extends State<GuardiansHome>
         }
       }
 
-      // Si una parada fue visitada o reseteada, recargar datos para actualizar el contador
-      if (jsonMsg['event_type'] == 'point-arrival' || jsonMsg['event_type'] == 'point-reset') {
+      // Si una parada fue visitada o reseteada, solo actualizar el trip (no todo el home)
+      if (jsonMsg['event_type'] == 'point-arrival' || jsonMsg['event_type'] == 'point-reset' ||
+          jsonMsg['event_type'] == 'point-departure' || jsonMsg['event_type'] == 'proximity-to-point') {
         final eventTripId = jsonMsg['id_trip'];
         final bool isRelevant = activeTrips.any((trip) => trip.trip_id == eventTripId);
         if (isRelevant) {
-          print('[GuardiansHome] Evento ${jsonMsg['event_type']} recibido para viaje activo $eventTripId, recargando datos...');
-          if (mounted) loadParent();
+          print('[GuardiansHome] Evento ${jsonMsg['event_type']} recibido para viaje activo $eventTripId, actualizando trip...');
+          if (mounted) _refreshActiveTrips(eventTripId);
         }
       }
     } catch (e) {
       // No es un mensaje JSON válido o no es relevante
+    }
+  }
+
+  Future<void> _refreshActiveTrips(int tripId) async {
+    try {
+      final List<TripModel> trips = await httpService.getGuardianTrips("true");
+      if (mounted && trips.isNotEmpty) {
+        setState(() {
+          for (int i = 0; i < activeTrips.length; i++) {
+            if (activeTrips[i].trip_id == tripId) {
+              final updatedTrip = trips.firstWhere(
+                (t) => t.trip_id == tripId,
+                orElse: () => activeTrips[i],
+              );
+              activeTrips[i] = updatedTrip;
+              break;
+            }
+          }
+        });
+      }
+    } catch (e) {
+      print('[GuardiansHome._refreshActiveTrips] Error: $e');
     }
   }
 
