@@ -44,6 +44,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
 
   EmitterService? _emitterServiceProvider;
   EmitterTopic? _schoolEventsTopic;
+  bool _isFirstLoad = true;
 
   bool _studentHasActiveTrip(int studentId) {
     for (var studentInfo in studentsTrips) {
@@ -79,7 +80,8 @@ class _GuardiansHomeState extends State<GuardiansHome>
                     child: VisibilityDetector(
                           key: Key('guardians_home_key'),
                           onVisibilityChanged: (info) {
-                            if (info.visibleFraction > 0) {
+                            if (info.visibleFraction > 0 && _isFirstLoad) {
+                              _isFirstLoad = false;
                               loadParent();
                             }
                           }, 
@@ -213,18 +215,19 @@ class _GuardiansHomeState extends State<GuardiansHome>
   }
 
   loadParent() async {
-    print("[GuardianHome.loadParent]");
+    if (!mounted) return;
+
+    final check = await storage.getItem('id_usu');
+    if (check == null || !mounted) return;
 
     try {
       final parentQuery = await httpService.getParent();
       if(mounted){
         setState(() {
           parentModel = parentQuery;
-          showLoader = false;
         });
       }else{
         parentModel = parentQuery;
-        showLoader = false;
       }
         
       studentsTrips.clear();
@@ -320,6 +323,15 @@ class _GuardiansHomeState extends State<GuardiansHome>
       }
     } catch (e) {
       print("[GuardianHome.loadParent] error  loading olds trips : $e");
+    } finally {
+      if(mounted){
+        setState(() {
+          showLoader = false;
+        });
+      }else{
+        showLoader = false;
+      }
+      NotificationService.instance.setTopicsReady();
     }
   }
 

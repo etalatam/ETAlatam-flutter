@@ -170,13 +170,29 @@ class _HomeScreenState extends State<HomeScreen> {
                   _pageController.changePage(1);
                 }
               },
-              child: Scaffold(
-                bottomNavigationBar: CustomBottonNavigation(),
-                body: IndexedStack(
-                  index: _pageController.currentIndex.value,
-                  children:
-                      getWidgetsByKey(userRelationName) ?? defaultWidgets,
-                ),
+              child: ListenableBuilder(
+                listenable: NotificationService.instance,
+                builder: (context, child) {
+                  final isLoading = !NotificationService.instance.topicsReady;
+                  return Stack(
+                    children: [
+                      Scaffold(
+                        bottomNavigationBar: CustomBottonNavigation(),
+                        body: IndexedStack(
+                          index: _pageController.currentIndex.value,
+                          children:
+                              getWidgetsByKey(userRelationName) ?? defaultWidgets,
+                        ),
+                      ),
+                      if (isLoading)
+                        Positioned.fill(
+                          child: Container(
+                            color: Colors.transparent,
+                          ),
+                        ),
+                    ],
+                  );
+                },
               ),
             );
           });

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:eta_school_app/Pages/driver_page.dart';
 import 'package:eta_school_app/Pages/help_messages_page.dart';
 import 'package:eta_school_app/Models/parent_model.dart';
@@ -84,21 +85,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
             type: MaterialType.transparency,
             child: RefreshIndicator(
                 triggerMode: RefreshIndicatorTriggerMode.anywhere,
-                onRefresh:
-                    _refreshData, // Function to be called on pull-to-refresh
-                child: VisibilityDetector(
-                    key: Key('my-widget-key'),
-                    onVisibilityChanged: (visibilityInfo) {
-                      if (visibilityInfo.visibleFraction > 0) {
-                        print('Widget visible');
-                        if (notificationsList.isEmpty) {
-                          loadNotifications();
-                        }
-                      } else {
-                        print('Widget oculto');
-                      }
-                    },
-                    child: Container(
+                onRefresh: _refreshData,
+                child: Container(
                         width: double.infinity,
                         height: MediaQuery.of(context).size.height,
                         color: activeTheme.main_bg,
@@ -301,15 +289,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                                                                 Positioned(
                                                                                   left: 0,
                                                                                   top: 0,
-                                                                                  child: Container(
+                                                                                  child: SizedBox(
                                                                                     width: 32,
                                                                                     height: 32,
-                                                                                    clipBehavior: Clip.antiAlias,
-                                                                                    decoration: const BoxDecoration(
-                                                                                      image: DecorationImage(
-                                                                                        image: NetworkImage("https://via.placeholder.com/32x32"),
-                                                                                        fit: BoxFit.fill,
-                                                                                      ),
+                                                                                    child: Icon(
+                                                                                      Icons.notifications,
+                                                                                      color: Colors.white,
+                                                                                      size: 24,
                                                                                     ),
                                                                                   ),
                                                                                 ),
@@ -435,7 +421,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           //     left: 20,
                           //     right: 20,
                           //     child: BottomMenu('notifications', openPage))
-                        ])))));
+                        ]))));
   }
 
   ///
@@ -477,6 +463,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   bool showLoader = true;
+  bool _isFirstLoad = true;
+  int _lastTopicsCount = 0;
+  Timer? _debounceTimer;
 
   // Function to simulate data retrieval or refresh
   Future<void> _refreshData() async {
@@ -522,19 +511,50 @@ class _NotificationsPageState extends State<NotificationsPage> {
   void initState() {
     super.initState();
     showLoader = true;
-    loadNotifications();
 
     Provider.of<NotificationService>(context, listen: false)
-        .addListener(onPushMessage);
+        .addListener(onNotificationServiceChange);
+
+    if (NotificationService.instance.topicsReady) {
+      _isFirstLoad = false;
+      loadNotifications();
+    } else {
+      _startTimeout();
+    }
   }
 
-  void onPushMessage() {
-    print("[NotificaionPage.onPushMessage]");
-    final LastMessage? lastMessage = NotificationService.instance.lastMessage;
-    final title = lastMessage?.message.notification!.title ?? "Nuevo mensaje";
+  void _startTimeout() {
+    Future.delayed(Duration(seconds: 10), () {
+      if (mounted && _isFirstLoad) {
+        _isFirstLoad = false;
+        print("[NotificationsPage] Timeout esperando topics, cargando con los disponibles");
+        loadNotifications();
+      }
+    });
+  }
 
+  void onNotificationServiceChange() {
+    if (NotificationService.instance.topicsReady && _isFirstLoad) {
+      _isFirstLoad = false;
+      _lastTopicsCount = NotificationService.instance.topicsList.length;
+      loadNotifications();
+      return;
+    }
+
+    final currentCount = NotificationService.instance.topicsList.length;
+    if (!_isFirstLoad && currentCount > _lastTopicsCount) {
+      _lastTopicsCount = currentCount;
+      _debounceTimer?.cancel();
+      _debounceTimer = Timer(Duration(seconds: 2), () {
+        if (mounted && !showLoader) {
+          loadNotifications();
+        }
+      });
+    }
+
+    final LastMessage? lastMessage = NotificationService.instance.lastMessage;
     if (lastMessage != null && mounted) {
-      // Mostrar el mensaje como un snackbar o diálogo
+      final title = lastMessage.message.notification!.title ?? "Nuevo mensaje";
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(title),
@@ -546,8 +566,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     Provider.of<NotificationService>(context, listen: false)
-        .removeListener(onPushMessage);
+        .removeListener(onNotificationServiceChange);
     super.dispose();
   }
 }

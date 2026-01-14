@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:eta_school_app/Models/route_model.dart';
-import 'package:eta_school_app/Pages/login_page.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/components/active_trip.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
@@ -41,6 +40,7 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
   List<EventModel> eventsList = [];
   List<RouteModel> todateRoutesList = [];
   List<TripModel> oldTripsList = [];
+  bool _isFirstLoad = true;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +55,8 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
                     child: VisibilityDetector(
                         key: Key('driver_home_key'),
                         onVisibilityChanged: (info) {
-                          if (info.visibleFraction > 0) {
+                          if (info.visibleFraction > 0 && _isFirstLoad) {
+                            _isFirstLoad = false;
                             loadResources();
                           }
                         },
@@ -281,16 +282,10 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
   /// Load resources through API
   ///
   loadResources() async {
-    try {
-      final check = await storage.getItem('id_usu');
+    if (!mounted) return;
 
-      if (check == null) {
-        Get.offAll(Login());
-        return;
-      }
-    } catch (e) {
-      print(e);
-    }
+    final check = await storage.getItem('id_usu');
+    if (check == null || !mounted) return;
 
     try {
       final driverQuery = await httpService.getDriver();
@@ -375,6 +370,7 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
           showLoader = false;
         });
       }
+      NotificationService.instance.setTopicsReady();
     }
   }
 

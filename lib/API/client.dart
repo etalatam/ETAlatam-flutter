@@ -350,7 +350,7 @@ class HttpService {
     }
 
     http.Response res = await getQuery(query);
-
+    print("query notificacion: $query");
     print("[$endpoint] res.statusCode: ${res.statusCode}");
     print("[$endpoint] res.body: ${res.body}");
 
@@ -980,9 +980,6 @@ class HttpService {
           EmitterService.instance.connect();
         }
 
-        // Setup de notificaciones FCM al hacer login exitoso (en background)
-        // No esperamos el resultado para no bloquear la navegación
-        // Agregamos timeout para evitar bloqueos
         Future.delayed(Duration(milliseconds: 100), () {
           NotificationService.instance.setupNotifications()
             .timeout(Duration(seconds: 5))
@@ -1473,7 +1470,7 @@ class HttpService {
           'Authorization': 'Bearer $token',
         },
       ).onError((error, stackTrace) => handleHttpError(error));
-
+      print("getMyUserTopic response: $url");
       print("[$endpoint] res.statusCode: ${response.statusCode}");
       print("[$endpoint] res.body: ${response.body}");
 

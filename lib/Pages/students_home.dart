@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Models/student_model.dart';
-import 'package:eta_school_app/Pages/login_page.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/components/active_trip.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
@@ -49,6 +48,7 @@ class _StudentsHomeState extends State<StudentsHome>
   
   EmitterService? _emitterServiceProvider;
   EmitterTopic? _schoolEventsTopic;
+  bool _isFirstLoad = true;
   
   @override
   Widget build(BuildContext context) {
@@ -63,7 +63,8 @@ class _StudentsHomeState extends State<StudentsHome>
                     child: VisibilityDetector(
                           key: Key('student_home_key'),
                           onVisibilityChanged: (info) {
-                            if (info.visibleFraction > 0) {
+                            if (info.visibleFraction > 0 && _isFirstLoad) {
+                              _isFirstLoad = false;
                               loadResources();
                             }
                           }, 
@@ -214,11 +215,12 @@ class _StudentsHomeState extends State<StudentsHome>
   /// Load resources through API
   ///
   loadResources() async {
+    if (!mounted) return;
+
     final studentId = await storage.getItem('relation_id');
     final check = await storage.getItem('id_usu');
 
-    if (check == null) {
-      Get.offAll(Login());
+    if (check == null || !mounted) {
       return;
     }
 
@@ -300,6 +302,7 @@ class _StudentsHomeState extends State<StudentsHome>
         showLoader = false;
       });
     }
+    NotificationService.instance.setTopicsReady();
   }
 
   openTripcallback(TripModel trip_) {
