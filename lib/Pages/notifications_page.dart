@@ -13,7 +13,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -424,6 +423,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         ]))));
   }
 
+
   ///
   /// Load notifications through API
   /// Carga notificaciones basadas en los topics suscritos
@@ -453,6 +453,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
           print("[NotificationsPage] No notifications found");
         }
       });
+      if (!_didAutoRefresh) {
+        _scheduleRefresh();
+      }
     } catch (e) {
       print("[NotificationsPage] Error loading notifications: $e");
       if (!mounted) return;
@@ -464,8 +467,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   bool showLoader = true;
   bool _isFirstLoad = true;
+  bool _didAutoRefresh = false;
   int _lastTopicsCount = 0;
   Timer? _debounceTimer;
+  Timer? _refreshTimer;
 
   // Function to simulate data retrieval or refresh
   Future<void> _refreshData() async {
@@ -533,6 +538,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
     });
   }
 
+  void _scheduleRefresh() {
+    _refreshTimer?.cancel();
+    _refreshTimer = Timer(Duration(milliseconds: 200), () {
+      if (mounted) {
+        _didAutoRefresh = true;
+        print("[NotificationsPage] Refrescando automáticamente después de 500ms");
+        _refreshData();
+      }
+    });
+  }
+
   void onNotificationServiceChange() {
     if (NotificationService.instance.topicsReady && _isFirstLoad) {
       _isFirstLoad = false;
@@ -567,6 +583,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   void dispose() {
     _debounceTimer?.cancel();
+    _refreshTimer?.cancel();
     Provider.of<NotificationService>(context, listen: false)
         .removeListener(onNotificationServiceChange);
     super.dispose();
