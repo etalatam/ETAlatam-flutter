@@ -33,6 +33,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 class NotificationService with ChangeNotifier {
   LastMessage? lastMessage;
 
+  // Bandera para indicar que hay nuevas notificaciones pendientes
+  bool hasNewNotifications = false;
+
   // Declaración del singleton
   static final NotificationService _instance = NotificationService._internal();
 
@@ -195,10 +198,9 @@ class NotificationService with ChangeNotifier {
     }
   }
 
-  // Método para manejar los mensajes entrantes
-  void _handleIncomingMessage(LastMessage message) {
-    lastMessage = message;
-    notifyListeners();
+  // Marcar que ya se leyeron las notificaciones nuevas
+  void clearNewNotificationsFlag() {
+    hasNewNotifications = false;
   }
 
   /// Navegar según el tipo de notificación
@@ -386,10 +388,14 @@ class NotificationService with ChangeNotifier {
           print('[FCM] Usuario removido de grupo, sincronizando...');
           syncGroups();
         } else {
-          // Anuncio normal → Mostrar notificación
+          // Marcar que hay nuevas notificaciones para refrescar la lista
+          hasNewNotifications = true;
+          notifyListeners();
+
+          // Mostrar snackbar si tiene notification
           if (message.notification != null) {
             print('[FCM] Message also contained a notification: ${message.notification}');
-            _handleIncomingMessage(LastMessage(message, 'foreground'));
+            lastMessage = LastMessage(message, 'foreground');
           }
         }
       });

@@ -7,11 +7,13 @@ import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/loader.dart';
 import 'package:eta_school_app/components/slide_action.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
+import 'package:eta_school_app/controllers/page_controller.dart' as p;
 import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 class NotificationsPage extends StatefulWidget {
@@ -79,7 +81,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
     return showLoader
-        ? Loader()
+        ? const Loader()
         : Material(
             type: MaterialType.transparency,
             child: RefreshIndicator(
@@ -471,6 +473,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   int _lastTopicsCount = 0;
   Timer? _debounceTimer;
   Timer? _refreshTimer;
+  Worker? _pageListener;
 
   // Function to simulate data retrieval or refresh
   Future<void> _refreshData() async {
@@ -516,9 +519,22 @@ class _NotificationsPageState extends State<NotificationsPage> {
   void initState() {
     super.initState();
     showLoader = true;
+    _didAutoRefresh = false;
 
     Provider.of<NotificationService>(context, listen: false)
         .addListener(onNotificationServiceChange);
+
+    // Limpiar bandera de nuevas notificaciones al entrar
+    NotificationService.instance.clearNewNotificationsFlag();
+
+    // Escuchar cambios de página para recargar cuando se entra a esta vista
+    final pageController = Get.find<p.PageController>();
+    _pageListener = ever(pageController.currentIndex, (index) {
+      if (index == 2 && mounted) {
+        print("[NotificationsPage] Tab seleccionado, recargando...");
+        loadNotifications();
+      }
+    });
 
     if (NotificationService.instance.topicsReady) {
       _isFirstLoad = false;
@@ -568,6 +584,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
       });
     }
 
+    // Si hay nuevas notificaciones, refrescar la lista
+    if (NotificationService.instance.hasNewNotifications && mounted && !showLoader) {
+      NotificationService.instance.clearNewNotificationsFlag();
+      loadNotifications();
+    }
+
     final LastMessage? lastMessage = NotificationService.instance.lastMessage;
     if (lastMessage != null && mounted) {
       final title = lastMessage.message.notification!.title ?? "Nuevo mensaje";
@@ -584,6 +606,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   void dispose() {
     _debounceTimer?.cancel();
     _refreshTimer?.cancel();
+    _pageListener?.dispose();
     Provider.of<NotificationService>(context, listen: false)
         .removeListener(onNotificationServiceChange);
     super.dispose();
