@@ -299,71 +299,58 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
     }
 
     try {
-      // Primero intentar obtener las rutas de hoy
-      var todateRoutes = await httpService.todayRoutes();
-      
-      // Si no hay rutas para hoy, obtener todas las rutas disponibles
+      final results = await Future.wait([
+        httpService.todayRoutes(),
+        httpService.getDriverTrips(0),
+        httpService.getActiveTrip(),
+      ]);
+
+      var todateRoutes = results[0] as List<RouteModel>;
+      List<TripModel> oldTrips = (results[1] as List<TripModel>?) ?? [];
+      TripModel? activeTripWrapper = results[2] as TripModel?;
+
       if (todateRoutes.isEmpty) {
         print("[DriverHome] No routes for today, fetching all available routes");
         todateRoutes = await httpService.getRoutes();
       }
-      
+
       for (var route in todateRoutes) {
         var routeDriverTopic = "route-${route.route_id}-driver";
         NotificationService.instance.subscribeToTopic(routeDriverTopic);
       }
-      
+
       if (mounted) {
         setState(() {
           todateRoutesList = todateRoutes;
-        });
-      } else {
-        todateRoutesList = todateRoutes;
-      }
-    } catch (e) {
-      print("[DriverHome.loadrResources.todayRoutes.error] $e");
-    }
-
-    try {
-      List<TripModel>? oldTrips = await httpService.getDriverTrips(0);
-      if (mounted) {
-        setState(() {
           oldTripsList = oldTrips;
         });
       } else {
+        todateRoutesList = todateRoutes;
         oldTripsList = oldTrips;
       }
-    } catch (e) {
-      print("[DriverHome.loadrResources.getDriverTrips.error] $e");
-    }
 
-    try {
-      TripModel? activeTripWrapper = await httpService.getActiveTrip();
       final bool hadActiveTrip = hasActiveTrip;
-      
+
       if (mounted) {
         setState(() {
           activeTrip = activeTripWrapper;
-          hasActiveTrip = (activeTripWrapper.trip_id != 0) ? true : false;
+          hasActiveTrip = (activeTripWrapper != null && activeTripWrapper.trip_id != 0) ? true : false;
         });
       } else {
         activeTrip = activeTripWrapper;
-        hasActiveTrip = (activeTripWrapper.trip_id != 0) ? true : false;
+        hasActiveTrip = (activeTripWrapper != null && activeTripWrapper.trip_id != 0) ? true : false;
       }
-      
+
       if (hasActiveTrip && activeTrip != null) {
-        // Iniciar tracking si hay viaje activo
-        // Nota: No verificamos isTracking - startLocationService() maneja reintentos internamente
         print("[DriverHome.loadResources] Viaje activo detectado (ID: ${activeTrip!.trip_id}), asegurando tracking");
         await LocationService.instance.init();
         await LocationService.instance.startLocationService(calculateDistance: true);
       } else if (hadActiveTrip && !hasActiveTrip) {
-        // Detener tracking si el viaje finalizó
         print("[DriverHome.loadResources] Viaje finalizado, deteniendo tracking");
         await LocationService.instance.stopLocationService();
       }
     } catch (e) {
-      print("[DriverHome.loadrResources.getActiveTrip.error] $e");
+      print("[DriverHome.loadrResources.parallel_requests.error] $e");
     } finally {
       if (mounted) {
         setState(() {

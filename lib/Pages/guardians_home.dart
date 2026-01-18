@@ -264,11 +264,19 @@ class _GuardiansHomeState extends State<GuardiansHome>
     }
 
     try {
-      final List<TripModel> trips = (await httpService.getGuardianTrips("true"));
+      final results = await Future.wait([
+        httpService.getGuardianTrips("true"),
+        httpService.getGuardianRoutes(),
+        httpService.getGuardianTrips("false"),
+      ]);
+
+      final List<TripModel> trips = results[0] as List<TripModel>;
+      final List<RouteModel> routes = results[1] as List<RouteModel>;
+      final List<TripModel> oldTrips = results[2] as List<TripModel>;
+
       for (var trip in trips) {
         trip.subscribeToTripTracking(_emitterServiceProvider);
       }
-
       await _subscribeToSchoolEvents();
 
       if(mounted){
@@ -278,14 +286,8 @@ class _GuardiansHomeState extends State<GuardiansHome>
       }else{
         activeTrips = trips;
       }
-    } catch (e) {
-      print("[GuardianHome.loadParent] error loading active trips : $e");
-    }
 
-    try {
-      final List<RouteModel> routes = await httpService.getGuardianRoutes();
       print("[GuardianHome.loadParent] routes count: ${routes.length}");
-
       for (var route in routes) {
         var routeTopic = "route-${route.route_id}";
         var routeTopicGuardian = "$routeTopic-guardian";
@@ -293,12 +295,11 @@ class _GuardiansHomeState extends State<GuardiansHome>
 
         NotificationService.instance.subscribeToTopic(routeTopicGuardian);
 
-        // Suscribirse a eventos de inicio/fin de viaje para esta ruta
         NotificationService.instance.subscribeToTopic("start-trip-${route.route_id}");
         NotificationService.instance.subscribeToTopic("end-trip-${route.route_id}");
 
         for (var student in parentModel!.students) {
-          var topic = "$routeTopic-student-${student.student_id}";          
+          var topic = "$routeTopic-student-${student.student_id}";
           NotificationService.instance.subscribeToTopic(topic);
           for (var pickupPoint in student.pickup_points) {
             var topic = "$routeTopic-pickup_point-${pickupPoint.pickup_id}";
@@ -306,13 +307,6 @@ class _GuardiansHomeState extends State<GuardiansHome>
           }
         }
       }
-    } catch (e) {
-      print("[GuardianHome.loadParent] error  subscribing to topics : $e");
-    }
-
-    try {
-      final List<TripModel> oldTrips =
-        (await httpService.getGuardianTrips("false"));
 
       if(mounted){
         setState(() {
@@ -322,7 +316,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
         oldTripsList = oldTrips;
       }
     } catch (e) {
-      print("[GuardianHome.loadParent] error  loading olds trips : $e");
+      print("[GuardianHome.loadParent] error loading data in parallel: $e");
     } finally {
       if(mounted){
         setState(() {

@@ -5,14 +5,12 @@ import 'package:eta_school_app/Models/parent_model.dart';
 import 'package:eta_school_app/Models/NotificationModel.dart';
 import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/loader.dart';
-import 'package:eta_school_app/components/slide_action.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/controllers/page_controller.dart' as p;
 import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
@@ -80,6 +78,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Si los topics no están listos, mostrar loader
+    if (!NotificationService.instance.topicsReady) {
+      return const Loader();
+    }
+
     return showLoader
         ? const Loader()
         : Material(
@@ -157,34 +160,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                           for (var i = 0;
                                               i < notificationsList.length;
                                               i++)
-                                            SlideAction(
-                                                [
-                                                  SlidableAction(
-                                                    // An action can be bigger than the others.
-                                                    onPressed: ((context) =>
-                                                        ''),
-                                                    backgroundColor: Colors.red,
-                                                    foregroundColor:
-                                                        Colors.white,
-                                                    icon: Icons.delete_forever,
-                                                    label: lang
-                                                        .translate('remove'),
-                                                  ),
-                                                  SlidableAction(
-                                                    // An action can be bigger than the others.
-                                                    onPressed: ((context) =>
-                                                        ''),
-                                                    backgroundColor:
-                                                        darkBlueColor,
-                                                    foregroundColor:
-                                                        Colors.white,
-                                                    icon: Icons
-                                                        .notifications_active,
-                                                    label: lang
-                                                        .translate('mark_read'),
-                                                  )
-                                                ],
-                                                GestureDetector(
+                                            GestureDetector(
                                                   onTap: () => {
                                                     handleNotification(
                                                         notificationsList[i])
@@ -408,7 +384,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                                       )
                                                     ],
                                                   ),
-                                                )),
+                                                ),
                                           const SizedBox(
                                             height: 100,
                                           ),
@@ -455,9 +431,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
           print("[NotificationsPage] No notifications found");
         }
       });
-      if (!_didAutoRefresh) {
-        _scheduleRefresh();
-      }
     } catch (e) {
       print("[NotificationsPage] Error loading notifications: $e");
       if (!mounted) return;
@@ -468,11 +441,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   bool showLoader = true;
-  bool _isFirstLoad = true;
-  bool _didAutoRefresh = false;
-  int _lastTopicsCount = 0;
-  Timer? _debounceTimer;
-  Timer? _refreshTimer;
   Worker? _pageListener;
 
   // Function to simulate data retrieval or refresh
@@ -519,7 +487,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
   void initState() {
     super.initState();
     showLoader = true;
-    _didAutoRefresh = false;
 
     Provider.of<NotificationService>(context, listen: false)
         .addListener(onNotificationServiceChange);
@@ -536,52 +503,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
       }
     });
 
+    // Si los topics están listos, cargar notificaciones
     if (NotificationService.instance.topicsReady) {
-      _isFirstLoad = false;
       loadNotifications();
-    } else {
-      _startTimeout();
     }
-  }
-
-  void _startTimeout() {
-    Future.delayed(Duration(seconds: 10), () {
-      if (mounted && _isFirstLoad) {
-        _isFirstLoad = false;
-        print("[NotificationsPage] Timeout esperando topics, cargando con los disponibles");
-        loadNotifications();
-      }
-    });
-  }
-
-  void _scheduleRefresh() {
-    _refreshTimer?.cancel();
-    _refreshTimer = Timer(Duration(milliseconds: 200), () {
-      if (mounted) {
-        _didAutoRefresh = true;
-        print("[NotificationsPage] Refrescando automáticamente después de 500ms");
-        _refreshData();
-      }
-    });
   }
 
   void onNotificationServiceChange() {
-    if (NotificationService.instance.topicsReady && _isFirstLoad) {
-      _isFirstLoad = false;
-      _lastTopicsCount = NotificationService.instance.topicsList.length;
+    // Si los topics se vuelven ready, recargar el widget para mostrar notificaciones
+    if (NotificationService.instance.topicsReady) {
+      if (mounted) setState(() {});
       loadNotifications();
       return;
-    }
-
-    final currentCount = NotificationService.instance.topicsList.length;
-    if (!_isFirstLoad && currentCount > _lastTopicsCount) {
-      _lastTopicsCount = currentCount;
-      _debounceTimer?.cancel();
-      _debounceTimer = Timer(Duration(seconds: 2), () {
-        if (mounted && !showLoader) {
-          loadNotifications();
-        }
-      });
     }
 
     // Si hay nuevas notificaciones, refrescar la lista
@@ -604,8 +537,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   @override
   void dispose() {
-    _debounceTimer?.cancel();
-    _refreshTimer?.cancel();
     _pageListener?.dispose();
     Provider.of<NotificationService>(context, listen: false)
         .removeListener(onNotificationServiceChange);

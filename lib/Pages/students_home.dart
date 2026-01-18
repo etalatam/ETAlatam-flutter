@@ -283,7 +283,6 @@ class _StudentsHomeState extends State<StudentsHome>
         String routeTopic = "route-${route.route_id}-student";
         NotificationService.instance.subscribeToTopic(routeTopic);
 
-        // Suscribirse a eventos de inicio/fin de viaje para esta ruta
         NotificationService.instance.subscribeToTopic("start-trip-${route.route_id}");
         NotificationService.instance.subscribeToTopic("end-trip-${route.route_id}");
 
@@ -294,7 +293,7 @@ class _StudentsHomeState extends State<StudentsHome>
         }
       }
     } catch (e) {
-      print("[StudentPage.loadResources.getActiveTrip.error] $e");
+      print("[StudentPage.loadResources.getStudentRoutes.error] $e");
     }
 
     if(mounted){
