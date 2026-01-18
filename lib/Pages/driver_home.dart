@@ -3,6 +3,7 @@ import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Pages/login_page.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/components/active_trip.dart';
+import 'package:eta_school_app/components/responsive_layout.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:eta_school_app/shared/location/location_service.dart';
 import 'package:flutter/material.dart';
@@ -70,10 +71,17 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
                                   physics:
                                       const AlwaysScrollableScrollPhysics(),
                                   child: Stack(children: <Widget>[
-                                    Container(
-                                      color: activeTheme.main_bg,
-                                      margin: const EdgeInsets.only(top: 120),
-                                      child: Column(children: [
+                                    Center(
+                                      child: Container(
+                                        constraints: BoxConstraints(
+                                          maxWidth: isTablet(context) ? 950 : double.infinity,
+                                        ),
+                                        color: activeTheme.main_bg,
+                                        margin: const EdgeInsets.only(top: 120),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: isTablet(context) ? 40 : 0,
+                                        ),
+                                        child: Column(children: [
                                         /// Has Active Trip
                                         !hasActiveTrip
                                             ? ETAWidgets.infoMessage(
@@ -98,22 +106,23 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
                                                 child: ListView.builder(
                                                     scrollDirection:
                                                         Axis.horizontal,
+                                                    padding: EdgeInsets.symmetric(
+                                                        horizontal: isTablet(context) ? 0 : (todateRoutesList.length < 2 ? 20 : 0)),
                                                     itemCount: todateRoutesList
                                                         .length, // Replace with the total number of items
                                                     itemBuilder:
                                                         (BuildContext context,
                                                             int index) {
+                                                      final isFirstItem = index == 0;
+                                                      final isLastItem = index == todateRoutesList.length - 1;
+                                                      final isSingleItem = todateRoutesList.length < 2;
+
                                                       return Container(
-                                                        padding: EdgeInsets.symmetric(
-                                                            horizontal:
-                                                                todateRoutesList
-                                                                            .length <
-                                                                        2
-                                                                    ? 20
-                                                                    : 0),
-                                                        width: todateRoutesList
-                                                                    .length <
-                                                                2
+                                                        padding: EdgeInsets.only(
+                                                          left: isFirstItem && !isTablet(context) && !isSingleItem ? 20 : 0,
+                                                          right: isLastItem && !isTablet(context) && !isSingleItem ? 20 : (isSingleItem ? 0 : 10),
+                                                        ),
+                                                        width: isSingleItem
                                                             ? MediaQuery.of(
                                                                     context)
                                                                 .size
@@ -191,7 +200,8 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
 
                                         /// Help / Support Block
                                         // ETAWidgets.homeHelpBlock(),
-                                      ]),
+                                        ]),
+                                      ),
                                     ),
                                   ]),
                                 )),

@@ -2,6 +2,7 @@ import 'package:eta_school_app/API/client.dart';
 import 'package:eta_school_app/Pages/reset_password_page.dart';
 import 'package:eta_school_app/Pages/home_screen.dart';
 import 'package:eta_school_app/components/loader.dart';
+import 'package:eta_school_app/components/responsive_layout.dart';
 // import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
@@ -107,16 +108,20 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                     // Main content
                     SingleChildScrollView(
                       physics: BouncingScrollPhysics(),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 60),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
+                      child: Center(
+                        child: Container(
+                          constraints: BoxConstraints(maxWidth: 600),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isTablet(context) ? 60 : 24,
+                            vertical: 60,
+                          ),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                               // Logo section with animation - Flat design
                               FadeTransition(
                                 opacity: _fadeAnimation,
@@ -220,6 +225,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                                                     : [],
                                                 ),
                                                 child: TextFormField(
+                                                  key: Key('email_field'),
                                                   controller: fieldTextEditingController,
                                                   focusNode: fieldFocusNode,
                                                   keyboardType: TextInputType.emailAddress,
@@ -336,6 +342,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                                                 : [],
                                             ),
                                             child: TextFormField(
+                                              key: Key('password_field'),
                                               controller: _passwordController,
                                               focusNode: _passwordFocusNode,
                                               obscureText: _obscurePassword,
@@ -455,6 +462,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                                         child: Material(
                                           color: Colors.transparent,
                                           child: InkWell(
+                                            key: Key('login_button'),
                                             borderRadius: BorderRadius.circular(16),
                                             onTap: _handleLogin,
                                             onTapDown: (_) {
@@ -533,7 +541,8 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                               const SizedBox(height: 40),
 
                               // Footer removido - no se muestran créditos
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -699,13 +708,30 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
     });
 
     _loadEmailHistory();
-    // Solo verificar sesión después de inicializar
-    Future.delayed(Duration(milliseconds: 500), () async {
-      if (!mounted) return; // Verificar si el widget todavía está montado
-      await _cleanupResourcesIfNoSession();
-      if (!mounted) return; // Verificar nuevamente antes de navegar
-      goHome();
-    });
+
+    // MODO TEST: Si estamos en un test de integración, mostrar el login inmediatamente
+    // sin verificar sesión ni navegar
+    const bool kIsIntegrationTest = bool.fromEnvironment('INTEGRATION_TEST', defaultValue: false);
+
+    if (kIsIntegrationTest) {
+      // En modo test, mostrar el formulario inmediatamente
+      print('[Login] Modo INTEGRATION_TEST detectado, mostrando formulario directamente');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            showLoader = false;
+          });
+        }
+      });
+    } else {
+      // Solo verificar sesión después de inicializar (modo normal)
+      Future.delayed(Duration(milliseconds: 500), () async {
+        if (!mounted) return; // Verificar si el widget todavía está montado
+        await _cleanupResourcesIfNoSession();
+        if (!mounted) return; // Verificar nuevamente antes de navegar
+        goHome();
+      });
+    }
   }
 
   /// Limpiar todos los recursos si no hay sesión activa

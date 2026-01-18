@@ -46,7 +46,7 @@ ADDITIONAL FEATURES
 • Works in background without draining battery
 • Offline maps for areas without coverage
 • Intuitive and easy-to-use interface
-• Compatible with iOS and Android
+• Optimized for all iOS devices
 
 BENEFITS:
 

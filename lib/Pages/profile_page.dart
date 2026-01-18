@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:eta_school_app/Models/user_model.dart';
 import 'package:eta_school_app/Pages/reset_password_page.dart';
 import 'package:eta_school_app/components/image_default.dart';
+import 'package:eta_school_app/components/responsive_layout.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
@@ -167,16 +168,20 @@ class _ProfilePageState extends State<ProfilePage> {
                                     // height: 1,
                                     // color: activeTheme.main_color.withOpacity(.2),
                                     ),
-                                Container(
-                                  margin: const EdgeInsets.only(top: 80),
-                                  padding: const EdgeInsets.all(20),
-                                  width: double.infinity,
-                                  child: Column(
-                                    crossAxisAlignment: isRTL()
-                                        ? CrossAxisAlignment.end
-                                        : CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
+                                Center(
+                                  child: Container(
+                                    constraints: BoxConstraints(
+                                      maxWidth: isTablet(context) ? 800 : double.infinity,
+                                    ),
+                                    margin: const EdgeInsets.only(top: 80),
+                                    padding: EdgeInsets.all(isTablet(context) ? 40 : 20),
+                                    width: double.infinity,
+                                    child: Column(
+                                      crossAxisAlignment: isRTL()
+                                          ? CrossAxisAlignment.end
+                                          : CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.max,
+                                      children: [
                                       CustomRow(lang.translate('First Name'),
                                           user.firstName),
                                       Container(
@@ -305,7 +310,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                       const SizedBox(
                                         height: 50,
                                       ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 )
                               ]))

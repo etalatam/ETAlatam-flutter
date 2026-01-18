@@ -1,5 +1,6 @@
 import 'package:eta_school_app/API/client.dart';
 import 'package:eta_school_app/components/loader.dart';
+import 'package:eta_school_app/components/responsive_layout.dart';
 import 'package:eta_school_app/methods.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -147,15 +148,22 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
   Widget resetPassword() {
     return SingleChildScrollView(
       physics: BouncingScrollPhysics(),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 80),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      child: Center(
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: isTablet(context) ? 600 : double.infinity,
+          ),
+          padding: EdgeInsets.symmetric(
+            horizontal: isTablet(context) ? 60 : 24,
+            vertical: 80,
+          ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               // Icon section with animation
               FadeTransition(
                 opacity: _fadeAnimation,
@@ -434,7 +442,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
               ),
 
               // Footer removido - no se muestran créditos
-            ],
+              ],
+            ),
           ),
         ),
       ),

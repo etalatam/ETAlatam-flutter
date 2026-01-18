@@ -6,6 +6,7 @@ import 'package:eta_school_app/Pages/student_page.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/components/active_trip.dart';
 import 'package:eta_school_app/components/header.dart';
+import 'package:eta_school_app/components/responsive_layout.dart';
 import 'package:eta_school_app/components/widgets.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
@@ -92,10 +93,13 @@ class _GuardiansHomeState extends State<GuardiansHome>
                               padding: EdgeInsets.only(bottom: 100),
                               physics: AlwaysScrollableScrollPhysics(),
                               child: Stack(children: <Widget>[
-                                Container(
-                                  color: activeTheme.main_bg,
-                                  margin: EdgeInsets.only(top: 120),
-                                  child: Column(children: [
+                                Center(
+                                  child: Container(
+                                    constraints: BoxConstraints(maxWidth: isTablet(context) ? 900 : double.infinity),
+                                    color: activeTheme.main_bg,
+                                    margin: EdgeInsets.only(top: 120),
+                                    padding: EdgeInsets.symmetric(horizontal: isTablet(context) ? 40 : 0),
+                                    child: Column(children: [
                                     activeTrips.isEmpty
                                         ? ETAWidgets.infoMessage(lang.translate(
                                             "Does not have active trips"))
@@ -192,7 +196,8 @@ class _GuardiansHomeState extends State<GuardiansHome>
                                                           context,
                                                           oldTripsList[index]));
                                             })),
-                                  ]),
+                                    ]),
+                                  ),
                                 ),
                               ]),
                             )),

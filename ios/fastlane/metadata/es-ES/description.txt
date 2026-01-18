@@ -46,7 +46,7 @@ FUNCIONALIDADES ADICIONALES
 • Funciona en segundo plano sin consumir batería
 • Mapas offline para zonas sin cobertura
 • Interfaz intuitiva y fácil de usar
-• Compatible con iOS y Android
+• Optimizado para todos los dispositivos iOS
 
 BENEFICIOS:
 

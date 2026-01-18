@@ -2,6 +2,7 @@ import 'package:eta_school_app/providers/theme_provider.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:flutter/material.dart';
 import 'package:eta_school_app/API/client.dart';
+import 'package:eta_school_app/components/responsive_layout.dart';
 import 'package:provider/provider.dart';
 import '../components/header.dart';
 import '../components/loader.dart';
@@ -47,8 +48,11 @@ class _SettingsPageState extends State<SettingsPage>
                 child: Stack(children: [
                   SingleChildScrollView(
                       child: Stack(children: <Widget>[
-                    Container(
+                    Center(
+                      child: Container(
+                        constraints: BoxConstraints(maxWidth: isTablet(context) ? 900 : double.infinity),
                         margin: const EdgeInsets.only(top: 150),
+                        padding: EdgeInsets.symmetric(horizontal: isTablet(context) ? 60 : 20),
                         child: Column(
                           children: [
                             Row(
@@ -273,7 +277,9 @@ class _SettingsPageState extends State<SettingsPage>
                             //   ],
                             // ),
                           ],
-                        )),
+                        ),
+                      ),
+                    ),
                   ])),
                   Positioned(left: 0, right: 0, top: 0, child: Header()),
                 ])));

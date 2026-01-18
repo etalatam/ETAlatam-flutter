@@ -8,6 +8,7 @@ import 'package:eta_school_app/controllers/locale.dart';
 import 'package:eta_school_app/controllers/preferences.dart';
 import 'package:eta_school_app/Pages/login_page.dart';
 import 'package:eta_school_app/components/loader.dart';
+import 'package:eta_school_app/components/responsive_layout.dart';
 import 'package:permission_handler/permission_handler.dart' as permissions;
 
 bool darkmode = false;
@@ -234,36 +235,43 @@ class SlidePage extends StatelessWidget {
   }
 
   Widget accountSlide(context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 50),
-      child: Column(
-        children: [
-          GestureDetector(
-              onTap: () async {
-                preferences.setBool('started', true);
-                openNewPage(context, Login());
-              },
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(40, 15, 40, 15),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
-                  color: const Color(0xff1e3050),
-                ),
-                child: Text(
-                  lang.translate('sign in'),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    letterSpacing: 0.20,
+    return Center(
+      child: Container(
+        constraints: BoxConstraints(
+          maxWidth: isTablet(context) ? 600 : double.infinity,
+        ),
+        padding: EdgeInsets.symmetric(
+          vertical: 16,
+          horizontal: isTablet(context) ? 80 : 50,
+        ),
+        child: Column(
+          children: [
+            GestureDetector(
+                onTap: () async {
+                  preferences.setBool('started', true);
+                  openNewPage(context, Login());
+                },
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(40, 15, 40, 15),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    color: const Color(0xff1e3050),
                   ),
-                ),
-              )),
-          const SizedBox(
-            height: 20,
-          ),
-        ],
+                  child: Text(
+                    lang.translate('sign in'),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      letterSpacing: 0.20,
+                    ),
+                  ),
+                )),
+            const SizedBox(
+              height: 20,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -287,28 +295,36 @@ class SlidePage extends StatelessWidget {
     return Container(
         color: color,
         child: Center(
-            child: GestureDetector(
-          onTap: (() async {
-            _havePermissions = await _checkLocationPermission();
-            _controller.nextPage(
-              duration: const Duration(
-                  milliseconds: 500), // You can specify the animation duration
-              curve: Curves.ease,
-            );
-          }),
-          child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              decoration: ShapeDecoration(
-                shape: RoundedRectangleBorder(
-                  side: const BorderSide(width: 1, color: Colors.greenAccent),
-                  borderRadius: BorderRadius.circular(20),
+            child: Container(
+          constraints: BoxConstraints(
+            maxWidth: isTablet(context) ? 600 : double.infinity,
+          ),
+          padding: EdgeInsets.symmetric(
+            horizontal: isTablet(context) ? 80 : 0,
+          ),
+          child: GestureDetector(
+            onTap: (() async {
+              _havePermissions = await _checkLocationPermission();
+              _controller.nextPage(
+                duration: const Duration(
+                    milliseconds: 500), // You can specify the animation duration
+                curve: Curves.ease,
+              );
+            }),
+            child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                decoration: ShapeDecoration(
+                  shape: RoundedRectangleBorder(
+                    side: const BorderSide(width: 1, color: Colors.greenAccent),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
-              ),
-              child: Text(lang.translate("Get permission"),
-                  style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white))),
+                child: Text(lang.translate("Get permission"),
+                    style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white))),
+          ),
         )));
   }
 
@@ -316,64 +332,71 @@ class SlidePage extends StatelessWidget {
     return Container(
       color: color,
       child: Center(
-        child: Column(
-          children: [
-            Divider(
-              height: 1,
-              color: activeTheme.main_color.withOpacity(.3),
-              indent: 15,
-              endIndent: 10,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Container(
-                  margin: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        lang.translate('Language'),
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 24),
-                      ),
-                      Text(
-                        lang.translate('select your language'),
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 18),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 10),
-                  child: DropdownButton<String>(
-                    value: selectedLang,
-                    icon: const Icon(Icons.arrow_downward),
-                    elevation: 16,
-                    onChanged: (String? value) {
-                      setLang(value);
-                    },
-                    items: list.map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(
-                          value,
-                          style: const TextStyle(color: Colors.black45),
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: isTablet(context) ? 700 : double.infinity,
+          ),
+          padding: EdgeInsets.symmetric(
+            horizontal: isTablet(context) ? 40 : 0,
+          ),
+          child: Column(
+            children: [
+              Divider(
+                height: 1,
+                color: activeTheme.main_color.withOpacity(.3),
+                indent: 15,
+                endIndent: 10,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          lang.translate('Language'),
+                          style:
+                              const TextStyle(color: Colors.white, fontSize: 24),
                         ),
-                      );
-                    }).toList(),
+                        Text(
+                          lang.translate('select your language'),
+                          style:
+                              const TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                      ],
+                    ),
                   ),
-                )
-              ],
-            ),
-            Divider(
-              height: 1,
-              color: activeTheme.main_color.withOpacity(.3),
-              indent: 15,
-              endIndent: 10,
-            ),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 10),
+                    child: DropdownButton<String>(
+                      value: selectedLang,
+                      icon: const Icon(Icons.arrow_downward),
+                      elevation: 16,
+                      onChanged: (String? value) {
+                        setLang(value);
+                      },
+                      items: list.map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(
+                            value,
+                            style: const TextStyle(color: Colors.black45),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  )
+                ],
+              ),
+              Divider(
+                height: 1,
+                color: activeTheme.main_color.withOpacity(.3),
+                indent: 15,
+                endIndent: 10,
+              ),
             // Row(
             //   // mainAxisAlignment: MainAxisAlignment.spaceBetween,
             //   mainAxisSize: MainAxisSize.max,
@@ -410,35 +433,36 @@ class SlidePage extends StatelessWidget {
             //         }),
             //   ],
             // ),
-            Container(
-                padding: const EdgeInsets.only(top: 40),
-                child: Center(
-                    child: GestureDetector(
-                  onTap: (() async {
-                    _controller.nextPage(
-                      duration: const Duration(
-                          milliseconds:
-                              500), // You can specify the animation duration
-                      curve: Curves.ease,
-                    );
-                  }),
-                  child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 15),
-                      decoration: ShapeDecoration(
-                        shape: RoundedRectangleBorder(
-                          side: const BorderSide(
-                              width: 1, color: Colors.greenAccent),
-                          borderRadius: BorderRadius.circular(20),
+              Container(
+                  padding: const EdgeInsets.only(top: 40),
+                  child: Center(
+                      child: GestureDetector(
+                    onTap: (() async {
+                      _controller.nextPage(
+                        duration: const Duration(
+                            milliseconds:
+                                500), // You can specify the animation duration
+                        curve: Curves.ease,
+                      );
+                    }),
+                    child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 15),
+                        decoration: ShapeDecoration(
+                          shape: RoundedRectangleBorder(
+                            side: const BorderSide(
+                                width: 1, color: Colors.greenAccent),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
                         ),
-                      ),
-                      child: Text(lang.translate("Next"),
-                          style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white))),
-                )))
-          ],
+                        child: Text(lang.translate("Next"),
+                            style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white))),
+                  )))
+            ],
+          ),
         ),
       ),
     );
