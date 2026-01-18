@@ -21,7 +21,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<string>48</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -31,13 +31,6 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
@@ -53,11 +46,13 @@
 	<string>Esta app necesita acceso continuo a tu ubicación para proporcionar seguimiento en tiempo real del transporte escolar, incluso cuando la app está en segundo plano.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Esta app necesita acceso continuo a tu ubicación para el seguimiento del transporte escolar en tiempo real.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Esta app necesita acceso a tu biblioteca de fotos para permitirte seleccionar y subir imágenes de perfil, documentos y reportes relacionados con el transporte escolar.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
-		<string>background-processing</string>
 		<string>remote-notification</string>
+		<string>fetch</string>
 	</array>
 </dict>
 </plist>
