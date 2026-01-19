@@ -1137,9 +1137,9 @@ class HttpService {
       }
     } catch (e) {
       debugPrint(e.toString());
-      return 'Respuesta inesperada del servidor 😳';
+      return 'Algo salió mal. Por favor revisa tu conexión a internet e intenta de nuevo.';
     }
-    // return "";
+    return 'Algo salió mal. Por favor revisa tu conexión a internet e intenta de nuevo.';
   }
 
   /// Send Car Location
@@ -1318,8 +1318,10 @@ class HttpService {
   
   handleHttpError(e) async {
     print("HTTP error: ${e.toString()}");
-    // Si hay un error de conexión, devolver un response vacío
-    return http.Response('', 500);
+    final errorBody = jsonEncode({
+      'message': 'Algo salió mal. Por favor revisa tu conexión a internet e intenta de nuevo.'
+    });
+    return http.Response(errorBody, 500);
   }
 
 
