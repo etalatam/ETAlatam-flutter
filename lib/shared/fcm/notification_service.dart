@@ -187,6 +187,8 @@ class NotificationService with ChangeNotifier {
       print("[NotificationService.syncGroups] Sincronización completada");
       print("[NotificationService] Topics desuscritos: ${toUnsubscribe.length}");
       print("[NotificationService] Topics suscritos: ${toSubscribe.length}");
+      
+      setTopicsReady();
     } catch (e) {
       print("[NotificationService.syncGroups] error: ${e.toString()}");
     }

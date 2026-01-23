@@ -184,12 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               getWidgetsByKey(userRelationName) ?? defaultWidgets,
                         ),
                       ),
-                      if (isLoading)
-                        Positioned.fill(
-                          child: Container(
-                            color: Colors.transparent,
-                          ),
-                        ),
+                      // Contenedor transparente eliminado para permitir interacciones mientras cargan las notificaciones
                     ],
                   );
                 },
