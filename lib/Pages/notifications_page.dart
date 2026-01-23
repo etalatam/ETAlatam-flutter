@@ -450,6 +450,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
       showLoader = true;
     });
 
+    // Si no hay topics, intentar cargarlos
+    if (NotificationService.instance.topicsList.isEmpty) {
+      print("[NotificationsPage._refreshData] No hay topics, intentando cargar...");
+      await NotificationService.instance.syncGroups().catchError((e) {
+        print("[NotificationsPage._refreshData] Error cargando topics: $e");
+      });
+    }
+
     await Future.delayed(const Duration(seconds: 1));
     if (!mounted) return;
     setState(() {
@@ -499,13 +507,36 @@ class _NotificationsPageState extends State<NotificationsPage> {
     _pageListener = ever(pageController.currentIndex, (index) {
       if (index == 2 && mounted) {
         print("[NotificationsPage] Tab seleccionado, recargando...");
-        loadNotifications();
+
+        // Si no hay topics, intentar cargarlos automáticamente
+        if (NotificationService.instance.topicsList.isEmpty) {
+          print("[NotificationsPage] No hay topics, intentando cargar...");
+          NotificationService.instance.syncGroups().then((_) {
+            print("[NotificationsPage] Topics cargados, ahora cargando notificaciones");
+            if (mounted) loadNotifications();
+          }).catchError((e) {
+            print("[NotificationsPage] Error cargando topics: $e");
+          });
+        } else {
+          loadNotifications();
+        }
       }
     });
 
     // Si los topics están listos, cargar notificaciones
     if (NotificationService.instance.topicsReady) {
-      loadNotifications();
+      // Verificar si hay topics, si no intentar cargarlos
+      if (NotificationService.instance.topicsList.isEmpty) {
+        print("[NotificationsPage.initState] No hay topics, intentando cargar...");
+        NotificationService.instance.syncGroups().then((_) {
+          print("[NotificationsPage.initState] Topics cargados");
+          if (mounted) loadNotifications();
+        }).catchError((e) {
+          print("[NotificationsPage.initState] Error cargando topics: $e");
+        });
+      } else {
+        loadNotifications();
+      }
     }
   }
 

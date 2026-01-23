@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/components/active_trip.dart';
-import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:eta_school_app/shared/location/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -314,11 +313,6 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
         todateRoutes = await httpService.getRoutes();
       }
 
-      for (var route in todateRoutes) {
-        var routeDriverTopic = "route-${route.route_id}-driver";
-        NotificationService.instance.subscribeToTopic(routeDriverTopic);
-      }
-
       if (mounted) {
         setState(() {
           todateRoutesList = todateRoutes;
@@ -357,7 +351,6 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
           showLoader = false;
         });
       }
-      NotificationService.instance.setTopicsReady();
     }
   }
 

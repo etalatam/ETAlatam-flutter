@@ -277,31 +277,11 @@ class _StudentsHomeState extends State<StudentsHome>
       print("[StudentPage.loadResources.getActiveTrip.error] $e");
     }
 
-    try {
-      List<RouteModel> routes = await httpService.getStudentRoutes();
-      for (var route in routes) {
-        String routeTopic = "route-${route.route_id}-student";
-        NotificationService.instance.subscribeToTopic(routeTopic);
-
-        NotificationService.instance.subscribeToTopic("start-trip-${route.route_id}");
-        NotificationService.instance.subscribeToTopic("end-trip-${route.route_id}");
-
-        for (var pickupPoint in student.pickup_points) {
-          var pickupPointTopic =
-              "route-${route.route_id}-pickup_point-${pickupPoint.pickup_id}";
-          NotificationService.instance.subscribeToTopic(pickupPointTopic);
-        }
-      }
-    } catch (e) {
-      print("[StudentPage.loadResources.getStudentRoutes.error] $e");
-    }
-
     if(mounted){
       setState(() {
         showLoader = false;
       });
     }
-    NotificationService.instance.setTopicsReady();
   }
 
   openTripcallback(TripModel trip_) {

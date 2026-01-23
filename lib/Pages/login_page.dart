@@ -556,7 +556,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
 
     try {
       loginResponse = await httpService.login(email, password)
-          .timeout(Duration(seconds: 10));
+          .timeout(Duration(seconds: 30));
       var msg = loginResponse?.split('/');
 
       if (loginResponse == '1') {

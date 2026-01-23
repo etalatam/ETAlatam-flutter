@@ -288,25 +288,6 @@ class _GuardiansHomeState extends State<GuardiansHome>
       }
 
       print("[GuardianHome.loadParent] routes count: ${routes.length}");
-      for (var route in routes) {
-        var routeTopic = "route-${route.route_id}";
-        var routeTopicGuardian = "$routeTopic-guardian";
-        print("[GuardianHome.loadParent] Subscribing to: $routeTopicGuardian");
-
-        NotificationService.instance.subscribeToTopic(routeTopicGuardian);
-
-        NotificationService.instance.subscribeToTopic("start-trip-${route.route_id}");
-        NotificationService.instance.subscribeToTopic("end-trip-${route.route_id}");
-
-        for (var student in parentModel!.students) {
-          var topic = "$routeTopic-student-${student.student_id}";
-          NotificationService.instance.subscribeToTopic(topic);
-          for (var pickupPoint in student.pickup_points) {
-            var topic = "$routeTopic-pickup_point-${pickupPoint.pickup_id}";
-            NotificationService.instance.subscribeToTopic(topic);
-          }
-        }
-      }
 
       if(mounted){
         setState(() {
@@ -325,7 +306,6 @@ class _GuardiansHomeState extends State<GuardiansHome>
       }else{
         showLoader = false;
       }
-      NotificationService.instance.setTopicsReady();
     }
   }
 

@@ -980,13 +980,14 @@ class HttpService {
           EmitterService.instance.connect();
         }
 
-        Future.delayed(Duration(milliseconds: 100), () {
-          NotificationService.instance.setupNotifications()
-            .timeout(Duration(seconds: 5))
-            .catchError((e) {
-              print('[login] Error en setupNotifications: $e');
-            });
-        });
+        try {
+          await NotificationService.instance.setupNotifications()
+            .timeout(Duration(seconds: 15));
+          print('[login] setupNotifications completado exitosamente');
+        } catch (e) {
+          print('[login] Error cargando notificaciones: $e');
+          print('[login] Continuando login. Los topics se cargarán en segundo plano.');
+        }
 
         return '1';
       } else {
@@ -1522,6 +1523,36 @@ class HttpService {
       if (response.statusCode == 200) {
         final List<dynamic> jsonList = jsonDecode(response.body);
         return jsonList.map((json) => RecipientGroupModel.fromJson(json)).toList();
+      } else {
+        print("[$endpoint] Non-200 status: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("[$endpoint] error: ${e.toString()}");
+    }
+    return [];
+  }
+
+  Future<List<String>> getMyNotificationTopics() async {
+    const endpoint = '/rpc/get_my_notification_topics';
+    try {
+      final token = await storage.getItem('token');
+      final url = Uri.parse(apiURL + endpoint);
+
+      final response = await http.post(
+        url,
+        body: null,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print("[$endpoint] res.statusCode: ${response.statusCode}");
+      print("[$endpoint] res.body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = jsonDecode(response.body);
+        return jsonList.map((item) => item['topic'].toString()).toList();
       } else {
         print("[$endpoint] Non-200 status: ${response.statusCode}");
       }

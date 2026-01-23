@@ -255,7 +255,7 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Padding(
                       padding: EdgeInsets.only(bottom: 30),
                       child: Text(
-                        'Versión 1.12.55',
+                        'Versión 1.12.56',
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.5),
                           fontSize: 12,

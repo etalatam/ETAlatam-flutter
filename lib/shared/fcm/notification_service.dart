@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'package:eta_school_app/API/client.dart';
 import 'package:eta_school_app/Models/recipient_group_model.dart';
-import 'package:eta_school_app/Models/user_topic_model.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/Pages/support_messages_unified_page.dart';
@@ -47,6 +47,7 @@ class NotificationService with ChangeNotifier {
   List<RecipientGroupModel> recipientGroups = [];
   bool _topicsReady = false;
   final Set<String> _subscribingTopics = {};
+  Timer? _refreshTimer;
 
   bool get topicsReady => _topicsReady;
 
@@ -109,86 +110,79 @@ class NotificationService with ChangeNotifier {
     print("[NotificationService.setupNotifications] Iniciando setup");
 
     try {
-      final UserTopicModel? userTopicModel = await _httpService.getMyUserTopic(useSessionCheck: false)
-        .timeout(Duration(seconds: 3), onTimeout: () => null);
+      final List<String> topics = await _httpService.getMyNotificationTopics();
 
-      if (userTopicModel != null) {
-        userTopic = userTopicModel.userTopic;
-        await subscribeToTopic(userTopic!);
-        await storage.setItem('user_topic', userTopic!);
-        print("[NotificationService] Topic personal guardado: $userTopic");
+      print("[NotificationService] Topics recibidos: ${topics.length}");
+      for (int i = 0; i < topics.length; i++) {
+        print("[NotificationService] Topic ${i + 1}: ${topics[i]}");
       }
 
-      final dynamic userId = await storage.getItem('id_usu');
-      if (userId != null) {
-        String userIdTopic = 'user-${userId.toString()}';
-        await subscribeToTopic(userIdTopic);
-        print("[NotificationService] Suscrito a topic de user ID: $userIdTopic");
-      }
-
-      final String? userEmail = await storage.getItem('user_email');
-      if (userEmail != null && userEmail.isNotEmpty) {
-        String emailTopic = 'email-${userEmail.replaceAll('@', '_at_').replaceAll('.', '_dot_').replaceAll('+', '_plus_')}';
-        await subscribeToTopic(emailTopic);
-        print("[NotificationService] Suscrito a topic de email: $emailTopic");
-      }
-
-      final List<RecipientGroupModel> groups = await _httpService.getMyRecipientGroups(useSessionCheck: false)
-        .timeout(Duration(seconds: 3), onTimeout: () => <RecipientGroupModel>[]);
-      recipientGroups = groups;
-
-      if (groups.isNotEmpty) {
+      if (topics.isNotEmpty) {
         await Future.wait(
-          groups.map((group) => subscribeToTopic(group.topic)),
-        ).timeout(Duration(seconds: 3), onTimeout: () => []);
+          topics.map((topic) => subscribeToTopic(topic)),
+        );
       }
 
-      await storage.setItem('recipient_groups', groups.map((g) => g.toJson()).toList());
+      await storage.setItem('notification_topics', topics);
 
-      print("[NotificationService] Setup completado. Topics: ${topicsList.length}");
+      print("[NotificationService] Setup completado. Topics suscritos: ${topicsList.length}");
+      print("[NotificationService] Topics en memoria: ${topicsList.join(', ')}");
+
+      setTopicsReady();
+      _startAutoRefresh();
     } catch (e) {
       print("[NotificationService.setupNotifications] error: ${e.toString()}");
+      setTopicsReady();
     }
   }
 
-  /// Sincronizar grupos cuando cambian las membresías
+  void _startAutoRefresh() {
+    _refreshTimer?.cancel();
+    _refreshTimer = Timer.periodic(Duration(hours: 2), (_) {
+      print("[NotificationService] Timer periódico: refrescando topics");
+      syncGroups();
+    });
+
+    WidgetsBinding.instance.addObserver(_AppLifecycleObserver(this));
+  }
+
+  void _onAppResumed() {
+    print("[NotificationService] App resumed: refrescando topics");
+    syncGroups();
+  }
+
+  /// Sincronizar topics cuando cambian (grupos, rutas, etc)
   Future<void> syncGroups() async {
-    print("[NotificationService.syncGroups] Sincronizando grupos");
+    print("[NotificationService.syncGroups] Sincronizando topics");
 
     try {
-      // Obtener nuevos grupos del backend
-      final List<RecipientGroupModel> newGroups = await _httpService.getMyRecipientGroups();
+      final List<String> newTopics = await _httpService.getMyNotificationTopics();
 
-      // Obtener grupos anteriores del storage
-      final dynamic storedGroups = await storage.getItem('recipient_groups');
-      List<RecipientGroupModel> oldGroups = [];
+      final dynamic storedTopics = await storage.getItem('notification_topics');
+      List<String> oldTopics = [];
 
-      if (storedGroups != null && storedGroups is List) {
-        oldGroups = (storedGroups as List).map((g) => RecipientGroupModel.fromJson(g)).toList();
+      if (storedTopics != null && storedTopics is List) {
+        oldTopics = List<String>.from(storedTopics);
       }
 
-      final List<String> oldTopics = oldGroups.map((g) => g.topic).toList();
-      final List<String> newTopics = newGroups.map((g) => g.topic).toList();
+      final Set<String> oldSet = oldTopics.toSet();
+      final Set<String> newSet = newTopics.toSet();
 
-      // Desuscribirse de topics removidos (en paralelo)
-      final List<String> toUnsubscribe = oldTopics.where((t) => !newTopics.contains(t)).toList();
+      final List<String> toUnsubscribe = oldSet.difference(newSet).toList();
       if (toUnsubscribe.isNotEmpty) {
         await Future.wait(
           toUnsubscribe.map((topic) => unsubscribeFromTopic(topic)),
         );
       }
 
-      // Suscribirse a nuevos topics (en paralelo)
-      final List<String> toSubscribe = newTopics.where((t) => !oldTopics.contains(t)).toList();
+      final List<String> toSubscribe = newSet.difference(oldSet).toList();
       if (toSubscribe.isNotEmpty) {
         await Future.wait(
           toSubscribe.map((topic) => subscribeToTopic(topic)),
         );
       }
 
-      // Actualizar grupos almacenados
-      recipientGroups = newGroups;
-      await storage.setItem('recipient_groups', newGroups.map((g) => g.toJson()).toList());
+      await storage.setItem('notification_topics', newTopics);
 
       print("[NotificationService.syncGroups] Sincronización completada");
       print("[NotificationService] Topics desuscritos: ${toUnsubscribe.length}");
@@ -422,6 +416,10 @@ class NotificationService with ChangeNotifier {
   /// Cerrar servicio y desuscribirse de todos los topics
   Future<void> close() async {
     print("[NotificationService.close] Desuscribiendo de todos los topics (${topicsList.length} topics)");
+
+    _refreshTimer?.cancel();
+    _refreshTimer = null;
+
     try {
       final List<String> topicsToUnsubscribe = List.from(topicsList);
 
@@ -449,6 +447,7 @@ class NotificationService with ChangeNotifier {
       // Limpiar storage
       await storage.deleteItem('user_topic');
       await storage.deleteItem('recipient_groups');
+      await storage.deleteItem('notification_topics');
 
       print("[NotificationService.close] Todos los topics desuscritos completado");
     } catch (e) {
@@ -484,4 +483,17 @@ class LastMessage {
   final String status;
 
   LastMessage(this.message, this.status);
+}
+
+class _AppLifecycleObserver extends WidgetsBindingObserver {
+  final NotificationService _notificationService;
+
+  _AppLifecycleObserver(this._notificationService);
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _notificationService._onAppResumed();
+    }
+  }
 }
