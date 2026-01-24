@@ -165,6 +165,17 @@ class LocationService extends ChangeNotifier {
     debugPrint('[LocationService-$_instanceId.trackingDynamic] ${locationInfo.toString()}');
 
     try {
+      String? relationName = await storage.getItem('relation_name');
+
+      if (relationName == 'eta.drivers') {
+        String? hasActiveTrip = await storage.getItem('has_active_trip');
+        if (hasActiveTrip != 'true') {
+          debugPrint('[LocationService.trackingDynamic] Driver sin viaje activo, deteniendo tracking');
+          stopLocationService();
+          return;
+        }
+      }
+
       _lastPositionDate = DateTime.now();
 
       await _distanceLock.synchronized(() async {

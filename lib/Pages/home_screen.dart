@@ -29,7 +29,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final p.PageController _pageController = Get.put(p.PageController());
   final HttpService _httpService = HttpService();
-  bool _syncCompleted = false;
 
   // Cache de widgets por rol para evitar recrearlos en cada rebuild
   Map<String, List<Widget>>? _cachedWidgetMap;
@@ -37,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _checkAndSyncNotifications();
+    // Topics se cargan en paralelo dentro de cada home individual
   }
 
   @override
@@ -47,27 +46,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _cachedWidgetMap = null;
     print("[HomeScreen.dispose] Cache de widgets limpiado");
     super.dispose();
-  }
-
-  /// Verificar y sincronizar notificaciones al iniciar la app
-  Future<void> _checkAndSyncNotifications() async {
-    try {
-      final token = await storage.getItem('token');
-      if (token != null && !_syncCompleted) {
-        print("[HomeScreen] Verificando sincronización de notificaciones");
-
-        // Sincronizar grupos si hay cambios
-        await NotificationService.instance.syncGroups();
-
-        setState(() {
-          _syncCompleted = true;
-        });
-
-        print("[HomeScreen] Sincronización de notificaciones completada");
-      }
-    } catch (e) {
-      print("[HomeScreen] Error en sincronización: $e");
-    }
   }
 
   Map<String, List<Widget>> _buildWidgetMap() {
@@ -170,13 +148,33 @@ class _HomeScreenState extends State<HomeScreen> {
                   _pageController.changePage(1);
                 }
               },
-              child: Scaffold(
-                bottomNavigationBar: CustomBottonNavigation(),
-                body: IndexedStack(
-                  index: _pageController.currentIndex.value,
-                  children:
-                      getWidgetsByKey(userRelationName) ?? defaultWidgets,
-                ),
+              child: ListenableBuilder(
+                listenable: NotificationService.instance,
+                builder: (context, child) {
+                  final isLoading = !NotificationService.instance.topicsReady;
+                  return Stack(
+                    children: [
+                      Scaffold(
+                        bottomNavigationBar: CustomBottonNavigation(),
+                        body: IndexedStack(
+                          index: _pageController.currentIndex.value,
+                          children:
+                              getWidgetsByKey(userRelationName) ?? defaultWidgets,
+                        ),
+                      ),
+                      // Bloquear toda interacción mientras se cargan los datos
+                      if (isLoading)
+                        Positioned.fill(
+                          child: AbsorbPointer(
+                            absorbing: true,
+                            child: Container(
+                              color: Colors.transparent,
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
               ),
             );
           });

@@ -44,6 +44,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
 
   EmitterService? _emitterServiceProvider;
   EmitterTopic? _schoolEventsTopic;
+  bool _isFirstLoad = true;
 
   bool _studentHasActiveTrip(int studentId) {
     for (var studentInfo in studentsTrips) {
@@ -79,7 +80,8 @@ class _GuardiansHomeState extends State<GuardiansHome>
                     child: VisibilityDetector(
                           key: Key('guardians_home_key'),
                           onVisibilityChanged: (info) {
-                            if (info.visibleFraction > 0) {
+                            if (info.visibleFraction > 0 && _isFirstLoad) {
+                              _isFirstLoad = false;
                               loadParent();
                             }
                           }, 
@@ -213,18 +215,19 @@ class _GuardiansHomeState extends State<GuardiansHome>
   }
 
   loadParent() async {
-    print("[GuardianHome.loadParent]");
+    if (!mounted) return;
+
+    final check = await storage.getItem('id_usu');
+    if (check == null || !mounted) return;
 
     try {
       final parentQuery = await httpService.getParent();
       if(mounted){
         setState(() {
           parentModel = parentQuery;
-          showLoader = false;
         });
       }else{
         parentModel = parentQuery;
-        showLoader = false;
       }
         
       studentsTrips.clear();
@@ -261,11 +264,20 @@ class _GuardiansHomeState extends State<GuardiansHome>
     }
 
     try {
-      final List<TripModel> trips = (await httpService.getGuardianTrips("true"));
+      final results = await Future.wait([
+        httpService.getGuardianTrips("true"),
+        httpService.getGuardianRoutes(),
+        httpService.getGuardianTrips("false"),
+        NotificationService.instance.setupNotifications(),
+      ]);
+
+      final List<TripModel> trips = results[0] as List<TripModel>;
+      final List<RouteModel> routes = results[1] as List<RouteModel>;
+      final List<TripModel> oldTrips = results[2] as List<TripModel>;
+
       for (var trip in trips) {
         trip.subscribeToTripTracking(_emitterServiceProvider);
       }
-
       await _subscribeToSchoolEvents();
 
       if(mounted){
@@ -275,41 +287,8 @@ class _GuardiansHomeState extends State<GuardiansHome>
       }else{
         activeTrips = trips;
       }
-    } catch (e) {
-      print("[GuardianHome.loadParent] error loading active trips : $e");
-    }
 
-    try {
-      final List<RouteModel> routes = await httpService.getGuardianRoutes();
       print("[GuardianHome.loadParent] routes count: ${routes.length}");
-
-      for (var route in routes) {
-        var routeTopic = "route-${route.route_id}";
-        var routeTopicGuardian = "$routeTopic-guardian";
-        print("[GuardianHome.loadParent] Subscribing to: $routeTopicGuardian");
-
-        NotificationService.instance.subscribeToTopic(routeTopicGuardian);
-
-        // Suscribirse a eventos de inicio/fin de viaje para esta ruta
-        NotificationService.instance.subscribeToTopic("start-trip-${route.route_id}");
-        NotificationService.instance.subscribeToTopic("end-trip-${route.route_id}");
-
-        for (var student in parentModel!.students) {
-          var topic = "$routeTopic-student-${student.student_id}";          
-          NotificationService.instance.subscribeToTopic(topic);
-          for (var pickupPoint in student.pickup_points) {
-            var topic = "$routeTopic-pickup_point-${pickupPoint.pickup_id}";
-            NotificationService.instance.subscribeToTopic(topic);
-          }
-        }
-      }
-    } catch (e) {
-      print("[GuardianHome.loadParent] error  subscribing to topics : $e");
-    }
-
-    try {
-      final List<TripModel> oldTrips =
-        (await httpService.getGuardianTrips("false"));
 
       if(mounted){
         setState(() {
@@ -319,7 +298,15 @@ class _GuardiansHomeState extends State<GuardiansHome>
         oldTripsList = oldTrips;
       }
     } catch (e) {
-      print("[GuardianHome.loadParent] error  loading olds trips : $e");
+      print("[GuardianHome.loadParent] error loading data in parallel: $e");
+    } finally {
+      if(mounted){
+        setState(() {
+          showLoader = false;
+        });
+      }else{
+        showLoader = false;
+      }
     }
   }
 
@@ -345,7 +332,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
         Provider.of<EmitterService>(context, listen: false);
     _emitterServiceProvider?.addListener(_onEmitterMessage);
 
-    if(!_emitterServiceProvider!.isConnected()){
+    if(_emitterServiceProvider != null && !_emitterServiceProvider!.isConnected()){
       _emitterServiceProvider?.connect();
     }
     
@@ -391,7 +378,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
       // Si el viaje terminó o inició, verificar si es relevante para el usuario
       if (jsonMsg['event_type'] == 'end-trip' || jsonMsg['event_type'] == 'start-trip') {
         final eventTripId = jsonMsg['id_trip'];
-        
+
         if (jsonMsg['event_type'] == 'start-trip') {
           print('[GuardiansHome] Evento start-trip recibido, recargando datos...');
           if (mounted) loadParent();
@@ -403,8 +390,41 @@ class _GuardiansHomeState extends State<GuardiansHome>
           }
         }
       }
+
+      // Si una parada fue visitada o reseteada, solo actualizar el trip (no todo el home)
+      if (jsonMsg['event_type'] == 'point-arrival' || jsonMsg['event_type'] == 'point-reset' ||
+          jsonMsg['event_type'] == 'point-departure' || jsonMsg['event_type'] == 'proximity-to-point') {
+        final eventTripId = jsonMsg['id_trip'];
+        final bool isRelevant = activeTrips.any((trip) => trip.trip_id == eventTripId);
+        if (isRelevant) {
+          print('[GuardiansHome] Evento ${jsonMsg['event_type']} recibido para viaje activo $eventTripId, actualizando trip...');
+          if (mounted) _refreshActiveTrips(eventTripId);
+        }
+      }
     } catch (e) {
       // No es un mensaje JSON válido o no es relevante
+    }
+  }
+
+  Future<void> _refreshActiveTrips(int tripId) async {
+    try {
+      final List<TripModel> trips = await httpService.getGuardianTrips("true");
+      if (mounted && trips.isNotEmpty) {
+        setState(() {
+          for (int i = 0; i < activeTrips.length; i++) {
+            if (activeTrips[i].trip_id == tripId) {
+              final updatedTrip = trips.firstWhere(
+                (t) => t.trip_id == tripId,
+                orElse: () => activeTrips[i],
+              );
+              activeTrips[i] = updatedTrip;
+              break;
+            }
+          }
+        });
+      }
+    } catch (e) {
+      print('[GuardiansHome._refreshActiveTrips] Error: $e');
     }
   }
 
