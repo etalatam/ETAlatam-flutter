@@ -105,12 +105,18 @@ class NotificationService with ChangeNotifier {
     }
   }
 
-  /// Setup inicial de notificaciones al hacer login
   Future<void> setupNotifications() async {
     print("[NotificationService.setupNotifications] Iniciando setup");
 
     try {
-      final List<String> topics = await _httpService.getMyNotificationTopics();
+      final List<String>? topics = await _httpService.getMyNotificationTopics();
+
+      if (topics == null) {
+        print("[NotificationService] Error obteniendo topics - servicio falló");
+        setTopicsReady();
+        _startAutoRefresh();
+        return;
+      }
 
       print("[NotificationService] Topics recibidos: ${topics.length}");
       for (int i = 0; i < topics.length; i++) {
@@ -138,7 +144,7 @@ class NotificationService with ChangeNotifier {
 
   void _startAutoRefresh() {
     _refreshTimer?.cancel();
-    _refreshTimer = Timer.periodic(Duration(hours: 2), (_) {
+    _refreshTimer = Timer.periodic(Duration(minutes: 20), (_) {
       print("[NotificationService] Timer periódico: refrescando topics");
       syncGroups();
     });
@@ -152,11 +158,17 @@ class NotificationService with ChangeNotifier {
   }
 
   /// Sincronizar topics cuando cambian (grupos, rutas, etc)
-  Future<void> syncGroups() async {
+  /// Retorna true si tuvo éxito, false si falló
+  Future<bool> syncGroups() async {
     print("[NotificationService.syncGroups] Sincronizando topics");
 
     try {
-      final List<String> newTopics = await _httpService.getMyNotificationTopics();
+      final List<String>? newTopics = await _httpService.getMyNotificationTopics();
+
+      if (newTopics == null) {
+        print("[NotificationService.syncGroups] Servicio falló - conservando topics anteriores");
+        return false;
+      }
 
       final dynamic storedTopics = await storage.getItem('notification_topics');
       List<String> oldTopics = [];
@@ -187,10 +199,12 @@ class NotificationService with ChangeNotifier {
       print("[NotificationService.syncGroups] Sincronización completada");
       print("[NotificationService] Topics desuscritos: ${toUnsubscribe.length}");
       print("[NotificationService] Topics suscritos: ${toSubscribe.length}");
-      
+
       setTopicsReady();
+      return true;
     } catch (e) {
       print("[NotificationService.syncGroups] error: ${e.toString()}");
+      return false;
     }
   }
 

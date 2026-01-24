@@ -3,6 +3,7 @@ import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/components/active_trip.dart';
 import 'package:eta_school_app/shared/location/location_service.dart';
+import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:eta_school_app/methods.dart';
@@ -302,6 +303,7 @@ class _DriverHomeState extends State<DriverHome> with ETAWidgets, MediansTheme {
         httpService.todayRoutes(),
         httpService.getDriverTrips(0),
         httpService.getActiveTrip(),
+        NotificationService.instance.setupNotifications(),
       ]);
 
       var todateRoutes = results[0] as List<RouteModel>;

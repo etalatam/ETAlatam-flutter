@@ -268,6 +268,7 @@ class _GuardiansHomeState extends State<GuardiansHome>
         httpService.getGuardianTrips("true"),
         httpService.getGuardianRoutes(),
         httpService.getGuardianTrips("false"),
+        NotificationService.instance.setupNotifications(),
       ]);
 
       final List<TripModel> trips = results[0] as List<TripModel>;

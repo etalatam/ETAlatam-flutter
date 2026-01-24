@@ -980,15 +980,7 @@ class HttpService {
           EmitterService.instance.connect();
         }
 
-        try {
-          await NotificationService.instance.setupNotifications()
-            .timeout(Duration(seconds: 15));
-          print('[login] setupNotifications completado exitosamente');
-        } catch (e) {
-          print('[login] Error cargando notificaciones: $e');
-          print('[login] Continuando login. Los topics se cargarán en segundo plano.');
-        }
-
+        // Topics se cargarán en paralelo en el home
         return '1';
       } else {
         return "${parseResponseMessage(res)}/${res.statusCode}";
@@ -1532,7 +1524,7 @@ class HttpService {
     return [];
   }
 
-  Future<List<String>> getMyNotificationTopics() async {
+  Future<List<String>?> getMyNotificationTopics() async {
     const endpoint = '/rpc/get_my_notification_topics';
     try {
       final token = await storage.getItem('token');
@@ -1559,7 +1551,7 @@ class HttpService {
     } catch (e) {
       print("[$endpoint] error: ${e.toString()}");
     }
-    return [];
+    return null;
   }
 
 }

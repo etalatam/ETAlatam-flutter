@@ -225,40 +225,30 @@ class _StudentsHomeState extends State<StudentsHome>
     }
 
     try {
-      final studentQuery = await httpService.getStudent();
-      if(mounted){
-        setState(() {
-          student = studentQuery;
-        });
-      }else{
-        student = studentQuery;
-      }
-    } catch (e) {
-      print("[StudentPage.loadResources.getstudents.error] $e");
-    }
+      // Cargar todos los datos en paralelo incluyendo topics
+      final results = await Future.wait([
+        httpService.getStudent(),
+        httpService.getStudentTrips(studentId),
+        httpService.getActiveTrip(),
+        NotificationService.instance.setupNotifications(),
+      ]);
 
-    try {
-      List<TripModel>? oldTrips = await httpService.getStudentTrips(studentId);
+      final StudentModel studentQuery = results[0] as StudentModel;
+      final List<TripModel> oldTrips = (results[1] as List<TripModel>?) ?? [];
+      final TripModel? activeTrip_ = results[2] as TripModel?;
+
       if (mounted) {
         setState(() {
+          student = studentQuery;
           oldTripsList = oldTrips;
-        });
-      }
-    } catch (e) {
-      print("[StudentPage.loadResources.getstudents.error] $e");
-    }
-
-    try {
-      TripModel? activeTrip_ = await httpService.getActiveTrip();
-
-      if(mounted){
-        setState(() {
           activeTrip = activeTrip_;
-          hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
+          hasActiveTrip = (activeTrip_ != null && activeTrip_.trip_id != 0);
         });
-      }else{
+      } else {
+        student = studentQuery;
+        oldTripsList = oldTrips;
         activeTrip = activeTrip_;
-        hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
+        hasActiveTrip = (activeTrip_ != null && activeTrip_.trip_id != 0);
       }
 
       if (hasActiveTrip && activeTrip != null) {
@@ -274,13 +264,13 @@ class _StudentsHomeState extends State<StudentsHome>
       await _subscribeToSchoolEvents();
 
     } catch (e) {
-      print("[StudentPage.loadResources.getActiveTrip.error] $e");
-    }
-
-    if(mounted){
-      setState(() {
-        showLoader = false;
-      });
+      print("[StudentPage.loadResources.error] $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          showLoader = false;
+        });
+      }
     }
   }
 

@@ -132,6 +132,10 @@ class _SplashScreenState extends State<SplashScreen>
   logInCheck() async {
     final check = await storage.getItem('token');
     if (check != null) {
+      // Usuario ya tiene sesión activa
+      // Topics se cargarán en paralelo en el home
+      if (!mounted) return;
+
       // Navigate with fade transition
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
@@ -147,6 +151,8 @@ class _SplashScreenState extends State<SplashScreen>
       );
     } else {
       final started = await preferences.getBool('started');
+      if (!mounted) return;
+
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
@@ -255,7 +261,7 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Padding(
                       padding: EdgeInsets.only(bottom: 30),
                       child: Text(
-                        'Versión 1.12.56',
+                        'Versión 1.12.57',
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.5),
                           fontSize: 12,

@@ -450,19 +450,20 @@ class _NotificationsPageState extends State<NotificationsPage> {
       showLoader = true;
     });
 
-    // Si no hay topics, intentar cargarlos
-    if (NotificationService.instance.topicsList.isEmpty) {
-      print("[NotificationsPage._refreshData] No hay topics, intentando cargar...");
-      await NotificationService.instance.syncGroups().catchError((e) {
-        print("[NotificationsPage._refreshData] Error cargando topics: $e");
-      });
+    // Siempre intentar sincronizar topics primero (pull-to-refresh)
+    print("[NotificationsPage._refreshData] Sincronizando topics...");
+    final bool syncSuccess = await NotificationService.instance.syncGroups();
+
+    if (!syncSuccess) {
+      print("[NotificationsPage._refreshData] Sincronización falló, usando topics anteriores");
+    } else {
+      print("[NotificationsPage._refreshData] Sincronización exitosa");
     }
 
-    await Future.delayed(const Duration(seconds: 1));
     if (!mounted) return;
-    setState(() {
-      loadNotifications();
-    });
+
+    // Cargar notificaciones (con topics nuevos o anteriores)
+    await loadNotifications();
   }
 
   handleNotification(NotificationModel notification) async {
@@ -511,11 +512,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
         // Si no hay topics, intentar cargarlos automáticamente
         if (NotificationService.instance.topicsList.isEmpty) {
           print("[NotificationsPage] No hay topics, intentando cargar...");
-          NotificationService.instance.syncGroups().then((_) {
-            print("[NotificationsPage] Topics cargados, ahora cargando notificaciones");
+          NotificationService.instance.syncGroups().then((success) {
+            if (success) {
+              print("[NotificationsPage] Topics cargados exitosamente");
+            } else {
+              print("[NotificationsPage] Sincronización falló");
+            }
             if (mounted) loadNotifications();
-          }).catchError((e) {
-            print("[NotificationsPage] Error cargando topics: $e");
           });
         } else {
           loadNotifications();
@@ -528,11 +531,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
       // Verificar si hay topics, si no intentar cargarlos
       if (NotificationService.instance.topicsList.isEmpty) {
         print("[NotificationsPage.initState] No hay topics, intentando cargar...");
-        NotificationService.instance.syncGroups().then((_) {
-          print("[NotificationsPage.initState] Topics cargados");
+        NotificationService.instance.syncGroups().then((success) {
+          if (success) {
+            print("[NotificationsPage.initState] Topics cargados exitosamente");
+          } else {
+            print("[NotificationsPage.initState] Sincronización falló");
+          }
           if (mounted) loadNotifications();
-        }).catchError((e) {
-          print("[NotificationsPage.initState] Error cargando topics: $e");
         });
       } else {
         loadNotifications();
