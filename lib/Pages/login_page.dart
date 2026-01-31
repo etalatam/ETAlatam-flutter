@@ -556,7 +556,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
 
     try {
       loginResponse = await httpService.login(email, password)
-          .timeout(Duration(seconds: 10));
+          .timeout(Duration(seconds: 30));
       var msg = loginResponse?.split('/');
 
       if (loginResponse == '1') {
@@ -604,16 +604,22 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
   }
 
   Future<bool> checkSession() async {
-    // Asegurar que el storage está listo antes de leer
     await storage.ready;
 
     final token_ = await storage.getItem('token');
     final userId = await storage.getItem('id_usu');
+    final relationName = await storage.getItem('relation_name');
 
     print("LoginPage.userId: $userId");
     print("LoginPage.token: ${token_ != null ? 'exists' : 'null'}");
+    print("LoginPage.relationName: $relationName");
 
-    if (token_ != null && userId != null && token_.toString().isNotEmpty && userId.toString().isNotEmpty) {
+    if (token_ != null &&
+        userId != null &&
+        relationName != null &&
+        token_.toString().isNotEmpty &&
+        userId.toString().isNotEmpty &&
+        relationName.toString().isNotEmpty) {
       return true;
     }
 
@@ -627,24 +633,18 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
     return false;
   }
 
-  ///
-  /// Redirect to home page
+  bool _isNavigating = false;
+
   goHome() async {
-    // Evitar llamadas múltiples
-    if (!mounted) return;
+    if (!mounted || _isNavigating) return;
 
-    print('[Login.goHome] Verificando sesión...');
     final hasSession = await checkSession();
-    print('[Login.goHome] hasSession: $hasSession');
 
-    if (hasSession && mounted) {
-      print('[Login.goHome] Navegando a HomeScreen...');
-      // Usar pushReplacement en lugar de offAll para evitar limpiar el stack completamente
+    if (hasSession && mounted && !_isNavigating) {
+      _isNavigating = true;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => HomeScreen()),
       );
-    } else {
-      print('[Login.goHome] No hay sesión válida!');
     }
   }
 

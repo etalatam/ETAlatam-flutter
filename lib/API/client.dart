@@ -350,7 +350,7 @@ class HttpService {
     }
 
     http.Response res = await getQuery(query);
-
+    print("query notificacion: $query");
     print("[$endpoint] res.statusCode: ${res.statusCode}");
     print("[$endpoint] res.body: ${res.body}");
 
@@ -741,6 +741,44 @@ class HttpService {
     return TripModel(trip_id: 0);
   }
 
+  /// Mark pickup point as visited or not visited
+  Future<Map<String, dynamic>> markPickupPointStatus(int tripId, int pickupPointId, bool visited) async {
+    const endpoint = '/rpc/mark_pickup_point_status';
+
+    try {
+      http.Response res = await postQuery(
+        endpoint,
+        jsonEncode({
+          'p_trip_id': tripId,
+          'p_pickup_point_id': pickupPointId,
+          'p_visited': visited,
+        }),
+        contentType: 'application/json',
+      );
+
+      print("[$endpoint] res.statusCode: ${res.statusCode}");
+      print("[$endpoint] res.body: ${res.body}");
+
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body);
+      } else {
+        print("[$endpoint] ERROR - statusCode: ${res.statusCode}");
+        print("[$endpoint] ERROR - body completo: ${res.body}");
+        var body = jsonDecode(res.body);
+        print("[$endpoint] ERROR - hint: ${body['hint']}");
+        print("[$endpoint] ERROR - message: ${body['message']}");
+        print("[$endpoint] ERROR - details: ${body['details']}");
+        print("[$endpoint] ERROR - code: ${body['code']}");
+        String errorKey = body['hint'] ?? 'server_error';
+        return {'success': false, 'error': errorKey};
+      }
+    } catch (e, stackTrace) {
+      print("[$endpoint] error: ${e.toString()}");
+      print("[$endpoint] stackTrace: $stackTrace");
+      return {'success': false, 'error': 'connection_error'};
+    }
+  }
+
   Future<List<TripModel>> getGuardianTrips(String active) async {
     const endpoint = "/rpc/guardian_trips";
     http.Response res =
@@ -942,17 +980,7 @@ class HttpService {
           EmitterService.instance.connect();
         }
 
-        // Setup de notificaciones FCM al hacer login exitoso (en background)
-        // No esperamos el resultado para no bloquear la navegación
-        // Agregamos timeout para evitar bloqueos
-        Future.delayed(Duration(milliseconds: 100), () {
-          NotificationService.instance.setupNotifications()
-            .timeout(Duration(seconds: 5))
-            .catchError((e) {
-              print('[login] Error en setupNotifications: $e');
-            });
-        });
-
+        // Topics se cargarán en paralelo en el home
         return '1';
       } else {
         return "${parseResponseMessage(res)}/${res.statusCode}";
@@ -1102,9 +1130,9 @@ class HttpService {
       }
     } catch (e) {
       debugPrint(e.toString());
-      return 'Respuesta inesperada del servidor 😳';
+      return 'Algo salió mal. Por favor revisa tu conexión a internet e intenta de nuevo.';
     }
-    // return "";
+    return 'Algo salió mal. Por favor revisa tu conexión a internet e intenta de nuevo.';
   }
 
   /// Send Car Location
@@ -1283,8 +1311,10 @@ class HttpService {
   
   handleHttpError(e) async {
     print("HTTP error: ${e.toString()}");
-    // Si hay un error de conexión, devolver un response vacío
-    return http.Response('', 500);
+    final errorBody = jsonEncode({
+      'message': 'Algo salió mal. Por favor revisa tu conexión a internet e intenta de nuevo.'
+    });
+    return http.Response(errorBody, 500);
   }
 
 
@@ -1435,7 +1465,7 @@ class HttpService {
           'Authorization': 'Bearer $token',
         },
       ).onError((error, stackTrace) => handleHttpError(error));
-
+      print("getMyUserTopic response: $url");
       print("[$endpoint] res.statusCode: ${response.statusCode}");
       print("[$endpoint] res.body: ${response.body}");
 
@@ -1492,6 +1522,36 @@ class HttpService {
       print("[$endpoint] error: ${e.toString()}");
     }
     return [];
+  }
+
+  Future<List<String>?> getMyNotificationTopics() async {
+    const endpoint = '/rpc/get_my_notification_topics';
+    try {
+      final token = await storage.getItem('token');
+      final url = Uri.parse(apiURL + endpoint);
+
+      final response = await http.post(
+        url,
+        body: null,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print("[$endpoint] res.statusCode: ${response.statusCode}");
+      print("[$endpoint] res.body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = jsonDecode(response.body);
+        return jsonList.map((item) => item['topic'].toString()).toList();
+      } else {
+        print("[$endpoint] Non-200 status: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("[$endpoint] error: ${e.toString()}");
+    }
+    return null;
   }
 
 }

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:eta_school_app/Models/route_model.dart';
 import 'package:eta_school_app/Models/student_model.dart';
-import 'package:eta_school_app/Pages/login_page.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/components/active_trip.dart';
 import 'package:eta_school_app/shared/emitterio/emitter_service.dart';
@@ -49,7 +48,8 @@ class _StudentsHomeState extends State<StudentsHome>
   
   EmitterService? _emitterServiceProvider;
   EmitterTopic? _schoolEventsTopic;
-  
+  bool _isFirstLoad = true;
+
   @override
   Widget build(BuildContext context) {
     return showLoader
@@ -63,7 +63,8 @@ class _StudentsHomeState extends State<StudentsHome>
                     child: VisibilityDetector(
                           key: Key('student_home_key'),
                           onVisibilityChanged: (info) {
-                            if (info.visibleFraction > 0) {
+                            if (info.visibleFraction > 0 && _isFirstLoad) {
+                              _isFirstLoad = false;
                               loadResources();
                             }
                           }, 
@@ -214,49 +215,40 @@ class _StudentsHomeState extends State<StudentsHome>
   /// Load resources through API
   ///
   loadResources() async {
+    if (!mounted) return;
+
     final studentId = await storage.getItem('relation_id');
     final check = await storage.getItem('id_usu');
 
-    if (check == null) {
-      Get.offAll(Login());
+    if (check == null || !mounted) {
       return;
     }
 
     try {
-      final studentQuery = await httpService.getStudent();
-      if(mounted){
-        setState(() {
-          student = studentQuery;
-        });
-      }else{
-        student = studentQuery;
-      }
-    } catch (e) {
-      print("[StudentPage.loadResources.getstudents.error] $e");
-    }
+      // Cargar todos los datos en paralelo incluyendo topics
+      final results = await Future.wait([
+        httpService.getStudent(),
+        httpService.getStudentTrips(studentId),
+        httpService.getActiveTrip(),
+        NotificationService.instance.setupNotifications(),
+      ]);
 
-    try {
-      List<TripModel>? oldTrips = await httpService.getStudentTrips(studentId);
+      final StudentModel studentQuery = results[0] as StudentModel;
+      final List<TripModel> oldTrips = (results[1] as List<TripModel>?) ?? [];
+      final TripModel? activeTrip_ = results[2] as TripModel?;
+
       if (mounted) {
         setState(() {
+          student = studentQuery;
           oldTripsList = oldTrips;
-        });
-      }
-    } catch (e) {
-      print("[StudentPage.loadResources.getstudents.error] $e");
-    }
-
-    try {
-      TripModel? activeTrip_ = await httpService.getActiveTrip();
-
-      if(mounted){
-        setState(() {
           activeTrip = activeTrip_;
-          hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
+          hasActiveTrip = (activeTrip_ != null && activeTrip_.trip_id != 0);
         });
-      }else{
+      } else {
+        student = studentQuery;
+        oldTripsList = oldTrips;
         activeTrip = activeTrip_;
-        hasActiveTrip = (activeTrip_.trip_id != 0) ? true : false;
+        hasActiveTrip = (activeTrip_ != null && activeTrip_.trip_id != 0);
       }
 
       if (hasActiveTrip && activeTrip != null) {
@@ -272,33 +264,13 @@ class _StudentsHomeState extends State<StudentsHome>
       await _subscribeToSchoolEvents();
 
     } catch (e) {
-      print("[StudentPage.loadResources.getActiveTrip.error] $e");
-    }
-
-    try {
-      List<RouteModel> routes = await httpService.getStudentRoutes();
-      for (var route in routes) {
-        String routeTopic = "route-${route.route_id}-student";
-        NotificationService.instance.subscribeToTopic(routeTopic);
-
-        // Suscribirse a eventos de inicio/fin de viaje para esta ruta
-        NotificationService.instance.subscribeToTopic("start-trip-${route.route_id}");
-        NotificationService.instance.subscribeToTopic("end-trip-${route.route_id}");
-
-        for (var pickupPoint in student.pickup_points) {
-          var pickupPointTopic =
-              "route-${route.route_id}-pickup_point-${pickupPoint.pickup_id}";
-          NotificationService.instance.subscribeToTopic(pickupPointTopic);
-        }
+      print("[StudentPage.loadResources.error] $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          showLoader = false;
+        });
       }
-    } catch (e) {
-      print("[StudentPage.loadResources.getActiveTrip.error] $e");
-    }
-
-    if(mounted){
-      setState(() {
-        showLoader = false;
-      });
     }
   }
 
@@ -331,9 +303,7 @@ class _StudentsHomeState extends State<StudentsHome>
 
     _emitterServiceProvider = Provider.of<EmitterService>(context, listen: false);
     _emitterServiceProvider?.addListener(_onEmitterMessage);
-    
-
-    loadResources();    
+    loadResources();
   }
 
   onPushMessage() {
@@ -363,7 +333,7 @@ class _StudentsHomeState extends State<StudentsHome>
       // Si el viaje terminó o inició, verificar si es relevante para el usuario
       if (jsonMsg['event_type'] == 'end-trip' || jsonMsg['event_type'] == 'start-trip') {
         final eventTripId = jsonMsg['id_trip'];
-        
+
         if (jsonMsg['event_type'] == 'start-trip') {
           print('[StudentsHome] Evento start-trip recibido, recargando datos...');
           if (mounted) loadResources();
@@ -375,8 +345,32 @@ class _StudentsHomeState extends State<StudentsHome>
           }
         }
       }
+
+      // Si una parada fue visitada o reseteada, solo actualizar el activeTrip (no todo el home)
+      if (jsonMsg['event_type'] == 'point-arrival' || jsonMsg['event_type'] == 'point-reset' ||
+          jsonMsg['event_type'] == 'point-departure' || jsonMsg['event_type'] == 'proximity-to-point') {
+        final eventTripId = jsonMsg['id_trip'];
+        final bool isRelevant = hasActiveTrip && activeTrip?.trip_id == eventTripId;
+        if (isRelevant) {
+          print('[StudentsHome] Evento ${jsonMsg['event_type']} recibido para viaje activo $eventTripId, actualizando trip...');
+          if (mounted) _refreshActiveTrip();
+        }
+      }
     } catch (e) {
       // No es un mensaje JSON válido o no es relevante
+    }
+  }
+
+  Future<void> _refreshActiveTrip() async {
+    try {
+      TripModel? updatedTrip = await httpService.getActiveTrip();
+      if (mounted && updatedTrip.trip_id != 0 && updatedTrip.pickup_locations != null) {
+        setState(() {
+          activeTrip = updatedTrip;
+        });
+      }
+    } catch (e) {
+      print('[StudentsHome._refreshActiveTrip] Error: $e');
     }
   }
 

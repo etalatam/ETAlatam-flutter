@@ -1,18 +1,18 @@
+import 'dart:async';
 import 'package:eta_school_app/Pages/driver_page.dart';
 import 'package:eta_school_app/Pages/help_messages_page.dart';
 import 'package:eta_school_app/Models/parent_model.dart';
 import 'package:eta_school_app/Models/NotificationModel.dart';
 import 'package:eta_school_app/components/header.dart';
 import 'package:eta_school_app/components/loader.dart';
-import 'package:eta_school_app/components/slide_action.dart';
 import 'package:eta_school_app/controllers/helpers.dart';
+import 'package:eta_school_app/controllers/page_controller.dart' as p;
 import 'package:eta_school_app/methods.dart';
 import 'package:eta_school_app/shared/fcm/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -78,27 +78,19 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Si los topics no están listos, mostrar loader
+    if (!NotificationService.instance.topicsReady) {
+      return const Loader();
+    }
+
     return showLoader
-        ? Loader()
+        ? const Loader()
         : Material(
             type: MaterialType.transparency,
             child: RefreshIndicator(
                 triggerMode: RefreshIndicatorTriggerMode.anywhere,
-                onRefresh:
-                    _refreshData, // Function to be called on pull-to-refresh
-                child: VisibilityDetector(
-                    key: Key('my-widget-key'),
-                    onVisibilityChanged: (visibilityInfo) {
-                      if (visibilityInfo.visibleFraction > 0) {
-                        print('Widget visible');
-                        if (notificationsList.isEmpty) {
-                          loadNotifications();
-                        }
-                      } else {
-                        print('Widget oculto');
-                      }
-                    },
-                    child: Container(
+                onRefresh: _refreshData,
+                child: Container(
                         width: double.infinity,
                         height: MediaQuery.of(context).size.height,
                         color: activeTheme.main_bg,
@@ -168,34 +160,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                           for (var i = 0;
                                               i < notificationsList.length;
                                               i++)
-                                            SlideAction(
-                                                [
-                                                  SlidableAction(
-                                                    // An action can be bigger than the others.
-                                                    onPressed: ((context) =>
-                                                        ''),
-                                                    backgroundColor: Colors.red,
-                                                    foregroundColor:
-                                                        Colors.white,
-                                                    icon: Icons.delete_forever,
-                                                    label: lang
-                                                        .translate('remove'),
-                                                  ),
-                                                  SlidableAction(
-                                                    // An action can be bigger than the others.
-                                                    onPressed: ((context) =>
-                                                        ''),
-                                                    backgroundColor:
-                                                        darkBlueColor,
-                                                    foregroundColor:
-                                                        Colors.white,
-                                                    icon: Icons
-                                                        .notifications_active,
-                                                    label: lang
-                                                        .translate('mark_read'),
-                                                  )
-                                                ],
-                                                GestureDetector(
+                                            GestureDetector(
                                                   onTap: () => {
                                                     handleNotification(
                                                         notificationsList[i])
@@ -301,15 +266,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                                                                 Positioned(
                                                                                   left: 0,
                                                                                   top: 0,
-                                                                                  child: Container(
+                                                                                  child: SizedBox(
                                                                                     width: 32,
                                                                                     height: 32,
-                                                                                    clipBehavior: Clip.antiAlias,
-                                                                                    decoration: const BoxDecoration(
-                                                                                      image: DecorationImage(
-                                                                                        image: NetworkImage("https://via.placeholder.com/32x32"),
-                                                                                        fit: BoxFit.fill,
-                                                                                      ),
+                                                                                    child: Icon(
+                                                                                      Icons.notifications,
+                                                                                      color: Colors.white,
+                                                                                      size: 24,
                                                                                     ),
                                                                                   ),
                                                                                 ),
@@ -421,7 +384,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                                       )
                                                     ],
                                                   ),
-                                                )),
+                                                ),
                                           const SizedBox(
                                             height: 100,
                                           ),
@@ -435,8 +398,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           //     left: 20,
                           //     right: 20,
                           //     child: BottomMenu('notifications', openPage))
-                        ])))));
+                        ]))));
   }
+
 
   ///
   /// Load notifications through API
@@ -477,6 +441,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   bool showLoader = true;
+  Worker? _pageListener;
 
   // Function to simulate data retrieval or refresh
   Future<void> _refreshData() async {
@@ -485,11 +450,20 @@ class _NotificationsPageState extends State<NotificationsPage> {
       showLoader = true;
     });
 
-    await Future.delayed(const Duration(seconds: 1));
+    // Siempre intentar sincronizar topics primero (pull-to-refresh)
+    print("[NotificationsPage._refreshData] Sincronizando topics...");
+    final bool syncSuccess = await NotificationService.instance.syncGroups();
+
+    if (!syncSuccess) {
+      print("[NotificationsPage._refreshData] Sincronización falló, usando topics anteriores");
+    } else {
+      print("[NotificationsPage._refreshData] Sincronización exitosa");
+    }
+
     if (!mounted) return;
-    setState(() {
-      loadNotifications();
-    });
+
+    // Cargar notificaciones (con topics nuevos o anteriores)
+    await loadNotifications();
   }
 
   handleNotification(NotificationModel notification) async {
@@ -522,19 +496,72 @@ class _NotificationsPageState extends State<NotificationsPage> {
   void initState() {
     super.initState();
     showLoader = true;
-    loadNotifications();
 
     Provider.of<NotificationService>(context, listen: false)
-        .addListener(onPushMessage);
+        .addListener(onNotificationServiceChange);
+
+    // Limpiar bandera de nuevas notificaciones al entrar
+    NotificationService.instance.clearNewNotificationsFlag();
+
+    // Escuchar cambios de página para recargar cuando se entra a esta vista
+    final pageController = Get.find<p.PageController>();
+    _pageListener = ever(pageController.currentIndex, (index) {
+      if (index == 2 && mounted) {
+        print("[NotificationsPage] Tab seleccionado, recargando...");
+
+        // Si no hay topics, intentar cargarlos automáticamente
+        if (NotificationService.instance.topicsList.isEmpty) {
+          print("[NotificationsPage] No hay topics, intentando cargar...");
+          NotificationService.instance.syncGroups().then((success) {
+            if (success) {
+              print("[NotificationsPage] Topics cargados exitosamente");
+            } else {
+              print("[NotificationsPage] Sincronización falló");
+            }
+            if (mounted) loadNotifications();
+          });
+        } else {
+          loadNotifications();
+        }
+      }
+    });
+
+    // Si los topics están listos, cargar notificaciones
+    if (NotificationService.instance.topicsReady) {
+      // Verificar si hay topics, si no intentar cargarlos
+      if (NotificationService.instance.topicsList.isEmpty) {
+        print("[NotificationsPage.initState] No hay topics, intentando cargar...");
+        NotificationService.instance.syncGroups().then((success) {
+          if (success) {
+            print("[NotificationsPage.initState] Topics cargados exitosamente");
+          } else {
+            print("[NotificationsPage.initState] Sincronización falló");
+          }
+          if (mounted) loadNotifications();
+        });
+      } else {
+        loadNotifications();
+      }
+    }
   }
 
-  void onPushMessage() {
-    print("[NotificaionPage.onPushMessage]");
-    final LastMessage? lastMessage = NotificationService.instance.lastMessage;
-    final title = lastMessage?.message.notification!.title ?? "Nuevo mensaje";
+  void onNotificationServiceChange() {
+    // Si los topics se vuelven ready, recargar el widget para mostrar notificaciones
+    if (NotificationService.instance.topicsReady) {
+      if (mounted) setState(() {});
+      loadNotifications();
+      return;
+    }
 
+    // Si hay nuevas notificaciones, refrescar la lista
+    if (NotificationService.instance.hasNewNotifications && mounted && !showLoader) {
+      NotificationService.instance.clearNewNotificationsFlag();
+      loadNotifications();
+    }
+
+    final LastMessage? lastMessage = NotificationService.instance.lastMessage;
     if (lastMessage != null && mounted) {
-      // Mostrar el mensaje como un snackbar o diálogo
+      final title = lastMessage.message.notification!.title ?? "Nuevo mensaje";
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(title),
@@ -546,8 +573,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   @override
   void dispose() {
+    _pageListener?.dispose();
     Provider.of<NotificationService>(context, listen: false)
-        .removeListener(onPushMessage);
+        .removeListener(onNotificationServiceChange);
     super.dispose();
   }
 }

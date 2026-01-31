@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'package:eta_school_app/API/client.dart';
 import 'package:eta_school_app/Models/recipient_group_model.dart';
-import 'package:eta_school_app/Models/user_topic_model.dart';
 import 'package:eta_school_app/Models/trip_model.dart';
 import 'package:eta_school_app/Pages/trip_page.dart';
 import 'package:eta_school_app/Pages/support_messages_unified_page.dart';
@@ -33,14 +33,33 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 class NotificationService with ChangeNotifier {
   LastMessage? lastMessage;
 
+  // Bandera para indicar que hay nuevas notificaciones pendientes
+  bool hasNewNotifications = false;
+
   // Declaración del singleton
   static final NotificationService _instance = NotificationService._internal();
 
   final HttpService _httpService = HttpService();
 
-  List<String> topicsList = [];
+  final Set<String> _topicsSet = {};
+  List<String> get topicsList => _topicsSet.toList();
   String? userTopic;
   List<RecipientGroupModel> recipientGroups = [];
+  bool _topicsReady = false;
+  final Set<String> _subscribingTopics = {};
+  Timer? _refreshTimer;
+
+  bool get topicsReady => _topicsReady;
+
+  void setTopicsReady() {
+    if (_topicsReady) return;
+    _topicsReady = true;
+    notifyListeners();
+  }
+
+  void resetTopicsReady() {
+    _topicsReady = false;
+  }
 
   // Constructor privado
   NotificationService._internal() {
@@ -56,147 +75,152 @@ class NotificationService with ChangeNotifier {
 
   /// Suscribirse a un topic específico
   Future<void> subscribeToTopic(String topic) async {
-    print("[NotificationService.subscribeToTopic] $topic");
+    if (_topicsSet.contains(topic) || _subscribingTopics.contains(topic)) {
+      return;
+    }
+
+    _subscribingTopics.add(topic);
+
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
-
-      if (!topicsList.contains(topic)) {
-        await messaging.subscribeToTopic(topic);
-        topicsList.add(topic);
-        print("[NotificationService] Suscrito exitosamente a: $topic");
-      } else {
-        print("[NotificationService] Ya estaba suscrito a: $topic");
-      }
+      await messaging.subscribeToTopic(topic);
+      _topicsSet.add(topic);
     } catch (e) {
       print("[NotificationService.subscribeToTopic] error: ${e.toString()}");
+    } finally {
+      _subscribingTopics.remove(topic);
     }
   }
 
   /// Desuscribirse de un topic específico
   Future<void> unsubscribeFromTopic(String topic) async {
-    print("[NotificationService.unsubscribeFromTopic] $topic");
     try {
-      FirebaseMessaging messaging = FirebaseMessaging.instance;
-
-      if (topicsList.contains(topic)) {
-        await messaging.unsubscribeFromTopic(topic);
-        topicsList.remove(topic);
-        print("[NotificationService] Desuscrito exitosamente de: $topic");
+      if (_topicsSet.contains(topic)) {
+        await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
+        _topicsSet.remove(topic);
+        print("[NotificationService] Desuscrito de: $topic");
       }
     } catch (e) {
       print("[NotificationService.unsubscribeFromTopic] error: ${e.toString()}");
     }
   }
 
-  /// Setup inicial de notificaciones al hacer login
   Future<void> setupNotifications() async {
     print("[NotificationService.setupNotifications] Iniciando setup");
 
     try {
-      // 1. Obtener y suscribirse al topic personal con timeout
-      // useSessionCheck: false para evitar bucle infinito durante el login
-      final UserTopicModel? userTopicModel = await _httpService.getMyUserTopic(useSessionCheck: false)
-        .timeout(Duration(seconds: 3), onTimeout: () => null);
+      final List<String>? topics = await _httpService.getMyNotificationTopics();
 
-      if (userTopicModel != null) {
-        userTopic = userTopicModel.userTopic;
-        await subscribeToTopic(userTopic!);
-        await storage.setItem('user_topic', userTopic!);
-        print("[NotificationService] Topic personal guardado: $userTopic");
+      if (topics == null) {
+        print("[NotificationService] Error obteniendo topics - servicio falló");
+        setTopicsReady();
+        _startAutoRefresh();
+        return;
       }
 
-      // 2. Suscribirse al topic basado en el ID del usuario
-      final dynamic userId = await storage.getItem('id_usu');
-      if (userId != null) {
-        String userIdTopic = 'user-${userId.toString()}';
-        await subscribeToTopic(userIdTopic);
-        print("[NotificationService] Suscrito a topic de user ID: $userIdTopic");
+      print("[NotificationService] Topics recibidos: ${topics.length}");
+      for (int i = 0; i < topics.length; i++) {
+        print("[NotificationService] Topic ${i + 1}: ${topics[i]}");
       }
 
-      // 3. Suscribirse al topic basado en el email del usuario
-      final String? userEmail = await storage.getItem('user_email');
-      if (userEmail != null && userEmail.isNotEmpty) {
-        // Convertir email a formato válido para topic FCM
-        // Reemplazar @ con _at_ y . con _dot_ para crear un topic válido
-        String emailTopic = 'email-${userEmail.replaceAll('@', '_at_').replaceAll('.', '_dot_')}';
-        await subscribeToTopic(emailTopic);
-        print("[NotificationService] Suscrito a topic de email: $emailTopic");
+      // Guardar topics en storage (sin esperar Firebase)
+      await storage.setItem('notification_topics', topics);
+
+      // Actualizar memoria local con los nuevos topics
+      _topicsSet.clear();
+      _topicsSet.addAll(topics);
+
+      // Marcar como ready ANTES de suscribirse a Firebase
+      setTopicsReady();
+      _startAutoRefresh();
+
+      // Suscribirse a Firebase en background
+      if (topics.isNotEmpty) {
+        print("[NotificationService] Suscribiendo a Firebase en background (${topics.length} topics)...");
+
+        Future.wait(
+          topics.map((topic) => subscribeToTopic(topic)),
+        ).then((_) {
+          print("[NotificationService] Suscripción a Firebase completada. Topics: ${topicsList.length}");
+        }).catchError((e) {
+          print("[NotificationService] Error en suscripción background a Firebase: $e");
+        });
       }
-
-      // 4. Obtener y suscribirse a los topics de grupos con timeout
-      // useSessionCheck: false para evitar bucle infinito durante el login
-      final List<RecipientGroupModel> groups = await _httpService.getMyRecipientGroups(useSessionCheck: false)
-        .timeout(Duration(seconds: 3), onTimeout: () => <RecipientGroupModel>[]);
-      recipientGroups = groups;
-
-      // Suscribirse a todos los topics en paralelo para mejor rendimiento
-      if (groups.isNotEmpty) {
-        await Future.wait(
-          groups.map((group) => subscribeToTopic(group.topic)),
-        ).timeout(Duration(seconds: 3), onTimeout: () => []);
-      }
-
-      // Guardar grupos en storage para sincronización posterior
-      await storage.setItem('recipient_groups', groups.map((g) => g.toJson()).toList());
-
-      print("[NotificationService] Setup completado. Topics: ${topicsList.length}");
     } catch (e) {
       print("[NotificationService.setupNotifications] error: ${e.toString()}");
-      // No lanzamos el error para evitar bloquear el login
+      setTopicsReady();
     }
   }
 
-  /// Sincronizar grupos cuando cambian las membresías
-  Future<void> syncGroups() async {
-    print("[NotificationService.syncGroups] Sincronizando grupos");
+  void _startAutoRefresh() {
+    _refreshTimer?.cancel();
+    _refreshTimer = Timer.periodic(Duration(minutes: 20), (_) {
+      print("[NotificationService] Timer periódico: refrescando topics");
+      syncGroups();
+    });
+
+    WidgetsBinding.instance.addObserver(_AppLifecycleObserver(this));
+  }
+
+  void _onAppResumed() {
+    print("[NotificationService] App resumed: refrescando topics");
+    syncGroups();
+  }
+
+  /// Sincronizar topics cuando cambian (grupos, rutas, etc)
+  /// Retorna true si tuvo éxito, false si falló
+  Future<bool> syncGroups() async {
+    print("[NotificationService.syncGroups] Sincronizando topics");
 
     try {
-      // Obtener nuevos grupos del backend
-      final List<RecipientGroupModel> newGroups = await _httpService.getMyRecipientGroups();
+      final List<String>? newTopics = await _httpService.getMyNotificationTopics();
 
-      // Obtener grupos anteriores del storage
-      final dynamic storedGroups = await storage.getItem('recipient_groups');
-      List<RecipientGroupModel> oldGroups = [];
-
-      if (storedGroups != null && storedGroups is List) {
-        oldGroups = (storedGroups as List).map((g) => RecipientGroupModel.fromJson(g)).toList();
+      if (newTopics == null) {
+        print("[NotificationService.syncGroups] Servicio falló - conservando topics anteriores");
+        return false;
       }
 
-      final List<String> oldTopics = oldGroups.map((g) => g.topic).toList();
-      final List<String> newTopics = newGroups.map((g) => g.topic).toList();
+      final dynamic storedTopics = await storage.getItem('notification_topics');
+      List<String> oldTopics = [];
 
-      // Desuscribirse de topics removidos (en paralelo)
-      final List<String> toUnsubscribe = oldTopics.where((t) => !newTopics.contains(t)).toList();
+      if (storedTopics != null && storedTopics is List) {
+        oldTopics = List<String>.from(storedTopics);
+      }
+
+      final Set<String> oldSet = oldTopics.toSet();
+      final Set<String> newSet = newTopics.toSet();
+
+      final List<String> toUnsubscribe = oldSet.difference(newSet).toList();
       if (toUnsubscribe.isNotEmpty) {
         await Future.wait(
           toUnsubscribe.map((topic) => unsubscribeFromTopic(topic)),
         );
       }
 
-      // Suscribirse a nuevos topics (en paralelo)
-      final List<String> toSubscribe = newTopics.where((t) => !oldTopics.contains(t)).toList();
+      final List<String> toSubscribe = newSet.difference(oldSet).toList();
       if (toSubscribe.isNotEmpty) {
         await Future.wait(
           toSubscribe.map((topic) => subscribeToTopic(topic)),
         );
       }
 
-      // Actualizar grupos almacenados
-      recipientGroups = newGroups;
-      await storage.setItem('recipient_groups', newGroups.map((g) => g.toJson()).toList());
+      await storage.setItem('notification_topics', newTopics);
 
       print("[NotificationService.syncGroups] Sincronización completada");
       print("[NotificationService] Topics desuscritos: ${toUnsubscribe.length}");
       print("[NotificationService] Topics suscritos: ${toSubscribe.length}");
+
+      setTopicsReady();
+      return true;
     } catch (e) {
       print("[NotificationService.syncGroups] error: ${e.toString()}");
+      return false;
     }
   }
 
-  // Método para manejar los mensajes entrantes
-  void _handleIncomingMessage(LastMessage message) {
-    lastMessage = message;
-    notifyListeners();
+  // Marcar que ya se leyeron las notificaciones nuevas
+  void clearNewNotificationsFlag() {
+    hasNewNotifications = false;
   }
 
   /// Navegar según el tipo de notificación
@@ -384,10 +408,14 @@ class NotificationService with ChangeNotifier {
           print('[FCM] Usuario removido de grupo, sincronizando...');
           syncGroups();
         } else {
-          // Anuncio normal → Mostrar notificación
+          // Marcar que hay nuevas notificaciones para refrescar la lista
+          hasNewNotifications = true;
+          notifyListeners();
+
+          // Mostrar snackbar si tiene notification
           if (message.notification != null) {
             print('[FCM] Message also contained a notification: ${message.notification}');
-            _handleIncomingMessage(LastMessage(message, 'foreground'));
+            lastMessage = LastMessage(message, 'foreground');
           }
         }
       });
@@ -414,6 +442,10 @@ class NotificationService with ChangeNotifier {
   /// Cerrar servicio y desuscribirse de todos los topics
   Future<void> close() async {
     print("[NotificationService.close] Desuscribiendo de todos los topics (${topicsList.length} topics)");
+
+    _refreshTimer?.cancel();
+    _refreshTimer = null;
+
     try {
       final List<String> topicsToUnsubscribe = List.from(topicsList);
 
@@ -433,14 +465,15 @@ class NotificationService with ChangeNotifier {
       // Esperar a que todas las desuscripciones completen (máximo 5 segundos cada una)
       await Future.wait(unsubscribeFutures);
 
-      // Limpiar la lista y variables
-      topicsList.clear();
+      _topicsSet.clear();
       userTopic = null;
       recipientGroups.clear();
+      _topicsReady = false;
 
       // Limpiar storage
       await storage.deleteItem('user_topic');
       await storage.deleteItem('recipient_groups');
+      await storage.deleteItem('notification_topics');
 
       print("[NotificationService.close] Todos los topics desuscritos completado");
     } catch (e) {
@@ -476,4 +509,17 @@ class LastMessage {
   final String status;
 
   LastMessage(this.message, this.status);
+}
+
+class _AppLifecycleObserver extends WidgetsBindingObserver {
+  final NotificationService _notificationService;
+
+  _AppLifecycleObserver(this._notificationService);
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _notificationService._onAppResumed();
+    }
+  }
 }

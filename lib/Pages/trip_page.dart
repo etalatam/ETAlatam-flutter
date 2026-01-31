@@ -32,7 +32,9 @@ import 'package:visibility_detector/visibility_detector.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:synchronized/synchronized.dart';
 import '../components/marquee_text.dart';
+import '../components/icon_button_with_text.dart';
 import 'map/map_wiew.dart';
 import 'package:eta_school_app/Pages/home_screen.dart';
 
@@ -91,6 +93,8 @@ class _TripPageState extends State<TripPage>
   // Map<String, PointAnnotation> annotationsMap = {};
   PointAnnotation? busPointAnnotation;
 
+  final Lock _busAnnotationLock = Lock();
+
   bool waitingBusPosition = true;
 
   ScreenCoordinate busPulsatingCircleCoordinate = ScreenCoordinate(x: 0, y: 0);
@@ -140,9 +144,11 @@ class _TripPageState extends State<TripPage>
   Timer? _autoFollowTimer;
   
   bool _isInitialCameraSet = false;
-  
-  // Timer para actualizar el tiempo del viaje
+
   Timer? _tripDurationTimer;
+
+  int? _selectedPickupIndex;
+  bool _isMarkingPickup = false;
 
   @override
   void initState() {
@@ -269,10 +275,10 @@ class _TripPageState extends State<TripPage>
                                   : 0.15), // Ocupar toda la pantalla cuando el panel está oculto
                       child: MapWiew(
                           navigationMode: widget.navigationMode,
-                          showLocationPuck: widget.navigationMode, // Si navigationMode es true, es conductor con viaje activo
-                          centerOnSelf: widget.navigationMode, // Conductores centran en sí mismos
-                          showAutoFollowButton: trip.trip_status == 'Running', // Solo mostrar botón en viajes activos
-                          onCenterRequest: widget.navigationMode ? null : _centerOnBus, // Padres/estudiantes centran en el bus
+                          showLocationPuck: widget.navigationMode,
+                          centerOnSelf: widget.navigationMode,
+                          showAutoFollowButton: trip.trip_status == 'Running',
+                          onCenterRequest: (widget.navigationMode || trip.trip_status != 'Running') ? null : _centerOnBus,
                           onMapReady: (MapboxMap mapboxMap) async {
                             print('[TripPage.MapWiew] trip_status: "${trip.trip_status}", showAutoFollowButton: ${trip.trip_status == 'Running'}');
                             _mapboxMapController = mapboxMap;
@@ -280,9 +286,6 @@ class _TripPageState extends State<TripPage>
                             // Asegurar que el annotationManager esté creado (solo si no existe)
                             if (annotationManager == null) {
                               try {
-                                // Limpiar cualquier anotación previa antes de crear el manager
-                                busPointAnnotation = null;
-                                
                                 final value = await mapboxMap.annotations
                                     .createPointAnnotationManager();
                                 annotationManager = value;
@@ -292,6 +295,8 @@ class _TripPageState extends State<TripPage>
                               } catch (e) {
                                 print("[TripPage] Error creating annotation manager: $e");
                               }
+                            } else {
+                              print("[TripPage.onMapReady] Reutilizando AnnotationManager existente");
                             }
 
                             // Detectar cuando el usuario interactúa con el mapa
@@ -571,6 +576,20 @@ class _TripPageState extends State<TripPage>
                                           ]),
                                         ],
                                       ),
+                                      // Mostrar fecha solo para viajes históricos
+                                      if (trip.trip_status != "Running" && trip.formatDate != null)
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(top: 4),
+                                            child: Text(
+                                              trip.formatDate!,
+                                              style: activeTheme.smallText.copyWith(
+                                                color: activeTheme.textColor.withOpacity(0.7),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                       const SizedBox(height: 10),
                                       if (trip.trip_status == "Running")
                                         Row(
@@ -755,7 +774,7 @@ class _TripPageState extends State<TripPage>
                                         activeTab == 'pickup'
                                             ? Row(children: [
                                                 tripUser(
-                                                    trip.pickup_locations![i]),
+                                                    trip.pickup_locations![i], i),
                                               ])
                                             : const Center(),
                                     ],
@@ -775,6 +794,17 @@ class _TripPageState extends State<TripPage>
                             } : null,
                           )
                         : const Center(),
+                    if (_isMarkingPickup)
+                      Positioned.fill(
+                        child: Container(
+                          color: Colors.black.withOpacity(0.3),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
                   ]),
                   // ])
                 ),
@@ -804,8 +834,9 @@ class _TripPageState extends State<TripPage>
     );
   }
 
-  Widget tripUser(TripPickupLocation pickupLocation) {
-    // print('[TripPage.tripUser.pickupLocation]');
+  Widget tripUser(TripPickupLocation pickupLocation, int index) {
+    bool isSelected = _selectedPickupIndex == index;
+
     return GestureDetector(
       onTap: () {
         _mapboxMapController?.setCamera(CameraOptions(
@@ -813,11 +844,15 @@ class _TripPageState extends State<TripPage>
             center: Point(
                 coordinates: Position(pickupLocation.location!.longitude as num,
                     pickupLocation.location!.latitude as num))));
+
+        if (trip.trip_status == 'Running' && relationName == 'eta.drivers') {
+          setState(() {
+            _selectedPickupIndex = isSelected ? null : index;
+          });
+        }
       },
       child: Row(children: [
-        const SizedBox(
-          width: 10,
-        ),
+        const SizedBox(width: 10),
         Column(
           children: [
             SizedBox(
@@ -844,7 +879,7 @@ class _TripPageState extends State<TripPage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             MarqueeText(
-              text: '${pickupLocation.location?.location_name ?? ''}',
+              text: pickupLocation.location?.location_name ?? '',
               style: activeTheme.h5,
               width: 300,
               autoStart: true,
@@ -852,17 +887,109 @@ class _TripPageState extends State<TripPage>
             SizedBox(
                 width: 300,
                 child: Text(
-                  '${pickupLocation.location?.address}',
+                  pickupLocation.location?.address ?? '',
                   softWrap: true,
                   maxLines: 2,
                   style: TextStyle(
                       fontSize: activeTheme.smallText.fontSize,
                       color: activeTheme.smallText.color),
                 )),
+            if (isSelected && pickupLocation.pickup_id != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Row(
+                  children: [
+                    IconButtonWithText(
+                      label: Text(lang.translate('visited'), style: activeTheme.smallText),
+                      icon: Icon(Icons.check_circle, color: Colors.green),
+                      onPressed: () => _markPickupStatus(index, pickupLocation.pickup_id!, true),
+                    ),
+                    const SizedBox(width: 30),
+                    IconButtonWithText(
+                      label: Text(lang.translate('not_visited'), style: activeTheme.smallText),
+                      icon: Icon(Icons.check_circle, color: Colors.orange),
+                      onPressed: () => _markPickupStatus(index, pickupLocation.pickup_id!, false),
+                    ),
+                    const SizedBox(width: 30),
+                    IconButton(
+                      icon: Icon(Icons.close),
+                      onPressed: () {
+                        setState(() {
+                          _selectedPickupIndex = null;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
           ],
         )
       ]),
     );
+  }
+
+  Future<void> _markPickupStatus(int pickupIndex, int pickupPointId, bool visited) async {
+    print('[_markPickupStatus] START - tripId: ${trip.trip_id}, pickupPointId: $pickupPointId, visited: $visited');
+
+    setState(() {
+      _isMarkingPickup = true;
+    });
+
+    try {
+      final response = await httpService.markPickupPointStatus(
+        trip.trip_id!,
+        pickupPointId,
+        visited,
+      );
+
+      print('[_markPickupStatus] response: $response');
+
+      if (response['success'] == true) {
+        setState(() {
+          trip.pickup_locations![pickupIndex].status = visited ? 'visited' : 'waiting';
+          _selectedPickupIndex = null;
+          _isMarkingPickup = false;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(lang.translate(visited ? 'pickup_marked_visited' : 'pickup_marked_not_visited')),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        print('[_markPickupStatus] ERROR response - mounted: $mounted, error: ${response['error']}');
+        if (mounted) {
+          setState(() {
+            _isMarkingPickup = false;
+          });
+          final errorKey = response['error'] ?? 'server_error';
+          print('[_markPickupStatus] Showing SnackBar with error: $errorKey');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(lang.translate(errorKey)),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('[_markPickupStatus] ERROR: $e');
+      if (mounted) {
+        setState(() {
+          _isMarkingPickup = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(lang.translate('connection_error')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   endTrip() async {
@@ -874,6 +1001,7 @@ class _TripPageState extends State<TripPage>
 
     try {
       await trip.endTrip();
+      await storage.setItem('has_active_trip', 'false');
       setState(() {
         showLoader = false;
         showTripReportModal = true;
@@ -888,10 +1016,11 @@ class _TripPageState extends State<TripPage>
           lang.translate(msg[0]), () {
         Get.back();
       });
+      return;
     }
 
     try {
-      LocationService.instance.stopLocationService();
+      await LocationService.instance.stopLocationService();
       cleanResources();
     } catch (e) {
       print(e);
@@ -917,6 +1046,14 @@ class _TripPageState extends State<TripPage>
         print("[TripPage.loadTrip][trip.trip_status] ${trip.trip_status}");
         Wakelock.enable();
 
+        if (relationName == 'eta.drivers') {
+          await storage.setItem('has_active_trip', 'true');
+          await LocationService.instance.init();
+          await LocationService.instance.startLocationService(calculateDistance: true);
+        }
+
+        if (!mounted) return;
+
         initConnectivity();
         _connectivitySubscription =
             _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
@@ -925,14 +1062,13 @@ class _TripPageState extends State<TripPage>
             Provider.of<EmitterService>(context, listen: false);
         _emitterServiceProvider?.addListener(onEmitterMessage);
         _emitterServiceProvider?.startTimer(false);
-        
-        // Initialize Emitter session tracking
+
         _sessionStartTime = DateTime.now();
         _messageCount = 0;
         _receivedCount = 0;
         _lastMessageTime = null;
         _lastReceivedTime = null;
-        
+
         trip.subscribeToTripEvents(_emitterServiceProvider);
         trip.subscribeToTripTracking(_emitterServiceProvider);
         
@@ -1032,8 +1168,10 @@ class _TripPageState extends State<TripPage>
 
       _unsubscribeFromSchoolEvents();
 
-      if (trip.trip_status == "Running") {
+      if (trip.isEmitterSubcribedToTracking) {
         trip.unSubscribeToTripTracking(_emitterServiceProvider);
+      }
+      if (trip.isEmitterSubcribedToEvents) {
         trip.unSubscribeToTripEvents(_emitterServiceProvider);
       }
     } catch (e) {
@@ -1933,16 +2071,27 @@ class _TripPageState extends State<TripPage>
         trip.trip_status == "Running") {
       print(
           "[TripPage.initState] lastPositionPayload ${trip.lastPositionPayload}");
-      final Position position = trip.lastPosition()!;
-      final label = formatUnixEpoch(trip.lastPositionPayload['time'].toInt());
+      final Position? position = trip.lastPosition();
 
-      // FIX: Pasar el driver_id directamente en lugar de usar relationName del driver
-      // El método _updateIcon verificará internamente si debe mostrar el ícono
-      _updateIcon(
-          position, 'driver-position', trip.driver_id!, label);
-      if (!_isInitialCameraSet) {
-        mapboxMap.setCamera(CameraOptions(zoom: 18, pitch: 0));
-        _isInitialCameraSet = true;
+      if (position != null) {
+        final label = formatUnixEpoch(trip.lastPositionPayload['time'].toInt());
+
+        // FIX: Pasar el driver_id directamente en lugar de usar relationName del driver
+        // El método _updateIcon verificará internamente si debe mostrar el ícono
+        _updateIcon(
+            position, 'driver-position', trip.driver_id!, label);
+        if (!_isInitialCameraSet) {
+          mapboxMap.setCamera(CameraOptions(zoom: 18, pitch: 0));
+          _isInitialCameraSet = true;
+        }
+      } else {
+        print("[TripPage.initState] lastPosition es null, esperando primera actualización");
+        final coordinateBounds = getCoordinateBounds(points);
+        if (!_isInitialCameraSet) {
+          mapboxMap.setCamera(CameraOptions(
+              center: coordinateBounds.southwest, zoom: 18, pitch: 0));
+          _isInitialCameraSet = true;
+        }
       }
     } else {
       final coordinateBounds = getCoordinateBounds(points);
@@ -2028,117 +2177,74 @@ class _TripPageState extends State<TripPage>
     _lastAnnotationUpdate = DateTime.now();
 
     try {
-      // If the annotation doesn't exist, create it
-      if (busPointAnnotation == null) {
-        print("[TripPage._updateIcon] creating new point annotation");
+      await _busAnnotationLock.synchronized(() async {
+        if (busPointAnnotation == null) {
+          print("[TripPage._updateIcon] Creando nueva anotación del bus");
 
-        // final int currentBusColor = trip.bus_color != null
-        //     ? _convertColor(trip.bus_color!)
-        //     : Colors.blue.value;
-        final int currentBusColor = Colors.white.value;
+          final int currentBusColor = Colors.white.value;
 
-        Uint8List? imageData;
-        // if (_busMarkerCache.containsKey(currentBusColor) &&
-        //     _busMarkerCache[currentBusColor] != null) {
-        //   imageData = _busMarkerCache[currentBusColor]!;
-        // // } else {
-        final ui.Image busImage =
-            await loadImageFromAsset('assets/bus_color.png');
-        imageData = await createCircleMarkerImage(
-            circleColor: Color(currentBusColor),
-            image: busImage,
-            size: 96,
-            imageSize: 72);
-        _busMarkerCache[currentBusColor] = imageData;
-        // }
-
-        busPointAnnotation =
-            await annotationManager?.create(PointAnnotationOptions(
-          geometry: Point(coordinates: position),
-          image: imageData,
-          textSize: 14,
-          textField: label,
-          textOffset: [
-            0.0,
-            -2.0
-          ], // Ajustado de -3.5 a -2.0 para acercar el texto
-          textColor: Colors.black.value,
-          textHaloColor: Colors.white.value,
-          textHaloWidth: 2,
-          iconSize: 1.0, // Reducido de 1.2 a 1.0 para tamaño más adecuado
-          symbolSortKey: 3,
-        ));
-
-        if (!_isInitialCameraSet) {
-          _mapboxMapController?.setCamera(CameraOptions(
-              center: Point(coordinates: position), zoom: 18, pitch: 0));
-          _isInitialCameraSet = true;
-        }
-      }
-      // Si ya existe, eliminamos la anterior y creamos una nueva para evitar duplicados
-      else  {
-        print("[TripPage._updateIcon] updating existing point annotation - recreating to avoid duplicates");
-        
-        // Eliminar la anotación anterior
-        if (busPointAnnotation != null) {
-          try {
-            await annotationManager?.delete(busPointAnnotation!);
-          } catch (e) {
-            print("[TripPage._updateIcon] Error deleting old annotation: $e");
+          Uint8List? imageData;
+          if (_busMarkerCache.containsKey(currentBusColor) &&
+              _busMarkerCache[currentBusColor] != null) {
+            imageData = _busMarkerCache[currentBusColor]!;
+          } else {
+            final ui.Image busImage =
+                await loadImageFromAsset('assets/bus_color.png');
+            imageData = await createCircleMarkerImage(
+                circleColor: Color(currentBusColor),
+                image: busImage,
+                size: 96,
+                imageSize: 72);
+            _busMarkerCache[currentBusColor] = imageData;
           }
-        }
-        
-        // Crear nueva anotación con la posición y etiqueta actualizadas
-        final int currentBusColor = Colors.white.value;
-        
-        Uint8List? imageData;
-        if (_busMarkerCache.containsKey(currentBusColor) &&
-            _busMarkerCache[currentBusColor] != null) {
-          imageData = _busMarkerCache[currentBusColor]!;
+
+          busPointAnnotation =
+              await annotationManager?.create(PointAnnotationOptions(
+            geometry: Point(coordinates: position),
+            image: imageData,
+            textSize: 14,
+            textField: label,
+            textOffset: [
+              0.0,
+              -2.0
+            ],
+            textColor: Colors.black.value,
+            textHaloColor: Colors.white.value,
+            textHaloWidth: 2,
+            iconSize: 1.0,
+            symbolSortKey: 3,
+          ));
+
+          if (!_isInitialCameraSet) {
+            _mapboxMapController?.setCamera(CameraOptions(
+                center: Point(coordinates: position), zoom: 18, pitch: 0));
+            _isInitialCameraSet = true;
+          }
         } else {
-          final ui.Image busImage =
-              await loadImageFromAsset('assets/bus_color.png');
-          imageData = await createCircleMarkerImage(
-              circleColor: Color(currentBusColor),
-              image: busImage,
-              size: 96,
-              imageSize: 72);
-          _busMarkerCache[currentBusColor] = imageData;
-        }
-        
-        busPointAnnotation =
-            await annotationManager?.create(PointAnnotationOptions(
-          geometry: Point(coordinates: position),
-          image: imageData,
-          textSize: 14,
-          textField: label,
-          textOffset: [
-            0.0,
-            -2.0
-          ],
-          textColor: Colors.black.value,
-          textHaloColor: Colors.white.value,
-          textHaloWidth: 2,
-          iconSize: 1.0,
-          symbolSortKey: 3,
-        ));
+          print("[TripPage._updateIcon] Actualizando anotación existente del bus");
 
-        // Solo centrar el mapa si el auto-seguimiento está activado
-        if (_autoFollowBus) {
-          _mapboxMapController?.flyTo(
-            CameraOptions(center: Point(coordinates: position)),
-            MapAnimationOptions(duration: 1000, startDelay: 0)
-          );
-        }
-        
-        // Si el usuario no ha interactuado en los últimos 30 segundos, reactivar auto-seguimiento
-        if (_lastUserInteraction != null) {
-          final timeSinceInteraction = DateTime.now().difference(_lastUserInteraction!);
-          if (timeSinceInteraction.inSeconds > 30) {
-            setState(() {
-              _autoFollowBus = true;
-            });
+          busPointAnnotation?.geometry = Point(coordinates: position);
+          busPointAnnotation?.textField = label;
+
+          if (busPointAnnotation != null) {
+            await annotationManager?.update(busPointAnnotation!);
           }
+        }
+      });
+
+      if (_autoFollowBus) {
+        _mapboxMapController?.flyTo(
+          CameraOptions(center: Point(coordinates: position)),
+          MapAnimationOptions(duration: 1000, startDelay: 0)
+        );
+      }
+
+      if (_lastUserInteraction != null) {
+        final timeSinceInteraction = DateTime.now().difference(_lastUserInteraction!);
+        if (timeSinceInteraction.inSeconds > 30) {
+          setState(() {
+            _autoFollowBus = true;
+          });
         }
       }
 
@@ -2179,11 +2285,12 @@ class _TripPageState extends State<TripPage>
 
   void onEmitterMessage() async {
     if (!_isVisible) return; // No procesar si no está visible
+    if (_emitterServiceProvider == null) return;
 
     // Update Emitter statistics
     _messageCount++;
     _lastMessageTime = DateTime.now();
-    
+
     // Los mensajes recibidos en trip_page son eventos del viaje
     _receivedCount++;
     _lastReceivedTime = DateTime.now();
@@ -2191,7 +2298,7 @@ class _TripPageState extends State<TripPage>
     final String message = _emitterServiceProvider!.lastMessage();
     print('[TripPage.onEmitterMessage] Mensaje recibido: $message');
 
-    if (mounted) {
+    if (mounted && trip.dt != null) {
       setState(() {
         tripDuration = Utils.formatElapsedTime(trip.dt!);
       });
@@ -2238,6 +2345,16 @@ class _TripPageState extends State<TripPage>
     if (relationName != null && relationName == "eta.drivers") {
       final driverId = relationId;
 
+      if (driverId != trip.driver_id) {
+        print("[processTrackingMessage] Ignorando tracking de driver $driverId (este viaje es driver ${trip.driver_id})");
+        return;
+      }
+
+      if (trip.trip_status != "Running") {
+        print("[processTrackingMessage] Viaje no está Running (${trip.trip_status}), ignorando tracking");
+        return;
+      }
+
       if (payload['latitude'] != null && payload['longitude'] != null) {
         final Position position = Position(
             double.parse("${payload['longitude']}"),
@@ -2272,19 +2389,20 @@ class _TripPageState extends State<TripPage>
           print('[TripPage] Evento end-trip ignorado (trip_id ${event.tripId} != ${trip.trip_id})');
           return;
         }
-        
+
         print('[TripPage] Evento end-trip recibido, mostrando modal...');
         _showTripEndedModal();
       } else {
         final updatedTrip = await httpService.getTrip(trip.trip_id);
-        if (mounted) {
+        // Solo actualizar si el trip es válido (no es un modelo vacío por error)
+        if (mounted && updatedTrip.trip_id != 0 && updatedTrip.pickup_locations != null) {
           setState(() {
             trip = updatedTrip;
           });
         }
       }
     } catch (e) {
-      // print("[TripPage] $e");
+      print("[TripPage.proccessTripEventMessage] Error: $e");
     }
   }
 
