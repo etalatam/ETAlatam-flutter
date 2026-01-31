@@ -123,19 +123,29 @@ class NotificationService with ChangeNotifier {
         print("[NotificationService] Topic ${i + 1}: ${topics[i]}");
       }
 
-      if (topics.isNotEmpty) {
-        await Future.wait(
-          topics.map((topic) => subscribeToTopic(topic)),
-        );
-      }
-
+      // Guardar topics en storage (sin esperar Firebase)
       await storage.setItem('notification_topics', topics);
 
-      print("[NotificationService] Setup completado. Topics suscritos: ${topicsList.length}");
-      print("[NotificationService] Topics en memoria: ${topicsList.join(', ')}");
+      // Actualizar memoria local con los nuevos topics
+      _topicsSet.clear();
+      _topicsSet.addAll(topics);
 
+      // Marcar como ready ANTES de suscribirse a Firebase
       setTopicsReady();
       _startAutoRefresh();
+
+      // Suscribirse a Firebase en background
+      if (topics.isNotEmpty) {
+        print("[NotificationService] Suscribiendo a Firebase en background (${topics.length} topics)...");
+
+        Future.wait(
+          topics.map((topic) => subscribeToTopic(topic)),
+        ).then((_) {
+          print("[NotificationService] Suscripción a Firebase completada. Topics: ${topicsList.length}");
+        }).catchError((e) {
+          print("[NotificationService] Error en suscripción background a Firebase: $e");
+        });
+      }
     } catch (e) {
       print("[NotificationService.setupNotifications] error: ${e.toString()}");
       setTopicsReady();

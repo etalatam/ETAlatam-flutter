@@ -30,7 +30,7 @@ class _SettingsPageState extends State<SettingsPage>
 
   final preferences = PreferencesSetting();
 
-  String appVersion = '1.12.57';
+  String appVersion = '1.12.58';
   String buildNumber = '57';
 
   @override

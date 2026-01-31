@@ -49,7 +49,7 @@ class _StudentsHomeState extends State<StudentsHome>
   EmitterService? _emitterServiceProvider;
   EmitterTopic? _schoolEventsTopic;
   bool _isFirstLoad = true;
-  
+
   @override
   Widget build(BuildContext context) {
     return showLoader
@@ -303,9 +303,7 @@ class _StudentsHomeState extends State<StudentsHome>
 
     _emitterServiceProvider = Provider.of<EmitterService>(context, listen: false);
     _emitterServiceProvider?.addListener(_onEmitterMessage);
-    
-
-    loadResources();    
+    loadResources();
   }
 
   onPushMessage() {

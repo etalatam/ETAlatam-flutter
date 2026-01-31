@@ -576,6 +576,20 @@ class _TripPageState extends State<TripPage>
                                           ]),
                                         ],
                                       ),
+                                      // Mostrar fecha solo para viajes históricos
+                                      if (trip.trip_status != "Running" && trip.formatDate != null)
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(top: 4),
+                                            child: Text(
+                                              trip.formatDate!,
+                                              style: activeTheme.smallText.copyWith(
+                                                color: activeTheme.textColor.withOpacity(0.7),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                       const SizedBox(height: 10),
                                       if (trip.trip_status == "Running")
                                         Row(
